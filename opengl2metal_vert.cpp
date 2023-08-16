@@ -519,20 +519,20 @@ auto uintBitsToFloat(thread const uint4& v)
     {
         out << ", uint glInstanceId [[instance_id]]";
     }
-    int b = numAttrs;
+    unsigned int b = 0;
     for(const auto& n : inputs)
     {
         if(std::get<2>(n.second))
         {
             out << ", constant " << std::get<1>(n.second) << "* " << std::get<0
-                >(n.second) << " [[buffer(" << b << ")]]";
-            ++b;
+                >(n.second) << " [[buffer(" << n.first << ")]]";
+            b = std::max(b, n.first);
         }
     }
     for(const auto& n : buffers)
     {
         out << ", constant " << n.second.first << (n.second.second ? "* " :
-            "& ") << n.first << " [[buffer(" << b << ")]]";
+            "& ") << n.first << " [[buffer(" << b + 1 << ")]]";
         ++b;
     }
     out << ")" << std::endl << "{" << std::endl << "    OutputData out;" <<
