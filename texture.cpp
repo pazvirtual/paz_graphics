@@ -125,12 +125,12 @@ void paz::Texture::Data::ensureMipmaps()
 
 int paz::Texture::width() const
 {
-    return _data->_width;
+    return _data ? _data->_width : 0;
 }
 
 int paz::Texture::height() const
 {
-    return _data->_height;
+    return _data ? _data->_height : 0;
 }
 
 #endif
