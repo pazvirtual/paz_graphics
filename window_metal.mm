@@ -35,7 +35,8 @@ void paz::initialize()
 
 static std::function<void(void)> Draw = [](){};
 
-static std::chrono::time_point<std::chrono::steady_clock> FrameStart;
+static std::chrono::time_point<std::chrono::steady_clock> FrameStart = std::
+    chrono::steady_clock::now();
 static double CurFrameTime = 1./60.;
 
 static std::unordered_set<void*> RenderTargets;
@@ -228,7 +229,6 @@ void paz::Window::Loop(const std::function<void(void)>& draw)
     initialize();
 
     Draw = draw;
-    FrameStart = std::chrono::steady_clock::now();
     while(![APP_DELEGATE done])
     {
 
@@ -237,6 +237,11 @@ void paz::Window::Loop(const std::function<void(void)>& draw)
         [NSApp sendEvent:event];
         [NSApp updateWindows];
     }
+}
+
+void paz::Window::Commit()
+{
+    throw std::logic_error("NOT IMPLEMENTED");
 }
 
 void paz::draw_in_renderer()
@@ -261,8 +266,6 @@ double paz::Window::FrameTime()
     return CurFrameTime;
 }
 
-// ...
-
 void paz::Window::SetMinSize(int width, int height)
 {
     initialize();
@@ -272,6 +275,21 @@ void paz::Window::SetMinSize(int width, int height)
     auto frame = [[APP_DELEGATE window] frame];
     frame.size = size;
     [[APP_DELEGATE window] setFrame:frame display:YES];
+}
+
+void paz::Window::SetMaxSize(int width, int height)
+{
+    throw std::logic_error("NOT IMPLEMENTED");
+}
+
+void paz::Window::MakeResizable()
+{
+    throw std::logic_error("NOT IMPLEMENTED");
+}
+
+void paz::Window::MakeNotResizable()
+{
+    throw std::logic_error("NOT IMPLEMENTED");
 }
 
 void paz::register_target(void* target)

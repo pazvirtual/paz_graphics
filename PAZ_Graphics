@@ -85,6 +85,9 @@ namespace paz
         RightShift, RightControl, RightAlt, RightSuper, Unknown
     };
 
+    static constexpr int NumKeys = static_cast<int>(Key::Unknown);
+    static constexpr int NumMouseButtons = 8;
+
     class Texture
     {
         friend class Framebuffer;
@@ -261,9 +264,6 @@ namespace paz
     class Window
     {
     public:
-        static constexpr int NumKeys = static_cast<int>(Key::Unknown);
-        static constexpr int NumMouseButtons = 8;
-
         Window() = delete;
         static void MakeFullscreen();
         static void MakeWindowed();
@@ -286,9 +286,12 @@ namespace paz
         static float AspectRatio();
         static void Quit();
         static void Loop(const std::function<void(void)>& draw);
+        static void Commit();
         static double FrameTime();
         static void SetMinSize(int width, int height);
         static void SetMaxSize(int width, int height);
+        static void MakeResizable();
+        static void MakeNotResizable();
         static void Resize(int width, int height);
         static Image<float, 3> PrintScreen();
     };
