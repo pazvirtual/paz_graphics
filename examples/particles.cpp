@@ -1,4 +1,5 @@
 #include "PAZ_Graphics"
+#include "PAZ_IO"
 #include <sstream>
 #include <fstream>
 #include <cmath>
@@ -31,8 +32,10 @@ static std::string read_file(const std::string& path)
 }
 //TEMP
 
-int main()
+int main(int, char** argv)
 {
+    const std::string appDir = paz::split_path(argv[0])[0];
+
     paz::Window::SetMinSize(640, 480);
 
     paz::ColorTarget render(1., 4, 16, paz::Texture::DataType::Float, paz::
@@ -41,10 +44,10 @@ int main()
     renderFramebuffer.attach(render);
 
     paz::ShaderFunctionLibrary l;
-    l.vertex("particle", read_file("particle.vert")),
-    l.fragment("particle", read_file("particle.frag"));
-    l.vertex("quad", read_file("quad.vert")),
-    l.fragment("tonemap", read_file("tonemap.frag"));
+    l.vertex("particle", read_file(appDir + "/particle.vert")),
+    l.fragment("particle", read_file(appDir + "/particle.frag"));
+    l.vertex("quad", read_file(appDir + "/quad.vert")),
+    l.fragment("tonemap", read_file(appDir + "/tonemap.frag"));
 
     const paz::Shader s(l, "particle", l, "particle");
     const paz::Shader t(l, "quad", l, "tonemap");
