@@ -5,32 +5,32 @@
 #include <cmath>
 
 static constexpr double BaseLength = 0.25;
-static const std::vector<float> TriPosData0 =
+static constexpr std::array<float, 6> TriPosData0 =
 {
              0,  0.05,
     BaseLength,     0,
              0, -0.05
 };
-static const std::vector<float> TriPosData1 =
+static constexpr std::array<float, 6> TriPosData1 =
 {
              0,  0.1,
     BaseLength,    0,
              0, -0.1
 };
-static const std::vector<float> TriColorData0 =
+static constexpr std::array<float, 12> TriColorData0 =
 {
     1,   0, 1, 1,
     0,   1, 1, 1,
     1, 0.5, 0, 1
 };
-static const std::vector<float> TriColorData1 =
+static constexpr std::array<float, 12> TriColorData1 =
 {
     1, 0, 0, 1,
     1, 0, 0, 1,
     1, 0, 0, 1
 };
 
-static const std::vector<float> QuadPosData =
+static constexpr std::array<float, 8> QuadPosData =
 {
      1, -1,
      1,  1,

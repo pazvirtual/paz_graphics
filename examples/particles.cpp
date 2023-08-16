@@ -57,7 +57,7 @@ int main(int, char** argv)
     paz::RenderPass u(t);
 
     paz::VertexBuffer q;
-    q.attribute(2, std::vector<float>{1., -1., 1., 1., -1., -1., -1., 1.});
+    q.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
     std::multimap<double, std::array<double, 3>> particles;
     for(std::size_t i = 0; i < NumParticles; ++i)
