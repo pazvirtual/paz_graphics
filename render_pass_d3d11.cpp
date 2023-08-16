@@ -122,6 +122,14 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
         blendDescriptor.RenderTarget[0].DestBlendAlpha =
             D3D11_BLEND_INV_SRC_ALPHA;
     }
+    else if(mode == BlendMode::BlendPremult)
+    {
+        blendDescriptor.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+        blendDescriptor.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+        blendDescriptor.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        blendDescriptor.RenderTarget[0].DestBlendAlpha =
+            D3D11_BLEND_INV_SRC_ALPHA;
+    }
     else if(mode != BlendMode::Disable)
     {
         throw std::logic_error("Invalid blending function.");

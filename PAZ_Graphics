@@ -155,7 +155,7 @@ namespace paz
 
     enum class BlendMode
     {
-        Additive, Blend, Disable
+        Additive, Blend, BlendPremult, Disable
     };
 
     enum class LoadAction
