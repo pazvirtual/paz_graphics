@@ -51,19 +51,11 @@ static double normalize_angle(const double n)
     return fract(n/(2.*M_PI))*2.*M_PI;
 }
 
-int main(int, char** argv)
+static void init(paz::RenderPass& scenePass, paz::RenderPass& textPass, paz::
+    RenderPass& postPass, const std::string& appDir)
 {
-    const std::string appDir = paz::split_path(argv[0])[0];
-
-    const std::string msg = paz::load_file(appDir + "/msg.txt").str();
-
-    paz::Window::SetMinSize(640, 480);
-
-    const paz::Texture font(paz::load_pbm(appDir + "/font.pbm"), paz::Texture::
-        MinMagFilter::Nearest, paz::Texture::MinMagFilter::Nearest);
-
-    paz::RenderTarget render(1., paz::Texture::Format::RGBA16Float, paz::
-        Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
+    paz::RenderTarget render(1., paz::TextureFormat::RGBA16Float, paz::
+        MinMagFilter::Linear, paz::MinMagFilter::Linear);
     paz::Framebuffer renderFramebuffer;
     renderFramebuffer.attach(render);
 
@@ -79,10 +71,25 @@ int main(int, char** argv)
     const paz::Shader textShader(shaders, "font", shaders, "font");
     const paz::Shader postShader(shaders, "quad", shaders, "post");
 
-    paz::RenderPass scenePass(renderFramebuffer, sceneShader);
-    paz::RenderPass textPass(renderFramebuffer, textShader, paz::RenderPass::
-        BlendMode::Additive);
-    paz::RenderPass postPass(postShader);
+    scenePass = paz::RenderPass(renderFramebuffer, sceneShader);
+    textPass = paz::RenderPass(renderFramebuffer, textShader, paz::BlendMode::
+        Additive);
+    postPass = paz::RenderPass(postShader);
+}
+
+int main(int, char** argv)
+{
+    const std::string appDir = paz::split_path(argv[0])[0];
+
+    const std::string msg = paz::load_file(appDir + "/msg.txt").str();
+
+    paz::Window::SetMinSize(640, 480);
+
+    const paz::Texture font(paz::load_pbm(appDir + "/font.pbm"), paz::
+        MinMagFilter::Nearest, paz::MinMagFilter::Nearest);
+
+    paz::RenderPass scenePass, textPass, postPass;
+    init(scenePass, textPass, postPass, appDir);
 
     paz::VertexBuffer triVertices0;
     triVertices0.attribute(2, TriPosData0);
@@ -108,11 +115,11 @@ int main(int, char** argv)
     paz::Window::Loop([&]()
     {
         // Handle events.
-        if(paz::Window::KeyPressed(paz::Window::Key::Q))
+        if(paz::Window::KeyPressed(paz::Key::Q))
         {
             paz::Window::Quit();
         }
-        if(paz::Window::KeyPressed(paz::Window::Key::F))
+        if(paz::Window::KeyPressed(paz::Key::F))
         {
             paz::Window::IsFullscreen() ? paz::Window::MakeWindowed() : paz::
                 Window::MakeFullscreen();
@@ -149,7 +156,7 @@ int main(int, char** argv)
         }
 
         // Drawing.
-        scenePass.begin({paz::RenderPass::LoadAction::Clear});
+        scenePass.begin({paz::LoadAction::Clear});
         scenePass.uniform("angle", static_cast<float>(angle));
         scenePass.uniform("aspectRatio", static_cast<float>(paz::Window::
             AspectRatio()));
@@ -158,18 +165,16 @@ int main(int, char** argv)
         scenePass.uniform("length", static_cast<float>(length));
         if(mode)
         {
-            scenePass.indexed(paz::RenderPass::PrimitiveType::LineStrip,
-                triVertices1, loopIndices);
+            scenePass.indexed(paz::PrimitiveType::LineStrip, triVertices1,
+                loopIndices);
         }
         else
         {
-            scenePass.primitives(paz::RenderPass::PrimitiveType::Triangles,
-                triVertices0);
+            scenePass.primitives(paz::PrimitiveType::Triangles, triVertices0);
         }
         scenePass.end();
 
-        textPass.begin({paz::RenderPass::LoadAction::Load}, paz::RenderPass::
-            LoadAction::DontCare);
+        textPass.begin({paz::LoadAction::Load}, paz::LoadAction::DontCare);
         textPass.read("font", font);
         textPass.uniform("baseSize", font.height());
         textPass.uniform("aspectRatio", paz::Window::AspectRatio());
@@ -207,8 +212,8 @@ int main(int, char** argv)
                 textPass.uniform("row", row);
                 textPass.uniform("col", col);
                 textPass.uniform("character", c);
-                textPass.primitives(paz::RenderPass::PrimitiveType::
-                    TriangleStrip, quadVertices);
+                textPass.primitives(paz::PrimitiveType::TriangleStrip,
+                    quadVertices);
             }
             ++col;
         }
@@ -216,14 +221,13 @@ int main(int, char** argv)
 
         postPass.begin();
         postPass.uniform("factor", static_cast<float>(std::abs(y)));
-        postPass.read("source", render);
+        postPass.read("source", scenePass.framebuffer().colorAttachment(0));
         postPass.uniform("aspectRatio", static_cast<float>(paz::Window::
             AspectRatio()));
-        postPass.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
-            quadVertices);
+        postPass.primitives(paz::PrimitiveType::TriangleStrip, quadVertices);
         postPass.end();
 
-        if(paz::Window::KeyPressed(paz::Window::Key::S))
+        if(paz::Window::KeyPressed(paz::Key::S))
         {
             paz::write_bmp(appDir + "/screenshot.bmp", paz::Window::
                 PrintScreen());

@@ -106,9 +106,8 @@ int main(int, char** argv)
     paz::VertexBuffer cubeVerts;
     cubeVerts.attribute(4, CubePos);
 
-    paz::RenderTarget shadowMap(Res, Res, paz::Texture::Format::Depth32Float,
-        paz::Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::
-        Linear);
+    paz::RenderTarget shadowMap(Res, Res, paz::TextureFormat::Depth32Float,
+        paz::MinMagFilter::Linear, paz::MinMagFilter::Linear);
 
     paz::Framebuffer framebuffer;
     framebuffer.attach(shadowMap);
@@ -129,7 +128,7 @@ int main(int, char** argv)
 
     paz::Window::Loop([&]()
     {
-        if(paz::Window::KeyPressed(paz::Window::Key::Q))
+        if(paz::Window::KeyPressed(paz::Key::Q))
         {
             paz::Window::Quit();
         }
@@ -153,32 +152,27 @@ int main(int, char** argv)
         const auto lightProjection = paz::perspective(YFov, paz::Window::
             AspectRatio(), ZNear, ZFar);
 
-        calcShadows.begin({}, paz::RenderPass::LoadAction::Clear);
-        calcShadows.depth(paz::RenderPass::DepthTestMode::Less);
+        calcShadows.begin({}, paz::LoadAction::Clear);
+        calcShadows.depth(paz::DepthTestMode::Less);
         calcShadows.uniform("lightView", lightView);
         calcShadows.uniform("lightProjection", lightProjection);
-        calcShadows.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
-            groundVerts);
-        calcShadows.primitives(paz::RenderPass::PrimitiveType::Triangles,
-            cubeVerts);
+        calcShadows.primitives(paz::PrimitiveType::TriangleStrip, groundVerts);
+        calcShadows.primitives(paz::PrimitiveType::Triangles, cubeVerts);
         calcShadows.end();
 
-        renderScene.begin({paz::RenderPass::LoadAction::Clear}, paz::
-            RenderPass::LoadAction::Clear);
-        renderScene.depth(paz::RenderPass::DepthTestMode::Less);
+        renderScene.begin({paz::LoadAction::Clear}, paz::LoadAction::Clear);
+        renderScene.depth(paz::DepthTestMode::Less);
         renderScene.read("shadowMap", shadowMap);
         renderScene.uniform("view", view);
         renderScene.uniform("projection", projection);
         renderScene.uniform("lightView", lightView);
         renderScene.uniform("lightProjection", lightProjection);
-        renderScene.cull(paz::RenderPass::CullMode::Back);
-        renderScene.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
-            groundVerts);
-        renderScene.primitives(paz::RenderPass::PrimitiveType::Triangles,
-            cubeVerts);
+        renderScene.cull(paz::CullMode::Back);
+        renderScene.primitives(paz::PrimitiveType::TriangleStrip, groundVerts);
+        renderScene.primitives(paz::PrimitiveType::Triangles, cubeVerts);
         renderScene.end();
 
-        if(!paz::Window::KeyDown(paz::Window::Key::Space))
+        if(!paz::Window::KeyDown(paz::Key::Space))
         {
             time += paz::Window::FrameTime();
         }

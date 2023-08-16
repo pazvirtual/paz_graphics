@@ -6,6 +6,7 @@
 #include "keycodes.hpp"
 #include "util.hpp"
 #include "window.hpp"
+#include "internal_data.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
@@ -48,17 +49,20 @@ namespace paz
     };
 }
 
-static paz::Initializer Initializer;
+void paz::initialize()
+{
+    static paz::Initializer initializer;
+}
 
 static std::chrono::time_point<std::chrono::steady_clock> FrameStart;
 static double CurFrameTime = 1./60.;
 
-static std::unordered_set<paz::RenderTarget*> RenderTargets;
+static std::unordered_set<void*> RenderTargets;
 
 static void key_callback(int key, int action)
 {
-    const paz::Window::Key k = paz::convert_keycode(key);
-    if(k == paz::Window::Key::Unknown)
+    const paz::Key k = paz::convert_keycode(key);
+    if(k == paz::Key::Unknown)
     {
         return;
     }
@@ -220,6 +224,8 @@ paz::Initializer::Initializer()
 
 void paz::Window::MakeFullscreen()
 {
+    initialize();
+
     if(!WindowIsFullscreen)
     {
         glfwGetWindowPos(WindowPtr, &PrevX, &PrevY);
@@ -240,6 +246,8 @@ void paz::Window::MakeFullscreen()
 
 void paz::Window::MakeWindowed()
 {
+    initialize();
+
     if(WindowIsFullscreen)
     {
         glfwSetWindowMonitor(WindowPtr, nullptr, PrevX, PrevY, PrevWidth,
@@ -253,6 +261,8 @@ void paz::Window::MakeWindowed()
 
 void paz::Window::SetTitle(const std::string& title)
 {
+    initialize();
+
     glfwSetWindowTitle(WindowPtr, title.c_str());
 }
 
@@ -328,6 +338,8 @@ std::pair<double, double> paz::Window::ScrollOffset()
 
 void paz::Window::SetCursorMode(CursorMode mode)
 {
+    initialize();
+
     if(mode == CursorMode::Normal)
     {
         glfwSetInputMode(WindowPtr, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -354,14 +366,17 @@ float paz::Window::AspectRatio()
 
 void paz::resize_targets()
 {
-    for(auto& n : RenderTargets)
+    for(auto n : RenderTargets)
     {
-        n->resize(paz::Window::ViewportWidth(), paz::Window::ViewportHeight());
+        reinterpret_cast<Texture::Data*>(n)->resize(Window::ViewportWidth(),
+            Window::ViewportHeight());
     }
 }
 
 void paz::Window::Loop(const std::function<void(void)>& draw)
 {
+    initialize();
+
     FrameStart = std::chrono::steady_clock::now();
     while(!glfwWindowShouldClose(WindowPtr))
     {
@@ -382,6 +397,8 @@ void paz::Window::Loop(const std::function<void(void)>& draw)
 
 void paz::Window::Quit()
 {
+    initialize();
+
     glfwSetWindowShouldClose(WindowPtr, GLFW_TRUE);
 }
 
@@ -392,6 +409,8 @@ double paz::Window::FrameTime()
 
 void paz::Window::SetMinSize(int width, int height)
 {
+    initialize();
+
     MinWidth = width;
     MinHeight = height;
     glfwSetWindowSizeLimits(WindowPtr, MinWidth, MinHeight, MaxWidth,
@@ -400,6 +419,8 @@ void paz::Window::SetMinSize(int width, int height)
 
 void paz::Window::SetMaxSize(int width, int height)
 {
+    initialize();
+
     MaxWidth = width;
     MaxHeight = height;
     glfwSetWindowSizeLimits(WindowPtr, MinWidth, MinHeight, MaxWidth,
@@ -408,6 +429,8 @@ void paz::Window::SetMaxSize(int width, int height)
 
 void paz::Window::Resize(int width, int height)
 {
+    initialize();
+
     if(MinWidth != GLFW_DONT_CARE)
     {
         width = std::max(width, MinWidth);
@@ -427,7 +450,7 @@ void paz::Window::Resize(int width, int height)
     glfwSetWindowSize(WindowPtr, width, height);
 }
 
-void paz::register_target(RenderTarget* target)
+void paz::register_target(void* target)
 {
     if(RenderTargets.count(target))
     {
@@ -436,7 +459,7 @@ void paz::register_target(RenderTarget* target)
     RenderTargets.insert(target);
 }
 
-void paz::unregister_target(RenderTarget* target)
+void paz::unregister_target(void* target)
 {
     if(!RenderTargets.count(target))
     {
@@ -447,6 +470,8 @@ void paz::unregister_target(RenderTarget* target)
 
 paz::Image<float, 3> paz::Window::PrintScreen()
 {
+    initialize();
+
     Image<float, 3> image(ViewportWidth(), ViewportHeight());
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, ViewportWidth(), ViewportHeight());

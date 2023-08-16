@@ -3,10 +3,11 @@
 
 namespace paz
 {
-    void register_target(RenderTarget* target);
-    void unregister_target(RenderTarget* target);
 #ifdef PAZ_MACOS
     void draw_in_renderer();
 #endif
+    void register_target(void* data);
+    void unregister_target(void* data);
     void resize_targets();
+    void initialize();
 }

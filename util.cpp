@@ -6,19 +6,19 @@
 #include "util.hpp"
 
 #define CASE_STRING(x) case x: return #x;
-#define CASE(a, b) case Texture::Format::a: return GL_##b;
+#define CASE(a, b) case TextureFormat::a: return GL_##b;
 
-std::pair<GLint, GLint> paz::min_mag_filter(Texture::MinMagFilter minFilter,
-    Texture::MinMagFilter magFilter, Texture::MipmapFilter mipmapFilter)
+std::pair<GLint, GLint> paz::min_mag_filter(MinMagFilter minFilter, MinMagFilter
+    magFilter, MipmapFilter mipmapFilter)
 {
     GLint min;
-    if(mipmapFilter == Texture::MipmapFilter::Nearest)
+    if(mipmapFilter == MipmapFilter::Nearest)
     {
-        if(minFilter == Texture::MinMagFilter::Nearest)
+        if(minFilter == MinMagFilter::Nearest)
         {
             min = GL_NEAREST_MIPMAP_NEAREST;
         }
-        else if(minFilter == Texture::MinMagFilter::Linear)
+        else if(minFilter == MinMagFilter::Linear)
         {
             min = GL_LINEAR_MIPMAP_NEAREST;
         }
@@ -27,13 +27,13 @@ std::pair<GLint, GLint> paz::min_mag_filter(Texture::MinMagFilter minFilter,
             throw std::runtime_error("Invalid minification function.");
         }
     }
-    else if(mipmapFilter == Texture::MipmapFilter::Linear)
+    else if(mipmapFilter == MipmapFilter::Linear)
     {
-        if(minFilter == Texture::MinMagFilter::Nearest)
+        if(minFilter == MinMagFilter::Nearest)
         {
             min = GL_NEAREST_MIPMAP_LINEAR;
         }
-        else if(minFilter == Texture::MinMagFilter::Linear)
+        else if(minFilter == MinMagFilter::Linear)
         {
             min = GL_LINEAR_MIPMAP_LINEAR;
         }
@@ -42,13 +42,13 @@ std::pair<GLint, GLint> paz::min_mag_filter(Texture::MinMagFilter minFilter,
             throw std::runtime_error("Invalid minification function.");
         }
     }
-    else if(mipmapFilter == Texture::MipmapFilter::None)
+    else if(mipmapFilter == MipmapFilter::None)
     {
-        if(minFilter == Texture::MinMagFilter::Nearest)
+        if(minFilter == MinMagFilter::Nearest)
         {
             min = GL_NEAREST;
         }
-        else if(minFilter == Texture::MinMagFilter::Linear)
+        else if(minFilter == MinMagFilter::Linear)
         {
             min = GL_LINEAR;
         }
@@ -63,11 +63,11 @@ std::pair<GLint, GLint> paz::min_mag_filter(Texture::MinMagFilter minFilter,
     }
 
     GLint mag;
-    if(magFilter == Texture::MinMagFilter::Nearest)
+    if(magFilter == MinMagFilter::Nearest)
     {
         mag = GL_NEAREST;
     }
-    else if(magFilter == Texture::MinMagFilter::Linear)
+    else if(magFilter == MinMagFilter::Linear)
     {
         mag = GL_LINEAR;
     }
@@ -79,7 +79,7 @@ std::pair<GLint, GLint> paz::min_mag_filter(Texture::MinMagFilter minFilter,
     return {min, mag};
 }
 
-GLint paz::gl_internal_format(Texture::Format format)
+GLint paz::gl_internal_format(TextureFormat format)
 {
     switch(format)
     {
@@ -129,7 +129,7 @@ GLint paz::gl_internal_format(Texture::Format format)
     throw std::runtime_error("Invalid texture format requested.");
 }
 
-GLenum paz::gl_format(Texture::Format format)
+GLenum paz::gl_format(TextureFormat format)
 {
     switch(format)
     {
@@ -179,7 +179,7 @@ GLenum paz::gl_format(Texture::Format format)
     throw std::runtime_error("Invalid texture format requested.");
 }
 
-GLenum paz::gl_type(Texture::Format format)
+GLenum paz::gl_type(TextureFormat format)
 {
     switch(format)
     {

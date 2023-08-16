@@ -5,38 +5,51 @@
 #include "PAZ_Graphics"
 #include "util.hpp"
 #include "internal_data.hpp"
+#include "window.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
 #include <GLFW/glfw3.h>
 
-paz::Texture::~Texture()
+paz::Texture::Data::~Data()
 {
-    if(_data->_id)
+    if(_isRenderTarget)
     {
-        glDeleteTextures(1, &_data->_id);
+        unregister_target(this);
+    }
+
+    if(_id)
+    {
+        glDeleteTextures(1, &_id);
     }
 }
 
 paz::Texture::Texture()
 {
-    _data = std::make_unique<Data>();
+    initialize();
 }
 
 paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
-    minFilter, MinMagFilter magFilter, bool normalized) : Texture()
+    minFilter, MinMagFilter magFilter, bool normalized)
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
     _data->_width = image.width();
     _data->_height = image.height();
-    _data->_format = normalized ? Format::R8UNorm : Format::R8UInt;
+    _data->_format = normalized ? TextureFormat::R8UNorm : TextureFormat::
+        R8UInt;
     _data->_minFilter = minFilter;
     _data->_magFilter = magFilter;
     init(image.data());
 }
 
-paz::Texture::Texture(int width, int height, Format format, MinMagFilter
-    minFilter, MinMagFilter magFilter) : Texture()
+paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
+    minFilter, MinMagFilter magFilter)
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
     _data->_width = width;
     _data->_height = height;
     _data->_format = format;
@@ -66,21 +79,25 @@ void paz::Texture::init(const void* data)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
-void paz::Texture::resize(GLsizei width, GLsizei height)
+void paz::Texture::Data::resize(int width, int height)
 {
-    if(_data->_scale)
+    if(_scale)
     {
-        _data->_width = _data->_scale*width;
-        _data->_height = _data->_scale*height;
-        glBindTexture(GL_TEXTURE_2D, _data->_id);
-        glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(_data->_format),
-            _data->_width, _data->_height, 0, gl_format(_data->_format),
-            gl_type(_data->_format), nullptr);
-        if(_data->_mipmap)
+        _width = _scale*width;
+        _height = _scale*height;
+        glBindTexture(GL_TEXTURE_2D, _id);
+        glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(_format), _width,
+            _height, 0, gl_format(_format), gl_type(_format), nullptr);
+        if(_mipmap)
         {
             glGenerateMipmap(GL_TEXTURE_2D);
         }
     }
+}
+
+void paz::Texture::resize(int width, int height)
+{
+    _data->resize(width, height);
 }
 
 int paz::Texture::width() const

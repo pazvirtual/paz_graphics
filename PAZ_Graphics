@@ -18,47 +18,89 @@ namespace paz
         std::declval<const T&>())), decltype(std::end(std::declval<const
         T&>()))>::value>;
 
+    enum class TextureFormat
+    {
+        R8UInt, R8SInt, R8UNorm, R8SNorm, R16UInt, R16SInt, R16UNorm, R16SNorm,
+        R16Float, R32UInt, R32SInt, R32Float, RG8UInt, RG8SInt, RG8UNorm,
+        RG8SNorm, RG16UInt, RG16SInt, RG16UNorm, RG16SNorm, RG16Float, RG32UInt,
+        RG32SInt, RG32Float, RGBA8UInt, RGBA8SInt, RGBA8UNorm, RGBA8SNorm,
+        RGBA16UInt, RGBA16SInt, RGBA16UNorm, RGBA16SNorm, RGBA16Float,
+        RGBA32UInt, RGBA32SInt, RGBA32Float, Depth16UNorm, Depth32Float
+    };
+
+    enum class MinMagFilter
+    {
+        Linear, Nearest
+    };
+
+    enum class MipmapFilter
+    {
+        Linear, Nearest, None
+    };
+
+    enum class DepthTestMode
+    {
+        NeverNoMask, LessNoMask, EqualNoMask, LessEqualNoMask, GreaterNoMask,
+        NotEqualNoMask, GreaterEqualNoMask, AlwaysNoMask, Never, Less, Equal,
+        LessEqual, Greater, NotEqual, GreaterEqual, Always, Disable
+    };
+
+    enum class BlendMode
+    {
+        Additive, Blend, Disable
+    };
+
+    enum class LoadAction
+    {
+        Clear, Load, DontCare
+    };
+
+    enum class CullMode
+    {
+        Front, Back, Disable
+    };
+
+    enum class PrimitiveType
+    {
+        Points, Lines, LineStrip, Triangles, TriangleStrip
+    };
+
+    enum class CursorMode
+    {
+        Normal, Hidden, Disable
+    };
+
+    enum class Key : int
+    {
+        Space, Apostrophe, Comma, Minus, Period, Slash, Zero, One, Two, Three,
+        Four, Five, Six, Seven, Eight, Nine, Semicolon, Equal, A, B, C, D, E, F,
+        G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, LeftBracket,
+        Backslash, RightBracket, Grave, Escape, Enter, Tab, Backspace, Insert,
+        Delete, Right, Left, Down, Up, PageUp, PageDown, Home, End, CapsLock,
+        F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12, F13, F14, F15, F16,
+        F17, F18, F19, F20, F21, F22, F23, F24, F25, Keypad0, Keypad1, Keypad2,
+        Keypad3, Keypad4, Keypad5, Keypad6, Keypad7, Keypad8, Keypad9,
+        KeypadDecimal, KeypadDivide, KeypadMultiply, KeypadMinus, KeypadPlus,
+        KeypadEnter, KeypadEqual, LeftShift, LeftControl, LeftAlt, LeftSuper,
+        RightShift, RightControl, RightAlt, RightSuper, Unknown
+    };
+
     class Texture
     {
         friend class Framebuffer;
         friend class RenderPass;
-
-        Texture(const Texture&) = delete;
-        Texture& operator=(const Texture&) = delete;
-
-    public:
-        enum class Format
-        {
-            R8UInt, R8SInt, R8UNorm, R8SNorm, R16UInt, R16SInt, R16UNorm,
-            R16SNorm, R16Float, R32UInt, R32SInt, R32Float, RG8UInt, RG8SInt,
-            RG8UNorm, RG8SNorm, RG16UInt, RG16SInt, RG16UNorm, RG16SNorm,
-            RG16Float, RG32UInt, RG32SInt, RG32Float, RGBA8UInt, RGBA8SInt,
-            RGBA8UNorm, RGBA8SNorm, RGBA16UInt, RGBA16SInt, RGBA16UNorm,
-            RGBA16SNorm, RGBA16Float, RGBA32UInt, RGBA32SInt, RGBA32Float,
-            Depth16UNorm, Depth32Float
-        };
-
-        enum class MinMagFilter
-        {
-            Linear, Nearest
-        };
-
-        enum class MipmapFilter
-        {
-            Linear, Nearest, None
-        };
+        friend void resize_targets();
 
     protected:
         struct Data;
-        std::unique_ptr<Data> _data;
+        std::shared_ptr<Data> _data;
 
         Texture();
         void init(const void* data = nullptr);
 
     public:
-        virtual ~Texture();
-        Texture(int width, int height, Format format, MinMagFilter minFilter,
-            MinMagFilter magFilter);
+        Texture(int width, int height, TextureFormat format, MinMagFilter
+            minFilter, MinMagFilter magFilter);
         Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
             minFilter, MinMagFilter magFilter, bool normalized = true);
         // ...
@@ -69,14 +111,10 @@ namespace paz
 
     class RenderTarget : public Texture
     {
-        RenderTarget(const RenderTarget&) = delete;
-        RenderTarget& operator=(const RenderTarget&) = delete;
-
     public:
-        ~RenderTarget();
-        RenderTarget(double scale, Format format, MinMagFilter minFilter,
+        RenderTarget(double scale, TextureFormat format, MinMagFilter minFilter,
             MinMagFilter magFilter);
-        RenderTarget(int width, int height, Format format, MinMagFilter
+        RenderTarget(int width, int height, TextureFormat format, MinMagFilter
             minFilter, MinMagFilter magFilter);
     };
 
@@ -85,13 +123,9 @@ namespace paz
         friend class RenderPass;
 
         struct Data;
-        std::unique_ptr<Data> _data;
-
-        VertexBuffer(const VertexBuffer&) = delete;
-        VertexBuffer& operator=(const VertexBuffer&) = delete;
+        std::shared_ptr<Data> _data;
 
     public:
-        ~VertexBuffer();
         VertexBuffer();
         void attribute(int dim, const float* data, std::size_t size);
         void attribute(int dim, const unsigned int* data, std::size_t size);
@@ -109,13 +143,9 @@ namespace paz
         friend class RenderPass;
 
         struct Data;
-        std::unique_ptr<Data> _data;
-
-        IndexBuffer(const IndexBuffer&) = delete;
-        IndexBuffer& operator=(const IndexBuffer&) = delete;
+        std::shared_ptr<Data> _data;
 
     public:
-        ~IndexBuffer();
         IndexBuffer(const unsigned int* data, std::size_t size);
         IndexBuffer(const std::vector<unsigned int>& data) : IndexBuffer(data.
             data(), data.size()) {}
@@ -129,15 +159,13 @@ namespace paz
         friend class RenderPass;
 
         struct Data;
-        std::unique_ptr<Data> _data;
-
-        Framebuffer(const Framebuffer&) = delete;
-        Framebuffer& operator=(const Framebuffer&) = delete;
+        std::shared_ptr<Data> _data;
 
     public:
-        ~Framebuffer();
         Framebuffer();
         void attach(const RenderTarget& target);
+        Texture colorAttachment(std::size_t i) const;
+        Texture depthStencilAttachment() const;
     };
 
     class ShaderFunctionLibrary
@@ -145,14 +173,10 @@ namespace paz
         friend class Shader;
 
         struct Data;
-        std::unique_ptr<Data> _data;
-
-        ShaderFunctionLibrary(const ShaderFunctionLibrary&) = delete;
-        ShaderFunctionLibrary& operator=(const ShaderFunctionLibrary&) = delete;
+        std::shared_ptr<Data> _data;
 
     public:
         ShaderFunctionLibrary();
-        ~ShaderFunctionLibrary();
         void vertex(const std::string& name, const std::string& src);
         void geometry(const std::string& name, const std::string& src);
         void fragment(const std::string& name, const std::string& src);
@@ -163,13 +187,9 @@ namespace paz
         friend class RenderPass;
 
         struct Data;
-        std::unique_ptr<Data> _data;
-
-        Shader(const Shader&) = delete;
-        Shader& operator=(const Shader&) = delete;
+        std::shared_ptr<Data> _data;
 
     public:
-        ~Shader();
         Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
             vertName, const ShaderFunctionLibrary& fragLibrary, const std::
             string& fragName);
@@ -181,44 +201,11 @@ namespace paz
 
     class RenderPass
     {
-    public:
-        enum class DepthTestMode
-        {
-            NeverNoMask, LessNoMask, EqualNoMask, LessEqualNoMask,
-            GreaterNoMask, NotEqualNoMask, GreaterEqualNoMask, AlwaysNoMask,
-            Never, Less, Equal, LessEqual, Greater, NotEqual, GreaterEqual,
-            Always, Disable
-        };
-
-        enum class BlendMode
-        {
-            Additive, Blend, Disable
-        };
-
-        enum class LoadAction
-        {
-            Clear, Load, DontCare
-        };
-
-        enum class CullMode
-        {
-            Front, Back, Disable
-        };
-
-    private:
         struct Data;
-        std::unique_ptr<Data> _data;
-
-        RenderPass(const RenderPass&) = delete;
-        RenderPass& operator=(const RenderPass&) = delete;
+        std::shared_ptr<Data> _data;
 
     public:
-        enum class PrimitiveType
-        {
-            Points, Lines, LineStrip, Triangles, TriangleStrip
-        };
-
-        ~RenderPass();
+        RenderPass();
         RenderPass(const Framebuffer& fbo, const Shader& shader, BlendMode mode
             = BlendMode::Disable);
         RenderPass(const Shader& shader, BlendMode mode = BlendMode::Disable);
@@ -260,6 +247,7 @@ namespace paz
             offset = 0) const;
         void indexed(PrimitiveType type, const VertexBuffer& vertices, const
             IndexBuffer& indices, int offset = 0) const;
+        Framebuffer framebuffer() const;
     };
 
     std::array<float, 16> perspective(float yFov, float ratio, float zNear,
@@ -272,27 +260,6 @@ namespace paz
     class Window
     {
     public:
-        enum class CursorMode
-        {
-            Normal, Hidden, Disable
-        };
-
-        enum class Key : int
-        {
-            Space, Apostrophe, Comma, Minus, Period, Slash, Zero, One, Two,
-            Three, Four, Five, Six, Seven, Eight, Nine, Semicolon, Equal, A, B,
-            C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X,
-            Y, Z, LeftBracket, Backslash, RightBracket, Grave, Escape, Enter,
-            Tab, Backspace, Insert, Delete, Right, Left, Down, Up, PageUp,
-            PageDown, Home, End, CapsLock, F1, F2, F3, F4, F5, F6, F7, F8, F9,
-            F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22,
-            F23, F24, F25, Keypad0, Keypad1, Keypad2, Keypad3, Keypad4, Keypad5,
-            Keypad6, Keypad7, Keypad8, Keypad9, KeypadDecimal, KeypadDivide,
-            KeypadMultiply, KeypadMinus, KeypadPlus, KeypadEnter, KeypadEqual,
-            LeftShift, LeftControl, LeftAlt, LeftSuper, RightShift,
-            RightControl, RightAlt, RightSuper, Unknown
-        };
-
         static constexpr int NumKeys = static_cast<int>(Key::Unknown);
         static constexpr int NumMouseButtons = 8;
 

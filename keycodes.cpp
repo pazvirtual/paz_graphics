@@ -3,9 +3,9 @@
 
 #ifdef PAZ_MACOS
 
-#define CASE(a, b) case 0x##a: return Window::Key::b;
+#define CASE(a, b) case 0x##a: return Key::b;
 
-paz::Window::Key paz::convert_keycode(int key)
+paz::Key paz::convert_keycode(int key)
 {
     switch(key)
     {
@@ -119,7 +119,7 @@ paz::Window::Key paz::convert_keycode(int key)
         CASE(7e, Up)
     }
 
-    return Window::Key::Unknown;
+    return Key::Unknown;
 }
 
 #else
@@ -129,9 +129,9 @@ paz::Window::Key paz::convert_keycode(int key)
 #endif
 #include <GLFW/glfw3.h>
 
-#define CASE(a, b) case GLFW_KEY_##a: return Window::Key::b;
+#define CASE(a, b) case GLFW_KEY_##a: return Key::b;
 
-paz::Window::Key paz::convert_keycode(int key)
+paz::Key paz::convert_keycode(int key)
 {
     switch(key)
     {
@@ -250,7 +250,7 @@ paz::Window::Key paz::convert_keycode(int key)
         CASE(RIGHT_SUPER, RightSuper)
     }
 
-    return Window::Key::Unknown;
+    return Key::Unknown;
 }
 
 #endif

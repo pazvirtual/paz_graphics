@@ -6,6 +6,7 @@
 #include "util.hpp"
 #include "opengl2metal.hpp"
 #include "internal_data.hpp"
+#include "window.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
@@ -34,21 +35,23 @@ static unsigned int compile_shader(const std::string& src, GLenum type)
     return shader;
 }
 
-paz::ShaderFunctionLibrary::ShaderFunctionLibrary()
+paz::ShaderFunctionLibrary::Data::~Data()
 {
-    _data = std::make_unique<Data>();
+    for(auto& n : _vertexIds)
+    {
+        glDeleteShader(n.second);
+    }
+    for(auto& n : _fragmentIds)
+    {
+        glDeleteShader(n.second);
+    }
 }
 
-paz::ShaderFunctionLibrary::~ShaderFunctionLibrary()
+paz::ShaderFunctionLibrary::ShaderFunctionLibrary()
 {
-    for(auto& n : _data->_vertexIds)
-    {
-        glDeleteShader(n.second);
-    }
-    for(auto& n : _data->_fragmentIds)
-    {
-        glDeleteShader(n.second);
-    }
+    initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::

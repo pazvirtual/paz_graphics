@@ -23,8 +23,8 @@ int main(int, char** argv)
 
     paz::Window::SetMinSize(640, 480);
 
-    paz::RenderTarget render(1., paz::Texture::Format::RGBA16Float, paz::
-        Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
+    paz::RenderTarget render(1., paz::TextureFormat::RGBA16Float, paz::
+        MinMagFilter::Linear, paz::MinMagFilter::Linear);
     paz::Framebuffer renderFramebuffer;
     renderFramebuffer.attach(render);
 
@@ -37,8 +37,7 @@ int main(int, char** argv)
     const paz::Shader s(l, "particle", l, "particle");
     const paz::Shader t(l, "quad", l, "tonemap");
 
-    paz::RenderPass r(renderFramebuffer, s, paz::RenderPass::BlendMode::
-        Additive);
+    paz::RenderPass r(renderFramebuffer, s, paz::BlendMode::Additive);
     paz::RenderPass u(t);
 
     paz::VertexBuffer q;
@@ -58,7 +57,7 @@ int main(int, char** argv)
     paz::Window::Loop([&]()
     {
         // Handle events.
-        if(paz::Window::KeyPressed(paz::Window::Key::Q))
+        if(paz::Window::KeyPressed(paz::Key::Q))
         {
             paz::Window::Quit();
         }
@@ -69,7 +68,7 @@ int main(int, char** argv)
         // Drawing prep.
         const std::array<float, 16> p = paz::perspective(1., paz::Window::
             AspectRatio(), 0.01f, 100.f);
-        if(!paz::Window::KeyDown(paz::Window::Key::Space))
+        if(!paz::Window::KeyDown(paz::Key::Space))
         {
             time += paz::Window::FrameTime();
         }
@@ -81,8 +80,7 @@ int main(int, char** argv)
                                          0, 0,  0, 1};
 
         // Drawing.
-        r.begin({paz::RenderPass::LoadAction::Clear}, paz::RenderPass::
-            LoadAction::DontCare);
+        r.begin({paz::LoadAction::Clear}, paz::LoadAction::DontCare);
         r.uniform("projection", p);
         r.uniform("view", v);
         for(auto it = particles.rbegin(); it != particles.rend(); ++it)
@@ -90,14 +88,14 @@ int main(int, char** argv)
             r.uniform("origin", static_cast<float>(it->second[0]), static_cast<
                 float>(it->second[1]), static_cast<float>(it->second[2]));
             r.uniform("distSq", static_cast<float>(it->first));
-            r.primitives(paz::RenderPass::PrimitiveType::TriangleStrip, q);
+            r.primitives(paz::PrimitiveType::TriangleStrip, q);
         }
         r.end();
 
         u.begin();
         u.read("hdrRender", render);
         u.uniform("whitePoint", 0.5f + 0.5f*static_cast<float>(std::sin(time)));
-        u.primitives(paz::RenderPass::PrimitiveType::TriangleStrip, q);
+        u.primitives(paz::PrimitiveType::TriangleStrip, q);
         u.end();
     });
 }
