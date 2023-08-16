@@ -133,7 +133,7 @@ void main()
     float depth = projCoords.z;
     vec2 shadowUv = projCoords.xy;
     color = vec4((max(sign(texture(shadowMap, shadowUv).r + 1e-6 - depth), 0.)*
-        ill + 0.1)*textureLod(surface, uv, textureQueryLod(surface, uv).x).r);
+        ill + 0.1)*texture(surface, uv).r);
     color.rgb = pow(clamp(color.rgb, vec3(0.), vec3(1.)), vec3(0.4545));
 }
 )===";
