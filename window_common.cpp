@@ -1,4 +1,5 @@
 #include "window.hpp"
+#include <cmath>
 
 paz::Framebuffer paz::final_framebuffer()
 {
