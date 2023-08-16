@@ -53,7 +53,7 @@ paz::VertexBuffer::VertexBuffer()
 
 void paz::VertexBuffer::attribute(int dim, const float* data, std::size_t size)
 {
-    check_size(dim, _data->_numVertices, size);
+    _data->checkSize(dim, size);
 
     _data->_buffers.push_back([DEVICE newBufferWithBytes:data length:sizeof(
         float)*size options:MTLStorageModeShared]);
@@ -62,7 +62,7 @@ void paz::VertexBuffer::attribute(int dim, const float* data, std::size_t size)
 void paz::VertexBuffer::attribute(int dim, const unsigned int* data, std::size_t
     size)
 {
-    check_size(dim, _data->_numVertices, size);
+    _data->checkSize(dim, size);
 
     _data->_buffers.push_back([DEVICE newBufferWithBytes:data length:sizeof(
         unsigned int)*size options:MTLStorageModeShared]);
@@ -70,7 +70,7 @@ void paz::VertexBuffer::attribute(int dim, const unsigned int* data, std::size_t
 
 void paz::VertexBuffer::attribute(int dim, const int* data, std::size_t size)
 {
-    check_size(dim, _data->_numVertices, size);
+    _data->checkSize(dim, size);
 
     _data->_buffers.push_back([DEVICE newBufferWithBytes:data length:sizeof(
         int)*size options:MTLStorageModeShared]);
