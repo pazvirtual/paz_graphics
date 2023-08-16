@@ -486,7 +486,7 @@ void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
     check_attributes(vertices._data->_types, _data->_shader->_attribTypes);
 
     glBindVertexArray(vertices._data->_id);
-    glDrawArrays(primitive_type(type), vertices._data->_numVertices);
+    glDrawArrays(primitive_type(type), 0, vertices._data->_numVertices);
 }
 
 void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
