@@ -427,8 +427,22 @@ void paz::Window::SetMaxSize(int width, int height)
 
 void paz::Window::Resize(int width, int height)
 {
-    width = std::min(std::max(width, MinWidth), MaxWidth);
-    height = std::min(std::max(height, MinHeight), MaxHeight);
+    if(MinWidth != GLFW_DONT_CARE)
+    {
+        width = std::max(width, MinWidth);
+    }
+    if(MaxWidth != GLFW_DONT_CARE)
+    {
+        width = std::min(width, MaxWidth);
+    }
+    if(MinHeight != GLFW_DONT_CARE)
+    {
+        height = std::max(height, MinHeight);
+    }
+    if(MaxHeight != GLFW_DONT_CARE)
+    {
+        height = std::min(height, MaxHeight);
+    }
     glfwSetWindowSize(WindowPtr, width, height);
 }
 

@@ -144,6 +144,10 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE);
         }
+        else if(_data->_blendMode == BlendMode::Blend)
+        {
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        }
         // ...
         else
         {

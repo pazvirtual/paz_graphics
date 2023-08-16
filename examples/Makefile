@@ -21,7 +21,7 @@ else
     CXXFLAGS += -pthread
 endif
 INCL := -I..
-LIBS := ../libpazgraphics.a
+LIBS := ../libpazgraphics.a $(LIBPATH)/libpazio.a
 ifeq ($(OSPRETTY), macOS)
     LIBS += -framework MetalKit -framework Metal -framework Cocoa
 else
