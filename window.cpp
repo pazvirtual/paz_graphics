@@ -25,6 +25,10 @@ static int PrevWidth;
 static int FboWidth;
 static int FboHeight;
 static float FboAspectRatio;
+static int MinWidth = GLFW_DONT_CARE;
+static int MinHeight = GLFW_DONT_CARE;
+static int MaxWidth = GLFW_DONT_CARE;
+static int MaxHeight = GLFW_DONT_CARE;
 
 static std::array<bool, paz::Window::NumKeys> KeyDown = {};
 static std::array<bool, paz::Window::NumKeys> KeyPressed = {};
@@ -402,9 +406,25 @@ double paz::Window::FrameTime()
 
 void paz::Window::SetMinSize(int width, int height)
 {
-    // This sets limits and automatically resizes to meet them if windowed.
-    glfwSetWindowSizeLimits(WindowPtr, width, height, GLFW_DONT_CARE,
-        GLFW_DONT_CARE);
+    MinWidth = width;
+    MinHeight = height;
+    glfwSetWindowSizeLimits(WindowPtr, MinWidth, MinHeight, MaxWidth,
+        MaxHeight);
+}
+
+void paz::Window::SetMaxSize(int width, int height)
+{
+    MaxWidth = width;
+    MaxHeight = height;
+    glfwSetWindowSizeLimits(WindowPtr, MinWidth, MinHeight, MaxWidth,
+        MaxHeight);
+}
+
+void paz::Window::Resize(int width, int height)
+{
+    width = std::min(std::max(width, MinWidth), MaxWidth);
+    height = std::min(std::max(height, MinHeight), MaxHeight);
+    glfwSetWindowSize(WindowPtr, width, height);
 }
 
 void paz::Window::RegisterTarget(RenderTarget* target)
