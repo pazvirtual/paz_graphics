@@ -12,16 +12,24 @@
 paz::Texture::Texture() {}
 
 paz::Texture::Texture(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, bool repeat,
-    const void* data)
+    DataType type, MinMagFilter minFilter, MinMagFilter magFilter)
 {
     init(width, height, numChannels, numBits, type, minFilter, magFilter,
-        repeat, data);
+        nullptr);
 }
 
+paz::Texture::Texture(int width, int height, int numChannels, int numBits, const
+    std::vector<float>& data, MinMagFilter minFilter, MinMagFilter magFilter)
+{
+    init(width, height, numChannels, numBits, DataType::Float, minFilter,
+        magFilter, data.data());
+}
+
+// ...
+
 void paz::Texture::init(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, bool repeat,
-    const void* data)
+    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
+    data)
 {
     _mipmap = false;//TEMP
     const auto filters = min_mag_filter(minFilter, magFilter/*, mipmapFilter*/);
@@ -59,10 +67,8 @@ void paz::Texture::init(int width, int height, int numChannels, int numBits,
     }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (repeat ? GL_REPEAT :
-        GL_CLAMP_TO_EDGE));
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (repeat ? GL_REPEAT :
-        GL_CLAMP_TO_EDGE));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
 void paz::Texture::resize(GLsizei width, GLsizei height)

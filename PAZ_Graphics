@@ -86,20 +86,22 @@ namespace paz
         Texture(const Texture&) = delete;
         Texture& operator=(const Texture&) = delete;
 
-#ifdef PAZ_MACOS
     protected:
-        void createSampler(MinMagFilter minFilter, MinMagFilter magFilter,
-            bool repeat);
+#ifdef PAZ_MACOS
+        void createSampler(MinMagFilter minFilter, MinMagFilter magFilter);
 #endif
+        void init(int width, int height, int numChannels, int numBits, DataType
+            type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
+            data);
 
     public:
         Texture();
         Texture(int width, int height, int numChannels, int numBits, DataType
-            type, MinMagFilter minFilter, MinMagFilter magFilter, bool repeat =
-            false, const void* data = nullptr);
-        void init(int width, int height, int numChannels, int numBits, DataType
-            type, MinMagFilter minFilter, MinMagFilter magFilter, bool repeat =
-            false, const void* data = nullptr);
+            type, MinMagFilter minFilter, MinMagFilter magFilter);
+        Texture(int width, int height, int numChannels, int numBits, const std::
+            vector<float>& data, MinMagFilter minFilter, MinMagFilter
+            magFilter);
+        // ...
         virtual void resize(int width, int height);
     };
 
@@ -115,22 +117,27 @@ namespace paz
         void clean();
         void init(int width, int height);
 #endif
+
+        RenderTarget(const RenderTarget&) = delete;
+        RenderTarget& operator=(const RenderTarget&) = delete;
+
         RenderTarget(); // For `DepthStencilTarget` to inherit.
 
     public:
         ~RenderTarget();
         RenderTarget(double scale, int numChannels, int numBits, DataType type,
-            MinMagFilter minFilter, MinMagFilter magFilter, bool repeat =
-            false);
+            MinMagFilter minFilter, MinMagFilter magFilter);
         void resize(int width, int height) override;
     };
 
     class DepthStencilTarget : public RenderTarget
     {
+        DepthStencilTarget(const DepthStencilTarget&) = delete;
+        DepthStencilTarget& operator=(const DepthStencilTarget&) = delete;
+
     public:
         DepthStencilTarget(double scale, int numBits, DataType type,
-            MinMagFilter minFilter, MinMagFilter magFilter, bool repeat =
-            false);
+            MinMagFilter minFilter, MinMagFilter magFilter);
     };
 
     class VertexBuffer

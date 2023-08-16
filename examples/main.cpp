@@ -66,14 +66,14 @@ static std::string read_file(const std::string& path)
     return ss.str();
 }
 
-static void load_font(const std::string& path, paz::Texture& tex)
+static int load_font(const std::string& path, std::vector<float>& v)
 {
     std::ifstream in(path);
     if(!in)
     {
         throw std::runtime_error("Unable to open input file \"" + path + "\".");
     }
-    unsigned int numRows = 0;
+    int numRows = 0;
     std::vector<float> u;
     std::string line;
     while(std::getline(in, line))
@@ -85,8 +85,8 @@ static void load_font(const std::string& path, paz::Texture& tex)
         }
     }
     const std::size_t w = u.size()/numRows;
-    std::vector<float> v(u.size());
-    for(unsigned int i = 0; i < numRows; ++i)
+    v.resize(u.size());
+    for(int i = 0; i < numRows; ++i)
     {
         for(std::size_t j = 0; j < w; ++j)
         {
@@ -97,9 +97,7 @@ static void load_font(const std::string& path, paz::Texture& tex)
 #endif
         }
     }
-    tex.init(v.size()/numRows, numRows, 1, 8*sizeof(float), paz::TextureBase::
-        DataType::Float, paz::TextureBase::MinMagFilter::Nearest, paz::
-        TextureBase::MinMagFilter::Nearest, false, v.data());
+    return numRows;
 }
 //TEMP
 
@@ -111,8 +109,11 @@ int main()
 
     paz::Window::SetMinSize(640, 480);
 
-    paz::Texture font;
-    load_font("font.txt", font);
+    std::vector<float> fontData;
+    const int fontRows = load_font("font.txt", fontData);
+    paz::Texture font(fontData.size()/fontRows, fontRows, 1, 8*sizeof(float),
+        fontData, paz::TextureBase::MinMagFilter::Nearest, paz::TextureBase::
+        MinMagFilter::Nearest);
 
     paz::RenderTarget scene(1., 4, 16, paz::TextureBase::DataType::Float, paz::TextureBase::MinMagFilter::Linear, paz::TextureBase::MinMagFilter::Linear);
     paz::Framebuffer sceneFramebuffer;

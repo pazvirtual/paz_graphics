@@ -42,14 +42,14 @@ paz::RenderTarget::~RenderTarget()
 }
 
 paz::RenderTarget::RenderTarget(double scale, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, bool repeat)
+    DataType type, MinMagFilter minFilter, MinMagFilter magFilter)
 {
     _scale = scale;
     _numChannels = numChannels;
     _numBits = numBits;
     _type = type;
     init(_scale*Window::Width(), _scale*Window::Height());
-    createSampler(minFilter, magFilter, repeat);
+    createSampler(minFilter, magFilter);
     paz::Window::RegisterTarget(this);
 }
 

@@ -19,11 +19,11 @@ paz::RenderTarget::~RenderTarget()
 }
 
 paz::RenderTarget::RenderTarget(double scale, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, bool repeat)
+    DataType type, MinMagFilter minFilter, MinMagFilter magFilter)
 {
     _scale = scale;
     Texture::init(_scale*Window::Width(), _scale*Window::Height(), numChannels,
-        numBits, type, minFilter, magFilter, repeat);
+        numBits, type, minFilter, magFilter, nullptr);
     paz::Window::RegisterTarget(this);
 }
 

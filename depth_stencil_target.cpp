@@ -30,7 +30,7 @@ static GLint depth_internal_format(int b, paz::TextureBase::DataType t)
 }
 
 paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
-    type, MinMagFilter minFilter, MinMagFilter magFilter, bool repeat)
+    type, MinMagFilter minFilter, MinMagFilter magFilter)
 {
     _scale = scale;
     float width = _scale*Window::Width();
@@ -56,10 +56,8 @@ paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (repeat ? GL_REPEAT :
-        GL_CLAMP_TO_EDGE));
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (repeat ? GL_REPEAT :
-        GL_CLAMP_TO_EDGE));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     paz::Window::RegisterTarget(this);
 }

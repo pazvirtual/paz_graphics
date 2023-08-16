@@ -23,16 +23,13 @@ static MTLSamplerMinMagFilter min_mag_filter(paz::TextureBase::MinMagFilter f)
     throw std::logic_error("Invalid texture filter requested.");
 }
 
-void paz::Texture::createSampler(MinMagFilter minFilter, MinMagFilter magFilter,
-    bool repeat)
+void paz::Texture::createSampler(MinMagFilter minFilter, MinMagFilter magFilter)
 {
     MTLSamplerDescriptor* descriptor = [[MTLSamplerDescriptor alloc] init];
     [descriptor setMinFilter:min_mag_filter(minFilter)];
     [descriptor setMagFilter:min_mag_filter(magFilter)];
-    [descriptor setSAddressMode:(repeat ? MTLSamplerAddressModeRepeat :
-        MTLSamplerAddressModeClampToEdge)];
-    [descriptor setTAddressMode:(repeat ? MTLSamplerAddressModeRepeat :
-        MTLSamplerAddressModeClampToEdge)];
+    [descriptor setSAddressMode:MTLSamplerAddressModeRepeat];
+    [descriptor setTAddressMode:MTLSamplerAddressModeRepeat];
     _sampler = [DEVICE newSamplerStateWithDescriptor:descriptor];
     [descriptor release];
 }
@@ -40,16 +37,16 @@ void paz::Texture::createSampler(MinMagFilter minFilter, MinMagFilter magFilter,
 paz::Texture::Texture() {}
 
 paz::Texture::Texture(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, bool repeat,
-    const void* data)
+    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
+    data)
 {
     init(width, height, numChannels, numBits, type, minFilter, magFilter,
-        repeat, data);
+        data);
 }
 
 void paz::Texture::init(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, bool repeat,
-    const void* data)
+    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
+    data)
 {
     MTLTextureDescriptor* textureDescriptor = [[MTLTextureDescriptor alloc]
         init];
@@ -67,7 +64,7 @@ void paz::Texture::init(int width, int height, int numChannels, int numBits,
     }
     if(!_sampler)
     {
-        createSampler(minFilter, magFilter, repeat);
+        createSampler(minFilter, magFilter);
     }
 }
 
