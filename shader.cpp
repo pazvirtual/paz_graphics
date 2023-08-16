@@ -21,6 +21,18 @@ paz::Shader::Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
 {
     _data = std::make_unique<Data>();
 
+    if(!vertLibrary._data->_vertexIds.count(vertName))
+    {
+        throw std::runtime_error("Vertex function \"" + vertName + "\" not foun"
+            "d in library.");
+    }
+
+    if(!fragLibrary._data->_fragmentIds.count(fragName))
+    {
+        throw std::runtime_error("Fragment function \"" + fragName + "\" not fo"
+            "und in library.");
+    }
+
     // Link shaders.
     _data->_id = glCreateProgram();
     glAttachShader(_data->_id, vertLibrary._data->_vertexIds.at(vertName));

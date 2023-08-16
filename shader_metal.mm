@@ -24,6 +24,18 @@ paz::Shader::Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
 {
     _data = std::make_unique<Data>();
 
+    if(!vertLibrary._data->_verts.count(vertName))
+    {
+        throw std::runtime_error("Vertex function \"" + vertName + "\" not foun"
+            "d in library.");
+    }
+
+    if(!fragLibrary._data->_frags.count(fragName))
+    {
+        throw std::runtime_error("Fragment function \"" + fragName + "\" not fo"
+            "und in library.");
+    }
+
     _data->_vert = [(id<MTLLibrary>)vertLibrary._data->_verts.at(vertName)
         newFunctionWithName:@"vertMain"];
     _data->_frag = [(id<MTLLibrary>)fragLibrary._data->_frags.at(fragName)
