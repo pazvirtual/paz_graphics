@@ -213,8 +213,8 @@ int main(int, char** argv)
         }
     }
     const paz::Texture surface(img, paz::MinMagFilter::Linear, paz::
-        MinMagFilter::Nearest, paz::WrapMode::Repeat, paz::WrapMode::Repeat,
-        paz::MipmapFilter::Linear);
+        MinMagFilter::Nearest, paz::MipmapFilter::Linear, paz::WrapMode::Repeat,
+        paz::WrapMode::Repeat);
 
     double time = 0.;
     while(!paz::Window::Done())
