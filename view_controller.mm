@@ -174,8 +174,11 @@
     _gamepadActive = false;
     _mouseActive = true;
 
-    _mouseDown[[event buttonNumber]] = true;
-    _mousePressed[[event buttonNumber]] = true;
+    if([event buttonNumber] < paz::NumMouseButtons)
+    {
+        _mouseDown[[event buttonNumber]] = true;
+        _mousePressed[[event buttonNumber]] = true;
+    }
 }
 
 - (void)otherMouseUp:(NSEvent*)event
@@ -183,8 +186,11 @@
     _gamepadActive = false;
     _mouseActive = true;
 
-    _mouseDown[[event buttonNumber]] = false;
-    _mouseReleased[[event buttonNumber]] = true;
+    if([event buttonNumber] < paz::NumMouseButtons)
+    {
+        _mouseDown[[event buttonNumber]] = false;
+        _mouseReleased[[event buttonNumber]] = true;
+    }
 }
 
 - (void)keyDown:(NSEvent*)event
