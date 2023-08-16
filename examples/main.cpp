@@ -107,17 +107,17 @@ int main()
         float), fontData, paz::Texture::MinMagFilter::Nearest, paz::Texture::
         MinMagFilter::Nearest);
 
-    paz::RenderTarget scene(1., 4, 16, paz::Texture::DataType::Float, paz::
+    paz::ColorTarget scene(1., 4, 16, paz::Texture::DataType::Float, paz::
         Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
     paz::Framebuffer sceneFramebuffer;
     sceneFramebuffer.attach(scene);
 
-    paz::RenderTarget overlay(1., 1, 16, paz::Texture::DataType::Float, paz::
+    paz::ColorTarget overlay(1., 1, 16, paz::Texture::DataType::Float, paz::
         Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
     paz::Framebuffer overlayFramebuffer;
     overlayFramebuffer.attach(overlay);
 
-    paz::RenderTarget blended(1., 4, 16, paz::Texture::DataType::Float, paz::
+    paz::ColorTarget blended(1., 4, 16, paz::Texture::DataType::Float, paz::
         Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
     paz::Framebuffer blendedFramebuffer;
     blendedFramebuffer.attach(blended);
