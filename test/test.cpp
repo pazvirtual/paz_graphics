@@ -42,7 +42,7 @@ static constexpr int Scale = 8;
 static constexpr float Eps = 1e-4;
 static constexpr double Angle = 3.;
 
-static constexpr int Threshold = 0.01*std::numeric_limits<std::uint8_t>::max();
+static constexpr int Threshold = 0.02*std::numeric_limits<std::uint8_t>::max();
 
 static constexpr std::array<std::array<int, 3>, 10> SamplePoints =
 {{
