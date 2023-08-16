@@ -9,16 +9,13 @@ struct paz::Texture::Data
 #ifdef PAZ_MACOS
     void* _sampler = nullptr;
     void* _texture = nullptr;
+#else
+    unsigned int _id = 0;
+#endif
     Format _format;
     MinMagFilter _minFilter;
     MinMagFilter _magFilter;
     bool _isRenderTarget = false;
-#else
-    unsigned int _id = 0;
-    int _internalFormat;
-    unsigned int _format;
-    unsigned int _type;
-#endif
     double _scale = 1.;
 };
 
@@ -47,13 +44,13 @@ struct paz::Framebuffer::Data
 #ifdef PAZ_MACOS
         std::vector<const RenderTarget*> _colorAttachments;
         const RenderTarget* _depthAttachment = nullptr;
-        int _width = 0;
-        int _height = 0;
 #else
         unsigned int _id = 0;
         int _numTextures = 0;
         bool _hasDepthAttachment = false;
 #endif
+        int _width = 0;
+        int _height = 0;
 };
 
 struct paz::ShaderFunctionLibrary::Data

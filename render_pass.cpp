@@ -82,8 +82,14 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     if(_fbo)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, _fbo->_data->_id);
-        //glViewport(0, 0, _fbo->width(), _fbo->height());
-        glViewport(0, 0, Window::ViewportWidth(), Window::ViewportHeight());//TEMP
+        if(_fbo->_data->_width)
+        {
+            glViewport(0, 0, _fbo->_data->_width, _fbo->_data->_height);
+        }
+        else
+        {
+            glViewport(0, 0, Window::ViewportWidth(), Window::ViewportHeight());
+        }
         for(std::size_t i = 0; i < colorLoadActions.size(); ++i)
         {
             if(colorLoadActions[i] == LoadAction::Clear)

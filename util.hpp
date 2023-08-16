@@ -19,8 +19,9 @@ namespace paz
     std::pair<GLint, GLint> min_mag_filter(Texture::MinMagFilter minFilter,
         Texture::MinMagFilter magFilter, paz::Texture::MipmapFilter mipmapFilter
         = Texture::MipmapFilter::None);
-    GLint internal_format(int c, int b, Texture::DataType t);
-    GLenum gl_type(Texture::DataType t, int numBits);
+    GLint gl_internal_format(Texture::Format format);
+    GLenum gl_format(Texture::Format format);
+    GLenum gl_type(Texture::Format format);
     std::string get_log(unsigned int id, bool isProgram);
     std::string gl_error(GLenum error);
 }
