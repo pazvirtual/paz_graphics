@@ -96,14 +96,16 @@ static unsigned int load_font(const std::string& path, std::vector<float>& data)
 }
 //TEMP
 
-int main()
+int main(int, char** argv)
 {
-    const std::string msg = read_file("msg.txt");
+    const std::string appDir = paz::split_path(argv[0])[0];
+
+    const std::string msg = read_file(appDir + "/msg.txt");
 
     paz::Window::SetMinSize(640, 480);
 
     std::vector<float> fontData;
-    const unsigned int fontRows = load_font("font.txt", fontData);
+    const unsigned int fontRows = load_font(appDir + "/font.txt", fontData);
     const paz::Texture font(fontData.size()/fontRows, fontRows, 1, 8*sizeof(
         float), fontData, paz::Texture::MinMagFilter::Nearest, paz::Texture::
         MinMagFilter::Nearest);
@@ -114,12 +116,12 @@ int main()
     renderFramebuffer.attach(render);
 
     paz::ShaderFunctionLibrary shaders;
-    shaders.vertex("shader", read_file("shader.vert"));
-    shaders.vertex("font", read_file("font.vert"));
-    shaders.vertex("quad", read_file("quad.vert")),
-    shaders.fragment("shader", read_file("shader.frag"));
-    shaders.fragment("font", read_file("font.frag"));
-    shaders.fragment("post", read_file("post.frag"));
+    shaders.vertex("shader", read_file(appDir + "/shader.vert"));
+    shaders.vertex("font", read_file(appDir + "/font.vert"));
+    shaders.vertex("quad", read_file(appDir + "/quad.vert")),
+    shaders.fragment("shader", read_file(appDir + "/shader.frag"));
+    shaders.fragment("font", read_file(appDir + "/font.frag"));
+    shaders.fragment("post", read_file(appDir + "/post.frag"));
 
     const paz::Shader sceneShader(shaders, "shader", shaders, "shader");
     const paz::Shader textShader(shaders, "font", shaders, "font");
@@ -266,8 +268,8 @@ int main()
 
         if(paz::Window::KeyPressed(paz::Window::Key::S))
         {
-            paz::write_bmp("screenshot.bmp", paz::Window::ViewportWidth(), paz::
-                Window::PrintScreen());
+            paz::write_bmp(appDir + "/screenshot.bmp", paz::Window::
+                ViewportWidth(), paz::Window::PrintScreen());
         }
     });
 }
