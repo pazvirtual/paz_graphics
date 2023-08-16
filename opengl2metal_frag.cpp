@@ -100,7 +100,7 @@ float4 textureLod(thread const wrap_depth2d<float>& tex, thread const float2&
 
     // Define `textureQueryLod()`. Note that this is not the right formula for
     // lines and that Metal does not support mipmaps for 1D textures.
-out << 1 + R"===(
+    out << 1 + R"===(
 template<typename T>
 float2 textureQueryLod(thread const wrap_texture1d<T>& /* tex */, thread const
     float2& /* uv */)
@@ -134,7 +134,7 @@ float2 textureQueryLod(thread const wrap_depth2d<T>& tex, thread const float2&
 )===";
 
     // Define `textureSize()`.
-out << 1 + R"===(
+    out << 1 + R"===(
 template<typename T>
 int textureSize(thread const wrap_texture1d<T>& tex, thread int lod)
 {
@@ -149,6 +149,74 @@ template<typename T>
 int2 textureSize(thread const wrap_depth2d<T>& tex, thread int lod)
 {
     return int2(tex.t.get_width(lod), tex.t.get_height(lod));
+}
+)===";
+
+    // Define reinterpretation functions.
+    out << 1 + R"===(
+auto floatBitsToInt(float v)
+{
+    return as_type<int>(v);
+}
+auto floatBitsToInt(thread const float2& v)
+{
+    return as_type<int2>(v);
+}
+auto floatBitsToInt(thread const float3& v)
+{
+    return as_type<int3>(v);
+}
+auto floatBitsToInt(thread const float4& v)
+{
+    return as_type<int4>(v);
+}
+auto floatBitsToUint(float v)
+{
+    return as_type<uint>(v);
+}
+auto floatBitsToUint(thread const float2& v)
+{
+    return as_type<uint2>(v);
+}
+auto floatBitsToUint(thread const float3& v)
+{
+    return as_type<uint3>(v);
+}
+auto floatBitsToUint(thread const float4& v)
+{
+    return as_type<uint4>(v);
+}
+auto intBitsToFloat(int v)
+{
+    return as_type<float>(v);
+}
+auto intBitsToFloat(thread const int2& v)
+{
+    return as_type<float2>(v);
+}
+auto intBitsToFloat(thread const int3& v)
+{
+    return as_type<float3>(v);
+}
+auto intBitsToFloat(thread const int4& v)
+{
+    return as_type<float4>(v);
+}
+auto uintBitsToFloat(uint v)
+{
+    return as_type<float>(v);
+}
+auto uintBitsToFloat(thread const uint2& v)
+{
+    return as_type<float2>(v);
+}
+auto uintBitsToFloat(thread const uint3& v)
+{
+    return as_type<float3>(v);
+}
+auto uintBitsToFloat(thread const uint4& v)
+{
+    return as_type<float4>(v);
 }
 )===";
 
