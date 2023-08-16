@@ -83,7 +83,6 @@ static id<MTLRenderPipelineState> create(const void* descriptor, std::
         newRenderPipelineStateWithDescriptor:(MTLRenderPipelineDescriptor*)
         descriptor options:MTLPipelineOptionArgumentInfo reflection:&reflection
         error:&error];
-    [(MTLRenderPipelineDescriptor*)descriptor release];
     if(!pipelineState)
     {
         throw std::runtime_error([[NSString stringWithFormat:@"Failed to create"
@@ -132,6 +131,7 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader)
     }
     _data->_pipelineState = create(pipelineDescriptor, _data->_vertexArgs,
         _data->_fragmentArgs);
+    [pipelineDescriptor release];
 }
 
 paz::RenderPass::RenderPass(const Shader& shader)
@@ -147,6 +147,7 @@ paz::RenderPass::RenderPass(const Shader& shader)
         mtkView] colorPixelFormat]];
     _data->_pipelineState = create(pipelineDescriptor, _data->_vertexArgs,
         _data->_fragmentArgs);
+    [pipelineDescriptor release];
 }
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
@@ -251,7 +252,7 @@ void paz::RenderPass::depth(DepthTestMode depthMode)
 {
     MTLDepthStencilDescriptor* depthStencilDescriptor =
         [[MTLDepthStencilDescriptor alloc] init];
-    if(depthMode != DepthTestMode::Disable)
+    if(depthMode == DepthTestMode::Disable)
     {
         [depthStencilDescriptor setDepthWriteEnabled:NO];
     }
