@@ -108,18 +108,21 @@ int main()
     std::vector<float> fontData;
     const int fontRows = load_font("font.txt", fontData);
     paz::Texture font(fontData.size()/fontRows, fontRows, 1, 8*sizeof(float),
-        fontData, paz::TextureBase::MinMagFilter::Nearest, paz::TextureBase::
+        fontData, paz::Texture::MinMagFilter::Nearest, paz::Texture::
         MinMagFilter::Nearest);
 
-    paz::RenderTarget scene(1., 4, 16, paz::TextureBase::DataType::Float, paz::TextureBase::MinMagFilter::Linear, paz::TextureBase::MinMagFilter::Linear);
+    paz::RenderTarget scene(1., 4, 16, paz::Texture::DataType::Float, paz::
+        Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
     paz::Framebuffer sceneFramebuffer;
     sceneFramebuffer.attach(scene);
 
-    paz::RenderTarget overlay(1., 1, 16, paz::TextureBase::DataType::Float, paz::TextureBase::MinMagFilter::Linear, paz::TextureBase::MinMagFilter::Linear);
+    paz::RenderTarget overlay(1., 1, 16, paz::Texture::DataType::Float, paz::
+        Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
     paz::Framebuffer overlayFramebuffer;
     overlayFramebuffer.attach(overlay);
 
-    paz::RenderTarget blended(1., 4, 16, paz::TextureBase::DataType::Float, paz::TextureBase::MinMagFilter::Linear, paz::TextureBase::MinMagFilter::Linear);
+    paz::RenderTarget blended(1., 4, 16, paz::Texture::DataType::Float, paz::
+        Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
     paz::Framebuffer blendedFramebuffer;
     blendedFramebuffer.attach(blended);
 

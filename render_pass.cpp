@@ -190,8 +190,7 @@ void paz::RenderPass::cull(CullMode mode) const
     }
 }
 
-void paz::RenderPass::read(const std::string& name, const TextureBase& tex)
-    const
+void paz::RenderPass::read(const std::string& name, const Texture& tex) const
 {
     tex.activate(NextSlot);
     _shader->uniform(name, NextSlot);

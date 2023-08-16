@@ -32,27 +32,15 @@ static_assert(false, "Failed to detect an acceptable OS (no valid macros define"
 // Declare graphics types.
 namespace paz
 {
-    class TextureBase
+    class Texture
     {
         friend class Framebuffer;
         friend class RenderPass;
 
-        TextureBase(const TextureBase&) = delete;
-        TextureBase& operator=(const TextureBase&) = delete;
+        Texture(const Texture&) = delete;
+        Texture& operator=(const Texture&) = delete;
 
         void activate(std::size_t slot) const;
-
-    protected:
-        bool _mipmap = false;
-#ifdef PAZ_MACOS
-        void* _sampler = nullptr;
-        void* _texture = nullptr;
-#else
-        unsigned int _id = 0;
-        int _internalFormat;
-        unsigned int _format;
-        unsigned int _type;
-#endif
 
     public:
         enum class MinMagFilter
@@ -77,16 +65,19 @@ namespace paz
             UNorm
         };
 
-        TextureBase();
-        ~TextureBase();
-    };
-
-    class Texture : public TextureBase
-    {
-        Texture(const Texture&) = delete;
-        Texture& operator=(const Texture&) = delete;
-
     protected:
+        bool _mipmap = false;
+#ifdef PAZ_MACOS
+        void* _sampler = nullptr;
+        void* _texture = nullptr;
+#else
+        unsigned int _id = 0;
+        int _internalFormat;
+        unsigned int _format;
+        unsigned int _type;
+#endif
+
+        Texture();
 #ifdef PAZ_MACOS
         void createSampler(MinMagFilter minFilter, MinMagFilter magFilter);
 #endif
@@ -95,7 +86,7 @@ namespace paz
             data);
 
     public:
-        Texture();
+        ~Texture();
         Texture(int width, int height, int numChannels, int numBits, DataType
             type, MinMagFilter minFilter, MinMagFilter magFilter);
         Texture(int width, int height, int numChannels, int numBits, const std::
@@ -374,7 +365,7 @@ namespace paz
             LoadAction depthLoadAction = LoadAction::DontCare);
         void end();
         void cull(CullMode mode) const;
-        void read(const std::string& name, const TextureBase& tex) const;
+        void read(const std::string& name, const Texture& tex) const;
         void uniform(const std::string& name, int x) const;
         void uniform(const std::string& name, int x, int y) const;
         void uniform(const std::string& name, int x, int y, int z) const;

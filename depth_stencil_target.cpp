@@ -9,18 +9,18 @@
 #endif
 #include <GLFW/glfw3.h>
 
-static GLint depth_internal_format(int b, paz::TextureBase::DataType t)
+static GLint depth_internal_format(int b, paz::Texture::DataType t)
 {
     if(b == 16)
     {
-        if(t == paz::TextureBase::DataType::UNorm)
+        if(t == paz::Texture::DataType::UNorm)
         {
             return GL_DEPTH_COMPONENT16;
         }
     }
     else if(b == 32)
     {
-        if(t == paz::TextureBase::DataType::Float)
+        if(t == paz::Texture::DataType::Float)
         {
             return GL_DEPTH_COMPONENT32F;
         }

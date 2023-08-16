@@ -12,11 +12,11 @@
 
 namespace paz
 {
-    std::pair<GLint, GLint> min_mag_filter(TextureBase::MinMagFilter minFilter,
-        TextureBase::MinMagFilter magFilter, paz::TextureBase::MipmapFilter
-        mipmapFilter = TextureBase::MipmapFilter::None);
-    GLint internal_format(int c, int b, TextureBase::DataType t);
-    GLenum gl_type(TextureBase::DataType t);
+    std::pair<GLint, GLint> min_mag_filter(Texture::MinMagFilter minFilter,
+        Texture::MinMagFilter magFilter, paz::Texture::MipmapFilter mipmapFilter
+        = Texture::MipmapFilter::None);
+    GLint internal_format(int c, int b, Texture::DataType t);
+    GLenum gl_type(Texture::DataType t);
     GLenum gl_type(VertexBuffer::DataType t);
     GLsizeiptr gl_type_size(VertexBuffer::DataType t);
     std::string get_log(unsigned int id, bool isProgram);

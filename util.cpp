@@ -4,17 +4,17 @@
 
 #include "util.hpp"
 
-std::pair<GLint, GLint> paz::min_mag_filter(TextureBase::MinMagFilter minFilter,
-    TextureBase::MinMagFilter magFilter, TextureBase::MipmapFilter mipmapFilter)
+std::pair<GLint, GLint> paz::min_mag_filter(Texture::MinMagFilter minFilter,
+    Texture::MinMagFilter magFilter, Texture::MipmapFilter mipmapFilter)
 {
     GLint min;
-    if(mipmapFilter == TextureBase::MipmapFilter::Nearest)
+    if(mipmapFilter == Texture::MipmapFilter::Nearest)
     {
-        if(minFilter == TextureBase::MinMagFilter::Nearest)
+        if(minFilter == Texture::MinMagFilter::Nearest)
         {
             min = GL_NEAREST_MIPMAP_NEAREST;
         }
-        else if(minFilter == TextureBase::MinMagFilter::Linear)
+        else if(minFilter == Texture::MinMagFilter::Linear)
         {
             min = GL_LINEAR_MIPMAP_NEAREST;
         }
@@ -23,13 +23,13 @@ std::pair<GLint, GLint> paz::min_mag_filter(TextureBase::MinMagFilter minFilter,
             throw std::runtime_error("Invalid minification function.");
         }
     }
-    else if(mipmapFilter == TextureBase::MipmapFilter::Linear)
+    else if(mipmapFilter == Texture::MipmapFilter::Linear)
     {
-        if(minFilter == TextureBase::MinMagFilter::Nearest)
+        if(minFilter == Texture::MinMagFilter::Nearest)
         {
             min = GL_NEAREST_MIPMAP_LINEAR;
         }
-        else if(minFilter == TextureBase::MinMagFilter::Linear)
+        else if(minFilter == Texture::MinMagFilter::Linear)
         {
             min = GL_LINEAR_MIPMAP_LINEAR;
         }
@@ -38,13 +38,13 @@ std::pair<GLint, GLint> paz::min_mag_filter(TextureBase::MinMagFilter minFilter,
             throw std::runtime_error("Invalid minification function.");
         }
     }
-    else if(mipmapFilter == TextureBase::MipmapFilter::None)
+    else if(mipmapFilter == Texture::MipmapFilter::None)
     {
-        if(minFilter == TextureBase::MinMagFilter::Nearest)
+        if(minFilter == Texture::MinMagFilter::Nearest)
         {
             min = GL_NEAREST;
         }
-        else if(minFilter == TextureBase::MinMagFilter::Linear)
+        else if(minFilter == Texture::MinMagFilter::Linear)
         {
             min = GL_LINEAR;
         }
@@ -59,11 +59,11 @@ std::pair<GLint, GLint> paz::min_mag_filter(TextureBase::MinMagFilter minFilter,
     }
 
     GLint mag;
-    if(magFilter == TextureBase::MinMagFilter::Nearest)
+    if(magFilter == Texture::MinMagFilter::Nearest)
     {
         mag = GL_NEAREST;
     }
-    else if(magFilter == TextureBase::MinMagFilter::Linear)
+    else if(magFilter == Texture::MinMagFilter::Linear)
     {
         mag = GL_LINEAR;
     }
@@ -75,7 +75,7 @@ std::pair<GLint, GLint> paz::min_mag_filter(TextureBase::MinMagFilter minFilter,
     return {min, mag};
 }
 
-GLint paz::internal_format(int c, int b, TextureBase::DataType t)
+GLint paz::internal_format(int c, int b, Texture::DataType t)
 {
     if(c != 1 && c != 2 && c != 4)
     {
@@ -91,57 +91,57 @@ GLint paz::internal_format(int c, int b, TextureBase::DataType t)
     {
         if(b == 8)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return GL_R8UI;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return GL_R8I;
             }
-            else if(t == TextureBase::DataType::UNorm)
+            else if(t == Texture::DataType::UNorm)
             {
                 return GL_R8;
             }
-            else if(t == TextureBase::DataType::SNorm)
+            else if(t == Texture::DataType::SNorm)
             {
                 return GL_R8_SNORM;
             }
         }
         else if(b == 16)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return GL_R16UI;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return GL_R16I;
             }
-            else if(t == TextureBase::DataType::UNorm)
+            else if(t == Texture::DataType::UNorm)
             {
                 return GL_R16;
             }
-            else if(t == TextureBase::DataType::SNorm)
+            else if(t == Texture::DataType::SNorm)
             {
                 return GL_R16_SNORM;
             }
-            else if(t == TextureBase::DataType::Float)
+            else if(t == Texture::DataType::Float)
             {
                 return GL_R16F;
             }
         }
         else if(b == 32)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return GL_R32UI;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return GL_R32I;
             }
-            else if(t == TextureBase::DataType::Float)
+            else if(t == Texture::DataType::Float)
             {
                 return GL_R32F;
             }
@@ -151,57 +151,57 @@ GLint paz::internal_format(int c, int b, TextureBase::DataType t)
     {
         if(b == 8)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return GL_RG8UI;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return GL_RG8I;
             }
-            else if(t == TextureBase::DataType::UNorm)
+            else if(t == Texture::DataType::UNorm)
             {
                 return GL_RG8;
             }
-            else if(t == TextureBase::DataType::SNorm)
+            else if(t == Texture::DataType::SNorm)
             {
                 return GL_RG8_SNORM;
             }
         }
         else if(b == 16)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return GL_RG16UI;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return GL_RG16I;
             }
-            else if(t == TextureBase::DataType::UNorm)
+            else if(t == Texture::DataType::UNorm)
             {
                 return GL_RG16;
             }
-            else if(t == TextureBase::DataType::SNorm)
+            else if(t == Texture::DataType::SNorm)
             {
                 return GL_RG16_SNORM;
             }
-            else if(t == TextureBase::DataType::Float)
+            else if(t == Texture::DataType::Float)
             {
                 return GL_RG16F;
             }
         }
         else if(b == 32)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return GL_RG32UI;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return GL_RG32I;
             }
-            else if(t == TextureBase::DataType::Float)
+            else if(t == Texture::DataType::Float)
             {
                 return GL_RG32F;
             }
@@ -211,57 +211,57 @@ GLint paz::internal_format(int c, int b, TextureBase::DataType t)
     {
         if(b == 8)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return GL_RGBA8UI;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return GL_RGBA8I;
             }
-            else if(t == TextureBase::DataType::UNorm)
+            else if(t == Texture::DataType::UNorm)
             {
                 return GL_RGBA8;
             }
-            else if(t == TextureBase::DataType::SNorm)
+            else if(t == Texture::DataType::SNorm)
             {
                 return GL_RGBA8_SNORM;
             }
         }
         else if(b == 16)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return GL_RGBA16UI;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return GL_RGBA16I;
             }
-            else if(t == TextureBase::DataType::UNorm)
+            else if(t == Texture::DataType::UNorm)
             {
                 return GL_RGBA16;
             }
-            else if(t == TextureBase::DataType::SNorm)
+            else if(t == Texture::DataType::SNorm)
             {
                 return GL_RGBA16_SNORM;
             }
-            else if(t == TextureBase::DataType::Float)
+            else if(t == Texture::DataType::Float)
             {
                 return GL_RGBA16F;
             }
         }
         else if(b == 32)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return GL_RGBA32UI;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return GL_RGBA32I;
             }
-            else if(t == TextureBase::DataType::Float)
+            else if(t == Texture::DataType::Float)
             {
                 return GL_RGBA32F;
             }
@@ -271,18 +271,18 @@ GLint paz::internal_format(int c, int b, TextureBase::DataType t)
     throw std::runtime_error("Invalid texture format requested.");
 }
 
-GLenum paz::gl_type(TextureBase::DataType t)
+GLenum paz::gl_type(Texture::DataType t)
 {
-    if(t == TextureBase::DataType::UInt || t == TextureBase::DataType::UNorm)
+    if(t == Texture::DataType::UInt || t == Texture::DataType::UNorm)
     {
         return GL_UNSIGNED_INT;
     }
-    else if(t == TextureBase::DataType::SInt || t == TextureBase::DataType::
+    else if(t == Texture::DataType::SInt || t == Texture::DataType::
         SNorm)
     {
         return GL_INT;
     }
-    else if(t == TextureBase::DataType::Float)
+    else if(t == Texture::DataType::Float)
     {
         return GL_FLOAT;
     }
