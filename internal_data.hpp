@@ -67,15 +67,23 @@ struct paz::Framebuffer::Data
 #endif
 };
 
-struct paz::ShaderFunctionLibrary::Data
+struct paz::VertexFunction::Data
 {
 #ifdef PAZ_MACOS
-    std::unordered_map<std::string, void*> _verts;
-    std::unordered_map<std::string, void*> _frags;
+    void* _function;
 #else
-    std::unordered_map<std::string, unsigned int> _vertexIds;
-    std::unordered_map<std::string, unsigned int> _thickLinesIds;
-    std::unordered_map<std::string, unsigned int> _fragmentIds;
+    unsigned int _id;
+    unsigned int _thickLinesId;
+#endif
+    ~Data();
+};
+
+struct paz::FragmentFunction::Data
+{
+#ifdef PAZ_MACOS
+    void* _function;
+#else
+    unsigned int _id;
 #endif
     ~Data();
 };

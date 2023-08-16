@@ -185,7 +185,7 @@ namespace paz
         Texture depthStencilAttachment() const;
     };
 
-    class ShaderFunctionLibrary
+    class VertexFunction
     {
         friend class Shader;
 
@@ -193,9 +193,20 @@ namespace paz
         std::shared_ptr<Data> _data;
 
     public:
-        ShaderFunctionLibrary();
-        void vertex(const std::string& name, const std::string& src);
-        void fragment(const std::string& name, const std::string& src);
+        VertexFunction();
+        VertexFunction(const std::string& src);
+    };
+
+    class FragmentFunction
+    {
+        friend class Shader;
+
+        struct Data;
+        std::shared_ptr<Data> _data;
+
+    public:
+        FragmentFunction();
+        FragmentFunction(const std::string& src);
     };
 
     class Shader
@@ -206,9 +217,7 @@ namespace paz
         std::shared_ptr<Data> _data;
 
     public:
-        Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
-            vertName, const ShaderFunctionLibrary& fragLibrary, const std::
-            string& fragName);
+        Shader(const VertexFunction& vert, const FragmentFunction& frag);
     };
 
     class RenderPass

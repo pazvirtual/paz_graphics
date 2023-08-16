@@ -160,11 +160,10 @@ paz::Texture compute_shadow_map(const paz::VertexBuffer& groundVerts, const
     paz::Framebuffer framebuffer;
     framebuffer.attach(shadowMap);
 
-    paz::ShaderFunctionLibrary lib;
-    lib.vertex("shadow", ShadowVertSrc);
-    lib.fragment("shadow", ShadowFragSrc);
+    const paz::VertexFunction shadowVert(ShadowVertSrc);
+    const paz::FragmentFunction shadowFrag(ShadowFragSrc);
 
-    const paz::Shader shadow(lib, "shadow", lib, "shadow");
+    const paz::Shader shadow(shadowVert, shadowFrag);
 
     paz::RenderPass calcShadows(framebuffer, shadow);
 
@@ -194,11 +193,10 @@ int main(int, char** argv)
     cubeVerts.attribute(4, CubeNor);
     cubeVerts.attribute(2, CubeUv);
 
-    paz::ShaderFunctionLibrary lib;
-    lib.vertex("scene", SceneVertSrc);
-    lib.fragment("scene", SceneFragSrc);
+    const paz::VertexFunction sceneVert(SceneVertSrc);
+    const paz::FragmentFunction sceneFrag(SceneFragSrc);
 
-    const paz::Shader render(lib, "scene", lib, "scene");
+    const paz::Shader render(sceneVert, sceneFrag);
 
     paz::RenderPass renderScene(render);
 

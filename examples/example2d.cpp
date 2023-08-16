@@ -58,17 +58,22 @@ static void init(paz::RenderPass& scenePass, paz::RenderPass& textPass, paz::
     paz::Framebuffer renderFramebuffer;
     renderFramebuffer.attach(render);
 
-    paz::ShaderFunctionLibrary shaders;
-    shaders.vertex("shader", paz::load_file(appDir + "/shader.vert").str());
-    shaders.vertex("font", paz::load_file(appDir + "/font.vert").str());
-    shaders.vertex("quad", paz::load_file(appDir + "/quad.vert").str());
-    shaders.fragment("shader", paz::load_file(appDir + "/shader.frag").str());
-    shaders.fragment("font", paz::load_file(appDir + "/font.frag").str());
-    shaders.fragment("post", paz::load_file(appDir + "/post.frag").str());
+    const paz::VertexFunction shaderVert(paz::load_file(appDir +
+        "/shader.vert").str());
+    const paz::VertexFunction fontVert(paz::load_file(appDir + "/font.vert").
+        str());
+    const paz::VertexFunction quadVert(paz::load_file(appDir + "/quad.vert").
+        str());
+    const paz::FragmentFunction shaderFrag(paz::load_file(appDir +
+        "/shader.frag").str());
+    const paz::FragmentFunction fontFrag(paz::load_file(appDir + "/font.frag").
+        str());
+    const paz::FragmentFunction postFrag(paz::load_file(appDir + "/post.frag").
+        str());
 
-    const paz::Shader sceneShader(shaders, "shader", shaders, "shader");
-    const paz::Shader textShader(shaders, "font", shaders, "font");
-    const paz::Shader postShader(shaders, "quad", shaders, "post");
+    const paz::Shader sceneShader(shaderVert, shaderFrag);
+    const paz::Shader textShader(fontVert, fontFrag);
+    const paz::Shader postShader(quadVert, postFrag);
 
     scenePass = paz::RenderPass(renderFramebuffer, sceneShader);
     textPass = paz::RenderPass(renderFramebuffer, textShader, paz::BlendMode::

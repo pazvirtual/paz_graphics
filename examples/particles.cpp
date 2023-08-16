@@ -27,14 +27,16 @@ int main(int, char** argv)
     paz::Framebuffer renderFramebuffer;
     renderFramebuffer.attach(render);
 
-    paz::ShaderFunctionLibrary l;
-    l.vertex("particle", paz::load_file(appDir + "/particle.vert").str()),
-    l.fragment("particle", paz::load_file(appDir + "/particle.frag").str());
-    l.vertex("quad", paz::load_file(appDir + "/quad.vert").str()),
-    l.fragment("tonemap", paz::load_file(appDir + "/tonemap.frag").str());
+    const paz::VertexFunction particleVert(paz::load_file(appDir +
+        "/particle.vert").str());
+    const paz::FragmentFunction particleFrag(paz::load_file(appDir +
+        "/particle.frag").str());
+    const paz::VertexFunction quad(paz::load_file(appDir + "/quad.vert").str());
+    const paz::FragmentFunction tonemap(paz::load_file(appDir +
+        "/tonemap.frag").str());
 
-    const paz::Shader s(l, "particle", l, "particle");
-    const paz::Shader t(l, "quad", l, "tonemap");
+    const paz::Shader s(particleVert, particleFrag);
+    const paz::Shader t(quad, tonemap);
 
     paz::RenderPass r(renderFramebuffer, s, paz::BlendMode::Additive);
     paz::RenderPass u(t);
@@ -93,7 +95,8 @@ int main(int, char** argv)
 
         u.begin();
         u.read("hdrRender", render);
-        u.uniform("whitePoint", 0.5f + 0.5f*static_cast<float>(std::sin(time)));
+        u.uniform("whitePoint", 0.5f + 0.5f*static_cast<float>(std::sin(2.*
+            time)));
         u.primitives(paz::PrimitiveType::TriangleStrip, q);
         u.end();
 

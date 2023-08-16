@@ -16,36 +16,22 @@ paz::Shader::Data::~Data()
     glDeleteProgram(_id);
 }
 
-paz::Shader::Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
-    vertName, const ShaderFunctionLibrary& fragLibrary, const std::string&
-    fragName)
+paz::Shader::Shader(const VertexFunction& vert, const FragmentFunction& frag)
 {
     initialize();
 
     _data = std::make_shared<Data>();
 
-    if(!vertLibrary._data->_vertexIds.count(vertName))
-    {
-        throw std::runtime_error("Vertex function \"" + vertName + "\" not foun"
-            "d in library.");
-    }
-
-    if(!fragLibrary._data->_fragmentIds.count(fragName))
-    {
-        throw std::runtime_error("Fragment function \"" + fragName + "\" not fo"
-            "und in library.");
-    }
-
     // Link shaders.
     _data->_id = glCreateProgram();
-    glAttachShader(_data->_id, vertLibrary._data->_vertexIds.at(vertName));
-    GLuint thickLinesId = vertLibrary._data->_thickLinesIds.at(vertName);
+    glAttachShader(_data->_id, vert._data->_id);
+    GLuint thickLinesId = vert._data->_thickLinesId;
     if(thickLinesId)
     {
         _data->_thickLines = true;
         glAttachShader(_data->_id, thickLinesId);
     }
-    glAttachShader(_data->_id, fragLibrary._data->_fragmentIds.at(fragName));
+    glAttachShader(_data->_id, frag._data->_id);
     glLinkProgram(_data->_id);
 
     // Check linking.
