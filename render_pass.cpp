@@ -267,7 +267,7 @@ void paz::RenderPass::depth(DepthTestMode mode)
         }
         else
         {
-            throw std::runtime_error("Invalid depth testing function.");
+            throw std::logic_error("Invalid depth testing function.");
         }
     }
 }
