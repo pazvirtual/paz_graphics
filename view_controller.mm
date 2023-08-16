@@ -178,55 +178,58 @@
 
 - (void)flagsChanged:(NSEvent*)event
 {
-    static const int shift = static_cast<int>(paz::Window::Key::LeftShift);
-    static const int control = static_cast<int>(paz::Window::Key::LeftControl);
-    static const int option = static_cast<int>(paz::Window::Key::LeftAlt);
-    static const int command = static_cast<int>(paz::Window::Key::LeftSuper);
+    static const int shiftIdx = static_cast<int>(paz::Window::Key::LeftShift);
+    static const int ctrlIdx = static_cast<int>(paz::Window::Key::LeftControl);
+    static const int optIdx = static_cast<int>(paz::Window::Key::LeftAlt);
+    static const int cmdIdx = static_cast<int>(paz::Window::Key::LeftSuper);
 
-    if([event modifierFlags]&NSEventModifierFlagShift && !_keyDown[shift])
-    {
-        _keyDown[shift] = true;
-        _keyPressed[shift] = true;
-    }
-    else if([event modifierFlags]|NSEventModifierFlagShift && _keyDown[shift])
-    {
-        _keyDown[shift] = false;
-        _keyReleased[shift] = true;
-    }
+    const bool shiftFlag = [event modifierFlags]&NSEventModifierFlagShift;
+    const bool ctrlFlag = [event modifierFlags]&NSEventModifierFlagControl;
+    const bool optFlag = [event modifierFlags]&NSEventModifierFlagOption;
+    const bool cmdFlag = [event modifierFlags]&NSEventModifierFlagCommand;
 
-    if([event modifierFlags]&NSEventModifierFlagControl && !_keyDown[control])
+    if(shiftFlag && !_keyDown[shiftIdx])
     {
-        _keyDown[control] = true;
-        _keyPressed[control] = true;
+        _keyDown[shiftIdx] = true;
+        _keyPressed[shiftIdx] = true;
     }
-    else if([event modifierFlags]|NSEventModifierFlagControl && _keyDown[
-        control])
+    else if(!shiftFlag && _keyDown[shiftIdx])
     {
-        _keyDown[control] = false;
-        _keyReleased[control] = true;
+        _keyDown[shiftIdx] = false;
+        _keyReleased[shiftIdx] = true;
     }
 
-    if([event modifierFlags]&NSEventModifierFlagOption && !_keyDown[option])
+    if(ctrlFlag && !_keyDown[ctrlIdx])
     {
-        _keyDown[option] = true;
-        _keyPressed[option] = true;
+        _keyDown[ctrlIdx] = true;
+        _keyPressed[ctrlIdx] = true;
     }
-    else if([event modifierFlags]|NSEventModifierFlagOption && _keyDown[option])
+    else if(!ctrlFlag && _keyDown[ctrlIdx])
     {
-        _keyDown[option] = false;
-        _keyReleased[option] = true;
+        _keyDown[ctrlIdx] = false;
+        _keyReleased[ctrlIdx] = true;
     }
 
-    if([event modifierFlags]&NSEventModifierFlagCommand && !_keyDown[command])
+    if(optFlag && !_keyDown[optIdx])
     {
-        _keyDown[command] = true;
-        _keyPressed[command] = true;
+        _keyDown[optIdx] = true;
+        _keyPressed[optIdx] = true;
     }
-    else if([event modifierFlags]|NSEventModifierFlagCommand && _keyDown[
-        command])
+    else if(!optFlag && _keyDown[optIdx])
     {
-        _keyDown[command] = false;
-        _keyReleased[command] = true;
+        _keyDown[optIdx] = false;
+        _keyReleased[optIdx] = true;
+    }
+
+    if(cmdFlag && !_keyDown[cmdIdx])
+    {
+        _keyDown[cmdIdx] = true;
+        _keyPressed[cmdIdx] = true;
+    }
+    else if(!cmdFlag && _keyDown[cmdIdx])
+    {
+        _keyDown[cmdIdx] = false;
+        _keyReleased[cmdIdx] = true;
     }
 }
 
