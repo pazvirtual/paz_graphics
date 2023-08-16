@@ -1,5 +1,6 @@
 #include "PAZ_Graphics"
 #include "PAZ_IO"
+#include <numeric>
 
 static constexpr double MinWidth = 1.;
 static constexpr double MaxWidth = 9.;
@@ -13,8 +14,8 @@ out float a;
 void main()
 {
     // Note: Multiply offsets by `gl_Position.w` if 3D (perspective divide).
-    float xOffset = (2*(sampleIdx/2) - 1)*0.5/width;
-    float yOffset = (2*(sampleIdx%2) - 1)*0.5/height;
+    float xOffset = (2*(sampleIdx/4) - 3)/(3.*width);
+    float yOffset = (2*(sampleIdx%4) - 3)/(3.*height);
     gl_Position = vec4(pos.x + xOffset, pos.y + yOffset, 0., 1.);
     a = float(gl_VertexID%2);
 }
@@ -103,7 +104,11 @@ int main(int, char** argv)
     paz::RenderPass yPass(lineVert2, lineFrag1);
 
     paz::InstanceBuffer samples;
-    samples.addAttribute(1, std::array<int, 4>{0, 1, 2, 3});
+    {
+        std::array<int, 16> indices;
+        std::iota(indices.begin(), indices.end(), 0);
+        samples.addAttribute(1, indices);
+    }
 
     double width = 0.5*(MaxWidth - MinWidth);
     while(!paz::Window::Done())
