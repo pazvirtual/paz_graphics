@@ -137,7 +137,23 @@ paz::Texture::Texture(TextureFormat format, int width, int height, const void*
     _data->_mipFilter = mipFilter;
     _data->_wrapS = wrapS;
     _data->_wrapT = wrapT;
-    _data->init(flip_image(data).bytes().data());
+    if(height < 2)
+    {
+        _data->init(data);
+    }
+    else
+    {
+        const std::size_t bytesPerRow = paz::bytes_per_pixel(format)*width;
+        std::vector<unsigned char> flipped(bytesPerRow*height);
+        for(int i = 0; i < height; ++i)
+        {
+            std::copy(reinterpret_cast<const unsigned char*>(data) +
+                bytesPerRow*i, reinterpret_cast<const unsigned char*>(data) +
+                bytesPerRow*(i + 1), flipped.begin() + bytesPerRow*(height - i -
+                1));
+        }
+        _data->init(flipped.data());
+    }
 }
 
 paz::Texture::Texture(const Image& image, MinMagFilter minFilter, MinMagFilter

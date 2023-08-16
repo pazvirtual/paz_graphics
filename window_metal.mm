@@ -444,12 +444,13 @@ paz::Image paz::Window::ReadPixels()
     const int width = ViewportWidth();
     const int height = ViewportHeight();
 
-    std::vector<float> bgraFlipped(4*width*height);
+    std::vector<std::uint16_t> linearFlipped(4*width*height);
     [static_cast<id<MTLTexture>>(final_framebuffer().colorAttachment(0)._data->
-        _texture) getBytes:bgraFlipped.data() bytesPerRow:4*sizeof(float)*width
-        fromRegion:MTLRegionMake2D(0, 0, width, height) mipmapLevel:0];
+        _texture) getBytes:linearFlipped.data() bytesPerRow:8*width fromRegion:
+        MTLRegionMake2D(0, 0, width, height) mipmapLevel:0];
 
     Image rgba(ImageFormat::RGBA8UNorm_sRGB, width, height);
+    static constexpr double d = 1./std::numeric_limits<std::uint16_t>::max();
     for(int y = 0; y < height; ++y)
     {
         for(int x = 0; x < width; ++x)
@@ -457,11 +458,11 @@ paz::Image paz::Window::ReadPixels()
             const int yFlipped = height - 1 - y;
             for(int i = 0; i < 3; ++i)
             {
-                rgba.bytes()[4*(width*y + x) + i] = to_srgb(bgraFlipped[4*
-                    (width*yFlipped + x) + 2 - i]);
+                rgba.bytes()[4*(width*y + x) + i] = to_srgb(linearFlipped[4*
+                    (width*yFlipped + x) + i]*d);
             }
-            rgba.bytes()[4*(width*y + x) + 3] = bgraFlipped[4*(width*yFlipped +
-                x) + 3];
+            rgba.bytes()[4*(width*y + x) + 3] = linearFlipped[4*(width*yFlipped
+                + x) + 3]*d;
         }
     }
 

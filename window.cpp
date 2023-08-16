@@ -792,15 +792,6 @@ void paz::unregister_target(void* t)
     initialize()._renderTargets.erase(t);
 }
 
-static unsigned char to_srgb(double x)
-{
-    // Convert to sRGB.
-    x = x < 0.0031308 ? 12.92*x : 1.055*std::pow(x, 1./2.4) - 0.055;
-
-    // Convert to normalized.
-    return std::round(x*255.);
-}
-
 paz::Image paz::Window::ReadPixels()
 {
     initialize();
