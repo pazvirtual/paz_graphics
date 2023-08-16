@@ -28,6 +28,10 @@ static D3D11_PRIMITIVE_TOPOLOGY primitive_topology(paz::PrimitiveType t)
     }
 }
 
+static constexpr float Clear[] = {0.f, 0.f, 0.f, 0.f};
+static constexpr float Black[] = {0.f, 0.f, 0.f, 1.f};
+static constexpr float White[] = {1.f, 1.f, 1.f, 1.f};
+
 static const paz::RenderPass* CurPass;
 
 paz::RenderPass::Data::~Data()
@@ -215,15 +219,45 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         nullptr, _data->_fbo->_depthStencilAttachment ? _data->_fbo->
         _depthStencilAttachment->_dsView : nullptr);
 
-if(numColor)
-{
-    static constexpr std::array<float, 4> black = {0, 0, 0, 1};
-    d3d_context()->ClearRenderTargetView(colorTargets[0], black.data()); //TEMP
-}
-if(depthLoadAction == LoadAction::Clear &&_data->_fbo->_depthStencilAttachment)
-{
-    d3d_context()->ClearDepthStencilView(_data->_fbo->_depthStencilAttachment->_dsView, D3D11_CLEAR_DEPTH, 1.f, 0);
-}
+    for(std::size_t i = 0; i < std::min(colorLoadActions.size(), numColor); ++i)
+    {
+        if(colorLoadActions[i] == LoadAction::Clear)
+        {
+            d3d_context()->ClearRenderTargetView(colorTargets[i], Black);
+        }
+        else if(colorLoadActions[i] == LoadAction::FillZeros)
+        {
+            d3d_context()->ClearRenderTargetView(colorTargets[i], Clear);
+        }
+        else if(colorLoadActions[i] == LoadAction::FillOnes)
+        {
+            d3d_context()->ClearRenderTargetView(colorTargets[i], White);
+        }
+        else if(colorLoadActions[i] != LoadAction::DontCare && colorLoadActions[
+            i] != LoadAction::Load)
+        {
+            throw std::runtime_error("Invalid color attachment load action.");
+        }
+    }
+    if(_data->_fbo->_depthStencilAttachment)
+    {
+        if(depthLoadAction == LoadAction::Clear || depthLoadAction == LoadAction
+            ::FillOnes)
+        {
+            d3d_context()->ClearDepthStencilView(_data->_fbo->
+                _depthStencilAttachment->_dsView, D3D11_CLEAR_DEPTH, 1.f, 0);
+        }
+        else if(depthLoadAction == LoadAction::FillZeros)
+        {
+            d3d_context()->ClearDepthStencilView(_data->_fbo->
+                _depthStencilAttachment->_dsView, D3D11_CLEAR_DEPTH, 1.f, 0);
+        }
+        else if(depthLoadAction != LoadAction::DontCare && depthLoadAction !=
+            LoadAction::Load)
+        {
+            throw std::runtime_error("Invalid depth attachment load action.");
+        }
+    }
 
     D3D11_VIEWPORT viewport = {};
     if(_data->_fbo->_width)
