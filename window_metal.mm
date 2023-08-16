@@ -367,9 +367,8 @@ void paz::Window::Resize(int width, int height, bool viewportCoords)
 
     if(viewportCoords)
     {
-        const auto scale = [[APP_DELEGATE window] backingScaleFactor];
-        width = std::round(width/scale);
-        height = std::round(height/scale);
+        width = std::round(width/DpiScale());
+        height = std::round(height/DpiScale());
     }
 
     NSRect contentRect = [[APP_DELEGATE window] contentRectForFrameRect:
@@ -412,6 +411,11 @@ paz::Image<std::uint8_t, 3> paz::Window::ReadPixels()
     }
 
     return rgb;
+}
+
+float paz::Window::DpiScale()
+{
+    return [[APP_DELEGATE window] backingScaleFactor];
 }
 
 #endif

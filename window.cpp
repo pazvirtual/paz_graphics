@@ -490,44 +490,38 @@ void paz::Window::Resize(int width, int height, bool viewportCoords)
 {
     initialize();
 
-    int newWidth = width;
-    int newHeight = height;
     if(viewportCoords)
     {
-        int w, h;
-        glfwGetWindowSize(WindowPtr, &w, &h);
-        const float xScale = ViewportWidth()/w;
-        const float yScale = ViewportHeight()/h;
-        newWidth = std::round(newWidth/xScale);
-        newHeight = std::round(newHeight/yScale);
+        width = std::round(width/DpiScale());
+        height = std::round(height/DpiScale());
     }
     else
     {
         if(MinWidth != GLFW_DONT_CARE)
         {
-            newWidth = std::max(newWidth, MinWidth);
+            width = std::max(width, MinWidth);
         }
         if(MaxWidth != GLFW_DONT_CARE)
         {
-            newWidth = std::min(newWidth, MaxWidth);
+            width = std::min(width, MaxWidth);
         }
         if(MinHeight != GLFW_DONT_CARE)
         {
-            newHeight = std::max(newHeight, MinHeight);
+            height = std::max(height, MinHeight);
         }
         if(MaxHeight != GLFW_DONT_CARE)
         {
-            newHeight = std::min(newHeight, MaxHeight);
+            height = std::min(height, MaxHeight);
         }
     }
-    glfwSetWindowSize(WindowPtr, newWidth, newHeight);
+    glfwSetWindowSize(WindowPtr, width, height);
 
     //TEMP - wait until resize has been completed
     if(viewportCoords)
     {
-        while(ViewportWidth() != newWidth || ViewportHeight() != newHeight)
+        while(ViewportWidth() != width || ViewportHeight() != height)
         {
-            resize_callback(newWidth, newHeight);
+            resize_callback(width, height);
         }
     }
 }
@@ -577,6 +571,11 @@ paz::Image<std::uint8_t, 3> paz::Window::ReadPixels()
 void paz::begin_frame()
 {
     FrameInProgress = true;
+}
+
+float paz::Window::DpiScale()
+{
+    return static_cast<float>(FboWidth)/WindowWidth;
 }
 
 #endif
