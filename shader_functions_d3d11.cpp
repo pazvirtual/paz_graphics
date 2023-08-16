@@ -27,14 +27,15 @@ OutputData main(InputData input)
 }
 )===";
 static const std::string FSrc = 1 + R"===(
+struct InputData{ float4 glPosition : SV_Position; }; //TEMP
 struct OutputData
 {
     float4 color : SV_TARGET0;
 };
-OutputData main()
+OutputData main(InputData input)
 {
     OutputData output;
-    output.color = float4(1, 0.5, 0.5, 1);
+    output.color = float4(0.5, 0.5, 1, 1);
     return output;
 }
 )===";

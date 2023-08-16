@@ -217,13 +217,14 @@ namespace paz
         struct Data;
         std::shared_ptr<Data> _data;
 
-    public:
-        Texture();
         Texture(TextureFormat format, int width, int height, MinMagFilter
             minFilter = MinMagFilter::Nearest, MinMagFilter magFilter =
             MinMagFilter::Nearest, MipmapFilter mipFilter = MipmapFilter::None,
             WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::
             ClampToEdge);
+
+    public:
+        Texture();
         Texture(TextureFormat format, int width, int height, const void* data,
             MinMagFilter minFilter = MinMagFilter::Nearest, MinMagFilter
             magFilter = MinMagFilter::Nearest, MipmapFilter mipFilter =

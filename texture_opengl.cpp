@@ -99,6 +99,13 @@ paz::Texture::Texture(RenderTarget&& target) : _data(std::move(target._data)) {}
 
 void paz::Texture::Data::init(const void* data)
 {
+    // Textures not for rendering are static (for now).
+    if(!_isRenderTarget && !data)
+    {
+        throw std::logic_error("Cannot initialize static texture without data."
+            );
+    }
+
     // This is because of Metal restrictions.
     if((_format == TextureFormat::Depth16UNorm || _format == TextureFormat::
         Depth32Float) && _mipFilter != MipmapFilter::None)
@@ -106,6 +113,7 @@ void paz::Texture::Data::init(const void* data)
         throw std::runtime_error("Depth/stencil textures do not support mipmapp"
             "ing.");
     }
+
     const auto filters = min_mag_filter(_minFilter, _magFilter, _mipFilter);
     glGenTextures(1, &_id);
     glBindTexture(GL_TEXTURE_2D, _id);
@@ -116,6 +124,7 @@ void paz::Texture::Data::init(const void* data)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filters.second);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_mode(_wrapS));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_mode(_wrapT));
+
     ensureMipmaps();
 }
 

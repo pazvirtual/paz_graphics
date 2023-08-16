@@ -47,14 +47,17 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         throw std::runtime_error("Render pass has not been initialized.");
     }
 
+    d3d_context()->VSSetShader(_data->_vert->_shader, nullptr, 0);
+    d3d_context()->PSSetShader(_data->_frag->_shader, nullptr, 0);
+
     begin_frame();
     _data->_rasterDescriptor.FillMode = D3D11_FILL_SOLID;
     _data->_rasterDescriptor.CullMode = D3D11_CULL_NONE;
     _data->_rasterDescriptor.FrontCounterClockwise = true;
     _data->_rasterDescriptor.DepthClipEnable = true;
     ID3D11RasterizerState* state;
-    const auto hr = d3d_device()->CreateRasterizerState(&_data->
-        _rasterDescriptor, &state);
+    auto hr = d3d_device()->CreateRasterizerState(&_data->_rasterDescriptor,
+        &state);
     if(hr)
     {
         throw std::runtime_error("Failed to create rasterizer state (HRESULT " +
@@ -62,15 +65,40 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     }
     d3d_context()->RSSetState(state);
 
+    D3D11_DEPTH_STENCIL_DESC depthStencilDescriptor = {};
+    ID3D11DepthStencilState * depthStencilState;
+    hr = d3d_device()->CreateDepthStencilState(&depthStencilDescriptor,
+        &depthStencilState);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create depth/stencil state (HRESULT"
+            " " + std::to_string(hr) + ").");
+    }
+    d3d_context()->OMSetDepthStencilState(depthStencilState, 1);
+
+    const auto numColor = _data->_fbo->_colorAttachments.size();
+    std::vector<ID3D11RenderTargetView*> colorTargets(numColor);
+    for(std::size_t i = 0; i < numColor; ++i)
+    {
+        colorTargets[i] = _data->_fbo->_colorAttachments[i]->_rtView;
+    }
+    d3d_context()->OMSetRenderTargets(numColor, colorTargets.data(), _data->
+        _fbo->_depthStencilAttachment->_dsView);
+
+    D3D11_VIEWPORT viewport = {};
     if(_data->_fbo->_width)
     {
-        D3D11_VIEWPORT viewport =
-        {
-            0.f, 0.f, static_cast<float>(_data->_fbo->_width), static_cast<
-                float>(_data->_fbo->_height), 0.f, 1.f
-        };
-        d3d_context()->RSSetViewports(1, &viewport);
+        viewport.Width = _data->_fbo->_width;
+        viewport.Height = _data->_fbo->_height;
     }
+    else
+    {
+        viewport.Width = _data->_fbo->_scale*Window::ViewportWidth();
+        viewport.Height = _data->_fbo->_scale*Window::ViewportHeight();
+    }
+    viewport.MinDepth = -1.f; //TEMP - check other APIs
+    viewport.MaxDepth = 1.f;
+    d3d_context()->RSSetViewports(1, &viewport);
 }
 
 void paz::RenderPass::depth(DepthTestMode mode)
@@ -196,7 +224,7 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
     d3d_context()->IASetInputLayout(layout);
     d3d_context()->IASetPrimitiveTopology(
         D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP); //TEMP
-    std::vector<unsigned int> offsets(vertices._data->_buffers.size(), 0);
+    const std::vector<unsigned int> offsets(vertices._data->_buffers.size(), 0);
     d3d_context()->IASetVertexBuffers(0, vertices._data->_buffers.size(),
         vertices._data->_buffers.data(), vertices._data->_strides.data(),
         offsets.data());
