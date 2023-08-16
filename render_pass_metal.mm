@@ -55,9 +55,31 @@ static std::pair<MTLVertexFormat, NSUInteger> vertex_format_stride(NSUInteger t)
     }
 }
 
+static void check_attributes(const std::vector<void*>& a, std::vector<std::
+    size_t>& b, std::size_t n)
+{
+    if(a.size() != b.size())
+    {
+        throw std::invalid_argument("Vertex buffer has wrong number of attribut"
+            "es for shader (got " + std::to_string(a.size()) + ", expected " +
+            std::to_string(b.size()) + ").");
+    }
+    for(std::size_t i = 0; i < a.size(); ++i)
+    {
+        const std::size_t len = [static_cast<id<MTLBuffer>>(a[i]) length];
+        const std::size_t expected = b[i]*n;
+        if(len != expected)
+        {
+            throw std::invalid_argument("Vertex buffer attribute " + std::
+                to_string(i) + " size mismatch (got " + std::to_string(len) +
+                " bytes, expected " + std::to_string(expected) + " bytes).");
+        }
+    }
+}
+
 static id<MTLRenderPipelineState> create(const void* descriptor, std::
     unordered_map<std::string, int>& vertexArgs, std::unordered_map<std::string,
-    int>& fragmentArgs)
+    int>& fragmentArgs, std::vector<std::size_t>& vertexAttributeStrides)
 {
     // Get vertex attributes.
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor
@@ -71,6 +93,7 @@ static id<MTLRenderPipelineState> create(const void* descriptor, std::
         [vertexDescriptor attributes][idx].bufferIndex = idx;
         [vertexDescriptor attributes][idx].offset = 0;
         [vertexDescriptor layouts][idx].stride = formatStride.second;
+        vertexAttributeStrides.push_back(formatStride.second);
         ++idx;
     }
     [static_cast<MTLRenderPipelineDescriptor*>(descriptor) setVertexDescriptor:
@@ -179,7 +202,7 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
             pixelFormat]];
     }
     _data->_pipelineState = create(pipelineDescriptor, _data->_vertexArgs,
-        _data->_fragmentArgs);
+        _data->_fragmentArgs, _data->_vertexAttributeStrides);
     [pipelineDescriptor release];
 }
 
@@ -237,7 +260,7 @@ paz::RenderPass::RenderPass(const Shader& shader, BlendMode blendMode)
     [pipelineDescriptor setDepthAttachmentPixelFormat:[[VIEW_CONTROLLER mtkView]
         depthStencilPixelFormat]];
     _data->_pipelineState = create(pipelineDescriptor, _data->_vertexArgs,
-        _data->_fragmentArgs);
+        _data->_fragmentArgs, _data->_vertexAttributeStrides);
     [pipelineDescriptor release];
 }
 
@@ -661,6 +684,9 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
 void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
     vertices) const
 {
+    check_attributes(vertices._data->_buffers, _data->_vertexAttributeStrides,
+        vertices._data->_numVertices);
+
     for(std::size_t i = 0; i < vertices._data->_buffers.size(); ++i)
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
@@ -675,6 +701,9 @@ void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
 void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
     const IndexBuffer& indices) const
 {
+    check_attributes(vertices._data->_buffers, _data->_vertexAttributeStrides,
+        vertices._data->_numVertices);
+
     for(std::size_t i = 0; i < vertices._data->_buffers.size(); ++i)
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)

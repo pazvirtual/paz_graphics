@@ -26,8 +26,6 @@ paz::VertexBuffer::Data::~Data()
     }
 }
 
-paz::VertexBuffer::Data::Data() {}
-
 paz::VertexBuffer::VertexBuffer()
 {
     initialize();

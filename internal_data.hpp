@@ -33,10 +33,10 @@ struct paz::VertexBuffer::Data
     unsigned int _id = 0;
     std::vector<unsigned int> _ids;
     std::vector<unsigned int> _types;
+    Data();
 #endif
     std::size_t _numVertices = 0;
     ~Data();
-    Data();
 };
 
 struct paz::IndexBuffer::Data
@@ -54,14 +54,14 @@ struct paz::Framebuffer::Data
 {
     std::vector<std::shared_ptr<Texture::Data>> _colorAttachments; //TEMP
     std::shared_ptr<Texture::Data> _depthStencilAttachment; //TEMP
+    int _width = 0;
+    int _height = 0;
 #ifndef PAZ_MACOS
     unsigned int _id = 0;
     int _numTextures = 0;
-#endif
-    int _width = 0;
-    int _height = 0;
     ~Data();
     Data();
+#endif
 };
 
 struct paz::ShaderFunctionLibrary::Data
@@ -100,6 +100,7 @@ struct paz::RenderPass::Data
     void* _renderEncoder = nullptr;
     std::unordered_map<std::string, int> _vertexArgs;
     std::unordered_map<std::string, int> _fragmentArgs;
+    std::vector<std::size_t> _vertexAttributeStrides;
     ~Data();
 #else
     BlendMode _blendMode = BlendMode::Disable;

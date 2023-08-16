@@ -87,15 +87,12 @@ void paz::Texture::Data::init(const void* data)
     [textureDescriptor setPixelFormat:pixel_format(_format)];
     [textureDescriptor setWidth:_width];
     [textureDescriptor setHeight:_height];
-    if(_isRenderTarget)
+    [textureDescriptor setUsage:(_isRenderTarget ? MTLTextureUsageRenderTarget|
+        MTLTextureUsageShaderRead : MTLTextureUsageShaderRead)];
+    if(_format == TextureFormat::Depth16UNorm || _format == TextureFormat::
+        Depth32Float)
     {
-        [textureDescriptor setUsage:MTLTextureUsageRenderTarget|
-            MTLTextureUsageShaderRead];
         [textureDescriptor setStorageMode:MTLStorageModePrivate];
-    }
-    else
-    {
-        [textureDescriptor setUsage:MTLTextureUsageShaderRead];
     }
     _texture = [DEVICE newTextureWithDescriptor:textureDescriptor];
     [textureDescriptor release];

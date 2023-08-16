@@ -13,7 +13,6 @@
     id<MTLDevice> _device;
     id<MTLCommandQueue> _commandQueue;
     bool _drewOnce;
-    dispatch_semaphore_t _inFlightSemaphore;
     MTKView* _curView;
 }
 
@@ -25,9 +24,10 @@
 
         _device = view.device;
 
-        _inFlightSemaphore = dispatch_semaphore_create(3);
-
         _commandQueue = [_device newCommandQueue];
+
+        // Create the first command buffer.
+        _commandBuffer = [_commandQueue commandBuffer];
     }
 
     return self;
@@ -51,10 +51,11 @@
     _curView = view;
     @try
     {
-        dispatch_semaphore_wait(_inFlightSemaphore, DISPATCH_TIME_FOREVER);
-
         // Create a new command buffer.
-        _commandBuffer = [_commandQueue commandBuffer];
+        if(_drewOnce)
+        {
+            _commandBuffer = [_commandQueue commandBuffer];
+        }
 
         // Encode drawing commands.
         paz::draw_in_renderer();
@@ -62,13 +63,11 @@
         // Render.
         [_commandBuffer presentDrawable:[view currentDrawable]];
 
-        dispatch_semaphore_t semaphore = _inFlightSemaphore;
-        [_commandBuffer addCompletedHandler:^(id<MTLCommandBuffer>)
-            {
-                dispatch_semaphore_signal(semaphore);
-            }];
-
         [_commandBuffer commit];
+
+        [_commandBuffer waitUntilCompleted];
+
+        _drewOnce = true;
     }
     @catch(NSException* e)
     {
