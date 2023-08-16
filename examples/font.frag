@@ -1,5 +1,3 @@
-#version 410 core
-
 uniform sampler2D font;
 
 in vec2 uv;

@@ -1,6 +1,3 @@
-#version 150 core
-#extension GL_ARB_explicit_attrib_location : require
-
 uniform float angle;
 uniform float aspectRatio;
 uniform vec2 p;

@@ -16,8 +16,8 @@ static unsigned int compile_shader(const std::string& src, bool isVertexShader)
     // Compile shader.
     unsigned int shader = glCreateShader(isVertexShader ? GL_VERTEX_SHADER :
         GL_FRAGMENT_SHADER);
-    const char* srcStr = src.c_str();
-    glShaderSource(shader, 1, &srcStr, NULL);
+    std::array<const char*, 2> srcStrs = {"#version 410 core\n", src.c_str()};
+    glShaderSource(shader, srcStrs.size(), srcStrs.data(), NULL);
     glCompileShader(shader);
 
     // Check compilation.
