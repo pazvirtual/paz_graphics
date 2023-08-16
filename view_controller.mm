@@ -34,6 +34,7 @@
         _gamepadLeftTrigger = -1.;
         _gamepadRightTrigger = -1.;
         _gamepadActive = false;
+        _mouseActive = false;
     }
 
     return self;
@@ -102,6 +103,7 @@
 - (void)mouseMoved:(NSEvent*)event
 {
     _gamepadActive = false;
+    _mouseActive = true;
 
     _cursorOffset.first += [event deltaX];
     _cursorOffset.second -= [event deltaY];
@@ -110,6 +112,7 @@
 - (void)mouseDragged:(NSEvent*)event
 {
     _gamepadActive = false;
+    _mouseActive = true;
 
     [self mouseMoved:event];
 }
@@ -117,6 +120,7 @@
 - (void)rightMouseDragged:(NSEvent*)event
 {
     _gamepadActive = false;
+    _mouseActive = true;
 
     [self mouseMoved:event];
 }
@@ -124,6 +128,7 @@
 - (void)otherMouseDragged:(NSEvent*)event
 {
     _gamepadActive = false;
+    _mouseActive = true;
 
     [self mouseMoved:event];
 }
@@ -131,6 +136,7 @@
 - (void)mouseDown:(NSEvent*)__unused event
 {
     _gamepadActive = false;
+    _mouseActive = true;
 
     _mouseDown[0] = true;
     _mousePressed[0] = true;
@@ -139,6 +145,7 @@
 - (void)mouseUp:(NSEvent*)__unused event
 {
     _gamepadActive = false;
+    _mouseActive = true;
 
     _mouseDown[0] = false;
     _mouseReleased[0] = true;
@@ -147,6 +154,7 @@
 - (void)rightMouseDown:(NSEvent*)__unused event
 {
     _gamepadActive = false;
+    _mouseActive = true;
 
     _mouseDown[1] = true;
     _mousePressed[1] = true;
@@ -155,6 +163,7 @@
 - (void)rightMouseUp:(NSEvent*)__unused event
 {
     _gamepadActive = false;
+    _mouseActive = true;
 
     _mouseDown[1] = false;
     _mouseReleased[1] = true;
@@ -163,6 +172,7 @@
 - (void)otherMouseDown:(NSEvent*)event
 {
     _gamepadActive = false;
+    _mouseActive = true;
 
     _mouseDown[[event buttonNumber]] = true;
     _mousePressed[[event buttonNumber]] = true;
@@ -171,6 +181,7 @@
 - (void)otherMouseUp:(NSEvent*)event
 {
     _gamepadActive = false;
+    _mouseActive = true;
 
     _mouseDown[[event buttonNumber]] = false;
     _mouseReleased[[event buttonNumber]] = true;
@@ -179,6 +190,7 @@
 - (void)keyDown:(NSEvent*)event
 {
     _gamepadActive = false;
+    _mouseActive = false;
 
     if(![event isARepeat])
     {
@@ -197,6 +209,7 @@
 - (void)keyUp:(NSEvent*)event
 {
     _gamepadActive = false;
+    _mouseActive = false;
 
     if(![event isARepeat])
     {
@@ -215,6 +228,7 @@
 - (void)scrollWheel:(NSEvent*)event
 {
     _gamepadActive = false;
+    _mouseActive = true;
 
     _scrollOffset.first = [event scrollingDeltaX];
     _scrollOffset.second = [event scrollingDeltaY];
@@ -229,6 +243,7 @@
 - (void)flagsChanged:(NSEvent*)event
 {
     _gamepadActive = false;
+    _mouseActive = false;
 
     static const int shiftIdx = static_cast<int>(paz::Key::LeftShift);
     static const int ctrlIdx = static_cast<int>(paz::Key::LeftControl);
@@ -311,6 +326,7 @@
             if(state.buttons[i])
             {
                 _gamepadActive = true;
+                _mouseActive = false;
                 if(!_gamepadDown[i])
                 {
                     _gamepadPressed[i] = true;
@@ -322,6 +338,7 @@
                 if(_gamepadDown[i])
                 {
                     _gamepadActive = true;
+                    _mouseActive = false;
                     _gamepadReleased[i] = true;
                 }
                 _gamepadDown[i] = false;
@@ -330,31 +347,37 @@
         if(std::abs(state.axes[0]) > 0.1)
         {
             _gamepadActive = true;
+            _mouseActive = false;
             _gamepadLeftStick.first = state.axes[0];
         }
         if(std::abs(state.axes[1]) > 0.1)
         {
             _gamepadActive = true;
+            _mouseActive = false;
             _gamepadLeftStick.second = state.axes[1];
         }
         if(std::abs(state.axes[2]) > 0.1)
         {
             _gamepadActive = true;
+            _mouseActive = false;
             _gamepadRightStick.first = state.axes[2];
         }
         if(std::abs(state.axes[3]) > 0.1)
         {
             _gamepadActive = true;
+            _mouseActive = false;
             _gamepadRightStick.second = state.axes[3];
         }
         if(state.axes[4] > -0.9)
         {
             _gamepadActive = true;
+            _mouseActive = false;
             _gamepadLeftTrigger = state.axes[4];
         }
         if(state.axes[5] > -0.9)
         {
             _gamepadActive = true;
+            _mouseActive = false;
             _gamepadRightTrigger = state.axes[5];
         }
     }

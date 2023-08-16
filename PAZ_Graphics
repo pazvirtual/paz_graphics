@@ -475,6 +475,7 @@ namespace paz
         static double GamepadLeftTrigger();
         static double GamepadRightTrigger();
         static bool GamepadActive();
+        static bool MouseActive();
         static void SetCursorMode(CursorMode mode);
         static float AspectRatio();
         static void Quit();

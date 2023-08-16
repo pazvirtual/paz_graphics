@@ -27,6 +27,7 @@
 @property(readonly) double gamepadLeftTrigger;
 @property(readonly) double gamepadRightTrigger;
 @property(readonly) bool gamepadActive;
+@property(readonly) bool mouseActive;
 @property(retain, readonly) id<MTLDevice> device;
 - (id)initWithContentRect:(CGRect)rect;
 - (void)resetEvents;
