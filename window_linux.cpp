@@ -323,7 +323,6 @@ paz::Initializer::Initializer()
     // Create window and set as current context.
     WindowPtr = glfwCreateWindow(WindowWidth, WindowHeight,
         "PAZ_Graphics Window", nullptr, nullptr);
-    WindowIsFullscreen = false;
     if(!WindowPtr)
     {
         throw std::runtime_error("Failed to create GLFW window. Your GPU may no"
