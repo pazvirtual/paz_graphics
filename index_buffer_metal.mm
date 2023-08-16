@@ -6,7 +6,7 @@
 #import "app_delegate.hh"
 #import "view_controller.hh"
 #include "internal_data.hpp"
-#include "window.hpp"
+#include "common.hpp"
 #import <MetalKit/MetalKit.h>
 
 #define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \

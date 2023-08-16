@@ -4,7 +4,7 @@
 
 #include "PAZ_Graphics"
 #import "renderer.hh"
-#include "window.hpp"
+#include "common.hpp"
 
 static const char* QuadSrc = 1 + R"===(
 #include <metal_stdlib>

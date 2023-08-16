@@ -6,7 +6,7 @@
 #include "util_d3d11.hpp"
 #include "shading_lang.hpp"
 #include "internal_data.hpp"
-#include "window.hpp"
+#include "common.hpp"
 #include <d3dcompiler.h>
 
 static constexpr int TypeSize = 4;

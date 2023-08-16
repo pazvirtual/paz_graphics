@@ -5,7 +5,7 @@
 #include "PAZ_Graphics"
 #include "internal_data.hpp"
 #include "util_d3d11.hpp"
-#include "window.hpp"
+#include "common.hpp"
 #include <d3dcompiler.h>
 
 #define CHECK_PASS if(!CurPass) throw std::logic_error("No current render pass"\

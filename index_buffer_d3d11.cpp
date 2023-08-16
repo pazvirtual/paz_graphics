@@ -4,7 +4,7 @@
 
 #include "PAZ_Graphics"
 #include "internal_data.hpp"
-#include "window.hpp"
+#include "common.hpp"
 
 paz::IndexBuffer::Data::~Data()
 {

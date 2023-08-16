@@ -5,7 +5,7 @@
 #include "PAZ_Graphics"
 #include "util_d3d11.hpp"
 #include "internal_data.hpp"
-#include "window.hpp"
+#include "common.hpp"
 
 #define CASE0(a, b) case paz::TextureFormat::a: return DXGI_FORMAT_##b;
 #define CASE1(a, b) case paz::WrapMode::a: return D3D11_TEXTURE_ADDRESS_##b;

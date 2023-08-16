@@ -6,7 +6,7 @@
 #import "app_delegate.hh"
 #import "view_controller.hh"
 #include "shading_lang.hpp"
-#include "window.hpp"
+#include "common.hpp"
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 

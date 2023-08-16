@@ -4,7 +4,7 @@
 
 #include "PAZ_Graphics"
 #include "internal_data.hpp"
-#include "window.hpp"
+#include "common.hpp"
 #include "gl_core_4_1.h"
 #include <GLFW/glfw3.h>
 

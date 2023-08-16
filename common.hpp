@@ -1,5 +1,5 @@
-#ifndef PAZ_GRAPHICS_WINDOW_HPP
-#define PAZ_GRAPHICS_WINDOW_HPP
+#ifndef PAZ_GRAPHICS_COMMON_HPP
+#define PAZ_GRAPHICS_COMMON_HPP
 
 #include "PAZ_Graphics"
 #include "detect_os.hpp"
@@ -34,6 +34,8 @@ namespace paz
     // does not inherit from another wrapper class that does so and 2. every
     // method of `paz::Window`.
     Initializer& initialize();
+    float half_to_float(std::uint16_t x);
+    std::uint16_t float_to_half(float x);
 }
 
 #endif

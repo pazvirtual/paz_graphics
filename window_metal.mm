@@ -6,7 +6,7 @@
 #import "app_delegate.hh"
 #import "view_controller.hh"
 #import "renderer.hh"
-#include "window.hpp"
+#include "common.hpp"
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 #include <chrono>
