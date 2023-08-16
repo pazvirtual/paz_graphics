@@ -86,13 +86,8 @@ static void mouse_button_callback(int button, int action)
 
 static void cursor_position_callback(double xPos, double yPos)
 {
-    yPos = WindowHeight - yPos;
     MousePos.first = xPos;
-    MousePos.second = yPos;
-    if(CursorDisabled)
-    {
-        glfwSetCursorPos(WindowPtr, 0, WindowHeight);
-    }
+    MousePos.second = WindowHeight - yPos;
 }
 
 static void scroll_callback(double xOffset, double yOffset)
@@ -380,6 +375,10 @@ void paz::Window::Loop(const std::function<void(void)>& draw)
     while(!glfwWindowShouldClose(WindowPtr))
     {
         glfwPollEvents();
+        if(CursorDisabled)
+        {
+            glfwSetCursorPos(WindowPtr, 0, WindowHeight);
+        }
         draw();
         glfwSwapBuffers(WindowPtr);
         ResetEvents();
