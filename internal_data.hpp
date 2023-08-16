@@ -89,6 +89,7 @@ struct paz::RenderPass::Data
     std::unordered_map<std::string, int> _fragmentArgs;
 #else
     const Shader* _shader = nullptr;
+    BlendMode _blendMode = BlendMode::Disable;
 #endif
 };
 

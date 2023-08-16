@@ -67,7 +67,7 @@ paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     paz::Window::RegisterTarget(this);
 }
 
-paz::DepthStencilTarget::resize(int width, int height)
+void paz::DepthStencilTarget::resize(int width, int height)
 {
     Texture::resize(_scale*width, _scale*height);
 }
