@@ -232,7 +232,7 @@ std::string paz::vert2metal(const std::string& src)
         }
 
         // Process uniforms, inputs, and outputs.
-        if(line.substr(0, 7) == "uniform")
+        if(std::regex_match(line, std::regex("uniform\\s.*")))
         {
             const std::string dec = line.substr(8, line.size() - 9);
             const std::size_t pos = dec.find_last_of(' ');
@@ -246,7 +246,7 @@ std::string paz::vert2metal(const std::string& src)
             buffers[name] = {type, isPointer};
             continue;
         }
-        if(line.substr(0, 6) == "layout")
+        if(std::regex_match(line, std::regex("layout\\b.*")))
         {
             const std::string layout = std::regex_replace(line, std::regex("^.*"
                 "location\\s*=\\s*([0-9]+).*$"), "$1");
@@ -259,7 +259,7 @@ std::string paz::vert2metal(const std::string& src)
             inputs[i] = {name, type};
             continue;
         }
-        if(line.substr(0, 3) == "out")
+        if(std::regex_match(line, std::regex("out\\s.*")))
         {
             const std::string dec = line.substr(4, line.size() - 5);
             const std::size_t pos = dec.find_last_of(' ');
@@ -268,7 +268,7 @@ std::string paz::vert2metal(const std::string& src)
             outputs[name] = {type, false};
             continue;
         }
-        if(line.substr(0, 8) == "flat out")
+        if(std::regex_match(line, std::regex("flat out\\s.*")))
         {
             const std::string dec = line.substr(9, line.size() - 10);
             const std::size_t pos = dec.find_last_of(' ');
