@@ -18,9 +18,9 @@ namespace paz
     std::string vert2metal(const std::string& src);
     std::string frag2metal(const std::string& src);
     std::string vert2hlsl(const std::string& src, std::vector<std::tuple<std::
-        string, DataType, int>>& uniforms);
+        string, DataType, int, int>>& uniforms);
     std::string frag2hlsl(const std::string& src, std::vector<std::tuple<std::
-        string, DataType, int>>& uniforms);
+        string, DataType, int, int>>& uniforms);
     std::string process_sig(const std::string& sig, std::unordered_set<std::
         string>& argNames);
 }

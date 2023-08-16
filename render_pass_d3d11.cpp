@@ -12,6 +12,22 @@
     "."); else if(this != CurPass) throw std::logic_error("Render pass operati"\
     "ons cannot be interleaved.");
 
+#define CASE(a, b) case paz::PrimitiveType::a: return \
+    D3D11_PRIMITIVE_TOPOLOGY_##b;
+
+static D3D11_PRIMITIVE_TOPOLOGY primitive_topology(paz::PrimitiveType t)
+{
+    switch(t)
+    {
+        CASE(Points, POINTLIST)
+        CASE(Lines, LINELIST)
+        CASE(LineStrip, LINESTRIP)
+        CASE(Triangles, TRIANGLELIST)
+        CASE(TriangleStrip, TRIANGLESTRIP)
+        default: throw std::runtime_error("Invalid primitive type.");
+    }
+}
+
 static const paz::RenderPass* CurPass;
 
 paz::RenderPass::Data::~Data()
@@ -144,7 +160,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     d3d_context()->RSSetState(state);
 
     D3D11_DEPTH_STENCIL_DESC depthStencilDescriptor = {};
-    ID3D11DepthStencilState * depthStencilState;
+    ID3D11DepthStencilState* depthStencilState;
     hr = d3d_device()->CreateDepthStencilState(&depthStencilDescriptor,
         &depthStencilState);
     if(hr)
@@ -208,20 +224,19 @@ void paz::RenderPass::cull(CullMode mode)
 void paz::RenderPass::read(const std::string& name, const Texture& tex)
 {
     CHECK_PASS
-    if(_data->_texAndSamplerSlots.count(name))
+    if(_data->_texAndSamplerSlots.count(name + "Texture"))
     {
-        d3d_context()->PSSetShaderResources(_data->_texAndSamplerSlots.at(name),
-            1, &tex._data->_resourceView);
-        d3d_context()->PSSetSamplers(_data->_texAndSamplerSlots.at(name), 1,
-            &tex._data->_sampler);
+        d3d_context()->PSSetShaderResources(_data->_texAndSamplerSlots.at(name +
+            "Texture"), 1, &tex._data->_resourceView);
+        d3d_context()->PSSetSamplers(_data->_texAndSamplerSlots.at(name +
+            "Sampler"), 1, &tex._data->_sampler);
     }
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    uniform(name, &x, 1);
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y)
@@ -250,8 +265,22 @@ void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
     size)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    if(sizeof(int)*size > 4*1024) //TEMP - `set*Bytes` limitation
+    {
+        throw std::runtime_error("Too many bytes to send without buffer.");
+    }
+    if(_data->_vert->_uniforms.count(name))
+    {
+        std::copy(reinterpret_cast<const unsigned char*>(x), reinterpret_cast<
+            const unsigned char*>(x + size), _data->_vertUniformData.begin() +
+            std::get<0>(_data->_vert->_uniforms.at(name)));
+    }
+    if(_data->_frag->_uniforms.count(name))
+    {
+        std::copy(reinterpret_cast<const unsigned char*>(x), reinterpret_cast<
+            const unsigned char*>(x + size), _data->_fragUniformData.begin() +
+            std::get<0>(_data->_frag->_uniforms.at(name)));
+    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x)
@@ -389,8 +418,7 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
         d3d_context()->PSSetConstantBuffers(0, 1, &_data->_fragUniformBuf);
     }
     d3d_context()->IASetInputLayout(layout);
-    d3d_context()->IASetPrimitiveTopology(
-        D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP); //TEMP
+    d3d_context()->IASetPrimitiveTopology(primitive_topology(type));
     const std::vector<unsigned int> offsets(vertices._data->_buffers.size(), 0);
     d3d_context()->IASetVertexBuffers(0, vertices._data->_buffers.size(),
         vertices._data->_buffers.data(), vertices._data->_strides.data(),

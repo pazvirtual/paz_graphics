@@ -9,7 +9,7 @@ static const std::vector<std::string> unsupportedBuiltins = {"gl_PerVertex",
     "gl_ClipDistance", "gl_Pointsize"};
 
 std::string paz::vert2hlsl(const std::string& src, std::vector<std::tuple<std::
-    string, DataType, int>>& uniforms)
+    string, DataType, int, int>>& uniforms)
 {
     uniforms.clear();
 
@@ -266,6 +266,7 @@ float4 uintBitsToFloat(in uint4 v)
         line = std::regex_replace(line, std::regex("\\bvec([2-4])"), "float$1");
         line = std::regex_replace(line, std::regex("\\bivec([2-4])"), "int$1");
         line = std::regex_replace(line, std::regex("\\buvec([2-4])"), "uint$1");
+        line = std::regex_replace(line, std::regex("\\bmix\\b"), "lerp");
 
         // Process global variables.
         if(mode == Mode::None && std::regex_match(line, std::regex("\\s*const\\"
@@ -474,33 +475,38 @@ float4 uintBitsToFloat(in uint4 v)
             second < 0 ? "" : "[" + std::to_string(n.second.second) + "]") <<
             ";" << std::endl;
         auto size = n.second.second < 0 ? 1 : n.second.second;
-        if(n.second.first == "float")
+        if(n.second.first == "int")
         {
-            uniforms.push_back({n.first, DataType::Float, size});
+            uniforms.push_back({n.first, DataType::SInt, 1, size});
+        }
+        // ...
+        else if(n.second.first == "float")
+        {
+            uniforms.push_back({n.first, DataType::Float, 1, size});
         }
         else if(n.second.first == "float2")
         {
-            uniforms.push_back({n.first, DataType::Float, 2*size});
+            uniforms.push_back({n.first, DataType::Float, 2, size});
         }
         else if(n.second.first == "float3")
         {
-            uniforms.push_back({n.first, DataType::Float, 3*size});
+            uniforms.push_back({n.first, DataType::Float, 3, size});
         }
         else if(n.second.first == "float4")
         {
-            uniforms.push_back({n.first, DataType::Float, 4*size});
+            uniforms.push_back({n.first, DataType::Float, 4, size});
         }
         else if(n.second.first == "float2x2")
         {
-            uniforms.push_back({n.first, DataType::Float, 2*2*size});
+            uniforms.push_back({n.first, DataType::Float, 2*2, size});
         }
         else if(n.second.first == "float3x3")
         {
-            uniforms.push_back({n.first, DataType::Float, 3*3*size});
+            uniforms.push_back({n.first, DataType::Float, 3*3, size});
         }
         else if(n.second.first == "float4x4")
         {
-            uniforms.push_back({n.first, DataType::Float, 4*4*size});
+            uniforms.push_back({n.first, DataType::Float, 4*4, size});
         }
         // ...
         else
