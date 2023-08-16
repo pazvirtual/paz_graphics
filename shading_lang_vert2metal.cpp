@@ -103,6 +103,9 @@ auto uintBitsToFloat(thread const uint4& v)
 }
 )===";
 
+    // Fix matrix multiplication issues. (WIP)
+    out << "#define mul(a, b) ((a)*(b))" << std::endl;
+
     std::string line;
     std::size_t l = 0;
     while(std::getline(in, line))

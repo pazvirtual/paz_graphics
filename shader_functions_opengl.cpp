@@ -168,7 +168,7 @@ static unsigned int compile_shader(const std::string& src, GLenum type)
     unsigned int shader = glCreateShader(type);
     static const std::string headerStr = "#version " + std::to_string(paz::
         GlMajorVersion) + std::to_string(paz::GlMinorVersion) + "0 core\n#defin"
-        "e depthSampler2D sampler2D\n";
+        "e depthSampler2D sampler2D\n#define mul(a, b) ((a)*(b))\n";
     std::array<const char*, 2> srcStrs = {headerStr.c_str(), src.c_str()};
     glShaderSource(shader, srcStrs.size(), srcStrs.data(), nullptr);
     glCompileShader(shader);
