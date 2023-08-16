@@ -269,8 +269,6 @@ float4 uintBitsToFloat(in uint4 v)
         if(mode == Mode::None && std::regex_match(line, std::regex("\\s*const\\"
             "s.*=.*")))
         {
-            line = std::regex_replace(line, std::regex("\\s*const\\b"),
-                "constant");
             out << line << std::endl;
             continue;
         }
@@ -298,6 +296,7 @@ float4 uintBitsToFloat(in uint4 v)
         {
             line = std::regex_replace(line, std::regex("^\\s+"), "");
             sigBuffer << " " << line;
+            out << "    " << line << std::endl;
 
             // Check if signature is complete.
             numOpen += std::count(line.begin(), line.end(), '(');
@@ -315,7 +314,6 @@ float4 uintBitsToFloat(in uint4 v)
                         "ailed to process private function signature: " + e.
                         what());
                 }
-                out << line << std::endl;
                 sigBuffer.clear();
                 numOpen = 0;
                 numClose = 0;
@@ -428,6 +426,8 @@ float4 uintBitsToFloat(in uint4 v)
         // Process private functions.
         if(isFun)
         {
+            out << line << std::endl;
+
             // Check if the signature is complete.
             numOpen = std::count(line.begin(), line.end(), '(');
             numClose = std::count(line.begin(), line.end(), ')');
@@ -444,7 +444,6 @@ float4 uintBitsToFloat(in uint4 v)
                         "ailed to process private function signature: " + e.
                         what());
                 }
-                out << line << std::endl;
             }
             else
             {

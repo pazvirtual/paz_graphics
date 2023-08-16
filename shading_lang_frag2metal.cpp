@@ -102,8 +102,8 @@ float4 textureLod(thread const wrap_depth2d<float>& tex, thread const float2&
     // lines and that Metal does not support mipmaps for 1D textures.
     out << 1 + R"===(
 template<typename T>
-float2 textureQueryLod(thread const wrap_texture1d<T>& /* tex */, thread const
-    float2& /* uv */)
+float2 textureQueryLod(thread const wrap_texture1d<T>& /* tex */, thread float
+    /* u */)
 {
     return float2(0);
 }

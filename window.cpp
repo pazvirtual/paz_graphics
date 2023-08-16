@@ -76,10 +76,10 @@ struct OutputData
 OutputData main(InputData input)
 {
     OutputData output;
-    output.color = tex.Sample(texSampler, input.uv);
+    output.color = tex.Sample(texSampler, float2(input.uv.x, 1. - input.uv.y));
 //    output.color.rgb = pow(output.color.rgb, float3(1./gamma, 1./gamma, 1./
 //        gamma));
-output.color.r = 0.2;
+output.color.g = 0.2;
     return output;
 }
 )===";
