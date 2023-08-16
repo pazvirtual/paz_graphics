@@ -490,7 +490,7 @@ void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
     glBindVertexArray(vertices._data->_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);
     glDrawElements(primitive_type(type), indices._numIndices, GL_UNSIGNED_INT,
-        (void*)(std::intptr_t)offset);
+        reinterpret_cast<void*>(static_cast<std::intptr_t>(offset)));
 }
 
 #endif

@@ -114,7 +114,7 @@ static void resize_callback(int width, int height)
     WindowHeight = height;
 
     glfwGetFramebufferSize(WindowPtr, &FboWidth, &FboHeight);
-    FboAspectRatio = (float)FboWidth/FboHeight;
+    FboAspectRatio = static_cast<float>(FboWidth)/FboHeight;
     paz::resize_targets();
 }
 
@@ -190,7 +190,7 @@ paz::Initializer::Initializer()
 
     // Get window size in pixels.
     glfwGetFramebufferSize(WindowPtr, &FboWidth, &FboHeight);
-    FboAspectRatio = (float)FboWidth/FboHeight;
+    FboAspectRatio = static_cast<float>(FboWidth)/FboHeight;
 
     // Activate vsync.
     glfwSwapInterval(1);
