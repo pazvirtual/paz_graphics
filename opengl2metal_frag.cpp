@@ -141,6 +141,8 @@ std::string paz::frag2metal(const std::string& src)
             "texture$1d<uint>");
         line = std::regex_replace(line, std::regex("\\btexture\\(([^,]*),"),
             "texture($1, $1Sampler,");
+        line = std::regex_replace(line, std::regex("\\bdiscard\\b"),
+            "discard_fragment()");
 
         // Process global variables.
         if(mode == Mode::None && std::regex_match(line, std::regex("\\s*const\\"
