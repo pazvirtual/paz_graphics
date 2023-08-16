@@ -15,9 +15,9 @@ static std::vector<T> flip_image(const paz::Image<T, NumChannels>& image)
     std::vector<T> v(image.width()*image.height()*NumChannels);
     for(int i = 0; i < image.height(); ++i)
     {
-        std::copy(image.begin() + image.width()*i, image.begin() + image.
-            width()*i + image.width(), v.begin() + image.width()*(image.height()
-            - i - 1));
+        std::copy(image.begin() + image.width()*i*NumChannels, image.begin() +
+            (image.width()*i + image.width())*NumChannels, v.begin() + image.
+            width()*(image.height() - i - 1)*NumChannels);
     }
     return v;
 }
