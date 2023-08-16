@@ -476,6 +476,10 @@ void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
 {
     CHECK_PASS
     CHECK_UNIFORM
+    if(sizeof(int)*size > 4*1024) //TEMP - `set*Bytes` limitation
+    {
+        throw std::runtime_error("Too many bytes to send without buffer.");
+    }
     switch(std::get<1>(_data->_shader._uniformIds.at(name)))
     {
         case GL_INT:
@@ -538,6 +542,10 @@ void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
 {
     CHECK_PASS
     CHECK_UNIFORM
+    if(sizeof(unsigned int)*size > 4*1024) //TEMP - `set*Bytes` limitation
+    {
+        throw std::runtime_error("Too many bytes to send without buffer.");
+    }
     switch(std::get<1>(_data->_shader._uniformIds.at(name)))
     {
         case GL_UNSIGNED_INT:
@@ -599,6 +607,10 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
 {
     CHECK_PASS
     CHECK_UNIFORM
+    if(sizeof(float)*size > 4*1024) //TEMP - `set*Bytes` limitation
+    {
+        throw std::runtime_error("Too many bytes to send without buffer.");
+    }
     switch(std::get<1>(_data->_shader._uniformIds.at(name)))
     {
         case GL_FLOAT:
