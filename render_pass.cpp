@@ -18,6 +18,7 @@ static constexpr float Transparent[] = {0.f, 0.f, 0.f, 0.f};
 static int NextSlot = 0;
 
 static bool DepthTestEnabled = false;
+static bool DepthMaskEnabled = true;
 static bool BlendEnabled = false;
 
 static GLenum primitive_type(paz::RenderPass::PrimitiveType t)
@@ -100,6 +101,11 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         {
             if(depthLoadAction == LoadAction::Clear)
             {
+                if(!DepthMaskEnabled)
+                {
+                    DepthMaskEnabled = true;
+                    glDepthMask(GL_TRUE);
+                }
                 glClear(GL_DEPTH_BUFFER_BIT);
             }
             else if(depthLoadAction != LoadAction::DontCare && depthLoadAction
@@ -121,6 +127,11 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         }
         if(depthLoadAction == LoadAction::Clear)
         {
+            if(!DepthMaskEnabled)
+            {
+                DepthMaskEnabled = true;
+                glDepthMask(GL_TRUE);
+            }
             glClear(GL_DEPTH_BUFFER_BIT);
         }
     }
@@ -164,13 +175,10 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
 
 void paz::RenderPass::depth(DepthTestMode mode)
 {
-    if(mode == DepthTestMode::Disable)
+    if(mode == DepthTestMode::Disable && DepthTestEnabled)
     {
-        if(DepthTestEnabled)
-        {
-            DepthTestEnabled = false;
-            glDisable(GL_DEPTH_TEST);
-        }
+        DepthTestEnabled = false;
+        glDisable(GL_DEPTH_TEST);
     }
     else
     {
@@ -179,35 +187,52 @@ void paz::RenderPass::depth(DepthTestMode mode)
             DepthTestEnabled = true;
             glEnable(GL_DEPTH_TEST);
         }
-        if(mode == DepthTestMode::Never)
+        if(mode < DepthTestMode::Never && DepthMaskEnabled)
+        {
+            DepthMaskEnabled = false;
+            glDepthMask(GL_FALSE);
+        }
+        else if(!DepthMaskEnabled)
+        {
+            DepthMaskEnabled = true;
+            glDepthMask(GL_TRUE);
+        }
+        if(mode == DepthTestMode::Never || mode == DepthTestMode::NeverNoMask)
         {
             glDepthFunc(GL_NEVER);
         }
-        else if(mode == DepthTestMode::Less)
+        else if(mode == DepthTestMode::Less || mode == DepthTestMode::
+            LessNoMask)
         {
             glDepthFunc(GL_LESS);
         }
-        else if(mode == DepthTestMode::Equal)
+        else if(mode == DepthTestMode::Equal || mode == DepthTestMode::
+            EqualNoMask)
         {
             glDepthFunc(GL_EQUAL);
         }
-        else if(mode == DepthTestMode::LessEqual)
+        else if(mode == DepthTestMode::LessEqual || mode == DepthTestMode::
+            LessEqualNoMask)
         {
             glDepthFunc(GL_LEQUAL);
         }
-        else if(mode == DepthTestMode::Greater)
+        else if(mode == DepthTestMode::Greater || mode == DepthTestMode::
+            GreaterNoMask)
         {
             glDepthFunc(GL_GREATER);
         }
-        else if(mode == DepthTestMode::NotEqual)
+        else if(mode == DepthTestMode::NotEqual || mode == DepthTestMode::
+            NotEqualNoMask)
         {
             glDepthFunc(GL_NOTEQUAL);
         }
-        else if(mode == DepthTestMode::GreaterEqual)
+        else if(mode == DepthTestMode::GreaterEqual || mode == DepthTestMode::
+            GreaterEqualNoMask)
         {
             glDepthFunc(GL_GEQUAL);
         }
-        else if(mode == DepthTestMode::Always)
+        else if(mode == DepthTestMode::Always || mode == DepthTestMode::
+            AlwaysNoMask)
         {
             glDepthFunc(GL_ALWAYS);
         }
