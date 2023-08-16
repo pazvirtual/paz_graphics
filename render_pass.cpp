@@ -15,7 +15,9 @@
 #define CHECK_PASS if(!CurPass) throw std::logic_error("No current render pass"\
     "."); else if(this != CurPass) throw std::logic_error("Render pass operati"\
     "ons cannot be interleaved.");
-#define CASE1(a, b, n) case GL_##a: glVertexAttribPointer(idx, n, GL_##b, \
+#define CASE1(a, b, n) case GL_##a: glVertexAttribIPointer(idx, n, GL_##b, 0, \
+    nullptr); break;
+#define CASE2(a, n) case GL_##a: glVertexAttribPointer(idx, n, GL_FLOAT, \
     GL_FALSE, 0, nullptr); break;
 
 static constexpr float Clear[] = {0.f, 0.f, 0.f, 0.f};
@@ -724,9 +726,9 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
             CASE1(UNSIGNED_INT, UNSIGNED_INT, 1)
             CASE1(UNSIGNED_INT_VEC2, UNSIGNED_INT, 2)
             CASE1(UNSIGNED_INT_VEC4, UNSIGNED_INT, 4)
-            CASE1(FLOAT, FLOAT, 1)
-            CASE1(FLOAT_VEC2, FLOAT, 2)
-            CASE1(FLOAT_VEC4, FLOAT, 4)
+            CASE2(FLOAT, 1)
+            CASE2(FLOAT_VEC2, 2)
+            CASE2(FLOAT_VEC4, 4)
             default: throw std::logic_error("Invalid type " + std::to_string(
                 vertices._data->_types[i]) + " for vertex attribute " + std::
                 to_string(i) + ".");
@@ -745,9 +747,9 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
             CASE1(UNSIGNED_INT, UNSIGNED_INT, 1)
             CASE1(UNSIGNED_INT_VEC2, UNSIGNED_INT, 2)
             CASE1(UNSIGNED_INT_VEC4, UNSIGNED_INT, 4)
-            CASE1(FLOAT, FLOAT, 1)
-            CASE1(FLOAT_VEC2, FLOAT, 2)
-            CASE1(FLOAT_VEC4, FLOAT, 4)
+            CASE2(FLOAT, 1)
+            CASE2(FLOAT_VEC2, 2)
+            CASE2(FLOAT_VEC4, 4)
             default: throw std::logic_error("Invalid type " + std::to_string(
                 vertices._data->_types[i]) + " for instance attribute " + std::
                 to_string(i) + ".");
@@ -792,9 +794,9 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
             CASE1(UNSIGNED_INT, UNSIGNED_INT, 1)
             CASE1(UNSIGNED_INT_VEC2, UNSIGNED_INT, 2)
             CASE1(UNSIGNED_INT_VEC4, UNSIGNED_INT, 4)
-            CASE1(FLOAT, FLOAT, 1)
-            CASE1(FLOAT_VEC2, FLOAT, 2)
-            CASE1(FLOAT_VEC4, FLOAT, 4)
+            CASE2(FLOAT, 1)
+            CASE2(FLOAT_VEC2, 2)
+            CASE2(FLOAT_VEC4, 4)
             default: throw std::logic_error("Invalid type " + std::to_string(
                 vertices._data->_types[i]) + " for vertex attribute " + std::
                 to_string(i) + ".");
@@ -813,9 +815,9 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
             CASE1(UNSIGNED_INT, UNSIGNED_INT, 1)
             CASE1(UNSIGNED_INT_VEC2, UNSIGNED_INT, 2)
             CASE1(UNSIGNED_INT_VEC4, UNSIGNED_INT, 4)
-            CASE1(FLOAT, FLOAT, 1)
-            CASE1(FLOAT_VEC2, FLOAT, 2)
-            CASE1(FLOAT_VEC4, FLOAT, 4)
+            CASE2(FLOAT, 1)
+            CASE2(FLOAT_VEC2, 2)
+            CASE2(FLOAT_VEC4, 4)
             default: throw std::logic_error("Invalid type " + std::to_string(
                 vertices._data->_types[i]) + " for instance attribute " + std::
                 to_string(i) + ".");
