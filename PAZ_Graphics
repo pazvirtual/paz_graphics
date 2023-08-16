@@ -71,7 +71,7 @@ namespace paz
 
         int width() const
         {
-            return std::vector<T>::size()/NumChannels/_rows;
+            return _rows ? std::vector<T>::size()/NumChannels/_rows : 0;
         }
 
         int height() const
