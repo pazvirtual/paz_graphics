@@ -5,8 +5,38 @@
 #include "PAZ_Graphics"
 #import "app_delegate.hh"
 #import "view_controller.hh"
+#include <unordered_map>
+#include <sstream>
+//#import <Kernel/IOKit/hidsystem/IOHIDUsageTables.h>
+
+static void match_callback(void* context, IOReturn result, void* sender, IOHIDDeviceRef device)
+{
+    paz::Gamepad g;
+    g.device = device;
+    // ...
+    reinterpret_cast<std::vector<paz::Gamepad>*>(context)->push_back(g);
+}
+
+static void remove_callback(void* context, IOReturn result, void* sender, IOHIDDeviceRef device)
+{
+    auto* gamepads = reinterpret_cast<std::vector<paz::Gamepad>*>(context);
+    for(auto it = gamepads->begin(); it != gamepads->end(); ++it)
+    {
+        if(it->device == device)
+        {
+            gamepads->erase(it);
+            break;
+        }
+    }
+}
 
 @implementation AppDelegate
+{
+    std::unordered_map<std::string, std::string> _gamepadMappings;
+    IOHIDManagerRef _hidManager;
+    std::vector<paz::Gamepad> _gamepads;
+}
+
 // Initializer and deallocator.
 - (id)initWithTitle:(std::string)title
 {
@@ -89,6 +119,48 @@
         [_window setStyleMask:NSWindowStyleMaskTitled|
             NSWindowStyleMaskMiniaturizable|NSWindowStyleMaskResizable];
         [_window setDelegate:self];
+
+        // Load gamepad mappings.
+        {
+            std::stringstream iss(paz::MacosControllerDb);
+            std::string line;
+            while(std::getline(iss, line))
+            {
+                if(line.empty() || line[0] == '#')
+                {
+                    continue;
+                }
+                const std::string guid = line.substr(0, 32);
+                const std::string mapping = line.substr(33);
+                _gamepadMappings[guid] = mapping;
+            }
+        }
+
+        // Get any connected gamepads.
+        _hidManager = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
+
+        CFMutableArrayRef matching = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+        long page = kHIDPage_GenericDesktop;
+        CFNumberRef pageRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberLongType, &page);
+        long usage = kHIDUsage_GD_GamePad;
+        CFMutableDictionaryRef dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        CFNumberRef usageRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberLongType, &usage);
+        CFDictionarySetValue(dict, CFSTR(kIOHIDDeviceUsagePageKey), pageRef);
+        CFDictionarySetValue(dict, CFSTR(kIOHIDDeviceUsageKey), usageRef);
+        CFArrayAppendValue(matching, dict);
+        CFRelease(usageRef);
+        CFRelease(dict);
+        CFRelease(pageRef);
+        IOHIDManagerSetDeviceMatchingMultiple(_hidManager, matching);
+        CFRelease(matching);
+
+        IOHIDManagerRegisterDeviceMatchingCallback(_hidManager, &match_callback, &_gamepads);
+        IOHIDManagerRegisterDeviceRemovalCallback(_hidManager, &remove_callback, &_gamepads);
+        IOHIDManagerScheduleWithRunLoop(_hidManager, CFRunLoopGetMain(), kCFRunLoopDefaultMode);
+        IOHIDManagerOpen(_hidManager, kIOHIDOptionsTypeNone);
+
+        // Get any initially-attached gamepads.
+        CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, false);
     }
 
     return self;
@@ -96,6 +168,7 @@
 
 - (void)dealloc
 {
+    CFRelease(_hidManager);
     [_window release];
     [_appName release];
     [super dealloc];
@@ -209,6 +282,16 @@
     {
         [NSCursor unhide];
     }
+}
+
+- (bool)getGamepadState:(paz::GamepadState*)state
+{
+    if(_gamepads.empty())
+    {
+        return false;
+    }
+    *state = _gamepads[0].state;
+    return true;
 }
 @end
 

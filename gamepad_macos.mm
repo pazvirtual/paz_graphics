@@ -1,13 +1,10 @@
-#ifndef PAZ_GRAPHICS_MACOS_CONTROLLER_DB_HPP
-#define PAZ_GRAPHICS_MACOS_CONTROLLER_DB_HPP
-
 #include "detect_os.hpp"
 
 #ifdef PAZ_MACOS
 
-namespace paz
-{
-    const std::string MacosControllerDb = 1 + R"===(
+#import "gamepad_macos.hh"
+
+const char* paz::MacosControllerDb = 1 + R"===(
 030000008f0e00000300000009010000,2In1 Joystick,a:b2,b:b1,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b3,y:b0,platform:Mac OS X,
 03000000c82d00000031000001000000,8BitDo Adapter,a:b0,b:b1,back:b10,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b6,leftstick:b13,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b14,righttrigger:b9,rightx:a2,righty:a3,start:b11,x:b3,y:b4,platform:Mac OS X,
 03000000c82d00000531000000020000,8BitDo Adapter 2,a:b0,b:b1,back:b10,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b2,leftshoulder:b6,leftstick:b13,lefttrigger:b8,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b14,righttrigger:b9,rightx:a2,righty:a3,start:b11,x:b3,y:b4,platform:Mac OS X,
@@ -215,8 +212,5 @@ namespace paz
 03000000120c0000100e000000010000,Zeroplus P4,a:b1,b:b2,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b4,leftstick:b10,lefttrigger:a3,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:a4,rightx:a2,righty:a5,start:b9,x:b0,y:b3,platform:Mac OS X,
 03000000120c0000101e000000010000,Zeroplus P4,a:b1,b:b2,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b4,leftstick:b10,lefttrigger:a3,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b11,righttrigger:a4,rightx:a2,righty:a5,start:b9,x:b0,y:b3,platform:Mac OS X,
 )===";
-}
-
-#endif
 
 #endif

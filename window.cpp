@@ -149,6 +149,7 @@ static void poll_events()
             {
                 if(GamepadDown[idx])
                 {
+                    GamepadActive = true;
                     GamepadReleased[idx] = true;
                 }
                 GamepadDown[idx] = false;

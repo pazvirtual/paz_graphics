@@ -1,11 +1,9 @@
-#ifndef PAZ_GRAPHICS_APP_DELEGATE_HH
-#define PAZ_GRAPHICS_APP_DELEGATE_HH
-
 #include "detect_os.hpp"
 
 #ifdef PAZ_MACOS
 
 #include "PAZ_Graphics"
+#import "gamepad_macos.hh"
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <Cocoa/Cocoa.h>
@@ -21,8 +19,7 @@
 @property(readonly) paz::CursorMode cursorMode;
 - (id)initWithTitle:(std::string)title;
 - (void)setCursorMode:(paz::CursorMode)mode;
+- (bool)getGamepadState:(paz::GamepadState*)state;
 @end
-
-#endif
 
 #endif
