@@ -49,11 +49,11 @@ default: $(OBJ)
 	make -C examples
 
 ifneq ($(REINSTALLHEADER), 0)
-install:
+install: $(PROJNAME) lib$(LIBNAME).a
 	cp $(PROJNAME) $(INCLPATH)/
 	cp lib$(LIBNAME).a $(LIBPATH)/
 else
-install:
+install: $(PROJNAME) lib$(LIBNAME).a
 	cp lib$(LIBNAME).a $(LIBPATH)/
 endif
 
