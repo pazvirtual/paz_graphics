@@ -575,39 +575,28 @@ void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
 
     if(_data->_shader._thickLines)
     {
-        IndexBuffer indices;
         glBindVertexArray(vertices._data->_id);
         if(type == PrimitiveType::LineStrip)
         {
-#if 0
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_lineStripId);
             glDrawElements(GL_LINE_STRIP_ADJACENCY, indices._data->_numIndices +
                 2, GL_UNSIGNED_INT, 0);
-#else
-throw std::logic_error("NOT IMPLEMENTED");
-#endif
         }
         else if(type == PrimitiveType::LineLoop)
         {
-#if 0
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_lineLoopId);
             glDrawElements(GL_LINE_STRIP_ADJACENCY, indices._data->_numIndices +
                 3, GL_UNSIGNED_INT, 0);
-#else
-throw std::logic_error("NOT IMPLEMENTED");
-#endif
         }
         else if(type == PrimitiveType::Lines)
         {
-#if 0
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ??);
-            for(??)
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_thickLinesId);
+            for(unsigned int i = 0; i < indices._data->_numIndices/2; ++i)
             {
-                glDrawElements(GL_LINE_STRIP_ADJACENCY, ??);
+                glDrawElements(GL_LINE_STRIP_ADJACENCY, 4, GL_UNSIGNED_INT,
+                    reinterpret_cast<void*>(4*sizeof(unsigned int)*static_cast<
+                    std::uintptr_t>(i)));
             }
-#else
-throw std::logic_error("NOT IMPLEMENTED");
-#endif
         }
         else
         {
