@@ -60,6 +60,7 @@ print-% : ; @echo $* = $($*)
 
 .PHONY: test
 default: test
+	$(MAKE) -C examples
 
 ifeq ($(OSPRETTY), macOS)
 lib$(LIBNAME).a: lib$(LIBNAME)_arm64.a lib$(LIBNAME)_x86_64.a
@@ -119,6 +120,7 @@ analyze: $(OBJCSRC)
 clean:
 	$(RM) *.o *.a
 	$(MAKE) -C test clean
+	$(MAKE) -C examples clean
 
 zip: $(ZIPCONTENTS)
 	zip -j $(ZIPNAME).zip $(ZIPCONTENTS)
