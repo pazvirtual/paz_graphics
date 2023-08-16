@@ -1,4 +1,4 @@
-#include "opengl2metal.hpp"
+#include "shading_lang.hpp"
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -6,7 +6,7 @@
 #include <map>
 #include <regex>
 
-std::string paz::frag2metal(const std::string& src)
+std::string paz::frag2hlsl(const std::string& src)
 {
     std::istringstream in(src);
     std::ostringstream out;
@@ -23,15 +23,11 @@ std::string paz::frag2metal(const std::string& src)
     bool usesGlFragDepth = false;
     bool usesGlPointCoord = false;
 
-    std::unordered_map<std::string, std::pair<std::string, bool>> buffers;
+    std::unordered_map<std::string, std::pair<std::string, int>> buffers;
     std::unordered_map<std::string, std::string> textures;
-    std::map<std::string, std::pair<std::string, bool>> inputs;
+    std::vector<std::pair<std::string, std::pair<std::string, bool>>> inputs;
     std::map<int, std::pair<std::string, std::string>> outputs;
     std::unordered_set<std::string> structs;
-
-    // Include headers.
-    out << "#include <metal_stdlib>" << std::endl << "#include <simd/simd.h>" <<
-        std::endl << "using namespace metal;" << std::endl;
 
     // Make it easier to pass around textures and their samplers.
     out << 1 + R"===(
@@ -154,69 +150,69 @@ int2 textureSize(thread const wrap_depth2d<T>& tex, thread int lod)
 
     // Define reinterpretation functions.
     out << 1 + R"===(
-auto floatBitsToInt(float v)
+int floatBitsToInt(float v)
 {
-    return as_type<int>(v);
+    return asint(v);
 }
-auto floatBitsToInt(thread const float2& v)
+int floatBitsToInt(thread const float2& v)
 {
-    return as_type<int2>(v);
+    return asint(v);
 }
-auto floatBitsToInt(thread const float3& v)
+int floatBitsToInt(thread const float3& v)
 {
-    return as_type<int3>(v);
+    return asint(v);
 }
-auto floatBitsToInt(thread const float4& v)
+int floatBitsToInt(thread const float4& v)
 {
-    return as_type<int4>(v);
+    return asint(v);
 }
-auto floatBitsToUint(float v)
+uint floatBitsToUint(float v)
 {
-    return as_type<uint>(v);
+    return asuint(v);
 }
-auto floatBitsToUint(thread const float2& v)
+uint floatBitsToUint(thread const float2& v)
 {
-    return as_type<uint2>(v);
+    return asuint(v);
 }
-auto floatBitsToUint(thread const float3& v)
+uint floatBitsToUint(thread const float3& v)
 {
-    return as_type<uint3>(v);
+    return asuint(v);
 }
-auto floatBitsToUint(thread const float4& v)
+uint floatBitsToUint(thread const float4& v)
 {
-    return as_type<uint4>(v);
+    return asuint(v);
 }
-auto intBitsToFloat(int v)
+float intBitsToFloat(int v)
 {
-    return as_type<float>(v);
+    return asfloat(v);
 }
-auto intBitsToFloat(thread const int2& v)
+float intBitsToFloat(thread const int2& v)
 {
-    return as_type<float2>(v);
+    return asfloat(v);
 }
-auto intBitsToFloat(thread const int3& v)
+float intBitsToFloat(thread const int3& v)
 {
-    return as_type<float3>(v);
+    return asfloat(v);
 }
-auto intBitsToFloat(thread const int4& v)
+float intBitsToFloat(thread const int4& v)
 {
-    return as_type<float4>(v);
+    return asfloat(v);
 }
-auto uintBitsToFloat(uint v)
+float uintBitsToFloat(uint v)
 {
-    return as_type<float>(v);
+    return asfloat(v);
 }
-auto uintBitsToFloat(thread const uint2& v)
+float uintBitsToFloat(thread const uint2& v)
 {
-    return as_type<float2>(v);
+    return asfloat(v);
 }
-auto uintBitsToFloat(thread const uint3& v)
+float uintBitsToFloat(thread const uint3& v)
 {
-    return as_type<float3>(v);
+    return asfloat(v);
 }
-auto uintBitsToFloat(thread const uint4& v)
+float uintBitsToFloat(thread const uint4& v)
 {
-    return as_type<float4>(v);
+    return asfloat(v);
 }
 )===";
 
@@ -421,10 +417,9 @@ auto uintBitsToFloat(thread const uint4& v)
             if(numOpen == numClose)
             {
                 mode = Mode::Fun;
-                std::string sig;
                 try
                 {
-                    sig = process_sig(sigBuffer.str(), curArgNames);
+                    process_sig(sigBuffer.str(), curArgNames);
                 }
                 catch(const std::exception& e)
                 {
@@ -432,7 +427,7 @@ auto uintBitsToFloat(thread const uint4& v)
                         "ailed to process private function signature: " + e.
                         what());
                 }
-                out << sig << std::endl;
+                out << line << std::endl;
                 sigBuffer.clear();
                 numOpen = 0;
                 numClose = 0;
@@ -457,12 +452,12 @@ auto uintBitsToFloat(thread const uint4& v)
             for(const auto& n : inputs)
             {
                 line = std::regex_replace(line, std::regex("\\b" + n.first +
-                    "\\b"), "in." + n.first);
+                    "\\b"), "input." + n.first);
             }
             for(const auto& n : outputs)
             {
                 line = std::regex_replace(line, std::regex("\\b" + n.second.
-                    first + "\\b"), "out." + n.second.first);
+                    first + "\\b"), "output." + n.second.first);
             }
             if(!usesGlFragDepth && std::regex_match(line, std::regex(".*\\bgl_F"
                 "ragDepth\\b.*")))
@@ -470,16 +465,16 @@ auto uintBitsToFloat(thread const uint4& v)
                 usesGlFragDepth = true;
             }
             line = std::regex_replace(line, std::regex("\\bgl_FragDepth\\b"),
-                "out.glFragDepth");
+                "output.glFragDepth");
             line = std::regex_replace(line, std::regex("\\bgl_FragCoord\\b"),
-                "in.glFragCoord");
+                "input.glFragCoord");
             if(!usesGlPointCoord && std::regex_match(line, std::regex(".*\\bgl_"
                 "PointCoord\\b.*")))
             {
                 usesGlPointCoord = true;
             }
             line = std::regex_replace(line, std::regex("\\bgl_PointCoord\\b"),
-                "in.glPointCoord");
+                "input.glPointCoord");
             mainBuffer << line << std::endl;
             continue;
         }
@@ -530,12 +525,15 @@ auto uintBitsToFloat(thread const uint4& v)
             }
             else
             {
-                const bool isPointer = (name.back() == ']');
-                if(isPointer)
+                int size = -1;
+                if(name.back() == ']')
                 {
-                    name = name.substr(0, name.find('['));
+                    const auto pos = name.find('[');
+                    size = std::stoi(name.substr(pos + 1, name.size() - pos -
+                        2));
+                    name = name.substr(0, pos);
                 }
-                buffers[name] = {type, isPointer};
+                buffers[name] = {type, size};
             }
             continue;
         }
@@ -545,7 +543,7 @@ auto uintBitsToFloat(thread const uint4& v)
             const std::size_t pos = dec.find_last_of(' ');
             const std::string type = dec.substr(0, pos);
             const std::string name = dec.substr(pos + 1);
-            inputs[name] = {type, false};
+            inputs.push_back({name, {type, false}});
             continue;
         }
         if(std::regex_match(line, std::regex("flat in\\s+.*")))
@@ -554,7 +552,7 @@ auto uintBitsToFloat(thread const uint4& v)
             const std::size_t pos = dec.find_last_of(' ');
             const std::string type = dec.substr(0, pos);
             const std::string name = dec.substr(pos + 1);
-            inputs[name] = {type, true};
+            inputs.push_back({name, {type, true}});
             continue;
         }
         if(std::regex_match(line, std::regex("layout\\b.*")))
@@ -580,10 +578,9 @@ auto uintBitsToFloat(thread const uint4& v)
             if(numOpen == numClose)
             {
                 mode = Mode::Fun;
-                std::string sig;
                 try
                 {
-                    sig = process_sig(line, curArgNames);
+                    process_sig(line, curArgNames);
                 }
                 catch(const std::exception& e)
                 {
@@ -591,7 +588,7 @@ auto uintBitsToFloat(thread const uint4& v)
                         "ailed to process private function signature: " + e.
                         what());
                 }
-                out << sig << std::endl;
+                out << line << std::endl;
             }
             else
             {
@@ -607,16 +604,27 @@ auto uintBitsToFloat(thread const uint4& v)
     }
 
     // Append main function.
+    for(const auto& n : buffers)
+    {
+        out << "uniform " << n.second.first << " " << n.first << (n.second.
+            second < 0 ? "" : "[" + std::to_string(n.second.second) + "]") <<
+            std::endl;
+    }
+    for(const auto& n : textures)
+    {
+        out << "uniform " << n.second << " " << n.first << "Texture;" << std::
+            endl << "uniform sampler " << n.first << "Sampler;" << std::endl;
+    }
     out << "struct InputData" << std::endl << "{" << std::endl << "    float4 g"
-        "lFragCoord [[position]];" << std::endl;
+        "lFragCoord : SV_Position;" << std::endl;
     if(usesGlPointCoord)
     {
-        out << "    float2 glPointCoord [[point_coord]];" << std::endl;
+        out << "    float2 glPointCoord : SV_Position;" << std::endl;
     }
     for(const auto& n : inputs)
     {
-        out << "    " << n.second.first << " " << n.first << (n.second.second ?
-            " [[flat]]" : "") << ";" << std::endl;
+        out << "    " << (n.second.second ? "nointerpolation " : "") << n.
+            second.first << " " << n.first << ";" << std::endl;
     }
     out << "};" << std::endl;
     out << "struct OutputData" << std::endl << "{" << std::endl;
@@ -631,21 +639,6 @@ auto uintBitsToFloat(thread const uint4& v)
     }
     out << "};" << std::endl;
     out << "fragment OutputData fragMain(InputData in [[stage_in]]";
-    int b = 0;
-    for(const auto& n : buffers)
-    {
-        out << ", constant " << n.second.first << (n.second.second ? "* " :
-            "& ") << n.first << " [[buffer(" << b << ")]]";
-        ++b;
-    }
-    int t = 0;
-    for(const auto& n : textures)
-    {
-        out << ", " << n.second << " " << n.first << "Texture [[texture(" << t
-            << ")]]" << ", sampler " << n.first << "Sampler [[sampler(" << t <<
-            ")]]";
-        ++t;
-    }
     out << ")" << std::endl << "{" << std::endl;
     for(const auto& n : textures)
     {

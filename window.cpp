@@ -61,9 +61,9 @@ OutputData main(InputData input)
 }
 )===";
 static const std::string QuadFragSrc = 1 + R"===(
-Texture2D tex;
-SamplerState texSampler;
-float gamma;
+uniform Texture2D tex;
+uniform SamplerState texSampler;
+uniform float gamma;
 struct InputData
 {
     float4 glPosition : SV_Position; //TEMP - bad if necessary !
@@ -79,6 +79,7 @@ OutputData main(InputData input)
     output.color = tex.Sample(texSampler, input.uv);
 //    output.color.rgb = pow(output.color.rgb, float3(1./gamma, 1./gamma, 1./
 //        gamma));
+output.color.r = 0.2;
     return output;
 }
 )===";

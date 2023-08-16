@@ -5,7 +5,7 @@
 #include "PAZ_Graphics"
 #import "app_delegate.hh"
 #import "view_controller.hh"
-#include "opengl2metal.hpp"
+#include "shading_lang.hpp"
 #include "window.hpp"
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
