@@ -170,47 +170,46 @@
     static const int option = static_cast<int>(paz::Window::Key::LeftAlt);
     static const int command = static_cast<int>(paz::Window::Key::LeftSuper);
 
-    if([event modifierFlags] & NSEventModifierFlagShift && !_keyDown[shift])
+    if([event modifierFlags]&NSEventModifierFlagShift && !_keyDown[shift])
     {
         _keyDown[shift] = true;
         _keyPressed[shift] = true;
     }
-    else if([event modifierFlags] | NSEventModifierFlagShift && _keyDown[shift])
+    else if([event modifierFlags]|NSEventModifierFlagShift && _keyDown[shift])
     {
         _keyDown[shift] = false;
         _keyReleased[shift] = true;
     }
 
-    if([event modifierFlags] & NSEventModifierFlagControl && !_keyDown[control])
+    if([event modifierFlags]&NSEventModifierFlagControl && !_keyDown[control])
     {
         _keyDown[control] = true;
         _keyPressed[control] = true;
     }
-    else if([event modifierFlags] | NSEventModifierFlagControl && _keyDown[
+    else if([event modifierFlags]|NSEventModifierFlagControl && _keyDown[
         control])
     {
         _keyDown[control] = false;
         _keyReleased[control] = true;
     }
 
-    if([event modifierFlags] & NSEventModifierFlagOption && !_keyDown[option])
+    if([event modifierFlags]&NSEventModifierFlagOption && !_keyDown[option])
     {
         _keyDown[option] = true;
         _keyPressed[option] = true;
     }
-    else if([event modifierFlags] | NSEventModifierFlagOption && _keyDown[
-        option])
+    else if([event modifierFlags]|NSEventModifierFlagOption && _keyDown[option])
     {
         _keyDown[option] = false;
         _keyReleased[option] = true;
     }
 
-    if([event modifierFlags] & NSEventModifierFlagCommand && !_keyDown[command])
+    if([event modifierFlags]&NSEventModifierFlagCommand && !_keyDown[command])
     {
         _keyDown[command] = true;
         _keyPressed[command] = true;
     }
-    else if([event modifierFlags] | NSEventModifierFlagCommand && _keyDown[
+    else if([event modifierFlags]|NSEventModifierFlagCommand && _keyDown[
         command])
     {
         _keyDown[command] = false;

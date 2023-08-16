@@ -44,6 +44,22 @@ void paz::Window::Init()
     }
 }
 
+void paz::Window::MakeFullscreen()
+{
+    if(!([[APP_DELEGATE window] styleMask]&NSWindowStyleMaskFullScreen))
+    {
+        [[APP_DELEGATE window] toggleFullscreen];
+    }
+}
+
+void paz::Window::MakeWindowed()
+{
+    if([[APP_DELEGATE window] styleMask]&NSWindowStyleMaskFullScreen)
+    {
+        [[APP_DELEGATE window] toggleFullscreen];
+    }
+}
+
 // ...
 
 int paz::Window::Width()

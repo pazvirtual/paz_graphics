@@ -162,7 +162,6 @@ int main()
         }
         if(paz::Window::KeyPressed(paz::Window::Key::F))
         {
-/*
             if(paz::Window::IsFullscreen())
             {
                 paz::Window::MakeWindowed();
@@ -171,7 +170,6 @@ int main()
             {
                 paz::Window::MakeFullscreen();
             }
-*/
         }
         if(paz::Window::MousePressed(0))
         {
@@ -213,8 +211,6 @@ int main()
             vertices0, indices);
         r0.end();
 
-        // Need to confirm that this (changing uniforms and drawing again) works
-        // on Metal.
         r1.begin({paz::RenderPass::LoadAction::Clear});
         r1.read("font", font);
         r1.uniform("aspectRatio", paz::Window::AspectRatio());
@@ -268,6 +264,7 @@ int main()
         r3.begin();
         r3.uniform("factor", (float)std::abs(y));
         r3.read("source", blended);
+        r3.uniform("aspectRatio", (float)paz::Window::AspectRatio());
         r3.primitives(paz::RenderPass::PrimitiveType::Triangles, quadVertices);
         r3.end();
     });
