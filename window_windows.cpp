@@ -784,9 +784,6 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         }
         case WM_MOUSEMOVE:
         {
-            const int x = GET_X_LPARAM(lParam);
-            const int y = GET_Y_LPARAM(lParam);
-
             if(!CursorTracked)
             {
                 TRACKMOUSEEVENT tme = {};
@@ -802,6 +799,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 break;
             }
 
+            const int x = GET_X_LPARAM(lParam);
+            const int y = GET_Y_LPARAM(lParam);
             if(VirtMousePos.first != x || VirtMousePos.second != y)
             {
                 GamepadActive = false;
@@ -1585,13 +1584,9 @@ void paz::Window::PollEvents()
 
     if(CursorDisabled)
     {
-        if(PrevMousePos.first != WindowWidth/2 || PrevMousePos.second !=
-            WindowHeight/2)
-        {
-            PrevMousePos.first = WindowWidth/2;
-            PrevMousePos.second = WindowHeight/2;
-            center_cursor();
-        }
+        VirtMousePos.first = WindowWidth/2;
+        VirtMousePos.second = WindowHeight/2;
+        center_cursor();
     }
 
     GamepadState state;
