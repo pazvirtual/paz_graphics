@@ -24,7 +24,7 @@ static DXGI_FORMAT dxgi_format(int dim, paz::DataType type)
             return DXGI_FORMAT_R32G32B32A32_FLOAT;
         }
     }
-    throw std::runtime_error("HERE");
+    throw std::runtime_error("INCOMPLETE");
 }
 
 paz::VertexBuffer::Data::~Data()
