@@ -7,7 +7,7 @@
 #include <regex>
 
 static const std::vector<std::string> unsupportedBuiltins = {"gl_PerVertex",
-    "gl_PointSize", "gl_ClipDistance"};
+    "gl_ClipDistance"};
 
 std::string paz::vert2metal(const std::string& src)
 {
@@ -24,6 +24,7 @@ std::string paz::vert2metal(const std::string& src)
     bool usesGlPosition = false;
     bool usesGlVertexId = false;
     bool usesGlLineWidth = false;
+    bool usesGlPointSize = false;
 
     std::unordered_map<std::string, std::pair<std::string, bool>> buffers;
     std::map<unsigned int, std::pair<std::string, std::string>> inputs;
@@ -235,6 +236,13 @@ std::string paz::vert2metal(const std::string& src)
             }
             line = std::regex_replace(line, std::regex("\\bgl_LineWidth\\b"),
                 "glLineWidth");
+            if(!usesGlPointSize && std::regex_match(line, std::regex(".*\\bgl_P"
+                "ointSize\\b.*")))
+            {
+                usesGlPointSize = true;
+            }
+            line = std::regex_replace(line, std::regex("\\bgl_PointSize\\b"),
+                "out.glPointSize");
             mainBuffer << line << std::endl;
             continue;
         }
@@ -326,6 +334,10 @@ std::string paz::vert2metal(const std::string& src)
     out << "};" << std::endl;
     out << "struct OutputData" << std::endl << "{" << std::endl << "    float4 "
         "glPosition [[position]];" << std::endl;
+    if(usesGlPointSize)
+    {
+        out << "    float glPointSize [[point_size]];" << std::endl;
+    }
     for(const auto& n : outputs)
     {
         out << "    " << n.second.first << " " << n.first << (n.second.second ?

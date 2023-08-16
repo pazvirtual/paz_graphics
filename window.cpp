@@ -196,6 +196,9 @@ paz::Initializer::Initializer()
     // Activate depth clamping (for logarithmic depth).
     glEnable(GL_DEPTH_CLAMP);
 
+    // Enable `gl_PointSize`.
+    glEnable(GL_PROGRAM_POINT_SIZE);
+
     // Use raw mouse input when cursor is disabled.
     if(glfwRawMouseMotionSupported())
     {

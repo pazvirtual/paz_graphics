@@ -19,6 +19,7 @@ std::string paz::frag2metal(const std::string& src)
     std::size_t numClose = 0;
 
     bool usesGlFragDepth = false;
+    bool usesGlPointCoord = false;
 
     std::unordered_map<std::string, std::pair<std::string, bool>> buffers;
     std::unordered_map<std::string, std::string> textures;
@@ -272,6 +273,13 @@ std::string paz::frag2metal(const std::string& src)
                 "out.glFragDepth");
             line = std::regex_replace(line, std::regex("\\bgl_FragCoord\\b"),
                 "in.glFragCoord");
+            if(!usesGlPointCoord && std::regex_match(line, std::regex(".*\\bgl_"
+                "PointCoord\\b.*")))
+            {
+                usesGlPointCoord = true;
+            }
+            line = std::regex_replace(line, std::regex("\\bgl_PointCoord\\b"),
+                "in.glPointCoord");
             mainBuffer << line << std::endl;
             continue;
         }
@@ -358,6 +366,10 @@ std::string paz::frag2metal(const std::string& src)
     // Append main function.
     out << "struct InputData" << std::endl << "{" << std::endl << "    float4 g"
         "lFragCoord [[position]];" << std::endl;
+    if(usesGlPointCoord)
+    {
+        out << "    float2 glPointCoord [[point_coord]];" << std::endl;
+    }
     for(const auto& n : inputs)
     {
         out << "    " << n.second.first << " " << n.first << (n.second.second ?
