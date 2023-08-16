@@ -46,9 +46,9 @@ REINSTALLHEADER := $(shell cmp -s $(PROJNAME) $(INCLPATH)/$(PROJNAME); echo $$?)
 print-% : ; @echo $* = $($*)
 
 default: lib$(LIBNAME).a
-	make -C test
+	$(MAKE) -C test
 	test/test
-	make -C examples
+	$(MAKE) -C examples
 
 lib$(LIBNAME).a: $(OBJ)
 	$(RM) lib$(LIBNAME).a
@@ -77,8 +77,8 @@ analyze: $(OBJCSRC)
 
 clean:
 	$(RM) $(OBJ) lib$(LIBNAME).a
-	make -C test clean
-	make -C examples clean
+	$(MAKE) -C test clean
+	$(MAKE) -C examples clean
 
 zip: $(PROJNAME) lib$(LIBNAME).a
 	zip -j $(ZIPNAME).zip $(PROJNAME) lib$(LIBNAME).a
