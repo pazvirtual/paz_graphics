@@ -1,5 +1,5 @@
 uniform sampler2D base;
-uniform int width;
+uniform float width;
 in vec2 uv;
 layout(location = 0) out vec4 color;
 void main()
