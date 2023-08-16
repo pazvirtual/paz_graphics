@@ -22,6 +22,8 @@ paz::IndexBuffer::Data::~Data()
     }
 }
 
+paz::IndexBuffer::IndexBuffer() {}
+
 paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
 {
     initialize();

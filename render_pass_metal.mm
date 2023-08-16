@@ -130,12 +130,7 @@ paz::RenderPass::Data::~Data()
     }
 }
 
-paz::RenderPass::RenderPass()
-{
-    initialize();
-
-    _data = std::make_shared<Data>();
-}
+paz::RenderPass::RenderPass() {}
 
 paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
     BlendMode blendMode)

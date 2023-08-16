@@ -151,6 +151,7 @@ namespace paz
         std::shared_ptr<Data> _data;
 
     public:
+        IndexBuffer();
         IndexBuffer(const unsigned int* data, std::size_t size);
         IndexBuffer(const std::vector<unsigned int>& data) : IndexBuffer(data.
             data(), data.size()) {}
