@@ -9,6 +9,8 @@
 #include "window.hpp"
 #include <d3dcompiler.h>
 
+static constexpr int TypeSize = 4;
+
 paz::VertexFunction::Data::~Data()
 {
     if(_shader)
@@ -43,7 +45,6 @@ static std::size_t process_uniforms(const std::vector<std::tuple<std::string,
     paz::DataType, int, int>>& in, std::unordered_map<std::string, std::tuple<
     std::size_t, paz::DataType, int>>& out)
 {
-    // Note that all basic data types are 32 b.
     if(in.empty())
     {
         return 0;
@@ -59,12 +60,12 @@ static std::size_t process_uniforms(const std::vector<std::tuple<std::string,
 
         // Constants must be 16 B-aligned.
         const auto size = std::get<2>(n);
-        if(offset%16 && (offset + 4*size - 1)/16 != offset/16)
+        if(offset%16 && (offset + TypeSize*size - 1)/16 != offset/16)
         {
             offset += 16 - offset%16;
         }
         out[std::get<0>(n)] = {offset, std::get<1>(n), std::get<2>(n)};
-        offset += 4*size;
+        offset += TypeSize*size;
     }
     return ((offset + 15)/16)*16;
 }

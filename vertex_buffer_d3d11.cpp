@@ -7,6 +7,8 @@
 #include "internal_data.hpp"
 #include "window.hpp"
 
+static constexpr int TypeSize = 4;
+
 paz::VertexBuffer::Data::~Data()
 {
     for(auto& n : _buffers)
@@ -23,17 +25,10 @@ void paz::VertexBuffer::Data::addAttribute(int dim, DataType type, const void*
 {
     checkSize(dim, size);
     _buffers.emplace_back();
-    _strides.push_back(dim*sizeof(float));
-    switch(type)
-    {
-        case DataType::SInt: size *= sizeof(int); break;
-        case DataType::UInt: size *= sizeof(unsigned int); break;
-        case DataType::Float: size *= sizeof(float); break;
-        default: throw std::logic_error("Invalid data type.");
-    }
+    _strides.push_back(TypeSize*dim);
     D3D11_BUFFER_DESC bufDescriptor = {};
     bufDescriptor.Usage = D3D11_USAGE_DEFAULT;
-    bufDescriptor.ByteWidth = size;
+    bufDescriptor.ByteWidth = TypeSize*size;
     bufDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     D3D11_SUBRESOURCE_DATA srData = {};
     srData.pSysMem = data;
@@ -48,7 +43,7 @@ void paz::VertexBuffer::Data::addAttribute(int dim, DataType type, const void*
     D3D11_INPUT_ELEMENT_DESC inputDescriptor = {};
     inputDescriptor.SemanticName = "ATTR";
     inputDescriptor.SemanticIndex = slot;
-    inputDescriptor.Format = dxgi_format(dim, paz::DataType::Float);
+    inputDescriptor.Format = dxgi_format(dim, type);
     inputDescriptor.InputSlot = slot;
     inputDescriptor.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
     inputDescriptor.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
@@ -92,19 +87,11 @@ void paz::VertexBuffer::addAttribute(int dim, DataType type)
     {
         throw std::runtime_error("Vertex buffer size has not been set.");
     }
-    std::size_t s = dim*_data->_numVertices;
-    switch(type)
-    {
-        case DataType::SInt: s *= sizeof(int); break;
-        case DataType::UInt: s *= sizeof(unsigned int); break;
-        case DataType::Float: s *= sizeof(float); break;
-        default: throw std::logic_error("Invalid data type.");
-    }
     _data->_buffers.emplace_back();
-    _data->_strides.push_back(dim*sizeof(float));
+    _data->_strides.push_back(TypeSize*dim);
     D3D11_BUFFER_DESC bufDescriptor = {};
     bufDescriptor.Usage = D3D11_USAGE_DYNAMIC;
-    bufDescriptor.ByteWidth = s;
+    bufDescriptor.ByteWidth = TypeSize*_data->_numVertices;
     bufDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     bufDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     const auto hr = d3d_device()->CreateBuffer(&bufDescriptor, nullptr, &_data->
