@@ -230,6 +230,7 @@ void paz::Texture::Data::ensureMipmaps()
 {
     if(_mipFilter != MipmapFilter::None)
     {
+        [RENDERER ensureCommandBuffer];
         id<MTLBlitCommandEncoder> blitEncoder = [[RENDERER commandBuffer]
             blitCommandEncoder];
         [blitEncoder generateMipmapsForTexture:static_cast<id<MTLTexture>>(
