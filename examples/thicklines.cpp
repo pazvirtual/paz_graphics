@@ -2,7 +2,7 @@
 
 static const std::string VertSrc = 1 + R"===(
 layout(location = 0) in vec2 pos;
-flat out float a;
+out float a;
 void main()
 {
     gl_Position = vec4(pos.x, pos.y, 0, 1);
@@ -13,10 +13,10 @@ void main()
 
 static const std::string FragSrc = 1 + R"===(
 layout(location = 0) out vec4 color;
-flat in float a;
+in float a;
 void main()
 {
-    color = vec4(a, 1. - a, 1, 1);
+    color = 0.5*vec4(a, 1. - a, 1, 1.);
 }
 )===";
 
@@ -68,7 +68,7 @@ int main()
     const paz::VertexFunction vert(VertSrc);
     const paz::FragmentFunction frag(FragSrc);
 
-    paz::RenderPass render(vert, frag);
+    paz::RenderPass render(vert, frag, paz::BlendMode::Additive);
 
     while(!paz::Window::Done())
     {
@@ -90,6 +90,7 @@ int main()
         }
 
         render.begin({paz::LoadAction::Clear});
+        render.cull(paz::CullMode::Back);
         if(mode == 0)
         {
             render.primitives(paz::PrimitiveType::Lines, vertices);

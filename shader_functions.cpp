@@ -172,25 +172,25 @@ void main()
         + paz_perpPrev)/paz_size;
     vec2 paz_v2 = glLineWidth[2]/paz_b*gl_in[2].gl_Position.w*normalize(paz_perp
         + paz_perpNext)/paz_size;
-    gl_Position = vec4(gl_in[1].gl_Position.xy - paz_v1, gl_in[1].gl_Position.
+    gl_Position = vec4(gl_in[1].gl_Position.xy + paz_v1, gl_in[1].gl_Position.
         zw);
 )===";
 
 static const std::string Src2 = 1 + R"===(
     EmitVertex();
-    gl_Position = vec4(gl_in[2].gl_Position.xy - paz_v2, gl_in[2].gl_Position.
+    gl_Position = vec4(gl_in[1].gl_Position.xy - paz_v1, gl_in[1].gl_Position.
         zw);
 )===";
 
 static const std::string Src3 = 1 + R"===(
     EmitVertex();
-    gl_Position = vec4(gl_in[1].gl_Position.xy + paz_v1, gl_in[1].gl_Position.
+    gl_Position = vec4(gl_in[2].gl_Position.xy + paz_v2, gl_in[2].gl_Position.
         zw);
 )===";
 
 static const std::string Src4 = 1 + R"===(
     EmitVertex();
-    gl_Position = vec4(gl_in[2].gl_Position.xy + paz_v2, gl_in[2].gl_Position.
+    gl_Position = vec4(gl_in[2].gl_Position.xy - paz_v2, gl_in[2].gl_Position.
         zw);
 )===";
 
@@ -277,7 +277,7 @@ paz::VertexFunction::VertexFunction(const std::string& src)
             _data->_id = compile_shader("#define gl_LineWidth glLineWidth\nout "
                 "float glLineWidth;\n" + modifiedSrc, GL_VERTEX_SHADER);
             _data->_thickLinesId = compile_shader(Src0 + block + Src1 + block0 +
-                Src2 + block1 + Src3 + block0 + Src4 + block1 + Src5,
+                Src2 + block0 + Src3 + block1 + Src4 + block1 + Src5,
                 GL_GEOMETRY_SHADER);
         }
         else
