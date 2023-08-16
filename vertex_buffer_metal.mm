@@ -15,6 +15,7 @@
 
 paz::VertexBuffer::Data::~Data()
 {
+    //TEMP - purging before `paz::Window::EndFrame()` will break rendering
     for(auto& n : _buffers)
     {
         if(n)

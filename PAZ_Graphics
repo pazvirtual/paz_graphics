@@ -234,6 +234,27 @@ namespace paz
         bool empty() const;
     };
 
+    class InstanceBuffer
+    {
+        friend class RenderPass;
+
+        struct Data;
+        std::shared_ptr<Data> _data;
+
+    public:
+        InstanceBuffer();
+        void attribute(int dim, const float* data, std::size_t size);
+        void attribute(int dim, const unsigned int* data, std::size_t size);
+        void attribute(int dim, const int* data, std::size_t size);
+        template<typename T, require_iterable<T>* = nullptr>
+        void attribute(int dim, const T& data)
+        {
+            attribute(dim, &*std::begin(data), std::distance(&*std::begin(data),
+                &*std::end(data)));
+        }
+        bool empty() const;
+    };
+
     class IndexBuffer
     {
         friend class RenderPass;
@@ -337,9 +358,9 @@ namespace paz
         void draw(PrimitiveType type, const VertexBuffer& vertices, const
             IndexBuffer& indices);
         void draw(PrimitiveType type, const VertexBuffer& vertices, const
-            VertexBuffer& instanceUniforms);
+            InstanceBuffer& instances);
         void draw(PrimitiveType type, const VertexBuffer& vertices, const
-            VertexBuffer& instanceUniforms, const IndexBuffer& indices);
+            InstanceBuffer& instances, const IndexBuffer& indices);
         Framebuffer framebuffer() const;
     };
 

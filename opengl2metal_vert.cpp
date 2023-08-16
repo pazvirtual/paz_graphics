@@ -26,9 +26,10 @@ std::string paz::vert2metal(const std::string& src)
     bool usesGlPosition = false;
     bool usesGlVertexId = false;
     bool usesGlPointSize = false;
+    bool usesGlInstanceId = false;
 
     std::unordered_map<std::string, std::pair<std::string, bool>> buffers;
-    std::map<unsigned int, std::pair<std::string, std::string>> inputs;
+    std::map<unsigned int, std::tuple<std::string, std::string, bool>> inputs;
     std::map<std::string, std::pair<std::string, bool>> outputs;
     std::unordered_set<std::string> structs;
 
@@ -202,7 +203,8 @@ auto uintBitsToFloat(thread const uint4& v)
                 throw std::runtime_error("Line " + std::to_string(l) + ": Shade"
                     "r outputs cannot be accessed outside of main function.");
             }
-            if(std::regex_match(line, std::regex(".*\\bgl_VertexID\\b.*")))
+            if(std::regex_match(line, std::regex(".*\\bgl_(Vertex|Instance)ID\\"
+                "b.*")))
             {
                 throw std::runtime_error("Line " + std::to_string(l) + ": Shade"
                     "r inputs cannot be accessed outside of main function.");
@@ -221,8 +223,9 @@ auto uintBitsToFloat(thread const uint4& v)
                 }
                 for(const auto& n : inputs)
                 {
-                    if(std::regex_match(line, std::regex(".*\\b" + n.second.
-                        first + "\\b.*")) && !curArgNames.count(n.second.first))
+                    if(std::regex_match(line, std::regex(".*\\b" + std::get<0>(
+                        n.second) + "\\b.*")) && !curArgNames.count(std::get<0>(
+                        n.second)))
                     {
                         throw std::runtime_error("Line " + std::to_string(l) +
                             ": Shader inputs cannot be accessed outside of main"
@@ -342,8 +345,14 @@ auto uintBitsToFloat(thread const uint4& v)
             }
             for(const auto& n : inputs)
             {
-                line = std::regex_replace(line, std::regex("\\b" + n.second.
-                    first + "\\b"), "in." + n.second.first);
+                if(std::get<2>(n.second))
+                {
+                    line = std::regex_replace(line, std::regex("\\b" + std::get<0>(n.second) + "\\b"), std::get<0>(n.second) + "[glInstanceId]");
+                }
+                else
+                {
+                    line = std::regex_replace(line, std::regex("\\b" + std::get<0>(n.second) + "\\b"), "in." + std::get<0>(n.second));
+                }
             }
             for(const auto& n : outputs)
             {
@@ -371,6 +380,13 @@ auto uintBitsToFloat(thread const uint4& v)
             }
             line = std::regex_replace(line, std::regex("\\bgl_PointSize\\b"),
                 "out.glPointSize");
+            if(!usesGlInstanceId && std::regex_match(line, std::regex(".*\\bgl_"
+                "InstanceID\\b.*")))
+            {
+                usesGlInstanceId = true;
+            }
+            line = std::regex_replace(line, std::regex("\\bgl_InstanceID\\b"),
+                "glInstanceId");
             mainBuffer << line << std::endl;
             continue;
         }
@@ -395,12 +411,16 @@ auto uintBitsToFloat(thread const uint4& v)
             const std::string layout = std::regex_replace(line, std::regex("^.*"
                 "location\\s*=\\s*([0-9]+).*$"), "$1");
             const int i = std::stoi(layout);
+            const bool isInstance = std::regex_match(line, std::regex(".*\\[\\["
+                "\\s*instance\\s*\\]\\].*"));
+            usesGlInstanceId |= isInstance;
             const std::string dec = std::regex_replace(line, std::regex("^.*in"
-                "\\s+(.*);$"), "$1");
+                "\\s+(.*)\\s" + std::string(isInstance ? "+\\[\\[\\s*instance\\"
+                "s*\\]\\]\\s*" : "*") + ";$"), "$1");
             const std::size_t pos = dec.find_last_of(' ');
             const std::string type = dec.substr(0, pos);
             const std::string name = dec.substr(pos + 1);
-            inputs[i] = {name, type};
+            inputs[i] = {name, type, isInstance};
             continue;
         }
         if(std::regex_match(line, std::regex("out\\s.*")))
@@ -464,10 +484,15 @@ auto uintBitsToFloat(thread const uint4& v)
 
     // Append main function.
     out << "struct InputData" << std::endl << "{" << std::endl;
+    int numAttrs = 0;
     for(const auto& n : inputs)
     {
-        out << "    " << n.second.second << " " << n.second.first <<
-            " [[attribute(" << n.first << ")]];" << std::endl;
+        if(!std::get<2>(n.second))
+        {
+            out << "    " << std::get<1>(n.second) << " " << std::get<0>(n.
+                second) << " [[attribute(" << n.first << ")]];" << std::endl;
+            ++numAttrs;
+        }
     }
     out << "};" << std::endl;
     out << "struct OutputData" << std::endl << "{" << std::endl << "    float4 "
@@ -487,7 +512,20 @@ auto uintBitsToFloat(thread const uint4& v)
     {
         out << ", uint glVertexId [[vertex_id]]";
     }
-    int b = inputs.size();
+    if(usesGlInstanceId)
+    {
+        out << ", uint glInstanceId [[instance_id]]";
+    }
+    int b = numAttrs;
+    for(const auto& n : inputs)
+    {
+        if(std::get<2>(n.second))
+        {
+            out << ", constant " << std::get<1>(n.second) << "* " << std::get<0
+                >(n.second) << " [[buffer(" << b << ")]]";
+            ++b;
+        }
+    }
     for(const auto& n : buffers)
     {
         out << ", constant " << n.second.first << (n.second.second ? "* " :

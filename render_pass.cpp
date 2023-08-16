@@ -680,7 +680,69 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     const VertexBuffer& instanceAttrs)
 {
-    throw std::logic_error("NOT IMPLEMENTED");
+    CHECK_PASS
+    check_attributes(vertices._data->_types, instanceAttrs._data->_types,
+        _data->_shader._attribTypes);
+
+    // Ensure that depth test mode and face culling mode do not persist.
+    if(!DepthCalledThisPass)
+    {
+        depth(DepthTestMode::Disable);
+    }
+    if(!CullCalledThisPass)
+    {
+        cull(CullMode::Disable);
+    }
+
+    GLuint vaoId;
+    glGenVertexArrays(1, &vaoId);
+    glBindVertexArray(vaoId);
+    for(std::size_t i = 0; i < vertices._data->_ids.size(); ++i)
+    {
+        const auto idx = i;
+        glEnableVertexAttribArray(idx);
+        glBindBuffer(GL_ARRAY_BUFFER, vertices._data->_ids[i]);
+        switch(vertices._data->_types[i])
+        {
+            CASE1(INT, INT, 1)
+            CASE1(INT_VEC2, INT, 2)
+            CASE1(INT_VEC4, INT, 4)
+            CASE1(UNSIGNED_INT, UNSIGNED_INT, 1)
+            CASE1(UNSIGNED_INT_VEC2, UNSIGNED_INT, 2)
+            CASE1(UNSIGNED_INT_VEC4, UNSIGNED_INT, 4)
+            CASE1(FLOAT, FLOAT, 1)
+            CASE1(FLOAT_VEC2, FLOAT, 2)
+            CASE1(FLOAT_VEC4, FLOAT, 4)
+            default: throw std::logic_error("Invalid type " + std::to_string(
+                vertices._data->_types[i]) + " for vertex attribute " + std::
+                to_string(i) + ".");
+        }
+    }
+    for(std::size_t i = 0; i < instanceAttrs._data->_ids.size(); ++i)
+    {
+        const auto idx = vertices._data->_ids.size() + i;
+        glEnableVertexAttribArray(idx);
+        glBindBuffer(GL_ARRAY_BUFFER, instanceAttrs._data->_ids[i]);
+        switch(instanceAttrs._data->_types[i])
+        {
+            CASE1(INT, INT, 1)
+            CASE1(INT_VEC2, INT, 2)
+            CASE1(INT_VEC4, INT, 4)
+            CASE1(UNSIGNED_INT, UNSIGNED_INT, 1)
+            CASE1(UNSIGNED_INT_VEC2, UNSIGNED_INT, 2)
+            CASE1(UNSIGNED_INT_VEC4, UNSIGNED_INT, 4)
+            CASE1(FLOAT, FLOAT, 1)
+            CASE1(FLOAT_VEC2, FLOAT, 2)
+            CASE1(FLOAT_VEC4, FLOAT, 4)
+            default: throw std::logic_error("Invalid type " + std::to_string(
+                vertices._data->_types[i]) + " for instance attribute " + std::
+                to_string(i) + ".");
+        }
+        glVertexAttribDivisor(idx, 1);
+    }
+    glDrawArraysInstanced(primitive_type(type), 0, vertices._data->_numVertices,
+        instanceAttrs._data->_numVertices);
+    glDeleteVertexArrays(1, &vaoId);
 }
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,

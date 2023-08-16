@@ -7,12 +7,14 @@
 #endif
 
 static constexpr float ZNear = 1.;
-static constexpr float ZFar = 5.;
+static constexpr float ZFar = 10.;
 static constexpr float YFov = 65.*M_PI/180.;
 static constexpr int Res = 2000;
 static constexpr int Size = 16;
 static constexpr int Scale = 16;
 static constexpr float Eps = 1e-4;
+
+static constexpr std::array<float, 3> InstanceOffsets = {-4.5f, 0.f, 4.5f};
 
 static constexpr std::array<float, 4*4> GroundPos =
 {
@@ -90,11 +92,13 @@ static const std::string ShadowVertSrc = 1 + R"===(
 layout(location = 0) in vec4 vertexPosition;
 layout(location = 1) in vec4 vertexNormal;
 layout(location = 2) in vec2 vertexUv;
+layout(location = 3) in float xOffset [[instance]];
 uniform mat4 lightProjection;
 uniform mat4 lightView;
 void main()
 {
-    gl_Position = lightProjection*lightView*vertexPosition;
+    vec4 pos = vertexPosition + vec4(xOffset, 0, 0, 0);
+    gl_Position = lightProjection*lightView*pos;
 }
 )===";
 
@@ -109,6 +113,7 @@ static const std::string SceneVertSrc = 1 + R"===(
 layout(location = 0) in vec4 vertexPosition;
 layout(location = 1) in vec4 vertexNormal;
 layout(location = 2) in vec2 vertexUv;
+layout(location = 3) in float xOffset [[instance]];
 uniform mat4 lightProjection;
 uniform mat4 lightView;
 uniform mat4 projection;
@@ -118,9 +123,10 @@ out vec4 lightSpcNor;
 out vec2 uv;
 void main()
 {
-    lightProjPos = lightProjection*lightView*vertexPosition;
+    vec4 pos = vertexPosition + vec4(xOffset, 0, 0, 0);
+    lightProjPos = lightProjection*lightView*pos;
     lightSpcNor = lightView*vertexNormal;
-    gl_Position = projection*view*vertexPosition;
+    gl_Position = projection*view*pos;
     uv = vertexUv;
 }
 )===";
@@ -153,10 +159,10 @@ static constexpr std::array<float, 16> lightView =
     0,              -S1,               C1, 0,
     0, -2.5*C1 + 0.5*S1, -2.5*S1 - 0.5*C1, 1
 };
-static const auto lightProjection = paz::perspective(YFov, 1., ZNear, ZFar);
+static const auto lightProjection = paz::perspective(2., 1., ZNear, ZFar);
 
 paz::Texture compute_shadow_map(const paz::VertexBuffer& groundVerts, const
-    paz::VertexBuffer& cubeVerts)
+    paz::VertexBuffer& cubeVerts, const paz::InstanceBuffer& instanceAttrs)
 {
     paz::RenderTarget shadowMap(Res, Res, paz::TextureFormat::Depth32Float,
         paz::MinMagFilter::Linear, paz::MinMagFilter::Linear);
@@ -173,9 +179,10 @@ paz::Texture compute_shadow_map(const paz::VertexBuffer& groundVerts, const
     calcShadows.depth(paz::DepthTestMode::Less);
     calcShadows.uniform("lightView", lightView);
     calcShadows.uniform("lightProjection", lightProjection);
-    calcShadows.draw(paz::PrimitiveType::TriangleStrip, groundVerts);
+    calcShadows.draw(paz::PrimitiveType::TriangleStrip, groundVerts,
+        instanceAttrs);
     calcShadows.cull(paz::CullMode::Front);
-    calcShadows.draw(paz::PrimitiveType::Triangles, cubeVerts);
+    calcShadows.draw(paz::PrimitiveType::Triangles, cubeVerts, instanceAttrs);
     calcShadows.end();
 
     return shadowMap;
@@ -195,6 +202,9 @@ int main(int, char** argv)
     cubeVerts.attribute(4, CubeNor);
     cubeVerts.attribute(2, CubeUv);
 
+    paz::InstanceBuffer instanceAttrs;
+    instanceAttrs.attribute(1, InstanceOffsets);
+
     paz::VertexBuffer quadVerts;
     quadVerts.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
@@ -213,7 +223,8 @@ int main(int, char** argv)
     paz::RenderPass scenePass(buff, sceneVert, sceneFrag);
     paz::RenderPass aaPass(quadVert, aaFrag);
 
-    const paz::Texture shadowMap = compute_shadow_map(groundVerts, cubeVerts);
+    const paz::Texture shadowMap = compute_shadow_map(groundVerts, cubeVerts,
+        instanceAttrs);
     paz::Image<std::uint8_t, 1> img(Scale*Size, Scale*Size);
     for(std::size_t i = 0; i < Size; ++i)
     {
@@ -263,8 +274,9 @@ int main(int, char** argv)
         scenePass.uniform("projection", projection);
         scenePass.uniform("lightView", lightView);
         scenePass.uniform("lightProjection", lightProjection);
-        scenePass.draw(paz::PrimitiveType::TriangleStrip, groundVerts);
-        scenePass.draw(paz::PrimitiveType::Triangles, cubeVerts);
+        scenePass.draw(paz::PrimitiveType::TriangleStrip, groundVerts,
+            instanceAttrs);
+        scenePass.draw(paz::PrimitiveType::Triangles, cubeVerts, instanceAttrs);
         scenePass.end();
 
         aaPass.begin();
