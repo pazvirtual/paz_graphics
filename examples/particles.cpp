@@ -10,7 +10,7 @@ static constexpr std::size_t NumParticles = 2000;
 static constexpr double ZDist = 0.;
 static constexpr double Side = 10.;
 static constexpr double MinDist = 1.;
-static constexpr double MaxLum = 2.;
+static constexpr float MaxLum = 2.f;
 
 thread_local std::mt19937_64 RandomEngine(0);
 
@@ -46,22 +46,45 @@ int main(int, char** argv)
     paz::VertexBuffer q;
     q.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
-    std::multimap<double, std::array<double, 6>> particles;
-    for(std::size_t i = 0; i < NumParticles; ++i)
+    paz::InstanceBuffer instances;
     {
-        double x = 0.;
-        double y = 0.;
-        double z = 0.;
-        double distSq = 0.;
-        while(distSq < MinDist*MinDist)
+        std::multimap<double, std::array<double, 3>> particles;
+        for(std::size_t i = 0; i < NumParticles; ++i)
         {
-            x = Side*2.*(uniform() - 0.5);
-            y = Side*2.*(uniform() - 0.5);
-            z = Side*2.*(uniform() - 0.5) - ZDist;
-            distSq = x*x + y*y + z*z;
+            double x = 0.;
+            double y = 0.;
+            double z = 0.;
+            double distSq = 0.;
+            while(distSq < MinDist*MinDist)
+            {
+                x = Side*2.*(uniform() - 0.5);
+                y = Side*2.*(uniform() - 0.5);
+                z = Side*2.*(uniform() - 0.5) - ZDist;
+                distSq = x*x + y*y + z*z;
+            }
+            particles.emplace(distSq, std::array<double, 3>{x, y, z});
         }
-        particles.emplace(distSq, std::array<double, 6>{x, y, z, MaxLum*
-            uniform(), MaxLum*uniform(), MaxLum*uniform()});
+
+        std::vector<float> origins;
+        std::vector<float> colors;
+        origins.reserve(4*NumParticles);
+        colors.reserve(4*NumParticles);
+        for(auto it = particles.rbegin(); it != particles.rend(); ++it)
+        {
+            for(int i = 0; i < 3; ++i)
+            {
+                origins.push_back(it->second[i]);
+            }
+            origins.push_back(1);
+            for(int i = 0; i < 3; ++i)
+            {
+                colors.push_back(MaxLum*uniform());
+            }
+            colors.push_back(1);
+        }
+
+        instances.addAttribute(4, origins);
+        instances.addAttribute(4, colors);
     }
 
     double time = 0.;
@@ -104,20 +127,12 @@ int main(int, char** argv)
         r.begin({paz::LoadAction::FillOnes});
         r.uniform("projection", p);
         r.uniform("view", v);
-        for(auto it = particles.rbegin(); it != particles.rend(); ++it)
-        {
-            r.uniform("origin", static_cast<float>(it->second[0]), static_cast<
-                float>(it->second[1]), static_cast<float>(it->second[2]));
-            r.uniform("distSq", static_cast<float>(it->first));
-            r.uniform("c", static_cast<float>(it->second[3]), static_cast<
-                float>(it->second[4]), static_cast<float>(it->second[5]));
-            r.draw(paz::PrimitiveType::TriangleStrip, q);
-        }
+        r.draw(paz::PrimitiveType::TriangleStrip, q, instances);
         r.end();
 
         u.begin();
         u.read("hdrRender", render);
-        u.uniform("whitePoint", static_cast<float>(0.95*MaxLum));
+        u.uniform("whitePoint", 1.2f*MaxLum);
         u.draw(paz::PrimitiveType::TriangleStrip, q);
         u.end();
 
