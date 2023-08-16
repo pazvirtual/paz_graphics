@@ -5,8 +5,6 @@
 #include "PAZ_Graphics"
 #import "renderer.hh"
 #include "window.hpp"
-#import <simd/simd.h>
-#import <ModelIO/ModelIO.h>
 
 @implementation Renderer
 {
