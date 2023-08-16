@@ -84,6 +84,10 @@ std::string paz::vert2metal(const std::string& src)
         {
             throw std::runtime_error("Array length method is not supported.");
         }
+        if(std::regex_match(line, std::regex(".*\\binverse\\b.*")))
+        {
+            throw std::runtime_error("Matrix inverse is not supported.");
+        }
 
         // Keep macro conditionals.
         if(std::regex_match(line, std::regex("\\s*#((end)?if|else|ifn?def).*")))
