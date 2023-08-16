@@ -231,7 +231,7 @@ int main(int, char** argv)
         if(paz::Window::KeyPressed(paz::Key::S))
         {
             paz::write_bmp(appDir + "/screenshot.bmp", paz::Window::
-                GetPixels());
+                ReadPixels());
         }
     }
 }
