@@ -23,10 +23,6 @@ void paz::RenderTarget::clean()
 
 void paz::RenderTarget::init(int width, int height)
 {
-    if(_hasBorder)
-    {
-        throw std::logic_error("RENDERTARGET INIT W/ BORDER NOT IMPLEMENTED");
-    }
     MTLTextureDescriptor* textureDescriptor = [[MTLTextureDescriptor alloc]
         init];
     [textureDescriptor setPixelFormat:pixel_format(_numChannels, _numBits,
@@ -52,24 +48,8 @@ paz::RenderTarget::RenderTarget(double scale, int numChannels, int numBits,
     _numChannels = numChannels;
     _numBits = numBits;
     _type = type;
-    _hasBorder = false;
     init(_scale*Window::Width(), _scale*Window::Height());
     createSampler(minFilter, magFilter, repeat);
-    paz::Window::RegisterTarget(this);
-}
-
-paz::RenderTarget::RenderTarget(double scale, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const std::
-    array<float, 4>& border)
-{
-    _scale = scale;
-    _numChannels = numChannels;
-    _numBits = numBits;
-    _type = type;
-    _border = border;
-    _hasBorder = true;
-    init(_scale*Window::Width(), _scale*Window::Height());
-    createSampler(minFilter, magFilter, false);
     paz::Window::RegisterTarget(this);
 }
 

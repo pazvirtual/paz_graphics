@@ -97,15 +97,9 @@ namespace paz
         Texture(int width, int height, int numChannels, int numBits, DataType
             type, MinMagFilter minFilter, MinMagFilter magFilter, bool repeat =
             false, const void* data = nullptr);
-        Texture(int width, int height, int numChannels, int numBits, DataType
-            type, MinMagFilter minFilter, MinMagFilter magFilter, const std::
-            array<float, 4>& border, const void* data = nullptr);
         void init(int width, int height, int numChannels, int numBits, DataType
             type, MinMagFilter minFilter, MinMagFilter magFilter, bool repeat =
             false, const void* data = nullptr);
-        void init(int width, int height, int numChannels, int numBits, DataType
-            type, MinMagFilter minFilter, MinMagFilter magFilter, const std::
-            array<float, 4>& border, const void* data = nullptr);
         virtual void resize(int width, int height);
     };
 
@@ -117,8 +111,6 @@ namespace paz
         int _numChannels;
         int _numBits;
         DataType _type;
-        std::array<float, 4> _border;
-        bool _hasBorder;
 
         void clean();
         void init(int width, int height);
@@ -130,9 +122,6 @@ namespace paz
         RenderTarget(double scale, int numChannels, int numBits, DataType type,
             MinMagFilter minFilter, MinMagFilter magFilter, bool repeat =
             false);
-        RenderTarget(double scale, int numChannels, int numBits, DataType type,
-            MinMagFilter minFilter, MinMagFilter magFilter, const std::array<
-            float, 4>& border);
         void resize(int width, int height) override;
     };
 
@@ -142,9 +131,6 @@ namespace paz
         DepthStencilTarget(double scale, int numBits, DataType type,
             MinMagFilter minFilter, MinMagFilter magFilter, bool repeat =
             false);
-        DepthStencilTarget(double scale, int numBits, DataType type,
-            MinMagFilter minFilter, MinMagFilter magFilter, const std::array<
-            float, 4>& border);
     };
 
     class VertexBuffer

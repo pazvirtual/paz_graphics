@@ -27,16 +27,6 @@ paz::RenderTarget::RenderTarget(double scale, int numChannels, int numBits,
     paz::Window::RegisterTarget(this);
 }
 
-paz::RenderTarget::RenderTarget(double scale, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const std::
-    array<float, 4>& border)
-{
-    _scale = scale;
-    Texture::init(_scale*Window::Width(), _scale*Window::Height(), numChannels,
-        numBits, type, minFilter, magFilter, border);
-    paz::Window::RegisterTarget(this);
-}
-
 void paz::RenderTarget::resize(GLsizei width, GLsizei height)
 {
     Texture::resize(_scale*width, _scale*height);

@@ -71,21 +71,6 @@ void paz::Texture::init(int width, int height, int numChannels, int numBits,
     }
 }
 
-paz::Texture::Texture(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const std::
-    array<float, 4>& border, const void* data)
-{
-    init(width, height, numChannels, numBits, type, minFilter, magFilter,
-        border, data);
-}
-
-void paz::Texture::init(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const std::
-    array<float, 4>& border, const void* data)
-{
-    throw std::runtime_error("TEXTURE CTOR W/ BORDER NOT IMPLEMENTED");
-}
-
 void paz::Texture::resize(int width, int height)
 {
     throw std::runtime_error("TEXTURE RESIZE NOT IMPLEMENTED");
