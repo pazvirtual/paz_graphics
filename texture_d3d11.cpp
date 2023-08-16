@@ -398,6 +398,22 @@ void paz::Texture::Data::resize(int width, int height)
         if(_texture)
         {
             _texture->Release();
+            _texture = nullptr;
+        }
+        if(_resourceView)
+        {
+            _resourceView->Release();
+            _resourceView = nullptr;
+        }
+        if(_rtView)
+        {
+            _rtView->Release();
+            _rtView = nullptr;
+        }
+        if(_dsView)
+        {
+            _dsView->Release();
+            _dsView = nullptr;
         }
         _width = _scale*width;
         _height = _scale*height;

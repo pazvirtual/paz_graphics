@@ -882,6 +882,35 @@ float paz::Window::AspectRatio()
 
 void paz::resize_targets()
 {
+#ifdef PAZ_WINDOWS
+    // Release resources.
+    RenderTargetView->Release();
+
+    // Resize back buffer.
+    auto hr = SwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to resize back buffer (HRESULT " +
+            std::to_string(hr) + ").");
+    }
+
+    // Regenerate render target view.
+    ID3D11Texture2D* framebuffer;
+    hr = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<
+        void**>(&framebuffer));
+    if(hr)
+    {
+        throw std::runtime_error("Failed to get default framebuffer.");
+    }
+    hr = Device->CreateRenderTargetView(framebuffer, nullptr,
+        &RenderTargetView);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create default framebuffer view.");
+    }
+    framebuffer->Release();
+#endif
+
     for(auto n : initialize()._renderTargets)
     {
         reinterpret_cast<Texture::Data*>(n)->resize(Window::ViewportWidth(),

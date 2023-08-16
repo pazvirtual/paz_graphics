@@ -85,6 +85,9 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     d3d_context()->OMSetRenderTargets(numColor, colorTargets.data(), _data->
         _fbo->_depthStencilAttachment->_dsView);
 
+    static constexpr std::array<float, 4> black = {0, 0, 0, 1};
+    d3d_context()->ClearRenderTargetView(colorTargets[0], black.data()); //TEMP
+
     D3D11_VIEWPORT viewport = {};
     if(_data->_fbo->_width)
     {
