@@ -211,8 +211,7 @@ namespace paz
         Framebuffer& operator=(const Framebuffer&) = delete;
 
     public:
-        ~Framebuffer() { clean(); }
-        void clean();
+        ~Framebuffer();
         void attach(const RenderTarget& target);
         void attach(const DepthStencilTarget& target);
         Framebuffer();

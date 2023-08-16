@@ -9,10 +9,9 @@
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
     contentViewController] mtkView] device]
 
-void paz::Framebuffer::clean()
+paz::Framebuffer::~Framebuffer()
 {
     colorAttachments.clear();
-    depthAttachment = nullptr;
 }
 
 void paz::Framebuffer::attach(const RenderTarget& target)

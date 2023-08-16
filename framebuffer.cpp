@@ -30,11 +30,9 @@ static std::string framebuffer_status(GLenum status)
     return "Status code " + std::to_string(status) + " not recognized";
 }
 
-void paz::Framebuffer::clean()
+paz::Framebuffer::~Framebuffer()
 {
     glDeleteFramebuffers(1, &_id);
-    _numTextures = 0;
-    _hasDepthAttachment = false;
 }
 
 void paz::Framebuffer::attach(const RenderTarget& target)
