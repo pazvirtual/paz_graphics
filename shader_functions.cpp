@@ -111,7 +111,7 @@ void main()
 {
     vec2 size = vec2(paz_Width, paz_Height);
     vec2 para = normalize((gl_in[1].gl_Position.xy/gl_in[1].gl_Position.w -
-        gl_in[0].gl_Position.xy/gl_in[1].gl_Position.w)*size);
+        gl_in[0].gl_Position.xy/gl_in[0].gl_Position.w)*size);
     vec2 perp = vec2(-para.y, para.x)/size;
     float s0 = glLineWidth[0]*gl_in[0].gl_Position.w;
     float s1 = glLineWidth[1]*gl_in[1].gl_Position.w;
@@ -121,7 +121,7 @@ void main()
 
 static const std::string Src2 = 1 + R"===(
     EmitVertex();
-    gl_Position = vec4(gl_in[1].gl_Position.xy - s1*perp, gl_in[0].
+    gl_Position = vec4(gl_in[1].gl_Position.xy - s1*perp, gl_in[1].
         gl_Position.zw);
 )===";
 
@@ -133,7 +133,7 @@ static const std::string Src3 = 1 + R"===(
 
 static const std::string Src4 = 1 + R"===(
     EmitVertex();
-    gl_Position = vec4(gl_in[1].gl_Position.xy + s1*perp, gl_in[0].
+    gl_Position = vec4(gl_in[1].gl_Position.xy + s1*perp, gl_in[1].
         gl_Position.zw);
 )===";
 
