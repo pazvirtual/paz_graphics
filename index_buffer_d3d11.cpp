@@ -12,10 +12,16 @@ paz::IndexBuffer::Data::~Data()
 
 paz::IndexBuffer::IndexBuffer()
 {
+    initialize();
 }
 
 paz::IndexBuffer::IndexBuffer(std::size_t size)
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
+
+    _data->_numIndices = size;
 }
 
 paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)

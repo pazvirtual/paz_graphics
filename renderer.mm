@@ -33,7 +33,7 @@ fragment float4 frag(Data in [[stage_in]], texture2d<float> tex [[texture(0)]],
 }
 )===";
 
-static constexpr std::array<float, 16> QuadPos =
+static constexpr std::array<float, 8> QuadPos =
 {
      1, -1,
      1,  1,

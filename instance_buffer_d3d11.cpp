@@ -13,10 +13,16 @@ paz::InstanceBuffer::Data::~Data()
 
 paz::InstanceBuffer::InstanceBuffer()
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 paz::InstanceBuffer::InstanceBuffer(std::size_t size) : InstanceBuffer()
 {
+    initialize();
+
+    _data->_numInstances = size;
 }
 
 void paz::InstanceBuffer::Data::checkSize(int dim, std::size_t size)

@@ -22,23 +22,33 @@ paz::Texture::Data::~Data()
 
 paz::Texture::Texture()
 {
+    initialize();
 }
 
 paz::Texture::Texture(TextureFormat format, int width, int height, MinMagFilter
     minFilter, MinMagFilter magFilter, MipmapFilter mipFilter, WrapMode wrapS,
     WrapMode wrapT)
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 paz::Texture::Texture(TextureFormat format, int width, int height, const void*
     data, MinMagFilter minFilter, MinMagFilter magFilter, MipmapFilter
     mipFilter, WrapMode wrapS, WrapMode wrapT)
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 paz::Texture::Texture(const Image& image, MinMagFilter minFilter, MinMagFilter
     magFilter, MipmapFilter mipFilter, WrapMode wrapS, WrapMode wrapT)
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 paz::Texture::Texture(RenderTarget&& target) : _data(std::move(target._data)) {}
