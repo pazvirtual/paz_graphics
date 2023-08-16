@@ -380,7 +380,7 @@ void paz::Window::Resize(int width, int height, bool viewportCoords)
     resize_targets();
 }
 
-paz::Image<std::uint8_t, 3> paz::Window::ReadPixels()
+paz::Image<std::uint8_t, 4> paz::Window::ReadPixels()
 {
     initialize();
 
@@ -397,20 +397,20 @@ paz::Image<std::uint8_t, 3> paz::Window::ReadPixels()
         _texture) getBytes:bgraFlipped.data() bytesPerRow:4*width fromRegion:
         MTLRegionMake2D(0, 0, width, height) mipmapLevel:0];
 
-    Image<std::uint8_t, 3> rgb(width, height);
+    Image<std::uint8_t, 4> rgba(width, height);
     for(int y = 0; y < height; ++y)
     {
         for(int x = 0; x < width; ++x)
         {
-            for(int i = 0; i < 3; ++i)
+            for(int i = 0; i < 4; ++i)
             {
-                rgb[3*(width*y + x) + 2 - i] = bgraFlipped[4*(width*(height - 1
+                rgba[4*(width*y + x) + 3 - i] = bgraFlipped[4*(width*(height - 1
                     - y) + x) + i];
             }
         }
     }
 
-    return rgb;
+    return rgba;
 }
 
 float paz::Window::DpiScale()
