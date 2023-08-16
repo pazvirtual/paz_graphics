@@ -24,7 +24,7 @@ int main(int, char** argv)
 
     paz::Window::SetMinSize(640, 480);
 
-    paz::RenderTarget render(1., paz::TextureFormat::RGBA16Float);
+    paz::RenderTarget render(paz::TextureFormat::RGBA16Float);
     paz::Framebuffer renderFramebuffer;
     renderFramebuffer.attach(render);
 

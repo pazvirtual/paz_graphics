@@ -219,16 +219,21 @@ namespace paz
 
     public:
         Texture();
-        Texture(int width, int height, TextureFormat format, MinMagFilter
+        Texture(TextureFormat format, int width, int height, MinMagFilter
             minFilter = MinMagFilter::Nearest, MinMagFilter magFilter =
             MinMagFilter::Nearest, MipmapFilter mipFilter = MipmapFilter::None,
             WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::
             ClampToEdge);
-        Texture(RenderTarget&& target);
+        Texture(TextureFormat format, int width, int height, const void* data,
+            MinMagFilter minFilter = MinMagFilter::Nearest, MinMagFilter
+            magFilter = MinMagFilter::Nearest, MipmapFilter mipFilter =
+            MipmapFilter::None, WrapMode wrapS = WrapMode::ClampToEdge, WrapMode
+            wrapT = WrapMode::ClampToEdge);
         Texture(const Image& image, MinMagFilter minFilter = MinMagFilter::
             Nearest, MinMagFilter magFilter = MinMagFilter::Nearest,
             MipmapFilter mipFilter = MipmapFilter::None, WrapMode wrapS =
             WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::ClampToEdge);
+        Texture(RenderTarget&& target);
         int width() const;
         int height() const;
     };
@@ -236,12 +241,15 @@ namespace paz
     class RenderTarget : public Texture
     {
     public:
-        RenderTarget(double scale, TextureFormat format, MinMagFilter minFilter
+        RenderTarget(TextureFormat format, MinMagFilter minFilter =
+            MinMagFilter::Nearest, MinMagFilter magFilter = MinMagFilter::
+            Nearest, MipmapFilter mipFilter = MipmapFilter::None, WrapMode wrapS
+            = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::ClampToEdge);
+        RenderTarget(TextureFormat format, double scale, MinMagFilter minFilter
             = MinMagFilter::Nearest, MinMagFilter magFilter = MinMagFilter::
-            Nearest, MipmapFilter mipFilter = MipmapFilter::None, WrapMode
-            wrapS = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::
-            ClampToEdge);
-        RenderTarget(int width, int height, TextureFormat format, MinMagFilter
+            Nearest, MipmapFilter mipFilter = MipmapFilter::None, WrapMode wrapS
+            = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::ClampToEdge);
+        RenderTarget(TextureFormat format, int width, int height, MinMagFilter
             minFilter = MinMagFilter::Nearest, MinMagFilter magFilter =
             MinMagFilter::Nearest, MipmapFilter mipFilter = MipmapFilter::None,
             WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::

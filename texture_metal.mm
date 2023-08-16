@@ -104,24 +104,7 @@ paz::Texture::Texture()
     initialize();
 }
 
-paz::Texture::Texture(const Image& image, MinMagFilter minFilter, MinMagFilter
-    magFilter, MipmapFilter mipFilter, WrapMode wrapS, WrapMode wrapT)
-{
-    initialize();
-
-    _data = std::make_shared<Data>();
-    _data->_width = image.width();
-    _data->_height = image.height();
-    _data->_format = static_cast<TextureFormat>(image.format());
-    _data->_minFilter = minFilter;
-    _data->_magFilter = magFilter;
-    _data->_mipFilter = mipFilter;
-    _data->_wrapS = wrapS;
-    _data->_wrapT = wrapT;
-    _data->init(flip_image(image).bytes().data());
-}
-
-paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
+paz::Texture::Texture(TextureFormat format, int width, int height, MinMagFilter
     minFilter, MinMagFilter magFilter, MipmapFilter mipFilter, WrapMode wrapS,
     WrapMode wrapT)
 {
@@ -137,6 +120,41 @@ paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
     _data->_wrapS = wrapS;
     _data->_wrapT = wrapT;
     _data->init();
+}
+
+paz::Texture::Texture(TextureFormat format, int width, int height, const void*
+    data, MinMagFilter minFilter, MinMagFilter magFilter, MipmapFilter
+    mipFilter, WrapMode wrapS, WrapMode wrapT)
+{
+    initialize();
+
+    _data = std::make_shared<Data>();
+    _data->_width = width;
+    _data->_height = height;
+    _data->_format = format;
+    _data->_minFilter = minFilter;
+    _data->_magFilter = magFilter;
+    _data->_mipFilter = mipFilter;
+    _data->_wrapS = wrapS;
+    _data->_wrapT = wrapT;
+    _data->init(flip_image(data).bytes().data());
+}
+
+paz::Texture::Texture(const Image& image, MinMagFilter minFilter, MinMagFilter
+    magFilter, MipmapFilter mipFilter, WrapMode wrapS, WrapMode wrapT)
+{
+    initialize();
+
+    _data = std::make_shared<Data>();
+    _data->_width = image.width();
+    _data->_height = image.height();
+    _data->_format = static_cast<TextureFormat>(image.format());
+    _data->_minFilter = minFilter;
+    _data->_magFilter = magFilter;
+    _data->_mipFilter = mipFilter;
+    _data->_wrapS = wrapS;
+    _data->_wrapT = wrapT;
+    _data->init(flip_image(image).bytes().data());
 }
 
 paz::Texture::Texture(RenderTarget&& target) : _data(std::move(target._data)) {}
