@@ -1,5 +1,5 @@
 PROJNAME := PAZ_Graphics
-LIBNAME := $(shell tr '[:upper:]' '[:lower:]' <<< $(shell sed 's/_//g' <<< $(PROJNAME)))
+LIBNAME := $(shell echo $(PROJNAME) | sed 's/_//g' | tr '[:upper:]' '[:lower:]')
 ifeq ($(OS), Windows_NT)
     LIBPATH := /mingw64/lib
     INCLPATH := /mingw64/include
