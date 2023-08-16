@@ -58,8 +58,10 @@ struct paz::InstanceBuffer::Data
     unsigned int _id = 0;
     std::vector<unsigned int> _ids;
     std::vector<unsigned int> _types;
+    std::vector<int> _dims;
     Data();
     ~Data();
+    void addAttribute(int dim, DataType type);
 #endif
     std::size_t _numInstances = 0;
     void checkSize(int dim, std::size_t size);
