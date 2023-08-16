@@ -541,8 +541,8 @@ float4 uintBitsToFloat(in uint4 v)
     out << "};" << std::endl;
     out << "OutputData main(InputData input)" << std::endl << "{" << std::endl
         << "    OutputData output;" << std::endl << mainBuffer.str() << "    ou"
-        "tput.glPosition = mul(float4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.5, 0, 0"
-        ", 0," << std::endl << "        0.5, 1), output.glPosition);" << std::
+        "tput.glPosition = mul(float4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.5, 0.5,"
+        " 0," << std::endl << "        0, 0, 1), output.glPosition);" << std::
         endl << "    return output;" << std::endl << "}" << std::endl;
 
     return out.str();
