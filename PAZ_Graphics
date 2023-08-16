@@ -318,8 +318,8 @@ namespace paz
             uniform(name, &*std::begin(data), std::distance(&*std::begin(data),
                 &*std::end(data)));
         }
-        void primitives(PrimitiveType type, const VertexBuffer& vertices);
-        void indexed(PrimitiveType type, const VertexBuffer& vertices, const
+        void draw(PrimitiveType type, const VertexBuffer& vertices);
+        void draw(PrimitiveType type, const VertexBuffer& vertices, const
             IndexBuffer& indices);
         Framebuffer framebuffer() const;
     };

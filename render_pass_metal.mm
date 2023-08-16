@@ -611,8 +611,7 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
     }
 }
 
-void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
-    vertices)
+void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
 {
     check_attributes(vertices._data->_buffers, _data->_vertexAttributeStrides,
         vertices._data->_numVertices);
@@ -677,7 +676,7 @@ void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
     }
 }
 
-void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
+void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     const IndexBuffer& indices)
 {
     check_attributes(vertices._data->_buffers, _data->_vertexAttributeStrides,

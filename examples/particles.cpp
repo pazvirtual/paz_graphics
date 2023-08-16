@@ -88,7 +88,7 @@ int main(int, char** argv)
             r.uniform("origin", static_cast<float>(it->second[0]), static_cast<
                 float>(it->second[1]), static_cast<float>(it->second[2]));
             r.uniform("distSq", static_cast<float>(it->first));
-            r.primitives(paz::PrimitiveType::TriangleStrip, q);
+            r.draw(paz::PrimitiveType::TriangleStrip, q);
         }
         r.end();
 
@@ -96,7 +96,7 @@ int main(int, char** argv)
         u.read("hdrRender", render);
         u.uniform("whitePoint", 0.5f + 0.5f*static_cast<float>(std::sin(2.*
             time)));
-        u.primitives(paz::PrimitiveType::TriangleStrip, q);
+        u.draw(paz::PrimitiveType::TriangleStrip, q);
         u.end();
 
         paz::Window::EndFrame();

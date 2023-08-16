@@ -94,15 +94,15 @@ int main()
         render.cull(paz::CullMode::Back);
         if(mode == 0)
         {
-            render.primitives(paz::PrimitiveType::Lines, vertices);
+            render.draw(paz::PrimitiveType::Lines, vertices);
         }
         else if(mode == 1)
         {
-            render.primitives(paz::PrimitiveType::LineStrip, vertices);
+            render.draw(paz::PrimitiveType::LineStrip, vertices);
         }
         else
         {
-            render.primitives(paz::PrimitiveType::LineLoop, vertices);
+            render.draw(paz::PrimitiveType::LineLoop, vertices);
         }
         render.end();
 

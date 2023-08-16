@@ -66,8 +66,7 @@ int main(int, char** argv)
                 textPass.uniform("row", 0);
                 textPass.uniform("col", static_cast<int>(i));
                 textPass.uniform("character", c);
-                textPass.primitives(paz::PrimitiveType::TriangleStrip,
-                    quadVertices);
+                textPass.draw(paz::PrimitiveType::TriangleStrip, quadVertices);
             }
         }
         textPass.end();

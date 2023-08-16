@@ -166,11 +166,11 @@ int main(int, char** argv)
         scenePass.uniform("length", static_cast<float>(length));
         if(mode)
         {
-            scenePass.primitives(paz::PrimitiveType::LineLoop, triVertices1);
+            scenePass.draw(paz::PrimitiveType::LineLoop, triVertices1);
         }
         else
         {
-            scenePass.primitives(paz::PrimitiveType::Triangles, triVertices0);
+            scenePass.draw(paz::PrimitiveType::Triangles, triVertices0);
         }
         scenePass.end();
 
@@ -212,8 +212,7 @@ int main(int, char** argv)
                 textPass.uniform("row", row);
                 textPass.uniform("col", col);
                 textPass.uniform("character", c);
-                textPass.primitives(paz::PrimitiveType::TriangleStrip,
-                    quadVertices);
+                textPass.draw(paz::PrimitiveType::TriangleStrip, quadVertices);
             }
             ++col;
         }
@@ -224,7 +223,7 @@ int main(int, char** argv)
         postPass.read("source", scenePass.framebuffer().colorAttachment(0));
         postPass.uniform("aspectRatio", static_cast<float>(paz::Window::
             AspectRatio()));
-        postPass.primitives(paz::PrimitiveType::TriangleStrip, quadVertices);
+        postPass.draw(paz::PrimitiveType::TriangleStrip, quadVertices);
         postPass.end();
 
         paz::Window::EndFrame();
