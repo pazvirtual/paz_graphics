@@ -134,6 +134,13 @@ paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
 
 void paz::Texture::Data::init(const void* data)
 {
+    // This is because of Metal restrictions.
+    if((_format == TextureFormat::Depth16UNorm || _format == TextureFormat::
+        Depth32Float) && _mipFilter != MipmapFilter::None)
+    {
+        throw std::runtime_error("Depth/stencil textures do not support mipmapp"
+            "ing.");
+    }
     MTLTextureDescriptor* textureDescriptor = [MTLTextureDescriptor
         texture2DDescriptorWithPixelFormat:pixel_format(_format) width:_width
         height:_height mipmapped:(_mipFilter == MipmapFilter::None ? NO : YES)];
@@ -154,7 +161,8 @@ void paz::Texture::Data::init(const void* data)
     }
     if(!_sampler)
     {
-        _sampler = create_sampler(_minFilter, _magFilter, _wrapS, _wrapT);
+        _sampler = create_sampler(_minFilter, _magFilter, _mipFilter, _wrapS,
+            _wrapT);
     }
     ensureMipmaps();
 }

@@ -138,13 +138,14 @@ namespace paz
     public:
         RenderTarget(double scale, TextureFormat format, MinMagFilter minFilter
             = MinMagFilter::Nearest, MinMagFilter magFilter = MinMagFilter::
-            Nearest, WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT =
-            WrapMode::ClampToEdge, MipmapFilter mipFilter = MipmapFilter::None);
+            Nearest, MipmapFilter mipFilter = MipmapFilter::None, WrapMode
+            wrapS = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::
+            ClampToEdge);
         RenderTarget(int width, int height, TextureFormat format, MinMagFilter
             minFilter = MinMagFilter::Nearest, MinMagFilter magFilter =
-            MinMagFilter::Nearest, WrapMode wrapS = WrapMode::ClampToEdge,
-            WrapMode wrapT = WrapMode::ClampToEdge, MipmapFilter mipFilter =
-            MipmapFilter::None);
+            MinMagFilter::Nearest, MipmapFilter mipFilter = MipmapFilter::None,
+            WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::
+            ClampToEdge);
     };
 
     class VertexBuffer

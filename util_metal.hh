@@ -13,7 +13,7 @@ namespace paz
     MTLPixelFormat pixel_format(TextureFormat format);
     int bytes_per_pixel(TextureFormat format);
     id<MTLSamplerState> create_sampler(MinMagFilter minFilter, MinMagFilter
-        magFilter, WrapMode wrapS, WrapMode wrapT);
+        magFilter, MipmapFilter mipFilter, WrapMode wrapS, WrapMode wrapT);
 }
 
 #endif
