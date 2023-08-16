@@ -38,15 +38,15 @@ int floatBitsToInt(in float v)
 {
     return asint(v);
 }
-int floatBitsToInt(in float2 v)
+int2 floatBitsToInt(in float2 v)
 {
     return asint(v);
 }
-int floatBitsToInt(in float3 v)
+int3 floatBitsToInt(in float3 v)
 {
     return asint(v);
 }
-int floatBitsToInt(in float4 v)
+int4 floatBitsToInt(in float4 v)
 {
     return asint(v);
 }
@@ -54,15 +54,15 @@ uint floatBitsToUint(in float v)
 {
     return asuint(v);
 }
-uint floatBitsToUint(in float2 v)
+uint2 floatBitsToUint(in float2 v)
 {
     return asuint(v);
 }
-uint floatBitsToUint(in float3 v)
+uint3 floatBitsToUint(in float3 v)
 {
     return asuint(v);
 }
-uint floatBitsToUint(in float4 v)
+uint4 floatBitsToUint(in float4 v)
 {
     return asuint(v);
 }
@@ -70,15 +70,15 @@ float intBitsToFloat(in int v)
 {
     return asfloat(v);
 }
-float intBitsToFloat(in int2 v)
+float2 intBitsToFloat(in int2 v)
 {
     return asfloat(v);
 }
-float intBitsToFloat(in int3 v)
+float3 intBitsToFloat(in int3 v)
 {
     return asfloat(v);
 }
-float intBitsToFloat(in int4 v)
+float4 intBitsToFloat(in int4 v)
 {
     return asfloat(v);
 }
@@ -86,15 +86,15 @@ float uintBitsToFloat(in uint v)
 {
     return asfloat(v);
 }
-float uintBitsToFloat(in uint2 v)
+float2 uintBitsToFloat(in uint2 v)
 {
     return asfloat(v);
 }
-float uintBitsToFloat(in uint3 v)
+float3 uintBitsToFloat(in uint3 v)
 {
     return asfloat(v);
 }
-float uintBitsToFloat(in uint4 v)
+float4 uintBitsToFloat(in uint4 v)
 {
     return asfloat(v);
 }
@@ -469,7 +469,7 @@ float uintBitsToFloat(in uint4 v)
     {
         out << "uniform " << n.second.first << " " << n.first << (n.second.
             second < 0 ? "" : "[" + std::to_string(n.second.second) + "]") <<
-            std::endl;
+            ";" << std::endl;
     }
     out << "struct InputData" << std::endl << "{" << std::endl;
     for(const auto& n : inputs)
@@ -495,10 +495,10 @@ float uintBitsToFloat(in uint4 v)
             << i << ";" << std::endl;
     }
     out << "};" << std::endl;
-    out << "OutputData vertMain(InputData input)" << std::endl << "{" << std::
-        endl << "    OutputData output;" << std::endl << mainBuffer.str() << " "
-        "   output.glPosition = float4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.5, 0, "
-        "0, 0," << std::endl << "        0.5, 1)*output.glPosition;" << std::
+    out << "OutputData main(InputData input)" << std::endl << "{" << std::endl
+        << "    OutputData output;" << std::endl << mainBuffer.str() << "    ou"
+        "tput.glPosition = mul(output.glPosition, float4x4(1, 0, 0, 0, 0, 1, 0,"
+        " 0," << std::endl << "        0, 0, 0.5, 0.5, 0, 0, 0, 1));" << std::
         endl << "    return output;" << std::endl << "}" << std::endl;
 
     return out.str();
