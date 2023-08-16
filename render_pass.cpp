@@ -56,12 +56,102 @@ static void check_attributes(const std::vector<unsigned int>& a, const std::
     }
 }
 
+static void check_output(const std::pair<unsigned int, unsigned int>& n, paz::
+    TextureFormat format)
+{
+    bool mismatch = false;
+    if(n.second == GL_FLOAT)
+    {
+        mismatch = (format != paz::TextureFormat::R8UNorm && format != paz::
+            TextureFormat::R8SNorm && format != paz::TextureFormat::R16UNorm &&
+            format != paz::TextureFormat::R16SNorm && format != paz::
+            TextureFormat::R16Float && format != paz::TextureFormat::R32Float);
+    }
+    else if(n.second == GL_INT)
+    {
+        mismatch = (format != paz::TextureFormat::R8SInt && format != paz::
+            TextureFormat::R16SInt && format != paz::TextureFormat::R32SInt);
+    }
+    else if(n.second == GL_UNSIGNED_INT)
+    {
+        mismatch = (format != paz::TextureFormat::R8UInt && format != paz::
+            TextureFormat::R16UInt && format != paz::TextureFormat::R32UInt);
+    }
+    else if(n.second == GL_FLOAT_VEC2)
+    {
+        mismatch = (format != paz::TextureFormat::RG8UNorm && format != paz::
+            TextureFormat::RG8SNorm && format != paz::TextureFormat::RG16UNorm
+            && format != paz::TextureFormat::RG16SNorm && format != paz::
+            TextureFormat::RG16Float && format != paz::TextureFormat::
+            RG32Float);
+    }
+    else if(n.second == GL_INT_VEC2)
+    {
+        mismatch = (format != paz::TextureFormat::RG8SInt && format != paz::
+            TextureFormat::RG16SInt && format != paz::TextureFormat::RG32SInt);
+    }
+    else if(n.second == GL_UNSIGNED_INT_VEC2)
+    {
+        mismatch = (format != paz::TextureFormat::RG8UInt && format != paz::
+            TextureFormat::RG16UInt && format != paz::TextureFormat::RG32UInt);
+    }
+    else if(n.second == GL_FLOAT_VEC4)
+    {
+        mismatch = (format != paz::TextureFormat::RGBA8UNorm && format != paz::
+            TextureFormat::RGBA8SNorm && format != paz::TextureFormat::
+            RGBA16UNorm && format != paz::TextureFormat::RGBA16SNorm && format
+            != paz::TextureFormat::RGBA16Float && format != paz::TextureFormat::
+            RGBA32Float);
+    }
+    else if(n.second == GL_INT_VEC4)
+    {
+        mismatch = (format != paz::TextureFormat::RGBA8SInt && format != paz::
+            TextureFormat::RGBA16SInt && format != paz::TextureFormat::
+            RGBA32SInt);
+    }
+    else if(n.second == GL_UNSIGNED_INT_VEC4)
+    {
+        mismatch = (format != paz::TextureFormat::RGBA8UInt && format != paz::
+            TextureFormat::RGBA16UInt && format != paz::TextureFormat::
+            RGBA32UInt);
+    }
+    else
+    {
+        throw std::runtime_error("Invalid type for shader output " + std::
+            to_string(n.first) + ".");
+    }
+    if(mismatch)
+    {
+        throw std::runtime_error("Render target texture format does not match t"
+            "ype for shader output " + std::to_string(n.first) + ".");
+    }
+}
+
 paz::RenderPass::RenderPass() {}
 
 paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
-    const FragmentFunction& frag, BlendMode mode) : RenderPass(vert, frag, mode)
+    const FragmentFunction& frag, BlendMode mode)
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
+
     _data->_fbo = fbo._data;
+    _data->_shader.init(vert._data->_id, frag._data->_id, frag._data->
+        _outputTypes);
+    _data->_blendMode = mode;
+
+    for(const auto& n : _data->_shader._outputTypes)
+    {
+        if(n.first >= _data->_fbo->_colorAttachments.size())
+        {
+            throw std::runtime_error("Shader has output assigned to location " +
+                std::to_string(n.first) + ", but framebuffer only has " + std::
+                to_string(_data->_fbo->_colorAttachments.size()) + " color atta"
+                "chments.");
+        }
+        check_output(n, _data->_fbo->_colorAttachments[n.first]->_format);
+    }
 }
 
 paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
@@ -71,8 +161,16 @@ paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
 
     _data = std::make_shared<Data>();
 
-    _data->_shader.init(vert._data->_id, frag._data->_id);
+    _data->_shader.init(vert._data->_id, frag._data->_id, frag._data->
+        _outputTypes);
     _data->_blendMode = mode;
+
+    if(!_data->_shader._outputTypes.count(0) || _data->_shader._outputTypes.at(
+        0) != GL_FLOAT_VEC4)
+    {
+        throw std::runtime_error("Shader cannot write to default framebuffer: N"
+            "o outputs or first output is not of type `vec4`.");
+    }
 }
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,

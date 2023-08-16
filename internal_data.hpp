@@ -94,6 +94,7 @@ struct paz::FragmentFunction::Data
     void* _function = nullptr;
 #else
     unsigned int _id = 0;
+    std::unordered_map<unsigned int, unsigned int> _outputTypes;
 #endif
     ~Data();
 };

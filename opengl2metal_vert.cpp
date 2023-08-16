@@ -161,6 +161,16 @@ std::string paz::vert2metal(const std::string& src)
                             " function.");
                     }
                 }
+                for(const auto& n : buffers)
+                {
+                    if(std::regex_match(line, std::regex(".*\\b" + n.first +
+                        "\\b.*")) && !curArgNames.count(n.first))
+                    {
+                        throw std::runtime_error("Line " + std::to_string(l) +
+                            ": Shader uniforms cannot be accessed outside of ma"
+                            "in function.");
+                    }
+                }
             }
         }
 

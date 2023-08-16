@@ -263,6 +263,26 @@ int2 textureSize(thread const wrap_depth2d<T>& tex, thread int lod)
                             " function.");
                     }
                 }
+                for(const auto& n : textures)
+                {
+                    if(std::regex_match(line, std::regex(".*\\b" + n.first +
+                        "\\b.*")) && !curArgNames.count(n.first))
+                    {
+                        throw std::runtime_error("Line " + std::to_string(l) +
+                            ": Shader uniforms cannot be accessed outside of ma"
+                            "in function.");
+                    }
+                }
+                for(const auto& n : buffers)
+                {
+                    if(std::regex_match(line, std::regex(".*\\b" + n.first +
+                        "\\b.*")) && !curArgNames.count(n.first))
+                    {
+                        throw std::runtime_error("Line " + std::to_string(l) +
+                            ": Shader uniforms cannot be accessed outside of ma"
+                            "in function.");
+                    }
+                }
             }
         }
 

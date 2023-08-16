@@ -19,7 +19,8 @@ paz::ShaderData::~ShaderData()
 
 paz::ShaderData::ShaderData() {}
 
-void paz::ShaderData::init(unsigned int vertId, unsigned int fragId)
+void paz::ShaderData::init(unsigned int vertId, unsigned int fragId, const std::
+    unordered_map<unsigned int, unsigned int>& outputTypes)
 {
     initialize();
 
@@ -27,6 +28,8 @@ void paz::ShaderData::init(unsigned int vertId, unsigned int fragId)
     {
         throw std::logic_error("Shader has already been initialized.");
     }
+
+    _outputTypes = outputTypes;
 
     // Link shaders.
     _id = glCreateProgram();
