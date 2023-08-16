@@ -1,15 +1,16 @@
 #include "detect_os.hpp"
 
-#ifdef PAZ_MACOS
+#ifndef PAZ_LINUX
 
 #include "PAZ_Graphics"
-#import <IOKit/hid/IOHIDManager.h>
+#include <bitset>
+#include <unordered_map>
 
 namespace paz
 {
     struct GamepadElement
     {
-        IOHIDElementRef native;
+        void* native;
         std::uint32_t usage;
         std::size_t idx;
         long min;
@@ -49,7 +50,7 @@ namespace paz
 
     struct Gamepad
     {
-        IOHIDDeviceRef device;
+        void* device;
         std::string guid;
         std::string name;
         std::vector<GamepadElement> axes;
@@ -57,7 +58,7 @@ namespace paz
         std::vector<GamepadElement> hats;
     };
 
-    extern const char* MacosControllerDb;
+    const std::unordered_map<std::string, GamepadMapping>& gamepad_mappings();
 }
 
 #endif

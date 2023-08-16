@@ -3,7 +3,7 @@
 #ifdef PAZ_MACOS
 
 #include "PAZ_Graphics"
-#import "gamepad_macos.hh"
+#include "gamepad.hpp"
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <Cocoa/Cocoa.h>
