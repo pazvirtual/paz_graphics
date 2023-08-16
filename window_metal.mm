@@ -418,4 +418,9 @@ float paz::Window::DpiScale()
     return [[APP_DELEGATE window] backingScaleFactor];
 }
 
+float paz::Window::UiScale()
+{
+    return DpiScale();
+}
+
 #endif
