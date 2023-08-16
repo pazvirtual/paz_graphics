@@ -22,6 +22,7 @@ std::string paz::vert2metal(const std::string& src)
     std::size_t numClose = 0;
 
     bool usesGlPosition = false;
+    bool usesGlVertexId = false;
 
     std::unordered_map<std::string, std::pair<std::string, bool>> buffers;
     std::map<unsigned int, std::pair<std::string, std::string>> inputs;
@@ -51,18 +52,13 @@ std::string paz::vert2metal(const std::string& src)
         // Clean up lines.
         line = std::regex_replace(line, std::regex("//.*$"), "");
         line = std::regex_replace(line, std::regex("\\s+$"), "");
-        if(line.empty())
+        if(line.empty() || line.substr(0, 8) == "#version" || line.substr(0, 10)
+            == "#extension")
         {
             continue;
         }
 
         // Check for macro definitions and other unsupported features.
-        if(line.substr(0, 8) == "#version" || line.substr(0, 10) ==
-            "#extension")
-        {
-            throw std::runtime_error("Line " + std::to_string(l) + ": Version a"
-                "nd extension directives are not supported.");
-        }
         if(line.substr(0, 7) == "#define")
         {
             throw std::runtime_error("Line " + std::to_string(l) + ": User-defi"
@@ -98,6 +94,11 @@ std::string paz::vert2metal(const std::string& src)
             {
                 throw std::runtime_error("Line " + std::to_string(l) + ": Shade"
                     "r outputs cannot be accessed outside of main function.");
+            }
+            if(std::regex_match(line, std::regex(".*\\bgl_VertexID\\b.*")))
+            {
+                throw std::runtime_error("Line " + std::to_string(l) + ": Shade"
+                    "r inputs cannot be accessed outside of main function.");
             }
             for(const auto& n : outputs)
             {
@@ -232,6 +233,13 @@ std::string paz::vert2metal(const std::string& src)
             }
             line = std::regex_replace(line, std::regex("\\bgl_Position\\b"),
                 "out.glPosition");
+            if(!usesGlVertexId && std::regex_match(line, std::regex(".*\\bgl_Ve"
+                "rtexID\\b.*")))
+            {
+                usesGlVertexId = true;
+            }
+            line = std::regex_replace(line, std::regex("\\bgl_VertexID\\b"),
+                "glVertexId");
             mainBuffer << line << std::endl;
             continue;
         }
@@ -330,6 +338,10 @@ std::string paz::vert2metal(const std::string& src)
     }
     out << "};" << std::endl;
     out << "vertex OutputData vertMain(InputData in [[stage_in]]";
+    if(usesGlVertexId)
+    {
+        out << ", uint glVertexId [[vertex_id]]";
+    }
     int b = inputs.size();
     for(const auto& n : buffers)
     {
