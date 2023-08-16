@@ -150,67 +150,67 @@ int2 textureSize(thread const wrap_depth2d<T>& tex, thread int lod)
 
     // Define reinterpretation functions.
     out << 1 + R"===(
-int floatBitsToInt(float v)
+int floatBitsToInt(in float v)
 {
     return asint(v);
 }
-int floatBitsToInt(thread const float2& v)
+int2 floatBitsToInt(in float2 v)
 {
     return asint(v);
 }
-int floatBitsToInt(thread const float3& v)
+int3 floatBitsToInt(in float3 v)
 {
     return asint(v);
 }
-int floatBitsToInt(thread const float4& v)
+int4 floatBitsToInt(in float4 v)
 {
     return asint(v);
 }
-uint floatBitsToUint(float v)
+uint floatBitsToUint(in float v)
 {
     return asuint(v);
 }
-uint floatBitsToUint(thread const float2& v)
+uint2 floatBitsToUint(in float2 v)
 {
     return asuint(v);
 }
-uint floatBitsToUint(thread const float3& v)
+uint3 floatBitsToUint(in float3 v)
 {
     return asuint(v);
 }
-uint floatBitsToUint(thread const float4& v)
+uint4 floatBitsToUint(in float4 v)
 {
     return asuint(v);
 }
-float intBitsToFloat(int v)
+float intBitsToFloat(in int v)
 {
     return asfloat(v);
 }
-float intBitsToFloat(thread const int2& v)
+float2 intBitsToFloat(in int2 v)
 {
     return asfloat(v);
 }
-float intBitsToFloat(thread const int3& v)
+float3 intBitsToFloat(in int3 v)
 {
     return asfloat(v);
 }
-float intBitsToFloat(thread const int4& v)
+float4 intBitsToFloat(in int4 v)
 {
     return asfloat(v);
 }
-float uintBitsToFloat(uint v)
+float uintBitsToFloat(in uint v)
 {
     return asfloat(v);
 }
-float uintBitsToFloat(thread const uint2& v)
+float2 uintBitsToFloat(in uint2 v)
 {
     return asfloat(v);
 }
-float uintBitsToFloat(thread const uint3& v)
+float3 uintBitsToFloat(in uint3 v)
 {
     return asfloat(v);
 }
-float uintBitsToFloat(thread const uint4& v)
+float4 uintBitsToFloat(in uint4 v)
 {
     return asfloat(v);
 }
@@ -608,7 +608,7 @@ float uintBitsToFloat(thread const uint4& v)
     {
         out << "uniform " << n.second.first << " " << n.first << (n.second.
             second < 0 ? "" : "[" + std::to_string(n.second.second) + "]") <<
-            std::endl;
+            ";" << std::endl;
     }
     for(const auto& n : textures)
     {
@@ -638,15 +638,14 @@ float uintBitsToFloat(thread const uint4& v)
         out << "    float glFragDepth [[depth(any)]];" << std::endl;
     }
     out << "};" << std::endl;
-    out << "fragment OutputData fragMain(InputData in [[stage_in]]";
-    out << ")" << std::endl << "{" << std::endl;
+    out << "OutputData main(InputData input)" << std::endl << "{" << std::endl;
     for(const auto& n : textures)
     {
         out << "    const wrap_" << n.second << " " << n.first << " = {" << n.
             first << "Texture, " << n.first << "Sampler};" << std::endl;
     }
-    out << "    OutputData out;" << std::endl << mainBuffer.str() << "    retur"
-        "n out;" << std::endl << "}" << std::endl;
+    out << "    OutputData output;" << std::endl << mainBuffer.str() << "    re"
+        "turn output;" << std::endl << "}" << std::endl;
 
     return out.str();
 }

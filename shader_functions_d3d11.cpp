@@ -69,7 +69,7 @@ paz::FragmentFunction::FragmentFunction(const std::string& src)
     initialize();
 
     _data = std::make_shared<Data>();
-    const std::string hlsl = vert2hlsl(src);
+    const std::string hlsl = frag2hlsl(src);
     ID3DBlob* bytecode;
     ID3DBlob* error;
     auto hr = D3DCompile(hlsl.c_str(), hlsl.size(), nullptr, nullptr, nullptr,
