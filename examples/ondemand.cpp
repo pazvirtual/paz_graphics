@@ -1,4 +1,5 @@
 #include "PAZ_Graphics"
+#include <iomanip>
 
 static constexpr std::size_t NumSteps = 1000;
 static constexpr std::size_t Res = 500;
@@ -30,10 +31,15 @@ int main(int, char** argv)
     double time = 0.;
     for(std::size_t k = 0; k < NumSteps; ++k)
     {
-        const std::string str = std::to_string(time) + " " + std::to_string(k +
-            1) + "/" + std::to_string(NumSteps);
+        std::string str;
+        {
+            std::stringstream ss;
+            ss << std::fixed << std::setw(4) << std::setprecision(1) << time <<
+                " " << std::setw(4) << k + 1 << "/" << NumSteps;
+            str = ss.str();
+        }
         textPass.begin({paz::LoadAction::Clear});
-        textPass.uniform("baseSize", font.height());
+        textPass.uniform("baseSize", 2*font.height());
         textPass.uniform("aspectRatio", paz::Window::AspectRatio());
         textPass.read("font", font);
         for(std::size_t i = 0; i < str.size(); ++i)
