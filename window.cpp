@@ -544,7 +544,7 @@ void paz::unregister_target(void* t)
     initialize()._renderTargets.erase(t);
 }
 
-paz::Image<std::uint8_t, 3> paz::Window::ReadPixels()
+paz::Image<std::uint8_t, 4> paz::Window::ReadPixels()
 {
     initialize();
 
@@ -553,12 +553,12 @@ paz::Image<std::uint8_t, 3> paz::Window::ReadPixels()
         throw std::logic_error("Cannot read pixels before ending frame.");
     }
 
-    Image<std::uint8_t, 3> image(ViewportWidth(), ViewportHeight());
+    Image<std::uint8_t, 4> image(ViewportWidth(), ViewportHeight());
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, final_framebuffer().colorAttachment(0)._data->
         _id);
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data());
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
     const GLenum error = glGetError();
     if(error != GL_NO_ERROR)
     {
