@@ -5,30 +5,11 @@
 #include "PAZ_Graphics"
 #include "util.hpp"
 #include "internal_data.hpp"
+#include "vertex_buffer.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
 #include <GLFW/glfw3.h>
-
-template<typename T>
-static void check_size(int dim, std::size_t& n, const std::vector<T>& d)
-{
-    if(dim != 1 && dim != 2 && dim != 4)
-    {
-        throw std::runtime_error("Vertex attribute dimensions must be 1, 2, or "
-            "4.");
-    }
-    const std::size_t m = d.size()/dim;
-    if(!n)
-    {
-        n = m;
-    }
-    else if(m != n)
-    {
-        throw std::runtime_error("Number of vertices for each attribute must ma"
-            "tch.");
-    }
-}
 
 paz::VertexBuffer::~VertexBuffer()
 {
@@ -46,7 +27,7 @@ paz::VertexBuffer::VertexBuffer()
     glGenVertexArrays(1, &_data->_id);
 }
 
-void paz::VertexBuffer::attribute(int dim, const std::vector<float>& data)
+void paz::VertexBuffer::attribute(int dim, const std::vector<GLfloat>& data)
 {
     check_size(dim, _numVertices, data);
 
@@ -62,8 +43,7 @@ void paz::VertexBuffer::attribute(int dim, const std::vector<float>& data)
         GL_STATIC_DRAW);
 }
 
-void paz::VertexBuffer::attribute(int dim, const std::vector<unsigned int>&
-    data)
+void paz::VertexBuffer::attribute(int dim, const std::vector<GLuint>& data)
 {
     check_size(dim, _numVertices, data);
 
@@ -79,7 +59,7 @@ void paz::VertexBuffer::attribute(int dim, const std::vector<unsigned int>&
         GL_STATIC_DRAW);
 }
 
-void paz::VertexBuffer::attribute(int dim, const std::vector<int>& data)
+void paz::VertexBuffer::attribute(int dim, const std::vector<GLint>& data)
 {
     check_size(dim, _numVertices, data);
 

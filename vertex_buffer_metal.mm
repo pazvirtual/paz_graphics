@@ -6,28 +6,11 @@
 #import "app_delegate.hh"
 #import "view_controller.hh"
 #include "internal_data.hpp"
+#include "vertex_buffer.hpp"
 #import <MetalKit/MetalKit.h>
 
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
     contentViewController] mtkView] device]
-
-static std::size_t type_size(paz::VertexBuffer::DataType t)
-{
-    if(t == paz::VertexBuffer::DataType::Float)
-    {
-        return sizeof(float);
-    }
-    else if(t == paz::VertexBuffer::DataType::SInt)
-    {
-        return sizeof(int);
-    }
-    else if(t == paz::VertexBuffer::DataType::UInt)
-    {
-        return sizeof(unsigned int);
-    }
-
-    throw std::logic_error("Invalid vertex attribute data type.");
-}
 
 paz::VertexBuffer::~VertexBuffer()
 {
@@ -41,27 +24,34 @@ paz::VertexBuffer::~VertexBuffer()
     }
 }
 
-paz::VertexBuffer::VertexBuffer(const std::vector<InputData>& data)
+paz::VertexBuffer::VertexBuffer()
 {
     _data = std::make_unique<Data>();
+}
 
-    _numVertices = (data.empty() ? 0 : data[0]._numVertices);
-    for(const auto& n : data)
-    {
-        if(n._numVertices != _numVertices)
-        {
-            throw std::runtime_error("Number of vertices for each attribute mus"
-                "t match.");
-        }
-        if(n._dim != 1 && n._dim != 2 && n._dim != 4)
-        {
-            throw std::runtime_error("Vertex attribute dimensions must be 1, 2,"
-                " or 4.");
-        }
-        _data->_buffers.push_back([DEVICE newBufferWithBytes:n._data length:
-            type_size(n._type)*n._dim*_numVertices options:
-            MTLStorageModeShared]);
-    }
+void paz::VertexBuffer::attribute(int dim, const std::vector<float>& data)
+{
+    check_size(dim, _numVertices, data);
+
+    _data->_buffers.push_back([DEVICE newBufferWithBytes:data.data() length:
+        sizeof(float)*dim*_numVertices options:MTLStorageModeShared]);
+}
+
+void paz::VertexBuffer::attribute(int dim, const std::vector<unsigned int>&
+    data)
+{
+    check_size(dim, _numVertices, data);
+
+    _data->_buffers.push_back([DEVICE newBufferWithBytes:data.data() length:
+        sizeof(unsigned int)*dim*_numVertices options:MTLStorageModeShared]);
+}
+
+void paz::VertexBuffer::attribute(int dim, const std::vector<int>& data)
+{
+    check_size(dim, _numVertices, data);
+
+    _data->_buffers.push_back([DEVICE newBufferWithBytes:data.data() length:
+        sizeof(int)*dim*_numVertices options:MTLStorageModeShared]);
 }
 
 #endif
