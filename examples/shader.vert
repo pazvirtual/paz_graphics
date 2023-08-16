@@ -14,7 +14,7 @@ void main()
                             0., 1.);
     mat2 rot = mat2( cos(angle), sin(angle),
                     -sin(angle), cos(angle));
-    vec2 pos = rot*stretch*position;
+    vec2 pos = mul(rot, mul(stretch, position));
     pos += origin;
     pos.x /= aspectRatio;
     gl_Position = vec4(pos, 0., 1.);

@@ -6,5 +6,6 @@ layout(location = 0) out vec4 color;
 
 void main()
 {
-    color = vec4(vec3(texture(font, uv).x), 1.);
+    float c = texture(font, uv).x;
+    color = vec4(c, c, c, 1.);
 }
