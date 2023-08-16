@@ -158,4 +158,9 @@ void paz::VertexBuffer::attribute(int dim, const GLint* data, std::size_t size)
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLint)*size, data, GL_STATIC_DRAW);
 }
 
+bool paz::VertexBuffer::empty() const
+{
+    return !_data->_numVertices;
+}
+
 #endif

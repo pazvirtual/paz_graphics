@@ -108,4 +108,9 @@ void paz::VertexBuffer::attribute(int dim, const int* data, std::size_t size)
         int)*size options:MTLStorageModeShared]);
 }
 
+bool paz::VertexBuffer::empty() const
+{
+    return !_data->_numVertices;
+}
+
 #endif
