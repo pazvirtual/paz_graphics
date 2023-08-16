@@ -16,9 +16,10 @@ static unsigned int compile_shader(const std::string& src, bool isVertexShader)
     // Compile shader.
     unsigned int shader = glCreateShader(isVertexShader ? GL_VERTEX_SHADER :
         GL_FRAGMENT_SHADER);
-    const std::string versionStr = "#version " + std::to_string(paz::
-        GlMajorVersion) + std::to_string(paz::GlMinorVersion) + "0 core\n";
-    std::array<const char*, 2> srcStrs = {versionStr.c_str(), src.c_str()};
+    const std::string headerStr = "#version " + std::to_string(paz::
+        GlMajorVersion) + std::to_string(paz::GlMinorVersion) + "0 core\n#defin"
+        "e depthSampler2D sampler2D\n";
+    std::array<const char*, 2> srcStrs = {headerStr.c_str(), src.c_str()};
     glShaderSource(shader, srcStrs.size(), srcStrs.data(), NULL);
     glCompileShader(shader);
 
