@@ -1,12 +1,12 @@
 #include "shading_lang.hpp"
-#include <iostream>
 #include <sstream>
 #include <fstream>
 #include <unordered_map>
 #include <map>
 #include <regex>
 
-std::string paz::frag2hlsl(const std::string& src)
+std::string paz::frag2hlsl(const std::string& src, std::vector<std::tuple<std::
+    string, DataType, int>>& uniforms)
 {
     std::istringstream in(src);
     std::ostringstream out;
@@ -23,7 +23,7 @@ std::string paz::frag2hlsl(const std::string& src)
     bool usesGlFragDepth = false;
     bool usesGlPointCoord = false;
 
-    std::unordered_map<std::string, std::pair<std::string, int>> buffers;
+    std::vector<std::pair<std::string, std::pair<std::string, int>>> buffers;
     std::unordered_map<std::string, std::pair<std::string, std::string>>
         textures;
     std::vector<std::pair<std::string, std::pair<std::string, bool>>> inputs;
@@ -430,6 +430,8 @@ float4 uintBitsToFloat(in uint4 v)
         if(mode == Mode::None && std::regex_match(line, std::regex("\\s*const\\"
             "s.*=.*")))
         {
+            line = std::regex_replace(line, std::regex("\\s*const\\b"),
+                "static const");
             out << line << std::endl;
             continue;
         }
@@ -581,7 +583,7 @@ float4 uintBitsToFloat(in uint4 v)
                         2));
                     name = name.substr(0, pos);
                 }
-                buffers[name] = {type, size};
+                buffers.push_back({name, {type, size}});
             }
             continue;
         }
@@ -658,6 +660,41 @@ float4 uintBitsToFloat(in uint4 v)
         out << "uniform " << n.second.first << " " << n.first << (n.second.
             second < 0 ? "" : "[" + std::to_string(n.second.second) + "]") <<
             ";" << std::endl;
+        auto size = n.second.second < 0 ? 1 : n.second.second;
+        if(n.second.first == "float")
+        {
+            uniforms.push_back({n.first, DataType::Float, size});
+        }
+        else if(n.second.first == "float2")
+        {
+            uniforms.push_back({n.first, DataType::Float, 2*size});
+        }
+        else if(n.second.first == "float3")
+        {
+            uniforms.push_back({n.first, DataType::Float, 3*size});
+        }
+        else if(n.second.first == "float4")
+        {
+            uniforms.push_back({n.first, DataType::Float, 4*size});
+        }
+        else if(n.second.first == "float2x2")
+        {
+            uniforms.push_back({n.first, DataType::Float, 2*2*size});
+        }
+        else if(n.second.first == "float3x3")
+        {
+            uniforms.push_back({n.first, DataType::Float, 3*3*size});
+        }
+        else if(n.second.first == "float4x4")
+        {
+            uniforms.push_back({n.first, DataType::Float, 4*4*size});
+        }
+        // ...
+        else
+        {
+            throw std::runtime_error("Unsupported uniform type \"" + n.second.
+                first + "\".");
+        }
     }
     for(const auto& n : textures)
     {

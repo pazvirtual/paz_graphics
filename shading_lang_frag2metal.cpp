@@ -1,5 +1,4 @@
 #include "shading_lang.hpp"
-#include <iostream>
 #include <sstream>
 #include <fstream>
 #include <unordered_map>

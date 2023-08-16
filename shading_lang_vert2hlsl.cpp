@@ -1,5 +1,4 @@
 #include "shading_lang.hpp"
-#include <iostream>
 #include <sstream>
 #include <fstream>
 #include <unordered_map>
@@ -9,8 +8,11 @@
 static const std::vector<std::string> unsupportedBuiltins = {"gl_PerVertex",
     "gl_ClipDistance", "gl_Pointsize"};
 
-std::string paz::vert2hlsl(const std::string& src)
+std::string paz::vert2hlsl(const std::string& src, std::vector<std::tuple<std::
+    string, DataType, int>>& uniforms)
 {
+    uniforms.clear();
+
     std::istringstream in(src);
     std::ostringstream out;
 
@@ -27,7 +29,7 @@ std::string paz::vert2hlsl(const std::string& src)
     bool usesGlVertexId = false;
     bool usesGlInstanceId = false;
 
-    std::unordered_map<std::string, std::pair<std::string, int>> buffers;
+    std::vector<std::pair<std::string, std::pair<std::string, int>>> buffers;
     std::map<int, std::pair<std::string, std::string>> inputs;
     std::vector<std::pair<std::string, std::pair<std::string, bool>>> outputs;
     std::unordered_set<std::string> structs;
@@ -269,6 +271,8 @@ float4 uintBitsToFloat(in uint4 v)
         if(mode == Mode::None && std::regex_match(line, std::regex("\\s*const\\"
             "s.*=.*")))
         {
+            line = std::regex_replace(line, std::regex("\\s*const\\b"),
+                "static const");
             out << line << std::endl;
             continue;
         }
@@ -384,7 +388,7 @@ float4 uintBitsToFloat(in uint4 v)
                 size = std::stoi(name.substr(pos + 1, name.size() - pos - 2));
                 name = name.substr(0, pos);
             }
-            buffers[name] = {type, size};
+            buffers.push_back({name, {type, size}});
             continue;
         }
         if(std::regex_match(line, std::regex("layout\\b.*")))
@@ -469,6 +473,41 @@ float4 uintBitsToFloat(in uint4 v)
         out << "uniform " << n.second.first << " " << n.first << (n.second.
             second < 0 ? "" : "[" + std::to_string(n.second.second) + "]") <<
             ";" << std::endl;
+        auto size = n.second.second < 0 ? 1 : n.second.second;
+        if(n.second.first == "float")
+        {
+            uniforms.push_back({n.first, DataType::Float, size});
+        }
+        else if(n.second.first == "float2")
+        {
+            uniforms.push_back({n.first, DataType::Float, 2*size});
+        }
+        else if(n.second.first == "float3")
+        {
+            uniforms.push_back({n.first, DataType::Float, 3*size});
+        }
+        else if(n.second.first == "float4")
+        {
+            uniforms.push_back({n.first, DataType::Float, 4*size});
+        }
+        else if(n.second.first == "float2x2")
+        {
+            uniforms.push_back({n.first, DataType::Float, 2*2*size});
+        }
+        else if(n.second.first == "float3x3")
+        {
+            uniforms.push_back({n.first, DataType::Float, 3*3*size});
+        }
+        else if(n.second.first == "float4x4")
+        {
+            uniforms.push_back({n.first, DataType::Float, 4*4*size});
+        }
+        // ...
+        else
+        {
+            throw std::runtime_error("Unsupported uniform type \"" + n.second.
+                first + "\".");
+        }
     }
     out << "struct InputData" << std::endl << "{" << std::endl;
     for(const auto& n : inputs)
