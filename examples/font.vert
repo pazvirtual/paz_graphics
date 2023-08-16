@@ -1,3 +1,7 @@
+const int numChars = 42;
+const float scale = 0.005;
+
+uniform uint baseSize;
 uniform float aspectRatio;
 uniform int character;
 uniform int col;
@@ -9,8 +13,9 @@ out vec2 uv;
 
 void main()
 {
-    float x = position.x/37. - 1. + 1./37.;
-    float y = position.y;
-    gl_Position = vec4(x + 2.*col/37., (y/37. - 0.1*row)*aspectRatio, 0., 1.);
-    uv = 0.5*(vec2(x + 2.*character/37., y) + 1.);
+    uv = 0.5*position.xy + 0.5;
+    gl_Position = vec4((uv.x + float(col))*scale*float(baseSize)*2. - 1., (uv.y
+        - 1. - 1.5*float(row - 2))*scale*float(baseSize)*2.*aspectRatio, 0.,
+        1.);
+    uv.x = (uv.x + float(character))/float(numChars);
 }

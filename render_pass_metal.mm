@@ -132,9 +132,9 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
             if(blendMode == paz::RenderPass::BlendMode::Additive)
             {
                 [[pipelineDescriptor colorAttachments][i]
-                    setSourceRGBBlendFactor:MTLBlendFactorSourceAlpha];
+                    setSourceRGBBlendFactor:MTLBlendFactorOne];
                 [[pipelineDescriptor colorAttachments][i]
-                    setSourceAlphaBlendFactor:MTLBlendFactorSourceAlpha];
+                    setSourceAlphaBlendFactor:MTLBlendFactorOne];
                 [[pipelineDescriptor colorAttachments][i]
                     setDestinationRGBBlendFactor:MTLBlendFactorOne];
                 [[pipelineDescriptor colorAttachments][i]
@@ -179,9 +179,9 @@ paz::RenderPass::RenderPass(const Shader& shader, BlendMode blendMode)
         if(blendMode == paz::RenderPass::BlendMode::Additive)
         {
                 [[pipelineDescriptor colorAttachments][0]
-                    setSourceRGBBlendFactor:MTLBlendFactorSourceAlpha];
+                    setSourceRGBBlendFactor:MTLBlendFactorOne];
                 [[pipelineDescriptor colorAttachments][0]
-                    setSourceAlphaBlendFactor:MTLBlendFactorSourceAlpha];
+                    setSourceAlphaBlendFactor:MTLBlendFactorOne];
                 [[pipelineDescriptor colorAttachments][0]
                     setDestinationRGBBlendFactor:MTLBlendFactorOne];
                 [[pipelineDescriptor colorAttachments][0]
