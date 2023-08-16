@@ -51,13 +51,18 @@ std::string paz::vert2metal(const std::string& src)
         // Clean up lines.
         line = std::regex_replace(line, std::regex("//.*$"), "");
         line = std::regex_replace(line, std::regex("\\s+$"), "");
-        if(line.empty() || line.substr(0, 8) == "#version" || line.substr(0, 10)
-            == "#extension")
+        if(line.empty())
         {
             continue;
         }
 
         // Check for macro definitions and other unsupported features.
+        if(line.substr(0, 8) == "#version" || line.substr(0, 10) ==
+            "#extension")
+        {
+            throw std::runtime_error("Line " + std::to_string(l) + ": Version a"
+                "nd extension directives are not supported.");
+        }
         if(line.substr(0, 7) == "#define")
         {
             throw std::runtime_error("Line " + std::to_string(l) + ": User-defi"

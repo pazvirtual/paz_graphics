@@ -1,5 +1,3 @@
-#version 410 core
-
 uniform sampler2D source;
 uniform float factor;
 uniform float aspectRatio;

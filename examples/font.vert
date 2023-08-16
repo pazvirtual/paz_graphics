@@ -1,5 +1,3 @@
-#version 410 core
-
 uniform float aspectRatio;
 uniform int character;
 uniform int col;

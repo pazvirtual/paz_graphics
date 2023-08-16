@@ -1,5 +1,3 @@
-#version 410 core
-
 uniform sampler2D render;
 uniform sampler2D overlay;
 
