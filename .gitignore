@@ -1,5 +1,6 @@
 *.o
 *.a
-examples/main
+examples/example2d
+examples/particles
 *.exe
 *.zip
