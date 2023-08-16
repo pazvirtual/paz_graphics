@@ -531,4 +531,14 @@ void paz::Window::SetGamma(float gamma)
     [RENDERER setGamma:gamma];
 }
 
+void paz::Window::DisableDithering()
+{
+    [RENDERER setDither:false];
+}
+
+void paz::Window::enableDithering()
+{
+    [RENDERER setDither:true];
+}
+
 #endif

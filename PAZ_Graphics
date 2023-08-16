@@ -497,6 +497,8 @@ namespace paz
         static bool HidpiEnabled();
         static bool HidpiSupported();
         static void SetGamma(float gamma);
+        static void DisableDithering();
+        static void EnableDithering();
     };
 }
 

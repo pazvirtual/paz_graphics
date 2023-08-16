@@ -11,6 +11,7 @@
 @property(readonly) CGSize size;
 @property(readonly, nonnull) id<MTLCommandBuffer> commandBuffer;
 @property float gamma;
+@property bool dither;
 - (nonnull instancetype)initWithMetalKitView:(nonnull MTKView*)view;
 - (nullable MTLRenderPassDescriptor*)currentRenderPassDescriptor;
 - (void)ensureCommandBuffer;

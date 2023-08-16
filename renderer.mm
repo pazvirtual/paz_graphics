@@ -11,6 +11,32 @@ static const char* QuadSrc = 1 + R"===(
 #include <simd/simd.h>
 using namespace metal;
 constexpr sampler texSampler(mag_filter::nearest, min_filter::nearest);
+uint hash(thread uint x)
+{
+    x += (x << 10u);
+    x ^= (x >>  6u);
+    x += (x <<  3u);
+    x ^= (x >> 11u);
+    x += (x << 15u);
+    return x;
+}
+uint hash(thread float2 v)
+{
+    return hash(v.x^hash(v.y));
+}
+float construct_float(thread uint m)
+{
+    constant uint ieeeMantissa = 0x007FFFFFu;
+    constant uint ieeeOne = 0x3F800000u;
+    m &= ieeeMantissa;
+    m |= ieeeOne;
+    float f = as_type<float>(m);
+    return f - 1.;
+}
+float unif_rand(thread vec2 v)
+{
+    return construct_float(hash(as_type<uint>(v)));
+}
 struct Data
 {
     float4 pos [[position]];
@@ -25,10 +51,11 @@ vertex Data vert(uint idx [[vertex_id]], constant float2* pos [[buffer(0)]])
     return out;
 }
 fragment float4 frag(Data in [[stage_in]], texture2d<float> tex [[texture(0)]],
-    constant float& gamma [[buffer(0)]])
+    constant float& gamma [[buffer(0)]], constant float& dither [[buffer(1)]])
 {
     float4 col = tex.sample(texSampler, in.uv);
     col.rgb = pow(col.rgb, float3(1./gamma));
+    col.rgb += dither*mix(-0.5/255., 0.5/255., unif_rand(in.uv));
     return col;
 }
 )===";
@@ -59,6 +86,7 @@ static constexpr std::array<float, 8> QuadPos =
         _commandQueue = [_device newCommandQueue];
         _view = view;
         _gamma = 2.2;
+        _dither = false;
 
         // Set up a render pipeline for final gamma/scaling pass.
         NSError* error = nil;
@@ -175,6 +203,8 @@ static constexpr std::array<float, 8> QuadPos =
     [renderEncoder setRenderPipelineState:_pipelineState];
     [renderEncoder setFragmentTexture:tex atIndex:0];
     [renderEncoder setFragmentBytes:&_gamma length:sizeof(float) atIndex:0];
+    const float f = _dither ? 1.f : 0.f;
+    [renderEncoder setFragmentBytes:&f length:sizeof(float) atIndex:1];
     [renderEncoder setVertexBuffer:_quadPos offset:0 atIndex:0];
     [renderEncoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0
         vertexCount:4];
