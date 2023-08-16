@@ -74,6 +74,7 @@ void paz::Framebuffer::attach(const RenderTarget& target)
         throw std::runtime_error("Framebuffer incomplete: " +
             framebuffer_status(status) + ".");
     }
+    _data->_scale = target._data->_scale; //TEMP
     if(!target._data->_scale) //TEMP
     {
         _data->_width = target.width();
