@@ -19,6 +19,5 @@ void main()
     }
     float d = length(uv - vec2(0.5))*1.41421;
     col *= vec3(1. - d*d);
-    col = pow(col, vec3(0.4545));
     color = vec4(col, 1.);
 }

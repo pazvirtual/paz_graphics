@@ -12,6 +12,36 @@
 #include <cmath>
 #include <chrono>
 
+static const char* QuadVertSrc = 1 + R"===(
+layout(location = 0) in vec2 pos;
+out vec2 uv;
+void main()
+{
+    gl_Position = vec4(pos, 0., 1.);
+    uv = 0.5*pos + 0.5;
+}
+)===";
+
+static const char* QuadFragSrc = 1 + R"===(
+in vec2 uv;
+uniform sampler2D tex;
+uniform float gamma;
+layout(location = 0) out vec4 color;
+void main()
+{
+    color = texture(tex, uv);
+    color.rgb = pow(color.rgb, vec3(1./gamma));
+}
+)===";
+
+static constexpr std::array<float, 16> QuadPos =
+{
+     1, -1,
+     1,  1,
+    -1, -1,
+    -1,  1
+};
+
 static GLFWwindow* WindowPtr;
 static int WindowWidth;
 static int WindowHeight;
@@ -47,6 +77,74 @@ static bool GamepadActive;
 static bool CursorDisabled;
 static bool FrameInProgress;
 static bool HidpiEnabled = true;
+static float Gamma = 2.2;
+static const unsigned int QuadShaderId = []()
+{
+    paz::initialize();
+
+    static const std::string headerStr = "#version " + std::to_string(paz::
+        GlMajorVersion) + std::to_string(paz::GlMinorVersion) + "0 core\n";
+
+    auto v = glCreateShader(GL_VERTEX_SHADER);
+    {
+        std::array<const char*, 2> srcStrs = {headerStr.c_str(), QuadVertSrc};
+        glShaderSource(v, srcStrs.size(), srcStrs.data(), nullptr);
+        glCompileShader(v);
+        int success;
+        glGetShaderiv(v, GL_COMPILE_STATUS, &success);
+        if(!success)
+        {
+            std::string errorLog = paz::get_log(v, false);
+            throw std::runtime_error("Failed to compile final vertex function:"
+                "\n" + errorLog);
+        }
+    }
+
+    auto f = glCreateShader(GL_FRAGMENT_SHADER);
+    {
+        std::array<const char*, 2> srcStrs = {headerStr.c_str(), QuadFragSrc};
+        glShaderSource(f, srcStrs.size(), srcStrs.data(), nullptr);
+        glCompileShader(f);
+        int success;
+        glGetShaderiv(f, GL_COMPILE_STATUS, &success);
+        if(!success)
+        {
+            std::string errorLog = paz::get_log(f, false);
+            throw std::runtime_error("Failed to compile final fragment function"
+                ":\n" + errorLog);
+        }
+    }
+
+    auto s = glCreateProgram();
+    {
+        glAttachShader(s, v);
+        glAttachShader(s, f);
+        glLinkProgram(s);
+        GLint success;
+        glGetProgramiv(s, GL_LINK_STATUS, &success);
+        if(!success)
+        {
+            std::string errorLog = paz::get_log(s, true);
+            throw std::runtime_error("Failed to link final shader program:\n" +
+                errorLog);
+        }
+    }
+
+    return s;
+}();
+static const unsigned int QuadBufId = []()
+{
+    unsigned int a, b;
+    glGenVertexArrays(1, &a);
+    glBindVertexArray(a);
+    glGenBuffers(1, &b);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, b);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*QuadPos.size(), QuadPos.
+        data(), GL_STATIC_DRAW);
+    return a;
+}();
 
 paz::Initializer& paz::initialize()
 {
@@ -556,12 +654,22 @@ void paz::Window::EndFrame()
 
     FrameInProgress = false;
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, final_framebuffer()._data->_id);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, final_framebuffer().colorAttachment(0)._data->
-        _width, final_framebuffer().colorAttachment(0)._data->_height, 0, 0,
-        Window::ViewportWidth(), Window::ViewportHeight(), GL_COLOR_BUFFER_BIT,
-        GL_LINEAR);
+    static const auto texLoc = glGetUniformLocation(QuadShaderId, "tex");
+    static const auto gammaLoc = glGetUniformLocation(QuadShaderId, "gamma");
+
+    glGetError();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDisable(GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glUseProgram(QuadShaderId);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, final_framebuffer().colorAttachment(0)._data->
+        _id);
+    glUniform1i(texLoc, 0);
+    glUniform1f(gammaLoc, Gamma);
+    glBindVertexArray(QuadBufId);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, QuadPos.size()/2);
     const GLenum error = glGetError();
     if(error != GL_NO_ERROR)
     {
@@ -684,6 +792,15 @@ void paz::unregister_target(void* t)
     initialize()._renderTargets.erase(t);
 }
 
+static unsigned char to_srgb(double x)
+{
+    // Convert to sRGB.
+    x = x < 0.0031308 ? 12.92*x : 1.055*std::pow(x, 1./2.4) - 0.055;
+
+    // Convert to normalized.
+    return std::round(x*255.);
+}
+
 paz::Image paz::Window::ReadPixels()
 {
     initialize();
@@ -693,22 +810,34 @@ paz::Image paz::Window::ReadPixels()
         throw std::logic_error("Cannot read pixels before ending frame.");
     }
 
-    //TEMP - should convert from final render gamma (window gamma?) to sRGB
-    Image image(ImageFormat::RGBA8UNorm_sRGB, ViewportWidth(),
-        ViewportHeight());
+    std::vector<float> linear(4*ViewportWidth()*ViewportHeight());
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, final_framebuffer().colorAttachment(0)._data->
         _id);
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.bytes().
-        data());
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, linear.data());
     const GLenum error = glGetError();
     if(error != GL_NO_ERROR)
     {
         throw std::runtime_error("Error reading window pixels: " + gl_error(
             error) + ".");
     }
-    return image;
+    Image srgb(ImageFormat::RGBA8UNorm_sRGB, ViewportWidth(), ViewportHeight());
+    for(int i = 0; i < ViewportHeight(); ++i)
+    {
+        for(int j = 0; j < ViewportWidth(); ++j)
+        {
+            srgb.bytes()[4*(ViewportWidth()*i + j) + 0] = to_srgb(linear[4*
+                (ViewportWidth()*i + j) + 0]);
+            srgb.bytes()[4*(ViewportWidth()*i + j) + 1] = to_srgb(linear[4*
+                (ViewportWidth()*i + j) + 1]);
+            srgb.bytes()[4*(ViewportWidth()*i + j) + 2] = to_srgb(linear[4*
+                (ViewportWidth()*i + j) + 2]);
+            srgb.bytes()[4*(ViewportWidth()*i + j) + 3] = linear[4*
+                (ViewportWidth()*i + j) + 3];
+        }
+    }
+    return srgb;
 }
 
 void paz::begin_frame()
@@ -750,6 +879,11 @@ void paz::Window::EnableHidpi()
 
     HidpiEnabled = true;
     resize_targets();
+}
+
+void paz::Window::SetGamma(float gamma)
+{
+    Gamma = gamma;
 }
 
 #endif

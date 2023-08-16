@@ -210,8 +210,8 @@ namespace paz
     {
         friend class Framebuffer;
         friend class RenderPass;
-        friend void resize_targets();
         friend class Window;
+        friend void resize_targets();
 
     protected:
         struct Data;
@@ -332,7 +332,6 @@ namespace paz
     class Framebuffer
     {
         friend class RenderPass;
-        friend class Window;
 
         struct Data;
         std::shared_ptr<Data> _data;
@@ -472,6 +471,7 @@ namespace paz
         static float UiScale();
         static void DisableHidpi();
         static void EnableHidpi();
+        static void SetGamma(float gamma);
     };
 }
 
