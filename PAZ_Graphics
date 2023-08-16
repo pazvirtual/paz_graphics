@@ -371,6 +371,7 @@ namespace paz
         static void Resize(int width, int height, bool viewportCoords);
         static Image<std::uint8_t, 3> ReadPixels();
         static float DpiScale();
+        static float UiScale();
     };
 }
 

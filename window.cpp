@@ -578,4 +578,11 @@ float paz::Window::DpiScale()
     return static_cast<float>(FboWidth)/WindowWidth;
 }
 
+float paz::Window::UiScale()
+{
+    float xScale, yScale;
+    glfwGetWindowContentScale(WindowPtr, &xScale, &yScale);
+    return xScale;
+}
+
 #endif
