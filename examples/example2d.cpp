@@ -271,8 +271,8 @@ int main()
         }
         scenePass.end();
 
-        textPass.begin();
-        textPass.blend(paz::RenderPass::BlendMode::Additive);
+        textPass.begin({}, paz::RenderPass::LoadAction::DontCare, paz::
+            RenderPass::BlendMode::Additive);
         textPass.read("font", font);
         textPass.uniform("aspectRatio", paz::Window::AspectRatio());
         int row = 0;
@@ -314,7 +314,6 @@ int main()
             }
             ++col;
         }
-        textPass.blend(paz::RenderPass::BlendMode::Disable);//TEMP ?
         textPass.end();
 
         postPass.begin();
