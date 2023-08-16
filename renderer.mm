@@ -6,7 +6,7 @@
 #import "renderer.hh"
 #include "window.hpp"
 
-static const std::string QuadSrc = 1 + R"===(
+static const char* QuadSrc = 1 + R"===(
 #include <metal_stdlib>
 #include <simd/simd.h>
 using namespace metal;
@@ -59,7 +59,7 @@ static constexpr std::array<float, 16> QuadPos =
         // Set up a render pipeline for scaling the final render.
         NSError* error = nil;
         _quadLib = [_device newLibraryWithSource:[NSString stringWithUTF8String:
-            QuadSrc.c_str()] options:nil error:&error];
+            QuadSrc] options:nil error:&error];
         if(!_quadLib)
         {
             throw std::runtime_error([[NSString stringWithFormat:@"Failed to cr"
