@@ -3,7 +3,9 @@
 
 #include "PAZ_Graphics"
 #include "detect_os.hpp"
+#ifdef PAZ_WINDOWS
 #include <d3d11.h>
+#endif
 #include <unordered_set>
 
 namespace paz
