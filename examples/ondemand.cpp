@@ -21,7 +21,8 @@ int main(int, char** argv)
     paz::VertexBuffer quadVertices;
     quadVertices.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
-    const paz::Texture font = paz::Texture(paz::load_pbm(appDir + "/font.pbm"));
+    const paz::Texture font(paz::parse_pbm(paz::load_file(appDir + "/font.pbm"
+        )));
 
     paz::ShaderFunctionLibrary lib;
     lib.vertex("font", paz::load_file(appDir + "/font.vert").str());
