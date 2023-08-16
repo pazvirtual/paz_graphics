@@ -3,7 +3,8 @@
 #include "internal_data.hpp"
 
 paz::RenderTarget::RenderTarget(double scale, TextureFormat format, MinMagFilter
-    minFilter, MinMagFilter magFilter)
+    minFilter, MinMagFilter magFilter, WrapMode wrapS, WrapMode wrapT,
+    MipmapFilter mipFilter)
 {
     if(scale <= 0.)
     {
@@ -15,6 +16,9 @@ paz::RenderTarget::RenderTarget(double scale, TextureFormat format, MinMagFilter
     _data->_format = format;
     _data->_minFilter = minFilter;
     _data->_magFilter = magFilter;
+    _data->_mipFilter = mipFilter;
+    _data->_wrapS = wrapS;
+    _data->_wrapT = wrapT;
     _data->_isRenderTarget = true;
     _data->_scale = scale;
 
@@ -27,13 +31,17 @@ paz::RenderTarget::RenderTarget(double scale, TextureFormat format, MinMagFilter
 }
 
 paz::RenderTarget::RenderTarget(int width, int height, TextureFormat format,
-    MinMagFilter minFilter, MinMagFilter magFilter)
+    MinMagFilter minFilter, MinMagFilter magFilter, WrapMode wrapS, WrapMode
+    wrapT, MipmapFilter mipFilter)
 {
     _data = std::make_shared<Data>();
 
     _data->_format = format;
     _data->_minFilter = minFilter;
     _data->_magFilter = magFilter;
+    _data->_mipFilter = mipFilter;
+    _data->_wrapS = wrapS;
+    _data->_wrapT = wrapT;
     _data->_isRenderTarget = true;
     _data->_scale = 0.;
 

@@ -52,7 +52,8 @@ paz::Texture::Texture()
 }
 
 paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
-    minFilter, MinMagFilter magFilter, bool normalized) : Texture()
+    minFilter, MinMagFilter magFilter, WrapMode wrapS, WrapMode wrapT,
+    MipmapFilter mipFilter, bool normalized) : Texture()
 {
     initialize();
 
@@ -63,11 +64,15 @@ paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
         R8UInt;
     _data->_minFilter = minFilter;
     _data->_magFilter = magFilter;
+    _data->_mipFilter = mipFilter;
+    _data->_wrapS = wrapS;
+    _data->_wrapT = wrapT;
     _data->init(flip_image(image).data());
 }
 
 paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
-    minFilter, MinMagFilter magFilter) : Texture()
+    minFilter, MinMagFilter magFilter, WrapMode wrapS, WrapMode wrapT,
+    MipmapFilter mipFilter) : Texture()
 {
     initialize();
 
@@ -77,6 +82,9 @@ paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
     _data->_format = format;
     _data->_minFilter = minFilter;
     _data->_magFilter = magFilter;
+    _data->_mipFilter = mipFilter;
+    _data->_wrapS = wrapS;
+    _data->_wrapT = wrapT;
     _data->init();
 }
 
@@ -104,7 +112,7 @@ void paz::Texture::Data::init(const void* data)
     }
     if(!_sampler)
     {
-        _sampler = create_sampler(_minFilter, _magFilter);
+        _sampler = create_sampler(_minFilter, _magFilter, _wrapS, _wrapT);
     }
 }
 
