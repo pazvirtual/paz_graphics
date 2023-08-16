@@ -107,7 +107,7 @@ static void check_output(const std::pair<unsigned int, unsigned int>& n, paz::
             TextureFormat::RGBA8SNorm && format != paz::TextureFormat::
             RGBA16UNorm && format != paz::TextureFormat::RGBA16SNorm && format
             != paz::TextureFormat::RGBA16Float && format != paz::TextureFormat::
-            RGBA32Float);
+            RGBA32Float && format != paz::TextureFormat::BGRA8UNorm);
     }
     else if(n.second == GL_INT_VEC4)
     {
@@ -372,6 +372,7 @@ void paz::RenderPass::end()
         throw std::runtime_error("Error in render pass: " + gl_error(error) +
             ".");
     }
+    CurPass = nullptr;
 }
 
 void paz::RenderPass::cull(CullMode mode)
