@@ -2,6 +2,13 @@
 
 #ifdef PAZ_WINDOWS
 
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef VC_EXTRALEAN
+#define VC_EXTRALEAN
+#endif
+
 #include "PAZ_Graphics"
 #include "internal_data.hpp"
 #include "util_windows.hpp"
