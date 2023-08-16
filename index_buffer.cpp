@@ -14,15 +14,15 @@ paz::IndexBuffer::~IndexBuffer()
     glDeleteBuffers(1, &_data->_id);
 }
 
-paz::IndexBuffer::IndexBuffer(const std::vector<unsigned int>& indices)
+paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
 {
     _data = std::make_unique<Data>();
 
-    _numIndices = indices.size();
+    _numIndices = size;
     glGenBuffers(1, &_data->_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _data->_id);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*indices.size(),
-        indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*size, data,
+        GL_STATIC_DRAW);
 }
 
 #endif
