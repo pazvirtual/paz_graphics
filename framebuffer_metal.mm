@@ -3,7 +3,7 @@
 #ifdef PAZ_MACOS
 
 #include "PAZ_Graphics"
-#include "window.hpp"
+#include "common.hpp"
 #include "internal_data.hpp"
 
 paz::Framebuffer::Framebuffer()

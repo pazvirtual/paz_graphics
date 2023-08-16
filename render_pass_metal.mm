@@ -7,7 +7,7 @@
 #import "view_controller.hh"
 #import "renderer.hh"
 #include "internal_data.hpp"
-#include "window.hpp"
+#include "common.hpp"
 #include "util_metal.hh"
 #import <MetalKit/MetalKit.h>
 

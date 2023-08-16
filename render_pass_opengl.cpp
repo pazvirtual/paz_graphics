@@ -6,7 +6,7 @@
 #include "render_pass.hpp"
 #include "internal_data.hpp"
 #include "util_opengl.hpp"
-#include "window.hpp"
+#include "common.hpp"
 #include "gl_core_4_1.h"
 #include <GLFW/glfw3.h>
 

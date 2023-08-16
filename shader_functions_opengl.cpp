@@ -6,7 +6,7 @@
 #include "util_opengl.hpp"
 #include "shading_lang.hpp"
 #include "internal_data.hpp"
-#include "window.hpp"
+#include "common.hpp"
 #include <sstream>
 #include <regex>
 #include "gl_core_4_1.h"

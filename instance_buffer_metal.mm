@@ -5,7 +5,7 @@
 #include "PAZ_Graphics"
 #import "app_delegate.hh"
 #import "view_controller.hh"
-#include "window.hpp"
+#include "common.hpp"
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 #include <numeric>

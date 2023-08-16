@@ -5,7 +5,7 @@
 #include "PAZ_Graphics"
 #include "util_d3d11.hpp"
 #include "internal_data.hpp"
-#include "window.hpp"
+#include "common.hpp"
 
 static constexpr int TypeSize = 4;
 
