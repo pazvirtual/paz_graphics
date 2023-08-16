@@ -13,6 +13,9 @@
 
 namespace paz
 {
+    constexpr int GlMajorVersion = 4;
+    constexpr int GlMinorVersion = 1;
+
     std::pair<GLint, GLint> min_mag_filter(Texture::MinMagFilter minFilter,
         Texture::MinMagFilter magFilter, paz::Texture::MipmapFilter mipmapFilter
         = Texture::MipmapFilter::None);

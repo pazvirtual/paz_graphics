@@ -10,9 +10,6 @@
 #endif
 #include <GLFW/glfw3.h>
 
-static constexpr int MajorVersion = 4;
-static constexpr int MinorVersion = 1;
-
 static GLFWwindow* WindowPtr;
 static int WindowWidth;
 static int WindowHeight;
@@ -130,8 +127,8 @@ Initializer::Initializer()
     }
 
     // Set context hints.
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, MajorVersion);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, MinorVersion);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, paz::GlMajorVersion);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, paz::GlMinorVersion);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
@@ -162,8 +159,8 @@ Initializer::Initializer()
     if(!WindowPtr)
     {
         throw std::runtime_error("Failed to open GLFW window. Your GPU may not "
-            "be OpenGL " + std::to_string(MajorVersion) + "." + std::to_string(
-            MinorVersion) + " compatible.");
+            "be OpenGL " + std::to_string(paz::GlMajorVersion) + "." + std::
+            to_string(paz::GlMinorVersion) + " compatible.");
     }
     glfwMakeContextCurrent(WindowPtr);
     glfwGetWindowPos(WindowPtr, &PrevX, &PrevY);
