@@ -17,12 +17,6 @@ paz::Texture::~Texture()
     }
 }
 
-void paz::Texture::activate(std::size_t slot) const
-{
-    glActiveTexture(GL_TEXTURE0 + slot);
-    glBindTexture(GL_TEXTURE_2D, _id);
-}
-
 paz::Texture::Texture() {}
 
 paz::Texture::Texture(int width, int height, int numChannels, int numBits,

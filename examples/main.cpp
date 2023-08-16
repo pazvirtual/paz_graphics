@@ -107,8 +107,8 @@ int main()
 
     std::vector<float> fontData;
     const int fontRows = load_font("font.txt", fontData);
-    paz::Texture font(fontData.size()/fontRows, fontRows, 1, 8*sizeof(float),
-        fontData, paz::Texture::MinMagFilter::Nearest, paz::Texture::
+    const paz::Texture font(fontData.size()/fontRows, fontRows, 1, 8*sizeof(
+        float), fontData, paz::Texture::MinMagFilter::Nearest, paz::Texture::
         MinMagFilter::Nearest);
 
     paz::RenderTarget scene(1., 4, 16, paz::Texture::DataType::Float, paz::
@@ -126,14 +126,20 @@ int main()
     paz::Framebuffer blendedFramebuffer;
     blendedFramebuffer.attach(blended);
 
-    paz::ShaderFunctionLibrary shaders({{"shader", read_file("shader.vert")},
-        {"font", read_file("font.vert")}, {"quad", read_file("quad.vert")}},
-        {{"shader", read_file("shader.frag")}, {"font", read_file("font.frag")},
-        {"blend", read_file("blend.frag")}, {"post", read_file("post.frag")}});
+    paz::ShaderFunctionLibrary shaders;
+    shaders.vertex("shader", read_file("shader.vert"));
+    shaders.vertex("font", read_file("font.vert"));
+    shaders.vertex("quad", read_file("quad.vert")),
+    shaders.fragment("shader", read_file("shader.frag"));
+    shaders.fragment("font", read_file("font.frag"));
+    shaders.fragment("blend", read_file("blend.frag"));
+    shaders.fragment("post", read_file("post.frag"));
+
     const paz::Shader s(shaders, "shader", shaders, "shader");
     const paz::Shader f(shaders, "font", shaders, "font");
     const paz::Shader blend(shaders, "quad", shaders, "blend");
     const paz::Shader post(shaders, "quad", shaders, "post");
+
     paz::RenderPass r0(sceneFramebuffer, s);
     paz::RenderPass r1(overlayFramebuffer, f);
     paz::RenderPass r2(blendedFramebuffer, blend);

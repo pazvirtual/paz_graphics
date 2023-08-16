@@ -192,7 +192,8 @@ void paz::RenderPass::cull(CullMode mode) const
 
 void paz::RenderPass::read(const std::string& name, const Texture& tex) const
 {
-    tex.activate(NextSlot);
+    glActiveTexture(GL_TEXTURE0 + NextSlot);
+    glBindTexture(GL_TEXTURE_2D, tex._id);
     _shader->uniform(name, NextSlot);
     ++NextSlot;
 }

@@ -32,21 +32,7 @@ static unsigned int compile_shader(const std::string& src, bool isVertexShader)
     return shader;
 }
 
-paz::ShaderFunctionLibrary::ShaderFunctionLibrary(const std::vector<std::pair<
-    std::string, std::string>>& vertSrcs, const std::vector<std::pair<std::
-    string, std::string>>& fragSrcs)
-{
-    for(const auto& n : vertSrcs)
-    {
-        paz::vert2metal(n.second);
-        _vertexIds[n.first] = compile_shader(n.second, true);
-    }
-    for(const auto& n : fragSrcs)
-    {
-        paz::frag2metal(n.second);
-        _fragmentIds[n.first] = compile_shader(n.second, false);
-    }
-}
+paz::ShaderFunctionLibrary::ShaderFunctionLibrary() {}
 
 paz::ShaderFunctionLibrary::~ShaderFunctionLibrary()
 {
@@ -58,6 +44,20 @@ paz::ShaderFunctionLibrary::~ShaderFunctionLibrary()
     {
         glDeleteShader(n.second);
     }
+}
+
+void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
+    string& src)
+{
+    paz::vert2metal(src);
+    _vertexIds[name] = compile_shader(src, true);
+}
+
+void paz::ShaderFunctionLibrary::fragment(const std::string& name, const std::
+    string& src)
+{
+    paz::frag2metal(src);
+    _fragmentIds[name] = compile_shader(src, false);
 }
 
 #endif

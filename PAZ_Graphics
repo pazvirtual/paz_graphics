@@ -40,8 +40,6 @@ namespace paz
         Texture(const Texture&) = delete;
         Texture& operator=(const Texture&) = delete;
 
-        void activate(std::size_t slot) const;
-
     public:
         enum class MinMagFilter
         {
@@ -236,10 +234,10 @@ namespace paz
         ShaderFunctionLibrary& operator=(const ShaderFunctionLibrary&) = delete;
 
     public:
-        ShaderFunctionLibrary(const std::vector<std::pair<std::string, std::
-            string>>& vertSrcs, const std::vector<std::pair<std::string, std::
-            string>>& fragSrcs);
+        ShaderFunctionLibrary();
         ~ShaderFunctionLibrary();
+        void vertex(const std::string& name, const std::string& src);
+        void fragment(const std::string& name, const std::string& src);
     };
 
     class Shader
