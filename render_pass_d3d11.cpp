@@ -392,6 +392,7 @@ void paz::RenderPass::depth(DepthTestMode mode)
 void paz::RenderPass::end()
 {
     CHECK_PASS
+    d3d_context()->OMSetBlendState(nullptr, nullptr, 0xffffffff);
     CurPass = nullptr;
 }
 
