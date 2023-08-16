@@ -217,6 +217,7 @@ namespace paz
             attribute(dim, &*std::begin(data), std::distance(&*std::begin(data),
                 &*std::end(data)));
         }
+        bool empty() const;
     };
 
     class IndexBuffer
@@ -234,6 +235,7 @@ namespace paz
         template<typename T, require_iterable<T>* = nullptr>
         IndexBuffer(const T& data) : IndexBuffer(&*std::begin(data), std::
             distance(&*std::begin(data), &*std::end(data))) {}
+        bool empty() const;
     };
 
     class Framebuffer
