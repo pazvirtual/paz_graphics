@@ -183,6 +183,18 @@ int2 textureSize(thread const wrap_depth2d<T>& tex, thread int lod)
             throw std::runtime_error("Higher-dimensional textures are not suppo"
                 "rted.");
         }
+        if(std::regex_match(line, std::regex(".*\\b(float|u?int|[iu]?vec[2-4])"
+            "\\s*\\[\\s*[a-zA-Z_0-9]*\\s*\\]\\s*\\(.*")))
+        {
+            throw std::runtime_error("Only braced initializer lists are support"
+                "ed for array definition.");
+        }
+        if(std::regex_match(line, std::regex(".*\\b(float|u?int|[iu]?vec[2-4])"
+            "\\s*\\[.*")))
+        {
+            throw std::runtime_error("Array dimensions must follow variable nam"
+                "e.");
+        }
 
         // Keep macro conditionals.
         if(std::regex_match(line, std::regex("\\s*#((end)?if|else|ifn?def).*")))
@@ -290,7 +302,18 @@ int2 textureSize(thread const wrap_depth2d<T>& tex, thread int lod)
             if(numOpen == numClose)
             {
                 mode = Mode::Fun;
-                out << process_sig(sigBuffer.str(), curArgNames) << std::endl;
+                std::string sig;
+                try
+                {
+                    sig = process_sig(sigBuffer.str(), curArgNames);
+                }
+                catch(const std::exception& e)
+                {
+                    throw std::runtime_error("Line " + std::to_string(l) + ": F"
+                        "ailed to process private function signature: " + e.
+                        what());
+                }
+                out << sig << std::endl;
                 sigBuffer.clear();
                 numOpen = 0;
                 numClose = 0;
@@ -438,7 +461,18 @@ int2 textureSize(thread const wrap_depth2d<T>& tex, thread int lod)
             if(numOpen == numClose)
             {
                 mode = Mode::Fun;
-                out << process_sig(line, curArgNames) << std::endl;
+                std::string sig;
+                try
+                {
+                    sig = process_sig(line, curArgNames);
+                }
+                catch(const std::exception& e)
+                {
+                    throw std::runtime_error("Line " + std::to_string(l) + ": F"
+                        "ailed to process private function signature: " + e.
+                        what());
+                }
+                out << sig << std::endl;
             }
             else
             {

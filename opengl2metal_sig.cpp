@@ -4,10 +4,20 @@
 std::string paz::process_sig(const std::string& sig, std::unordered_set<std::
     string>& argNames)
 {
+    if(sig.find('[') != std::string::npos)
+    {
+        throw std::runtime_error("Arrays in private function signatures are not"
+            " supported.");
+    }
     const std::size_t open = sig.find('(');
+    if(open == std::string::npos)
+    {
+        throw std::logic_error("Invalid signature for private function.");
+    }
     auto start = sig.begin() + open;
     std::smatch res;
-    while(std::regex_search(start, sig.end(), res, std::regex("\\s*([A-Za-z_][A-Za-z_0-9]*)\\s*[,)]")))
+    while(std::regex_search(start, sig.end(), res, std::regex("\\s*([A-Za-z_][A"
+        "-Za-z_0-9]*)\\s*[,)]")))
     {
         argNames.insert(res[1]);
         start = res.suffix().first;

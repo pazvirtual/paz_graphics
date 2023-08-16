@@ -205,8 +205,9 @@ static unsigned int compile_shader(const std::string& src, GLenum type)
     // Compile shader.
     unsigned int shader = glCreateShader(type);
     const std::string headerStr = "#version " + std::to_string(paz::
-        GlMajorVersion) + std::to_string(paz::GlMinorVersion) + "0 core\n#defin"
-        "e depthSampler2D sampler2D\n";
+        GlMajorVersion) + std::to_string(paz::GlMinorVersion) + "0 core\n#exten"
+        "sion ARB_shading_language_420pack : require\n#define depthSampler2D sa"
+        "mpler2D\n";
     std::array<const char*, 2> srcStrs = {headerStr.c_str(), src.c_str()};
     glShaderSource(shader, srcStrs.size(), srcStrs.data(), NULL);
     glCompileShader(shader);
