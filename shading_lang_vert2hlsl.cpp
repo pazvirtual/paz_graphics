@@ -137,6 +137,38 @@ float4 uintBitsToFloat(in uint4 v)
         }
     }
 
+    // Define GLSL-like modulo.
+    out << 1 + R"===(
+float mod(in float x, in float y)
+{
+    return x - y*floor(x/y);
+}
+float2 mod(in float2 x, in float y)
+{
+    return x - y*floor(x/y);
+}
+float3 mod(in float3 x, in float y)
+{
+    return x - y*floor(x/y);
+}
+float4 mod(in float4 x, in float y)
+{
+    return x - y*floor(x/y);
+}
+float2 mod(in float2 x, in float2 y)
+{
+    return x - y*floor(x/y);
+}
+float3 mod(in float3 x, in float3 y)
+{
+    return x - y*floor(x/y);
+}
+float4 mod(in float4 x, in float4 y)
+{
+    return x - y*floor(x/y);
+}
+)===";
+
     std::string line;
     std::size_t l = 0;
     while(std::getline(in, line))
