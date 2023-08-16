@@ -7,7 +7,7 @@ layout(location = 0) out vec4 color;
 
 float luminance(in vec3 v)
 {
-    return dot(v, vec3(0.2126f, 0.7152f, 0.0722f));
+    return dot(v, vec3(0.2126, 0.7152, 0.0722));
 }
 
 vec3 reinhard(in vec3 col, in float w)
