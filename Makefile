@@ -45,9 +45,8 @@ REINSTALLHEADER := $(shell cmp -s $(PROJNAME) $(INCLPATH)/$(PROJNAME); echo $$?)
 
 print-% : ; @echo $* = $($*)
 
-default: lib$(LIBNAME).a
-	$(MAKE) -C test
-	test/test
+.PHONY: test
+default: lib$(LIBNAME).a test
 	$(MAKE) -C examples
 
 lib$(LIBNAME).a: $(OBJ)
@@ -62,6 +61,10 @@ else
 install: $(PROJNAME) lib$(LIBNAME).a
 	cp lib$(LIBNAME).a $(LIBPATH)/
 endif
+
+test:
+	$(MAKE) -C test
+	test/test
 
 analyze: $(OBJCSRC)
 	$(foreach n, $(OBJCSRC), clang++ --analyze $(n) $(CXXFLAGS) && $(RM) $(n:%.mm=%.plist);)
