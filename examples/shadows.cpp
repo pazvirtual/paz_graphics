@@ -9,6 +9,8 @@ static constexpr float ZNear = 1.;
 static constexpr float ZFar = 5.;
 static constexpr float YFov = 65.*M_PI/180.;
 static constexpr int Res = 2000;
+static constexpr int Size = 16;
+static constexpr int Scale = 8;
 
 static constexpr std::array<float, 4*4> GroundPos =
 {
@@ -200,12 +202,19 @@ int main(int, char** argv)
 
     paz::RenderPass renderScene(render);
 
-    paz::Image<std::uint8_t, 1> img(32, 32);
-    for(std::size_t i = 0; i < 32; ++i)
+    paz::Image<std::uint8_t, 1> img(Scale*Size, Scale*Size);
+    for(std::size_t i = 0; i < Size; ++i)
     {
-        for(std::size_t j = 0; j < 32; ++j)
+        for(std::size_t j = 0; j < Size; ++j)
         {
-           img[32*i + j] = 255*((32*i + j + i%2)%2);
+            const std::uint8_t c = 255*((Size*i + j + i%2)%2);
+            for(std::size_t a = 0; a < Scale; ++a)
+            {
+                for(std::size_t b = 0; b < Scale; ++b)
+                {
+                    img[Scale*Size*(Scale*i + a) + (Scale*j + b)] = c;
+                }
+            }
         }
     }
     const paz::Texture shadowMap = compute_shadow_map(groundVerts, cubeVerts);
