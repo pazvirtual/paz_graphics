@@ -202,6 +202,7 @@ int main(int, char** argv)
 
     paz::RenderPass renderScene(render);
 
+    const paz::Texture shadowMap = compute_shadow_map(groundVerts, cubeVerts);
     paz::Image<std::uint8_t, 1> img(Scale*Size, Scale*Size);
     for(std::size_t i = 0; i < Size; ++i)
     {
@@ -217,10 +218,9 @@ int main(int, char** argv)
             }
         }
     }
-    const paz::Texture shadowMap = compute_shadow_map(groundVerts, cubeVerts);
-    const paz::Texture surface = paz::Texture(img, paz::MinMagFilter::Linear,
-        paz::MinMagFilter::Nearest, paz::WrapMode::Repeat, paz::WrapMode::
-        Repeat, paz::MipmapFilter::Linear);
+    const paz::Texture surface(img, paz::MinMagFilter::Linear, paz::
+        MinMagFilter::Nearest, paz::WrapMode::Repeat, paz::WrapMode::Repeat,
+        paz::MipmapFilter::Linear);
 
     double time = 0.;
     while(!paz::Window::Done())

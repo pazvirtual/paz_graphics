@@ -86,7 +86,8 @@ int main(int, char** argv)
     paz::Window::SetMinSize(640, 480);
     paz::Window::SetMaxSize(800, 800);
 
-    const paz::Texture font(paz::load_pbm(appDir + "/font.pbm"));
+    const paz::Texture font(paz::parse_pbm(paz::load_file(appDir + "/font.pbm"
+        )));
 
     paz::RenderPass scenePass, textPass, postPass;
     init(scenePass, textPass, postPass, appDir);
