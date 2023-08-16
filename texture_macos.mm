@@ -3,7 +3,7 @@
 #ifdef PAZ_MACOS
 
 #include "PAZ_Graphics"
-#import "util_metal.hh"
+#import "util_macos.hh"
 #import "app_delegate.hh"
 #import "view_controller.hh"
 #include "internal_data.hpp"

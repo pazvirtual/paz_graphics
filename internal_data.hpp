@@ -3,7 +3,7 @@
 
 #include "detect_os.hpp"
 #ifdef PAZ_LINUX
-#include "shader_opengl.hpp"
+#include "shader_linux.hpp"
 #endif
 #include "PAZ_Graphics"
 #ifdef PAZ_WINDOWS

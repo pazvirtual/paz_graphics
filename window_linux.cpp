@@ -7,7 +7,7 @@
 #include "keycodes.hpp"
 #include "common.hpp"
 #include "internal_data.hpp"
-#include "util_opengl.hpp"
+#include "util_linux.hpp"
 #include "gl_core_4_1.h"
 #include <GLFW/glfw3.h>
 #include <cmath>

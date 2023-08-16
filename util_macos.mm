@@ -2,7 +2,7 @@
 
 #ifdef PAZ_MACOS
 
-#import "util_metal.hh"
+#import "util_macos.hh"
 #import "app_delegate.hh"
 #import "view_controller.hh"
 
