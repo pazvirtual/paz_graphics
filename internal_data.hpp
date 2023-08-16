@@ -62,6 +62,7 @@ struct paz::Framebuffer::Data
     std::shared_ptr<Texture::Data> _depthStencilAttachment; //TEMP
     int _width = 0;
     int _height = 0;
+    double _scale = 1.;
 #ifndef PAZ_MACOS
     unsigned int _id = 0;
     int _numTextures = 0;
