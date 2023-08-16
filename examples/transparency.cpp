@@ -8,12 +8,12 @@ static constexpr float YFov = 1.;
 static const std::string ZQuadVertSrc = 1 + R"===(
 uniform mat4 proj;
 uniform float z;
-uniform vec2 scale;
 layout(location = 0) in vec2 pos;
 out float _z;
 void main()
 {
-    gl_Position = mul(proj, vec4(scale*pos, z, 1.));
+    gl_Position = mul(proj, vec4(-0.5*(z + 4.) + cos(0.5)*pos.x, pos.y, z + sin(
+        0.5)*pos.x, 1.));
     _z = z;
 }
 )===";
@@ -27,7 +27,7 @@ void main()
 {
     vec3 ci = col.a*col.rgb;
     float ai = col.a;
-    float w = 1.;
+    float w = ai*pow(abs(_z), -6);
     accum = vec4(ci, ai)*w;
     r = vec4(0., 0., 0., ai);
 }
@@ -99,9 +99,8 @@ int main(int, char** argv)
         // Draw opaque geometry.
         pass.begin({paz::LoadAction::Clear});
         pass.uniform("proj", proj);
-        pass.uniform("z", -9.9f);
-        pass.uniform("scale", 10.f, 1.f);
-        pass.uniform("col", 0.5f, 0.f, 0.5f, 1.f);
+        pass.uniform("z", -6.f);
+        pass.uniform("col", 0.5f, 0.f, 0.5f, 0.9f);
         pass.draw(paz::PrimitiveType::TriangleStrip, quadVertices);
         pass.end();
 
@@ -113,11 +112,9 @@ int main(int, char** argv)
                 FillOnes});
             pass0.uniform("proj", proj);
             pass0.uniform("z", -4.f);
-            pass0.uniform("scale", 1.f, 1.f);
-            pass0.uniform("col", 1.f, 0.f, 0.f, 0.1f);
+            pass0.uniform("col", 1.f, 0.f, 0.f, 0.9f);
             pass0.draw(paz::PrimitiveType::TriangleStrip, quadVertices);
-            pass0.uniform("z", -8.f);
-            pass0.uniform("scale", 1.f, 10.f);
+            pass0.uniform("z", -5.f);
             pass0.uniform("col", 1.f, 1.f, 0.f, 0.5f);
             pass0.draw(paz::PrimitiveType::TriangleStrip, quadVertices);
             pass0.end();
@@ -132,13 +129,11 @@ int main(int, char** argv)
         {
             pass.begin({paz::LoadAction::Load});
             pass.uniform("proj", proj);
-            pass.uniform("z", -8.f);
-            pass.uniform("scale", 1.f, 10.f);
+            pass.uniform("z", -5.f);
             pass.uniform("col", 1.f, 1.f, 0.f, 0.5f);
             pass.draw(paz::PrimitiveType::TriangleStrip, quadVertices);
             pass.uniform("z", -4.f);
-            pass.uniform("scale", 1.f, 1.f);
-            pass.uniform("col", 1.f, 0.f, 0.f, 0.1f);
+            pass.uniform("col", 1.f, 0.f, 0.f, 0.9f);
             pass.draw(paz::PrimitiveType::TriangleStrip, quadVertices);
             pass.end();
         }
