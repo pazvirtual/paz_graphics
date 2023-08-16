@@ -1,25 +1,21 @@
 uniform sampler2D base;
-uniform int width;
-in vec2 uv;
+uniform float width;
+in vec2 uv0;
+in vec2 uv1;
+in vec2 uv2;
+in vec2 uv3;
+in vec2 uv4;
+in vec2 uv5;
+in vec2 uv6;
 layout(location = 0) out vec4 color;
 void main()
 {
-    ivec2 texSize = textureSize(base, 0);
-    vec2 texOffset = vec2(1./texSize.x, 1./texSize.y);
-    float maxDist = 0.5*width + 0.5;
-    int halfRange = int(maxDist) + 1;
-    color = vec4(0.);
-    for(int i = -halfRange - 1; i <= halfRange; ++i)
-    {
-        for(int j = -halfRange - 1; j <= halfRange; ++j)
-        {
-            vec2 offset = vec2(i + 0.5, j + 0.5);
-            if(length(offset) < maxDist)
-            {
-                color += texture(base, uv + texOffset*offset);
-            }
-        }
-    }
-    color *= 0.5/halfRange;
-    color.rgb = pow(color.rgb, vec3(0.4545));
+    float d = 1./sqrt(max(1., width - 1.));
+    color = texture(base, uv0)*clamp(2. - width, 0., 1.);
+    color += texture(base, uv1)*d*clamp(width - 1., 0., 2.)*0.5;
+    color += texture(base, uv2)*d*clamp(width - 1., 0., 2.)*0.5;
+    color += texture(base, uv3)*d*clamp(width - 3., 0., 2.)*0.5;
+    color += texture(base, uv4)*d*clamp(width - 3., 0., 2.)*0.5;
+    color += texture(base, uv5)*d*clamp(width - 5., 0., 2.)*0.5;
+    color += texture(base, uv6)*d*clamp(width - 5., 0., 2.)*0.5;
 }

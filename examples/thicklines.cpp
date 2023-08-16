@@ -1,15 +1,15 @@
 #include "PAZ_Graphics"
 #include "PAZ_IO"
 
-static constexpr int MinWidth = 2;
-static constexpr int MaxWidth = 10;
+static constexpr double MinWidth = 1.;
+static constexpr double MaxWidth = 6.;
 
 static const std::string LineVertSrc = 1 + R"===(
 layout(location = 0) in vec2 pos;
 out float a;
 void main()
 {
-    gl_Position = vec4(pos.x, pos.y, 0, 1);
+    gl_Position = vec4(pos.x, pos.y, 0., 1.);
     a = float(gl_VertexID%2);
 }
 )===";
@@ -17,9 +17,10 @@ void main()
 static const std::string LineFragSrc = 1 + R"===(
 layout(location = 0) out vec4 color;
 in float a;
+const float lum = pow(0.5, 2.2);
 void main()
 {
-    color = 0.5*vec4(a, 1. - a, 1, 1.);
+    color = vec4(lum*vec3(a, 1. - a, 1.), 1.);
 }
 )===";
 
@@ -73,28 +74,40 @@ int main(int, char** argv)
     paz::VertexBuffer quadVerts;
     quadVerts.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
-    const paz::VertexFunction lineVert(LineVertSrc);
+    const paz::VertexFunction lineVert0(LineVertSrc);
+    const paz::VertexFunction lineVert1(paz::read_bytes(appDir + "/lines-x.vert"
+        ).str());
+    const paz::VertexFunction lineVert2(paz::read_bytes(appDir + "/lines-y.vert"
+        ).str());
     const paz::VertexFunction quadVert(paz::read_bytes(appDir + "/quad.vert").
         str());
     const paz::FragmentFunction lineFrag0(LineFragSrc);
     const paz::FragmentFunction lineFrag1(paz::read_bytes(appDir + "/lines.frag"
         ).str());
+    const paz::FragmentFunction lineFrag2(paz::read_bytes(appDir +
+        "/lines-post.frag").str());
 
-    paz::Framebuffer buff;
-    buff.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA16Float, paz::
+    paz::Framebuffer buff0;
+    buff0.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA16Float, paz::
         MinMagFilter::Linear, paz::MinMagFilter::Linear));
 
-    paz::RenderPass basePass(buff, lineVert, lineFrag0);
-    paz::RenderPass sdfPass(quadVert, lineFrag1);
+    paz::Framebuffer buff1;
+    buff1.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA16Float, paz::
+        MinMagFilter::Linear, paz::MinMagFilter::Linear));
 
-    int width = MinWidth;
+    paz::Framebuffer buff2;
+    buff2.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA16Float));
+
+    paz::RenderPass basePass(buff0, lineVert0, lineFrag0);
+    paz::RenderPass xPass(buff1, lineVert1, lineFrag1);
+    paz::RenderPass yPass(buff2, lineVert2, lineFrag1);
+    paz::RenderPass postPass(quadVert, lineFrag2);
+
+    double width = MinWidth;
     while(!paz::Window::Done())
     {
         paz::Window::SetCursorMode(paz::Window::GamepadActive() ? paz::
             CursorMode::Disable : paz::CursorMode::Normal);
-
-        const double displayScale = static_cast<double>(paz::Window::
-            ViewportWidth())/paz::Window::Width();
 
         if(paz::Window::KeyPressed(paz::Key::One) || paz::Window::
             GamepadPressed(paz::GamepadButton::X))
@@ -111,15 +124,15 @@ int main(int, char** argv)
         {
             set_mode(2);
         }
-        if(paz::Window::KeyPressed(paz::Key::Up) || paz::Window::GamepadPressed(
-            paz::GamepadButton::Up))
+        if(paz::Window::KeyDown(paz::Key::Up) || paz::Window::GamepadDown(paz::
+            GamepadButton::Up))
         {
-            width = std::min(width + 1, MaxWidth);
+            width = std::min(width + 4.*paz::Window::FrameTime(), MaxWidth);
         }
-        if(paz::Window::KeyPressed(paz::Key::Down) || paz::Window::
-            GamepadPressed(paz::GamepadButton::Down))
+        if(paz::Window::KeyDown(paz::Key::Down) || paz::Window::
+            GamepadDown(paz::GamepadButton::Down))
         {
-            width = std::max(width - 1, MinWidth);
+            width = std::max(width - 4.*paz::Window::FrameTime(), MinWidth);
         }
         if(paz::Window::KeyPressed(paz::Key::Q) || paz::Window::GamepadPressed(
             paz::GamepadButton::Back))
@@ -142,11 +155,28 @@ int main(int, char** argv)
         }
         basePass.end();
 
-        sdfPass.begin({paz::LoadAction::Clear});
-        sdfPass.read("base", buff.colorAttachment(0));
-        sdfPass.uniform("width", static_cast<int>(displayScale*width));
-        sdfPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
-        sdfPass.end();
+        xPass.begin();
+        xPass.read("base", buff0.colorAttachment(0));
+        xPass.uniform("texOffset", std::array<float, 2>{1.f/buff0.
+            colorAttachment(0).width(), 1.f/buff0.colorAttachment(0).height()});
+        xPass.uniform("width", static_cast<float>(paz::Window::DpiScale()*
+            width));
+        xPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
+        xPass.end();
+
+        yPass.begin();
+        yPass.read("base", buff1.colorAttachment(0));
+        yPass.uniform("texOffset", std::array<float, 2>{1.f/buff1.
+            colorAttachment(0).width(), 1.f/buff1.colorAttachment(0).height()});
+        yPass.uniform("width", static_cast<float>(paz::Window::DpiScale()*
+            width));
+        yPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
+        yPass.end();
+
+        postPass.begin();
+        postPass.read("img", buff2.colorAttachment(0));
+        postPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
+        postPass.end();
 
         paz::Window::EndFrame();
     }
