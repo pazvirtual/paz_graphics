@@ -155,7 +155,8 @@ namespace paz
 
     enum class BlendMode
     {
-        Additive, Blend, BlendPremult, Disable
+        One_One, One_InvSrcAlpha, SrcAlpha_InvSrcAlpha, InvSrcAlpha_SrcAlpha,
+        Zero_InvSrcAlpha, Disable
     };
 
     enum class LoadAction
@@ -396,9 +397,9 @@ namespace paz
     public:
         RenderPass();
         RenderPass(const Framebuffer& fbo, const VertexFunction& vert, const
-            FragmentFunction& frag, BlendMode mode = BlendMode::Disable);
+            FragmentFunction& frag, const std::vector<BlendMode>& modes = {});
         RenderPass(const VertexFunction& vert, const FragmentFunction& frag,
-            BlendMode mode = BlendMode::Disable);
+            const std::vector<BlendMode>& modes = {});
         void begin(const std::vector<LoadAction>& colorLoadActions = {},
             LoadAction depthLoadAction = LoadAction::DontCare);
         void end();

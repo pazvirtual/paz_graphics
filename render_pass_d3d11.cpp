@@ -90,7 +90,7 @@ paz::RenderPass::RenderPass()
 }
 
 paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
-    const FragmentFunction& frag, BlendMode mode)
+    const FragmentFunction& frag, const std::vector<BlendMode>& modes)
 {
     initialize();
 
@@ -102,37 +102,48 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
 
     // Set blending mode. (Applies to all color render targets.)
     D3D11_BLEND_DESC blendDescriptor = {};
-    blendDescriptor.RenderTarget[0].BlendEnable = mode != BlendMode::Disable;
-    blendDescriptor.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-    blendDescriptor.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-    blendDescriptor.RenderTarget[0].RenderTargetWriteMask =
-        D3D11_COLOR_WRITE_ENABLE_ALL;
-    if(mode == BlendMode::Additive)
+    blendDescriptor.IndependentBlendEnable = true;
+    for(auto& n : blendDescriptor.RenderTarget)
     {
-        blendDescriptor.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-        blendDescriptor.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-        blendDescriptor.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-        blendDescriptor.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+        n.BlendEnable = false;
+        n.BlendOp = D3D11_BLEND_OP_ADD;
+        n.BlendOpAlpha = D3D11_BLEND_OP_ADD;
+        n.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
     }
-    else if(mode == BlendMode::Blend)
+    for(std::size_t i = 0; i < modes.size(); ++i)
     {
-        blendDescriptor.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-        blendDescriptor.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
-        blendDescriptor.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-        blendDescriptor.RenderTarget[0].DestBlendAlpha =
-            D3D11_BLEND_INV_SRC_ALPHA;
-    }
-    else if(mode == BlendMode::BlendPremult)
-    {
-        blendDescriptor.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-        blendDescriptor.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-        blendDescriptor.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-        blendDescriptor.RenderTarget[0].DestBlendAlpha =
-            D3D11_BLEND_INV_SRC_ALPHA;
-    }
-    else if(mode != BlendMode::Disable)
-    {
-        throw std::logic_error("Invalid blending function.");
+        blendDescriptor.RenderTarget[i].BlendEnable = modes[i] != BlendMode::
+            Disable;
+        auto srcBlend = D3D11_BLEND_ONE;
+        auto destBlend = D3D11_BLEND_ONE;
+        if(modes[i] == BlendMode::One_InvSrcAlpha)
+        {
+            destBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        }
+        else if(modes[i] == BlendMode::SrcAlpha_InvSrcAlpha)
+        {
+            srcBlend = D3D11_BLEND_SRC_ALPHA;
+            destBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        }
+        else if(modes[i] == BlendMode::InvSrcAlpha_SrcAlpha)
+        {
+            srcBlend = D3D11_BLEND_INV_SRC_ALPHA;
+            destBlend = D3D11_BLEND_SRC_ALPHA;
+        }
+        else if(modes[i] == BlendMode::Zero_InvSrcAlpha)
+        {
+            srcBlend = D3D11_BLEND_ZERO;
+            destBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        }
+        else if(modes[i] != paz::BlendMode::One_One && modes[i] != BlendMode::
+            Disable)
+        {
+            throw std::logic_error("Invalid blending function.");
+        }
+        blendDescriptor.RenderTarget[i].SrcBlend = srcBlend;
+        blendDescriptor.RenderTarget[i].SrcBlendAlpha = srcBlend;
+        blendDescriptor.RenderTarget[i].DestBlend = destBlend;
+        blendDescriptor.RenderTarget[i].DestBlendAlpha = destBlend;
     }
     auto hr = d3d_device()->CreateBlendState(&blendDescriptor, &_data->
         _blendState);
@@ -206,7 +217,8 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
 }
 
 paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
-    frag, BlendMode mode) : RenderPass(final_framebuffer(), vert, frag, mode) {}
+    frag, const std::vector<BlendMode>& modes) : RenderPass(final_framebuffer(),
+    vert, frag, modes) {}
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
@@ -296,7 +308,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         else if(depthLoadAction == LoadAction::FillZeros)
         {
             d3d_context()->ClearDepthStencilView(_data->_fbo->
-                _depthStencilAttachment->_dsView, D3D11_CLEAR_DEPTH, 1.f, 0);
+                _depthStencilAttachment->_dsView, D3D11_CLEAR_DEPTH, 0.f, 0);
         }
         else if(depthLoadAction != LoadAction::DontCare && depthLoadAction !=
             LoadAction::Load)
