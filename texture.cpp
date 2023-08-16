@@ -155,6 +155,7 @@ void paz::Texture::Data::ensureMipmaps()
 {
     if(_mipFilter != MipmapFilter::None)
     {
+        glBindTexture(GL_TEXTURE_2D, _id);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 }
