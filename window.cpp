@@ -382,18 +382,8 @@ void paz::Window::Loop(const std::function<void(void)>& draw)
 
     while(!glfwWindowShouldClose(WindowPtr))
     {
-        glfwPollEvents();
-        if(CursorDisabled)
-        {
-            glfwSetCursorPos(WindowPtr, 0, WindowHeight);
-        }
         draw();
-        glfwSwapBuffers(WindowPtr);
-        reset_events();
-        const auto now = std::chrono::steady_clock::now();
-        CurFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now
-            - FrameStart).count()*1e-6;
-        FrameStart = now;
+        Commit();
     }
 }
 
@@ -402,10 +392,16 @@ void paz::Window::Commit()
     initialize();
 
     glfwSwapBuffers(WindowPtr);
+    reset_events();
     const auto now = std::chrono::steady_clock::now();
     CurFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
         FrameStart).count()*1e-6;
     FrameStart = now;
+    glfwPollEvents();
+    if(CursorDisabled)
+    {
+        glfwSetCursorPos(WindowPtr, 0, WindowHeight);
+    }
 }
 
 void paz::Window::Quit()
