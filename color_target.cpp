@@ -19,7 +19,7 @@ paz::ColorTarget::ColorTarget(double scale, int numChannels, int numBits,
     paz::Window::RegisterTarget(this);
 }
 
-paz::ColorTarget::resize(int width, int height)
+void paz::ColorTarget::resize(int width, int height)
 {
     Texture::resize(_scale*width, _scale*height);
 }

@@ -43,11 +43,6 @@ namespace paz
             UNorm
         };
 
-    private:
-        void init(int width, int height, int numChannels, int numBits, DataType
-            type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
-            data);
-
     protected:
         struct Data;
         std::unique_ptr<Data> _data;
@@ -55,6 +50,9 @@ namespace paz
         bool _mipmap = false;
 
         Texture();
+        void init(int width, int height, int numChannels, int numBits, DataType
+            type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
+            data);
 
     public:
         virtual ~Texture();

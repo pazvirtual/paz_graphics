@@ -55,23 +55,26 @@ static void check_attributes(const std::vector<unsigned int>& a, const std::
 
 paz::RenderPass::~RenderPass() {}
 
-paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader)
+paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
+    BlendMode mode)
 {
     _data = std::make_unique<Data>();
 
     _fbo = &fbo;
     _data->_shader = &shader;
+    _data->_blendMode = mode;
 }
 
-paz::RenderPass::RenderPass(const Shader& shader)
+paz::RenderPass::RenderPass(const Shader& shader, BlendMode mode)
 {
     _data = std::make_unique<Data>();
 
     _data->_shader = &shader;
+    _data->_blendMode = mode;
 }
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
-    LoadAction depthLoadAction, BlendMode mode)
+    LoadAction depthLoadAction)
 {
     glGetError();
     NextSlot = 0;
@@ -122,7 +125,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         }
     }
 
-    if(mode == BlendMode::Disable)
+    if(_data->_blendMode == BlendMode::Disable)
     {
         if(BlendEnabled)
         {
@@ -137,7 +140,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             BlendEnabled = true;
             glEnable(GL_BLEND);
         }
-        if(mode == BlendMode::Additive)
+        if(_data->_blendMode == BlendMode::Additive)
         {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE);
         }
