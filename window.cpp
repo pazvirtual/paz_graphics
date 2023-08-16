@@ -151,6 +151,8 @@ paz::Initializer::Initializer()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, paz::GlMinorVersion);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_DEPTH_BITS, 16);
+    glfwWindowHint(GLFW_STENCIL_BITS, 0);
 
     // Get display size.
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
