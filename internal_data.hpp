@@ -6,6 +6,8 @@
 #include "shader.hpp"
 #endif
 #include "PAZ_Graphics"
+#include <unordered_map>
+#include <unordered_set>
 
 struct paz::Texture::Data
 {
