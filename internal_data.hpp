@@ -121,6 +121,9 @@ struct paz::VertexFunction::Data
 #else
     ID3D11VertexShader* _shader = nullptr;
     ID3DBlob* _bytecode = nullptr;
+    std::unordered_map<std::string, std::tuple<std::size_t, DataType, int>>
+        _uniforms;
+    std::size_t _uniformBufSize = 0;
 #endif
     ~Data();
 };
@@ -134,6 +137,10 @@ struct paz::FragmentFunction::Data
     std::unordered_map<unsigned int, unsigned int> _outputTypes;
 #else
     ID3D11PixelShader* _shader = nullptr;
+    ID3DBlob* _bytecode = nullptr;
+    std::unordered_map<std::string, std::tuple<std::size_t, DataType, int>>
+        _uniforms;
+    std::size_t _uniformBufSize = 0;
 #endif
     ~Data();
 };
@@ -156,6 +163,12 @@ struct paz::RenderPass::Data
     D3D11_RASTERIZER_DESC _rasterDescriptor = {};
     std::shared_ptr<VertexFunction::Data> _vert;
     std::shared_ptr<FragmentFunction::Data> _frag;
+    ID3D11Buffer* _vertUniformBuf = nullptr;
+    ID3D11Buffer* _fragUniformBuf = nullptr;
+    std::vector<unsigned char> _vertUniformData;
+    std::vector<unsigned char> _fragUniformData;
+    std::unordered_map<std::string, int> _texAndSamplerSlots;
+    ~Data();
 #endif
     std::shared_ptr<Framebuffer::Data> _fbo;
 };

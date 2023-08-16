@@ -6,12 +6,25 @@
 #include "internal_data.hpp"
 #include "util_d3d11.hpp"
 #include "window.hpp"
+#include <d3dcompiler.h>
 
 #define CHECK_PASS if(!CurPass) throw std::logic_error("No current render pass"\
     "."); else if(this != CurPass) throw std::logic_error("Render pass operati"\
     "ons cannot be interleaved.");
 
 static const paz::RenderPass* CurPass;
+
+paz::RenderPass::Data::~Data()
+{
+    if(_vertUniformBuf)
+    {
+        _vertUniformBuf->Release();
+    }
+    if(_fragUniformBuf)
+    {
+        _fragUniformBuf->Release();
+    }
+}
 
 paz::RenderPass::RenderPass()
 {
@@ -28,6 +41,71 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
     _data->_vert = vert._data;
     _data->_frag = frag._data;
     _data->_fbo = fbo._data;
+
+    // Set blending mode.
+    // ...
+
+    // Check vertex and fragment function I/O compatibility. (Linking?)
+    // ...
+
+    // Get texture and sampler binding locations.
+    ID3D11ShaderReflection* reflection;
+    auto hr = D3DReflect(_data->_frag->_bytecode->GetBufferPointer(), _data->
+        _frag->_bytecode->GetBufferSize(), IID_ID3D11ShaderReflection,
+        reinterpret_cast<void**>(&reflection));
+    if(hr)
+    {
+        throw std::runtime_error("Failed to get fragment function reflection (H"
+            "RESULT " + std::to_string(hr) + ").");
+    }
+    D3D11_SHADER_INPUT_BIND_DESC inputDescriptor;
+    int i = 0;
+    while(!reflection->GetResourceBindingDesc(i++, &inputDescriptor))
+    {
+        const std::string name = inputDescriptor.Name;
+        if(name.size() > 7)
+        {
+            const auto ending = name.substr(name.size() - 7);
+            if(ending == "Texture" || ending == "Sampler")
+            {
+                _data->_texAndSamplerSlots[name] = inputDescriptor.BindPoint;
+            }
+        }
+    }
+
+    // Create buffers to set uniforms.
+    if(!_data->_vert->_uniforms.empty())
+    {
+        _data->_vertUniformData.resize(_data->_vert->_uniformBufSize);
+        D3D11_BUFFER_DESC descriptor = {};
+        descriptor.Usage = D3D11_USAGE_DYNAMIC;
+        descriptor.ByteWidth = _data->_vert->_uniformBufSize;
+        descriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        descriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        const auto hr = d3d_device()->CreateBuffer(&descriptor, nullptr,
+            &_data->_vertUniformBuf);
+        if(hr)
+        {
+            throw std::runtime_error("Failed to create constant buffer for vert"
+                "ex function (HRESULT " + std::to_string(hr) + ").");
+        }
+    }
+    if(!_data->_frag->_uniforms.empty())
+    {
+        _data->_fragUniformData.resize(_data->_frag->_uniformBufSize);
+        D3D11_BUFFER_DESC descriptor = {};
+        descriptor.Usage = D3D11_USAGE_DYNAMIC;
+        descriptor.ByteWidth = _data->_frag->_uniformBufSize;
+        descriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        descriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        const auto hr = d3d_device()->CreateBuffer(&descriptor, nullptr,
+            &_data->_fragUniformBuf);
+        if(hr)
+        {
+            throw std::runtime_error("Failed to create constant buffer for frag"
+                "ment function (HRESULT " + std::to_string(hr) + ").");
+        }
+    }
 }
 
 paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
@@ -130,8 +208,13 @@ void paz::RenderPass::cull(CullMode mode)
 void paz::RenderPass::read(const std::string& name, const Texture& tex)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    if(_data->_texAndSamplerSlots.count(name))
+    {
+        d3d_context()->PSSetShaderResources(_data->_texAndSamplerSlots.at(name),
+            1, &tex._data->_resourceView);
+        d3d_context()->PSSetSamplers(_data->_texAndSamplerSlots.at(name), 1,
+            &tex._data->_sampler);
+    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x)
@@ -213,39 +296,52 @@ void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
 void paz::RenderPass::uniform(const std::string& name, float x)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    uniform(name, &x, 1);
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    std::array<float, 2> v = {x, y};
+    uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    std::array<float, 3> v = {x, y, z};
+    uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z, float w)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    std::array<float, 4> v = {x, y, z, w};
+    uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, const float* x, std::
     size_t size)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    if(sizeof(float)*size > 4*1024) //TEMP - `set*Bytes` limitation
+    {
+        throw std::runtime_error("Too many bytes to send without buffer.");
+    }
+    if(_data->_vert->_uniforms.count(name))
+    {
+        std::copy(reinterpret_cast<const unsigned char*>(x), reinterpret_cast<
+            const unsigned char*>(x + size), _data->_vertUniformData.begin() +
+            std::get<0>(_data->_vert->_uniforms.at(name)));
+    }
+    if(_data->_frag->_uniforms.count(name))
+    {
+        std::copy(reinterpret_cast<const unsigned char*>(x), reinterpret_cast<
+            const unsigned char*>(x + size), _data->_fragUniformData.begin() +
+            std::get<0>(_data->_frag->_uniforms.at(name)));
+    }
 }
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
@@ -262,6 +358,36 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
         throw std::runtime_error("Failed to create input layout (HRESULT " +
             std::to_string(hr) + ").");
     }
+    if(_data->_vertUniformBuf)
+    {
+        D3D11_MAPPED_SUBRESOURCE mappedSr;
+        const auto hr = d3d_context()->Map(_data->_vertUniformBuf, 0,
+            D3D11_MAP_WRITE_DISCARD, 0, &mappedSr);
+        if(hr)
+        {
+            throw std::runtime_error("Failed to map vertex function constant bu"
+                "ffer (HRESULT " + std::to_string(hr) + ").");
+        }
+        std::copy(_data->_vertUniformData.begin(), _data->_vertUniformData.
+            end(), reinterpret_cast<unsigned char*>(mappedSr.pData));
+        d3d_context()->Unmap(_data->_vertUniformBuf, 0);
+        d3d_context()->VSSetConstantBuffers(0, 1, &_data->_vertUniformBuf);
+    }
+    if(_data->_fragUniformBuf)
+    {
+        D3D11_MAPPED_SUBRESOURCE mappedSr;
+        const auto hr = d3d_context()->Map(_data->_fragUniformBuf, 0,
+            D3D11_MAP_WRITE_DISCARD, 0, &mappedSr);
+        if(hr)
+        {
+            throw std::runtime_error("Failed to map fragment function constant "
+                "buffer (HRESULT " + std::to_string(hr) + ").");
+        }
+        std::copy(_data->_fragUniformData.begin(), _data->_fragUniformData.
+            end(), reinterpret_cast<unsigned char*>(mappedSr.pData));
+        d3d_context()->Unmap(_data->_fragUniformBuf, 0);
+        d3d_context()->PSSetConstantBuffers(0, 1, &_data->_fragUniformBuf);
+    }
     d3d_context()->IASetInputLayout(layout);
     d3d_context()->IASetPrimitiveTopology(
         D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP); //TEMP
@@ -270,6 +396,7 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
         vertices._data->_buffers.data(), vertices._data->_strides.data(),
         offsets.data());
     d3d_context()->Draw(vertices._data->_numVertices, 0);
+    layout->Release();
 }
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,

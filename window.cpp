@@ -77,9 +77,7 @@ OutputData main(InputData input)
 {
     OutputData output;
     output.color = tex.Sample(texSampler, float2(input.uv.x, 1. - input.uv.y));
-//    output.color.rgb = pow(output.color.rgb, float3(1./gamma, 1./gamma, 1./
-//        gamma));
-output.color.g = 0.2;
+    output.color.rgb = pow(output.color.rgb, (float3)(1./gamma));
     return output;
 }
 )===";
@@ -314,6 +312,22 @@ static ID3D11RasterizerState* BlitState = []()
     {
         throw std::runtime_error("Failed to create final rasterizer state (HRES"
             "ULT " + std::to_string(hr) + ").");
+    }
+    return res;
+}();
+static ID3D11Buffer* GammaBuf = []()
+{
+    D3D11_BUFFER_DESC bufDescriptor = {};
+    bufDescriptor.Usage = D3D11_USAGE_DYNAMIC;
+    bufDescriptor.ByteWidth = 16;
+    bufDescriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    bufDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    ID3D11Buffer* res;
+    const auto hr = Device->CreateBuffer(&bufDescriptor, nullptr, &res);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create final constant buffer (HRESU"
+            "LT " + std::to_string(hr) + ").");
     }
     return res;
 }();
@@ -973,7 +987,17 @@ void paz::Window::EndFrame()
         colorAttachment(0)._data->_resourceView);
     DeviceContext->PSSetSamplers(0, 1, &final_framebuffer().colorAttachment(0).
         _data->_sampler);
-    //TEMP - set gamma !
+    D3D11_MAPPED_SUBRESOURCE mappedSr;
+    const auto hr = DeviceContext->Map(GammaBuf, 0, D3D11_MAP_WRITE_DISCARD, 0,
+        &mappedSr);
+     if(hr)
+    {
+        throw std::runtime_error("Failed to map final fragment function constan"
+            "t buffer (HRESULT " + std::to_string(hr) + ").");
+    }
+    std::copy(&Gamma, &Gamma + 1, reinterpret_cast<float*>(mappedSr.pData));
+    DeviceContext->Unmap(GammaBuf, 0);
+    DeviceContext->PSSetConstantBuffers(0, 1, &GammaBuf);
     DeviceContext->Draw(QuadPos.size()/2, 0);
 
     SwapChain->Present(1, 0);
