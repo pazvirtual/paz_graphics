@@ -592,6 +592,7 @@ paz::Initializer::Initializer()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #else
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
 #endif
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
