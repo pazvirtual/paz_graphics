@@ -29,12 +29,12 @@ static int MinHeight = GLFW_DONT_CARE;
 static int MaxWidth = GLFW_DONT_CARE;
 static int MaxHeight = GLFW_DONT_CARE;
 
-static std::array<bool, paz::Window::NumKeys> KeyDown = {};
-static std::array<bool, paz::Window::NumKeys> KeyPressed = {};
-static std::array<bool, paz::Window::NumKeys> KeyReleased = {};
-static std::array<bool, paz::Window::NumMouseButtons> MouseDown = {};
-static std::array<bool, paz::Window::NumMouseButtons> MousePressed = {};
-static std::array<bool, paz::Window::NumMouseButtons> MouseReleased = {};
+static std::array<bool, paz::NumKeys> KeyDown = {};
+static std::array<bool, paz::NumKeys> KeyPressed = {};
+static std::array<bool, paz::NumKeys> KeyReleased = {};
+static std::array<bool, paz::NumMouseButtons> MouseDown = {};
+static std::array<bool, paz::NumMouseButtons> MousePressed = {};
+static std::array<bool, paz::NumMouseButtons> MouseReleased = {};
 static std::pair<double, double> MousePos = {};
 static std::pair<double, double> ScrollOffset = {};
 
@@ -54,7 +54,8 @@ void paz::initialize()
     static paz::Initializer initializer;
 }
 
-static std::chrono::time_point<std::chrono::steady_clock> FrameStart;
+static std::chrono::time_point<std::chrono::steady_clock> FrameStart = std::
+    chrono::steady_clock::now();
 static double CurFrameTime = 1./60.;
 
 static std::unordered_set<void*> RenderTargets;
@@ -379,7 +380,6 @@ void paz::Window::Loop(const std::function<void(void)>& draw)
 {
     initialize();
 
-    FrameStart = std::chrono::steady_clock::now();
     while(!glfwWindowShouldClose(WindowPtr))
     {
         glfwPollEvents();
@@ -395,6 +395,17 @@ void paz::Window::Loop(const std::function<void(void)>& draw)
             - FrameStart).count()*1e-6;
         FrameStart = now;
     }
+}
+
+void paz::Window::Commit()
+{
+    initialize();
+
+    glfwSwapBuffers(WindowPtr);
+    const auto now = std::chrono::steady_clock::now();
+    CurFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
+        FrameStart).count()*1e-6;
+    FrameStart = now;
 }
 
 void paz::Window::Quit()
@@ -427,6 +438,20 @@ void paz::Window::SetMaxSize(int width, int height)
     MaxHeight = height;
     glfwSetWindowSizeLimits(WindowPtr, MinWidth, MinHeight, MaxWidth,
         MaxHeight);
+}
+
+void paz::Window::MakeResizable()
+{
+    initialize();
+
+    glfwSetWindowAttrib(WindowPtr, GLFW_RESIZABLE, GLFW_TRUE);
+}
+
+void paz::Window::MakeNotResizable()
+{
+    initialize();
+
+    glfwSetWindowAttrib(WindowPtr, GLFW_RESIZABLE, GLFW_FALSE);
 }
 
 void paz::Window::Resize(int width, int height)

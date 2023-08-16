@@ -14,13 +14,12 @@
 @interface ViewController : NSViewController
 @property(retain, readonly) MTKView* mtkView;
 @property(retain, readonly) Renderer* renderer;
-@property(readonly) std::array<bool, paz::Window::NumKeys> keyDown;
-@property(readonly) std::array<bool, paz::Window::NumKeys> keyPressed;
-@property(readonly) std::array<bool, paz::Window::NumKeys> keyReleased;
-@property(readonly) std::array<bool, paz::Window::NumMouseButtons> mouseDown;
-@property(readonly) std::array<bool, paz::Window::NumMouseButtons> mousePressed;
-@property(readonly) std::array<bool, paz::Window::NumMouseButtons>
-    mouseReleased;
+@property(readonly) std::array<bool, paz::NumKeys> keyDown;
+@property(readonly) std::array<bool, paz::NumKeys> keyPressed;
+@property(readonly) std::array<bool, paz::NumKeys> keyReleased;
+@property(readonly) std::array<bool, paz::NumMouseButtons> mouseDown;
+@property(readonly) std::array<bool, paz::NumMouseButtons> mousePressed;
+@property(readonly) std::array<bool, paz::NumMouseButtons> mouseReleased;
 @property(readonly) std::pair<double, double> cursorOffset;
 @property(readonly) std::pair<double, double> scrollOffset;
 @property(retain, readonly) id<MTLDevice> device;
