@@ -22,6 +22,14 @@
 @property(readonly) std::array<bool, paz::NumMouseButtons> mouseReleased;
 @property(readonly) std::pair<double, double> cursorOffset;
 @property(readonly) std::pair<double, double> scrollOffset;
+@property(readonly) std::array<bool, paz::NumGamepadButtons> gamepadDown;
+@property(readonly) std::array<bool, paz::NumGamepadButtons> gamepadPressed;
+@property(readonly) std::array<bool, paz::NumGamepadButtons> gamepadReleased;
+@property(readonly) std::pair<double, double> gamepadLeftStick;
+@property(readonly) std::pair<double, double> gamepadRightStick;
+@property(readonly) double gamepadLeftTrigger;
+@property(readonly) double gamepadRightTrigger;
+@property(readonly) bool gamepadActive;
 @property(retain, readonly) id<MTLDevice> device;
 - (id)initWithContentRect:(CGRect)rect;
 - (void)resetEvents;

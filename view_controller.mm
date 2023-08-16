@@ -24,6 +24,14 @@
         _mouseReleased = {};
         _cursorOffset = {};
         _scrollOffset = {};
+        _gamepadDown = {};
+        _gamepadPressed = {};
+        _gamepadReleased = {};
+        _gamepadLeftStick = {};
+        _gamepadRightStick = {};
+        _gamepadLeftTrigger = -1.;
+        _gamepadRightTrigger = -1.;
+        _gamepadActive = false;
     }
 
     return self;
@@ -82,63 +90,85 @@
 
 - (void)mouseMoved:(NSEvent*)event
 {
+    _gamepadActive = false;
+
     _cursorOffset.first += [event deltaX];
     _cursorOffset.second -= [event deltaY];
 }
 
 - (void)mouseDragged:(NSEvent*)event
 {
+    _gamepadActive = false;
+
     [self mouseMoved:event];
 }
 
 - (void)rightMouseDragged:(NSEvent*)event
 {
+    _gamepadActive = false;
+
     [self mouseMoved:event];
 }
 
 - (void)otherMouseDragged:(NSEvent*)event
 {
+    _gamepadActive = false;
+
     [self mouseMoved:event];
 }
 
 - (void)mouseDown:(NSEvent*)__unused event
 {
-     _mouseDown[0] = true;
-     _mousePressed[0] = true;
+    _gamepadActive = false;
+
+    _mouseDown[0] = true;
+    _mousePressed[0] = true;
 }
 
 - (void)mouseUp:(NSEvent*)__unused event
 {
-     _mouseDown[0] = false;
-     _mouseReleased[0] = true;
+    _gamepadActive = false;
+
+    _mouseDown[0] = false;
+    _mouseReleased[0] = true;
 }
 
 - (void)rightMouseDown:(NSEvent*)__unused event
 {
-     _mouseDown[1] = true;
-     _mousePressed[1] = true;
+    _gamepadActive = false;
+
+    _mouseDown[1] = true;
+    _mousePressed[1] = true;
 }
 
 - (void)rightMouseUp:(NSEvent*)__unused event
 {
-     _mouseDown[1] = false;
-     _mouseReleased[1] = true;
+    _gamepadActive = false;
+
+    _mouseDown[1] = false;
+    _mouseReleased[1] = true;
 }
 
 - (void)otherMouseDown:(NSEvent*)event
 {
+    _gamepadActive = false;
+
     _mouseDown[[event buttonNumber]] = true;
     _mousePressed[[event buttonNumber]] = true;
 }
 
 - (void)otherMouseUp:(NSEvent*)event
 {
+    _gamepadActive = false;
+
     _mouseDown[[event buttonNumber]] = false;
     _mouseReleased[[event buttonNumber]] = true;
 }
 
 - (void)keyDown:(NSEvent*)event
 {
+    _gamepadActive = false;
+
     if(![event isARepeat])
     {
         const paz::Key k = paz::convert_keycode([event keyCode]);
@@ -155,6 +185,8 @@
 
 - (void)keyUp:(NSEvent*)event
 {
+    _gamepadActive = false;
+
     if(![event isARepeat])
     {
         const paz::Key k = paz::convert_keycode([event keyCode]);
@@ -171,6 +203,8 @@
 
 - (void)scrollWheel:(NSEvent*)event
 {
+    _gamepadActive = false;
+
     _scrollOffset.first = [event scrollingDeltaX];
     _scrollOffset.second = [event scrollingDeltaY];
 
@@ -183,6 +217,8 @@
 
 - (void)flagsChanged:(NSEvent*)event
 {
+    _gamepadActive = false;
+
     static const int shiftIdx = static_cast<int>(paz::Key::LeftShift);
     static const int ctrlIdx = static_cast<int>(paz::Key::LeftControl);
     static const int optIdx = static_cast<int>(paz::Key::LeftAlt);
@@ -246,6 +282,12 @@
     _keyReleased = {};
     _mousePressed = {};
     _mouseReleased = {};
+    _gamepadPressed = {};
+    _gamepadReleased = {};
+    _gamepadLeftStick = {};
+    _gamepadRightStick = {};
+    _gamepadLeftTrigger = -1.;
+    _gamepadRightTrigger = -1.;
 }
 @end
 

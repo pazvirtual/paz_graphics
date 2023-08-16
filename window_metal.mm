@@ -250,6 +250,62 @@ std::pair<double, double> paz::Window::ScrollOffset()
     return [VIEW_CONTROLLER scrollOffset];
 }
 
+bool paz::Window::GamepadDown(GamepadButton button)
+{
+    initialize();
+
+    return [VIEW_CONTROLLER gamepadDown].at(static_cast<int>(button));
+}
+
+bool paz::Window::GamepadPressed(GamepadButton button)
+{
+    initialize();
+
+    return [VIEW_CONTROLLER gamepadPressed].at(static_cast<int>(button));
+}
+
+bool paz::Window::GamepadReleased(GamepadButton button)
+{
+    initialize();
+
+    return [VIEW_CONTROLLER gamepadReleased].at(static_cast<int>(button));
+}
+
+std::pair<double, double> paz::Window::GamepadLeftStick()
+{
+    initialize();
+
+    return [VIEW_CONTROLLER gamepadLeftStick];
+}
+
+std::pair<double, double> paz::Window::GamepadRightStick()
+{
+    initialize();
+
+    return [VIEW_CONTROLLER gamepadRightStick];
+}
+
+double paz::Window::GamepadLeftTrigger()
+{
+    initialize();
+
+    return [VIEW_CONTROLLER gamepadLeftTrigger];
+}
+
+double paz::Window::GamepadRightTrigger()
+{
+    initialize();
+
+    return [VIEW_CONTROLLER gamepadRightTrigger];
+}
+
+bool paz::Window::GamepadActive()
+{
+    initialize();
+
+    return [VIEW_CONTROLLER gamepadActive];
+}
+
 void paz::Window::SetCursorMode(CursorMode mode)
 {
     initialize();
