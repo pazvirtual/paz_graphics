@@ -10,7 +10,7 @@
 #include <GLFW/glfw3.h>
 
 #define CASE_STRING(x) case x: return #x;
-
+#define CASE(a, b) case paz::RenderPass::PrimitiveType::a: return GL_##b;
 #define CHECK_UNIFORM if(!_data->_shader->_data->_uniformIds.count(name)) \
     return;
 
@@ -21,14 +21,15 @@ static bool DepthTestEnabled = false;
 
 static GLenum primitive_type(paz::RenderPass::PrimitiveType t)
 {
-    //
-    if(t == paz::RenderPass::PrimitiveType::Triangles)
+    switch(t)
     {
-        return GL_TRIANGLES;
+        CASE(Points, POINTS)
+        CASE(Lines, LINES)
+        CASE(LineStrip, LINE_STRIP)
+        CASE(Triangles, TRIANGLES)
+        CASE(TriangleStrip, TRIANGLE_STRIP);
+        default: throw std::runtime_error("Invalid primitive type.");
     }
-    //
-
-    throw std::runtime_error("Invalid primitive type.");
 }
 
 static std::string gl_error(GLenum error)
@@ -47,8 +48,9 @@ static std::string gl_error(GLenum error)
 #ifdef GL_STACK_OVERFLOW
         CASE_STRING(GL_STACK_OVERFLOW)
 #endif
+        default: return "Unrecognized OpenGL error code " + std::to_string(
+            error);
     }
-    return "Error code " + std::to_string(error) + " not recognized";
 }
 
 paz::RenderPass::~RenderPass() {}

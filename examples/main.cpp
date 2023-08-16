@@ -45,11 +45,9 @@ static const std::vector<float> b1 =
 
 static const std::vector<float> qv =
 {
-    -1., -1.,
      1., -1.,
      1.,  1.,
     -1., -1.,
-     1.,  1.,
     -1.,  1.
 };
 
@@ -151,7 +149,7 @@ int main()
     vertices1.attribute(2, a1);
     vertices1.attribute(4, b1);
 
-    const paz::IndexBuffer indices({0, 1, 2});
+    const paz::IndexBuffer loopIndices({0, 1, 2, 0});
 
     paz::VertexBuffer quadVertices;
     quadVertices.attribute(2, qv);
@@ -218,8 +216,15 @@ int main()
         r0.uniform("aspectRatio", (float)paz::Window::AspectRatio());
         r0.uniform("p", (float)x, (float)y);
         r0.uniform("length", (float)length);
-        r0.indexed(paz::RenderPass::PrimitiveType::Triangles, mode ? vertices1 :
-            vertices0, indices);
+        if(mode)
+        {
+            r0.indexed(paz::RenderPass::PrimitiveType::LineStrip, vertices1,
+                loopIndices);
+        }
+        else
+        {
+            r0.primitives(paz::RenderPass::PrimitiveType::Triangles, vertices0);
+        }
         r0.end();
 
         r1.begin({paz::RenderPass::LoadAction::Clear});
@@ -259,7 +264,7 @@ int main()
                 r1.uniform("row", row);
                 r1.uniform("col", col);
                 r1.uniform("character", c);
-                r1.primitives(paz::RenderPass::PrimitiveType::Triangles,
+                r1.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
                     quadVertices);
             }
             ++col;
@@ -269,14 +274,16 @@ int main()
         r2.begin();
         r2.read("render", scene);
         r2.read("overlay", overlay);
-        r2.primitives(paz::RenderPass::PrimitiveType::Triangles, quadVertices);
+        r2.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
+            quadVertices);
         r2.end();
 
         r3.begin();
         r3.uniform("factor", (float)std::abs(y));
         r3.read("source", blended);
         r3.uniform("aspectRatio", (float)paz::Window::AspectRatio());
-        r3.primitives(paz::RenderPass::PrimitiveType::Triangles, quadVertices);
+        r3.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
+            quadVertices);
         r3.end();
     });
 }
