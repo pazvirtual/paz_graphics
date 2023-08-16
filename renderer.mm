@@ -46,8 +46,6 @@
     _size.height = size.height/scale;
 
     _aspectRatio = size.width/size.height;
-
-    paz::resize_targets();
 }
 
 - (void)drawInMTKView:(MTKView*)__unused view
