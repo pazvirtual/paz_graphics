@@ -299,7 +299,7 @@
     {
         for(int i = 0; i < paz::NumGamepadButtons; ++i)
         {
-            if(state.buttonDown[i])
+            if(state.buttons[i])
             {
                 _gamepadActive = true;
                 if(!_gamepadDown[i])
@@ -318,7 +318,36 @@
                 _gamepadDown[i] = false;
             }
         }
-        // ...
+        if(std::abs(state.axes[0]) > 0.1)
+        {
+            _gamepadActive = true;
+            _gamepadLeftStick.first = state.axes[0];
+        }
+        if(std::abs(state.axes[1]) > 0.1)
+        {
+            _gamepadActive = true;
+            _gamepadLeftStick.second = state.axes[1];
+        }
+        if(std::abs(state.axes[2]) > 0.1)
+        {
+            _gamepadActive = true;
+            _gamepadRightStick.first = state.axes[2];
+        }
+        if(std::abs(state.axes[3]) > 0.1)
+        {
+            _gamepadActive = true;
+            _gamepadRightStick.second = state.axes[3];
+        }
+        if(state.axes[4] > -0.9)
+        {
+            _gamepadActive = true;
+            _gamepadLeftTrigger = state.axes[4];
+        }
+        if(state.axes[5] > -0.9)
+        {
+            _gamepadActive = true;
+            _gamepadRightTrigger = state.axes[5];
+        }
     }
 }
 @end
