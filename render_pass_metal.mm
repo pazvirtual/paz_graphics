@@ -484,6 +484,17 @@ void paz::RenderPass::depth(DepthTestMode mode)
 
 void paz::RenderPass::end()
 {
+    if(_data->_fbo)
+    {
+        for(auto n : _data->_fbo->_colorAttachments)
+        {
+            n->ensureMipmaps();
+        }
+        if(_data->_fbo->_depthStencilAttachment)
+        {
+            _data->_fbo->_depthStencilAttachment->ensureMipmaps();
+        }
+    }
     [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
         endEncoding];
     _data->_renderEncoder = nullptr;
@@ -512,7 +523,7 @@ void paz::RenderPass::cull(CullMode mode)
     }
 }
 
-void paz::RenderPass::read(const std::string& name, const Texture& tex) const
+void paz::RenderPass::read(const std::string& name, Texture tex)
 {
     if(_data->_vertexArgs.count(name))
     {
@@ -546,33 +557,32 @@ void paz::RenderPass::read(const std::string& name, const Texture& tex) const
     }
 }
 
-void paz::RenderPass::uniform(const std::string& name, int x) const
+void paz::RenderPass::uniform(const std::string& name, int x)
 {
     uniform(name, &x, 1);
 }
 
-void paz::RenderPass::uniform(const std::string& name, int x, int y) const
+void paz::RenderPass::uniform(const std::string& name, int x, int y)
 {
     std::array<int, 2> v = {x, y};
     uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z)
-    const
 {
     std::array<int, 3> v = {x, y, z};
     uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
-    w) const
+    w)
 {
     std::array<int, 4> v = {x, y, z, w};
     uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
-    size) const
+    size)
 {
     if(_data->_vertexArgs.count(name))
     {
@@ -588,34 +598,34 @@ void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
     }
 }
 
-void paz::RenderPass::uniform(const std::string& name, unsigned int x) const
+void paz::RenderPass::uniform(const std::string& name, unsigned int x)
 {
     uniform(name, &x, 1);
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
-    int y) const
+    int y)
 {
     std::array<unsigned int, 2> v = {x, y};
     uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
-    int y, unsigned int z) const
+    int y, unsigned int z)
 {
     std::array<unsigned int, 3> v = {x, y, z};
     uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
-    int y, unsigned int z, unsigned int w) const
+    int y, unsigned int z, unsigned int w)
 {
     std::array<unsigned int, 4> v = {x, y, z, w};
     uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
-    std::size_t size) const
+    std::size_t size)
 {
     if(_data->_vertexArgs.count(name))
     {
@@ -631,33 +641,33 @@ void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
     }
 }
 
-void paz::RenderPass::uniform(const std::string& name, float x) const
+void paz::RenderPass::uniform(const std::string& name, float x)
 {
     uniform(name, &x, 1);
 }
 
-void paz::RenderPass::uniform(const std::string& name, float x, float y) const
+void paz::RenderPass::uniform(const std::string& name, float x, float y)
 {
     std::array<float, 2> v = {x, y};
     uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
-    z) const
+    z)
 {
     std::array<float, 3> v = {x, y, z};
     uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
-    z, float w) const
+    z, float w)
 {
     std::array<float, 4> v = {x, y, z, w};
     uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, const float* x, std::
-    size_t size) const
+    size_t size)
 {
     if(_data->_vertexArgs.count(name))
     {

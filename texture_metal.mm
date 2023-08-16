@@ -85,11 +85,9 @@ paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
 
 void paz::Texture::Data::init(const void* data)
 {
-    MTLTextureDescriptor* textureDescriptor = [[MTLTextureDescriptor alloc]
-        init];
-    [textureDescriptor setPixelFormat:pixel_format(_format)];
-    [textureDescriptor setWidth:_width];
-    [textureDescriptor setHeight:_height];
+    MTLTextureDescriptor* textureDescriptor = [MTLTextureDescriptor
+        texture2DDescriptorWithPixelFormat:pixel_format(_format) width:_width
+        height:_height mipmapped:(_mipFilter == MipmapFilter::None ? NO : YES)];
     [textureDescriptor setUsage:(_isRenderTarget ? MTLTextureUsageRenderTarget|
         MTLTextureUsageShaderRead : MTLTextureUsageShaderRead)];
     if(_format == TextureFormat::Depth16UNorm || _format == TextureFormat::
@@ -109,6 +107,7 @@ void paz::Texture::Data::init(const void* data)
     {
         _sampler = create_sampler(_minFilter, _magFilter, _wrapS, _wrapT);
     }
+    ensureMipmaps();
 }
 
 void paz::Texture::Data::resize(int width, int height)
@@ -122,6 +121,14 @@ void paz::Texture::Data::resize(int width, int height)
         _width = _scale*width;
         _height = _scale*height;
         init();
+    }
+}
+
+void paz::Texture::Data::ensureMipmaps()
+{
+    if(_mipFilter != MipmapFilter::None)
+    {
+        throw std::logic_error("NOT IMPLEMENTED");
     }
 }
 
