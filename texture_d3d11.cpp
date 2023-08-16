@@ -7,6 +7,8 @@
 #include "internal_data.hpp"
 #include "window.hpp"
 
+#define CASE(a, b) case paz::WrapMode::a: return D3D11_TEXTURE_ADDRESS_##b;
+
 static DXGI_FORMAT dxgi_format(paz::TextureFormat format)
 {
     if(format == paz::TextureFormat::RGBA16UNorm)
@@ -15,7 +17,7 @@ static DXGI_FORMAT dxgi_format(paz::TextureFormat format)
     }
     if(format == paz::TextureFormat::Depth16UNorm)
     {
-        return DXGI_FORMAT_D16_UNORM;
+        return DXGI_FORMAT_R16_TYPELESS;
     }
     throw std::runtime_error("INCOMPLETE");
 }
@@ -23,31 +25,114 @@ static DXGI_FORMAT dxgi_format(paz::TextureFormat format)
 static D3D11_FILTER tex_filter(paz::MinMagFilter minFilter, paz::MinMagFilter
     magFilter, paz::MipmapFilter mipFilter)
 {
-    ??
+    if(mipFilter == paz::MipmapFilter::Nearest || mipFilter == paz::
+        MipmapFilter::None)
+    {
+        if(minFilter == paz::MinMagFilter::Nearest)
+        {
+            if(magFilter == paz::MinMagFilter::Nearest)
+            {
+                return D3D11_FILTER_MIN_MAG_MIP_POINT;
+            }
+            else if(magFilter == paz::MinMagFilter::Linear)
+            {
+                return D3D11_FILTER_MIN_POINT_MAG_LINEAR_MIP_POINT;
+            }
+            else
+            {
+                throw std::runtime_error("Invalid magnification function.");
+            }
+        }
+        else if(minFilter == paz::MinMagFilter::Linear)
+        {
+            if(magFilter == paz::MinMagFilter::Nearest)
+            {
+                return D3D11_FILTER_MIN_LINEAR_MAG_MIP_POINT;
+            }
+            else if(magFilter == paz::MinMagFilter::Linear)
+            {
+                return D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+            }
+            else
+            {
+                throw std::runtime_error("Invalid magnification function.");
+            }
+        }
+        else
+        {
+            throw std::runtime_error("Invalid minification function.");
+        }
+    }
+    else if(mipFilter == paz::MipmapFilter::Linear)
+    {
+        if(minFilter == paz::MinMagFilter::Nearest)
+        {
+            if(magFilter == paz::MinMagFilter::Nearest)
+            {
+                return D3D11_FILTER_MIN_MAG_POINT_MIP_LINEAR;
+            }
+            else if(magFilter == paz::MinMagFilter::Linear)
+            {
+                return D3D11_FILTER_MIN_POINT_MAG_MIP_LINEAR;
+            }
+            else
+            {
+                throw std::runtime_error("Invalid magnification function.");
+            }
+        }
+        else if(minFilter == paz::MinMagFilter::Linear)
+        {
+            if(magFilter == paz::MinMagFilter::Nearest)
+            {
+                return D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+            }
+            else if(magFilter == paz::MinMagFilter::Linear)
+            {
+                return D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+            }
+            else
+            {
+                throw std::runtime_error("Invalid magnification function.");
+            }
+        }
+        else
+        {
+            throw std::runtime_error("Invalid minification function.");
+        }
+    }
+    else
+    {
+        throw std::runtime_error("Invalid mipmap selection function.");
+    }
 }
 
-static D3D11_ADDRESS_MODE address_mode(paz::WrapMode wrap)
+static D3D11_TEXTURE_ADDRESS_MODE address_mode(paz::WrapMode m)
 {
-    ??
+    switch(m)
+    {
+        CASE(Repeat, WRAP)
+        CASE(MirrorRepeat, MIRROR)
+        CASE(ClampToEdge, CLAMP)
+        CASE(ClampToZero, BORDER)
+    }
+
+    throw std::logic_error("Invalid texture wrapping mode requested.");
 }
 
-static ID3D11SAMPLERState* create_sampler(paz::MinMagFilter minFilter, paz::
+static ID3D11SamplerState* create_sampler(paz::MinMagFilter minFilter, paz::
     MinMagFilter magFilter, paz::MipmapFilter mipFilter, paz::WrapMode wrapS,
     paz::WrapMode wrapT)
 {
     D3D11_SAMPLER_DESC descriptor = {};
-    descriptor->Filter = tex_filter(minFilter, magFilter, mipFilter);
-    descriptor->AddressU = address_mode(wrapS);
-    descriptor->AddressV = address_mode(wrapT);
-    descriptor->AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-    descriptor->MipLODBias = 0;
-    descriptor->MaxAnisotropy = 1;
-    descriptor->ComparisonFunc = D3D11_COMPARISON_NEVER; //TEMP
-    descriptor->BorderColor = {};
-    descriptor->MinLOD = 0;
-    descriptor->MaxLOD = D3D11_FLOAT32_MAX;
+    descriptor.Filter = tex_filter(minFilter, magFilter, mipFilter);
+    descriptor.AddressU = address_mode(wrapS);
+    descriptor.AddressV = address_mode(wrapT);
+    descriptor.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    descriptor.MaxAnisotropy = 1;
+    descriptor.MaxLOD = D3D11_FLOAT32_MAX;
     ID3D11SamplerState* sampler;
-    const auto hr = d3d_device()->CreateSamplerState(&descriptor, &sampler);
+    const auto hr = paz::d3d_device()->CreateSamplerState(&descriptor,
+        &sampler);
     if(hr)
     {
         throw std::runtime_error("Failed to create sampler (HRESULT " + std::
@@ -70,6 +155,18 @@ paz::Texture::Data::~Data()
     if(_sampler)
     {
         _sampler->Release();
+    }
+    if(_resourceView)
+    {
+        _resourceView->Release();
+    }
+    if(_rtView)
+    {
+        _rtView->Release();
+    }
+    if(_dsView)
+    {
+        _dsView->Release();
     }
 }
 
@@ -135,6 +232,13 @@ paz::Texture::Texture(RenderTarget&& target) : _data(std::move(target._data)) {}
 
 void paz::Texture::Data::init(const void* data)
 {
+    // Textures not for rendering are static (for now).
+    if(!_isRenderTarget && !data)
+    {
+        throw std::logic_error("Cannot initialize static texture without data."
+            );
+    }
+
     // This is because of Metal restrictions.
     if((_format == TextureFormat::Depth16UNorm || _format == TextureFormat::
         Depth32Float) && _mipFilter != MipmapFilter::None)
@@ -142,24 +246,34 @@ void paz::Texture::Data::init(const void* data)
         throw std::runtime_error("Depth/stencil textures do not support mipmapp"
             "ing.");
     }
+
     D3D11_TEXTURE2D_DESC descriptor = {};
     descriptor.Width = _width;
     descriptor.Height = _height;
-    descriptor.MipLevels = ??;
+    descriptor.MipLevels = _mipFilter == MipmapFilter::None;
     descriptor.ArraySize = 1;
     descriptor.Format = dxgi_format(_format);
-    descriptor.SampleDesc = {1, 0};
-    descriptor.Usage = _isRenderTarget ? D3D11_USAGE_DEFAULT :
-        D3D11_USAGE_DYNAMIC;
-    descriptor.BindFlags = ??;
-    descriptor.CPUAccessFlags = _isRenderTarget ? D3D11_CPU_ACCESS_READ : 0;
-    descriptor.MiscFlags = _mipFilter != MipmapFilter::None ?
-        D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
+    descriptor.SampleDesc.Count = 1;
+    descriptor.Usage = _isRenderTarget || _mipFilter != MipmapFilter::None ?
+        D3D11_USAGE_DEFAULT : D3D11_USAGE_IMMUTABLE;
+    descriptor.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    if(_isRenderTarget && (_format == TextureFormat::Depth16UNorm || _format ==
+        TextureFormat::Depth32Float))
+    {
+        descriptor.BindFlags |= D3D11_BIND_DEPTH_STENCIL;
+    }
+    else if(_isRenderTarget || _mipFilter != MipmapFilter::None)
+    {
+        descriptor.BindFlags |= D3D11_BIND_RENDER_TARGET;
+    }
+    descriptor.MiscFlags = _mipFilter == MipmapFilter::None ? 0 :
+        D3D11_RESOURCE_MISC_GENERATE_MIPS;
     HRESULT hr;
     if(data)
     {
+        throw std::logic_error("IMPLEMENT THIS");
         D3D11_SUBRESOURCE_DATA srData = {};
-        srData.pSysMem = data;
+        // ...
         hr = d3d_device()->CreateTexture2D(&descriptor, &srData, &_texture);
     }
     else
@@ -176,6 +290,61 @@ void paz::Texture::Data::init(const void* data)
         _sampler = create_sampler(_minFilter, _magFilter, _mipFilter, _wrapS,
             _wrapT);
     }
+    if(!_resourceView)
+    {
+        D3D11_SHADER_RESOURCE_VIEW_DESC rvDescriptor = {};
+        if(_format == TextureFormat::Depth16UNorm)
+        {
+            rvDescriptor.Format = DXGI_FORMAT_R16_UNORM;
+        }
+        else if(_format == TextureFormat::Depth32Float)
+        {
+            rvDescriptor.Format = DXGI_FORMAT_R32_FLOAT;
+        }
+        else
+        {
+            rvDescriptor.Format = dxgi_format(_format);
+        }
+        rvDescriptor.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        rvDescriptor.Texture2D.MipLevels = descriptor.MipLevels;
+        const auto hr = d3d_device()->CreateShaderResourceView(_texture,
+            &rvDescriptor, &_resourceView);
+        if(hr)
+        {
+            throw std::runtime_error("Failed to create resource view (HRESULT "
+                + std::to_string(hr) + ").");
+        }
+    }
+    if(_isRenderTarget)
+    {
+        if((_format == TextureFormat::Depth16UNorm || _format == TextureFormat::
+            Depth32Float) && !_dsView)
+        {
+            D3D11_DEPTH_STENCIL_VIEW_DESC dsDescriptor = {};
+            dsDescriptor.Format = _format == TextureFormat::Depth16UNorm ?
+                DXGI_FORMAT_D16_UNORM : DXGI_FORMAT_D32_FLOAT;
+            dsDescriptor.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+            const auto hr = d3d_device()->CreateDepthStencilView(_texture,
+                &dsDescriptor, &_dsView);
+            if(hr)
+            {
+                throw std::runtime_error("Failed to create depth/stencil view ("
+                    "HRESULT " + std::to_string(hr) + ").");
+            }
+        }
+        else if(!_rtView)
+        {
+            const auto hr = d3d_device()->CreateRenderTargetView(_texture,
+                nullptr, &_rtView);
+            if(hr)
+            {
+                throw std::runtime_error("Failed to create render target view ("
+                    "HRESULT " + std::to_string(hr) + ").");
+            }
+        }
+    }
+
+    ensureMipmaps();
 }
 
 void paz::Texture::Data::resize(int width, int height)
@@ -194,7 +363,7 @@ void paz::Texture::Data::resize(int width, int height)
 
 void paz::Texture::Data::ensureMipmaps()
 {
-    throw std::logic_error("NOT IMPLEMENTED");
+    d3d_context()->GenerateMips(_resourceView);
 }
 
 int paz::Texture::width() const

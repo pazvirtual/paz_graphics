@@ -45,6 +45,42 @@ paz::VertexBuffer::VertexBuffer(std::size_t size) : VertexBuffer()
 
 void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)
 {
+    if(dim != 1 && dim != 2 && dim != 4)
+    {
+        throw std::runtime_error("Vertex attribute dimensions must be 1, 2, or "
+            "4.");
+    }
+    const std::size_t m = size/dim;
+    if(!_numVertices)
+    {
+        _numVertices = m;
+/*
+        {
+            std::vector<unsigned int> idx(_numVertices + 1);
+            std::iota(idx.begin(), idx.end(), 0);
+            idx.back() = 0;
+            _lineLoopIndices = [DEVICE newBufferWithBytes:idx.data() length:
+                sizeof(unsigned int)*idx.size() options:MTLStorageModeShared];
+        }
+        {
+            std::vector<unsigned int> idx(_numVertices < 3 ? 0 : 3*_numVertices
+                - 6);
+            for(std::size_t i = 0; i < idx.size()/3; ++i)
+            {
+                idx[3*i] = 0;
+                idx[3*i + 1] = i + 1;
+                idx[3*i + 2] = i + 2;
+            }
+            _triangleFanIndices = [DEVICE newBufferWithBytes:idx.data() length:
+                sizeof(unsigned int)*idx.size() options:MTLStorageModeShared];
+        }
+*/
+    }
+    else if(m != _numVertices)
+    {
+        throw std::runtime_error("Number of vertices for each attribute must ma"
+            "tch.");
+    }
 }
 
 void paz::VertexBuffer::addAttribute(int dim, DataType type)

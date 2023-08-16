@@ -21,6 +21,10 @@ struct paz::Texture::Data
     unsigned int _id = 0;
 #else
     ID3D11Texture2D* _texture = nullptr;
+    ID3D11SamplerState* _sampler = nullptr;
+    ID3D11ShaderResourceView* _resourceView = nullptr;
+    ID3D11RenderTargetView* _rtView = nullptr;
+    ID3D11DepthStencilView* _dsView = nullptr;
 #endif
     int _width = 0;
     int _height = 0;

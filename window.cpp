@@ -66,6 +66,7 @@ SamplerState texSampler;
 float gamma;
 struct InputData
 {
+    float4 glPosition : SV_Position; //TEMP - bad if necessary !
     float2 uv : TEXCOORD0;
 };
 struct OutputData
@@ -76,8 +77,8 @@ OutputData main(InputData input)
 {
     OutputData output;
     output.color = tex.Sample(texSampler, input.uv);
-    output.color.rgb = pow(output.color.rgb, float3(1./gamma, 1./gamma, 1./
-        gamma));
+//    output.color.rgb = pow(output.color.rgb, float3(1./gamma, 1./gamma, 1./
+//        gamma));
     return output;
 }
 )===";
@@ -284,7 +285,8 @@ static ID3D11InputLayout* QuadLayout = []()
     paz::initialize();
 
     D3D11_INPUT_ELEMENT_DESC inputElemDescriptor = {"ATTR", 0,
-        DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0};
+        DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+        D3D11_INPUT_PER_VERTEX_DATA, 0};
     ID3D11InputLayout* res;
     const auto hr = Device->CreateInputLayout(&inputElemDescriptor, 1,
         QuadVertBytecode->GetBufferPointer(), QuadVertBytecode->GetBufferSize(),
@@ -555,15 +557,22 @@ paz::Initializer::Initializer()
     swapChainDescriptor.BufferCount = 1; //TEMP ?
     swapChainDescriptor.OutputWindow = glfwGetWin32Window(WindowPtr);
     swapChainDescriptor.Windowed = true;
+    static const D3D_FEATURE_LEVEL featureLvlReq = D3D_FEATURE_LEVEL_11_0;
     D3D_FEATURE_LEVEL featureLvl;
     auto hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE,
-        nullptr, D3D11_CREATE_DEVICE_SINGLETHREADED, nullptr, 0,
+        nullptr, D3D11_CREATE_DEVICE_SINGLETHREADED, &featureLvlReq, 1,
         D3D11_SDK_VERSION, &swapChainDescriptor, &SwapChain, &Device,
         &featureLvl, &DeviceContext);
     if(hr)
     {
         throw std::runtime_error("Failed to intialize Direct3D (HRESULT " +
             std::to_string(hr) + ").");
+    }
+    if(featureLvl != featureLvlReq)
+    {
+        throw std::runtime_error("Failed to initialize Direct3D: Feature level "
+            + std::to_string(featureLvlReq) + " not supported (got " + std::
+            to_string(featureLvl) + ").");
     }
     ID3D11Texture2D* framebuffer;
     hr = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<
@@ -572,7 +581,8 @@ paz::Initializer::Initializer()
     {
         throw std::runtime_error("Failed to get default framebuffer.");
     }
-    hr = Device->CreateRenderTargetView(framebuffer, 0, &RenderTargetView);
+    hr = Device->CreateRenderTargetView(framebuffer, nullptr,
+        &RenderTargetView);
     if(hr)
     {
         throw std::runtime_error("Failed to create default framebuffer view.");
@@ -916,11 +926,9 @@ void paz::Window::EndFrame()
     glfwSwapBuffers(WindowPtr);
 #else
     DeviceContext->RSSetState(BlitState);
-    D3D11_VIEWPORT viewport =
-    {
-        0.f, 0.f, static_cast<float>(ViewportWidth()), static_cast<float>(
-        ViewportHeight()), 0.f, 1.f
-    };
+    D3D11_VIEWPORT viewport = {};
+    viewport.Width = ViewportWidth();
+    viewport.Height = ViewportHeight();
     DeviceContext->RSSetViewports(1, &viewport);
     DeviceContext->OMSetRenderTargets(1, &RenderTargetView, nullptr);
     DeviceContext->IASetPrimitiveTopology(
@@ -931,7 +939,11 @@ void paz::Window::EndFrame()
     DeviceContext->IASetVertexBuffers(0, 1, &QuadBuf, &stride, &offset);
     DeviceContext->VSSetShader(QuadVertShader, nullptr, 0);
     DeviceContext->PSSetShader(QuadFragShader, nullptr, 0);
-    //TEMP - set uniforms here !
+    DeviceContext->PSSetShaderResources(0, 1, &final_framebuffer().
+        colorAttachment(0)._data->_resourceView);
+    DeviceContext->PSSetSamplers(0, 1, &final_framebuffer().colorAttachment(0).
+        _data->_sampler);
+    //TEMP - set gamma !
     DeviceContext->Draw(QuadPos.size()/2, 0);
 
     SwapChain->Present(1, 0);
