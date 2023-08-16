@@ -6,6 +6,4 @@ pipelines:
         - step:
             name: Build Lib Build Main Run Main
             script:
-              - make
-              - cd examples
-              - ./main
+              - make && cd examples && ./main
