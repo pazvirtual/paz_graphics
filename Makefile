@@ -78,5 +78,5 @@ clean:
 	$(RM) $(OBJ) lib$(LIBNAME).a
 	make -C examples clean
 
-zip: default
+zip: $(PROJNAME) lib$(LIBNAME).a
 	zip -j $(ZIPNAME).zip $(PROJNAME) lib$(LIBNAME).a
