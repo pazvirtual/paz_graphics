@@ -88,7 +88,7 @@ static std::unordered_map<unsigned int, unsigned int> get_frag_outputs(const
     return outputTypes;
 }
 
-static std::string fix_initializers(const std::string& src)
+static std::string fix_initializers(const std::string& src) // and [[instance]]
 {
     int inInit = 0;
     std::string curType;
@@ -119,6 +119,12 @@ static std::string fix_initializers(const std::string& src)
             inInit = 2;
             curType = std::regex_replace(line, std::regex(".*\\b(const\\s+)?(" +
                 types + ")\\s+[a-zA-Z_][a-zA-Z_0-9]*\\s*=.*"), "$2");
+        }
+        else if(std::regex_match(line, std::regex(".*\\s+\\[\\[\\s*instance\\s*"
+            "\\]\\]\\s*;")))
+        {
+            line = std::regex_replace(line, std::regex("(.*)\\s+\\[\\[\\s*insta"
+                "nce\\s*\\]\\]\\s*;"), "$1;");
         }
 
         std::size_t pos = 0;
