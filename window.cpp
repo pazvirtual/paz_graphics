@@ -45,7 +45,7 @@ void main()
 static const std::string QuadVertSrc = 1 + R"===(
 struct InputData
 {
-    float2 pos : POS;
+    float2 pos : ATTR0;
 };
 struct OutputData
 {
@@ -267,7 +267,7 @@ static ID3D11Buffer* QuadBuf = []()
     D3D11_BUFFER_DESC bufDescriptor = {};
     bufDescriptor.Usage = D3D11_USAGE_DEFAULT;
     bufDescriptor.ByteWidth = sizeof(float)*QuadPos.size();
-    bufDescriptor.BindFlags  = D3D11_BIND_VERTEX_BUFFER;
+    bufDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     D3D11_SUBRESOURCE_DATA data = {};
     data.pSysMem = QuadPos.data();
     ID3D11Buffer* res;
@@ -283,13 +283,10 @@ static ID3D11InputLayout* QuadLayout = []()
 {
     paz::initialize();
 
-    D3D11_INPUT_ELEMENT_DESC inputElemDescriptor[] =
-    {
-        {"POS", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA,
-            0}
-    };
+    D3D11_INPUT_ELEMENT_DESC inputElemDescriptor = {"ATTR", 0,
+        DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0};
     ID3D11InputLayout* res;
-    const auto hr = Device->CreateInputLayout(inputElemDescriptor, 1,
+    const auto hr = Device->CreateInputLayout(&inputElemDescriptor, 1,
         QuadVertBytecode->GetBufferPointer(), QuadVertBytecode->GetBufferSize(),
         &res);
     if(hr)
@@ -929,8 +926,8 @@ void paz::Window::EndFrame()
     DeviceContext->IASetPrimitiveTopology(
         D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     DeviceContext->IASetInputLayout(QuadLayout);
-    unsigned int stride = 2*sizeof(float);
-    unsigned int offset = 0;
+    const unsigned int stride = 2*sizeof(float);
+    const unsigned int offset = 0;
     DeviceContext->IASetVertexBuffers(0, 1, &QuadBuf, &stride, &offset);
     DeviceContext->VSSetShader(QuadVertShader, nullptr, 0);
     DeviceContext->PSSetShader(QuadFragShader, nullptr, 0);

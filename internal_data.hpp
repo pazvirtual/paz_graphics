@@ -44,15 +44,20 @@ struct paz::VertexBuffer::Data
     std::vector<void*> _buffers;
     void* _lineLoopIndices = nullptr;
     void* _triangleFanIndices = nullptr;
+    std::vector<int> _dims;
 #elif defined(PAZ_LINUX)
     unsigned int _id = 0;
     std::vector<unsigned int> _ids;
     std::vector<unsigned int> _types;
+    std::vector<int> _dims;
     Data();
     void addAttribute(int dim, DataType type);
+#else
+    std::vector<ID3D11Buffer*> _buffers;
+    std::vector<D3D11_INPUT_ELEMENT_DESC> _inputElemDescriptors;
+    std::vector<unsigned int> _strides;
 #endif
     std::size_t _numVertices = 0;
-    std::vector<int> _dims;
     ~Data();
     void checkSize(int dim, std::size_t size);
 };
@@ -108,6 +113,9 @@ struct paz::VertexFunction::Data
     void* _function = nullptr;
 #elif defined(PAZ_LINUX)
     unsigned int _id = 0;
+#else
+    ID3D11VertexShader* _shader = nullptr;
+    ID3DBlob* _bytecode = nullptr;
 #endif
     ~Data();
 };
@@ -119,6 +127,8 @@ struct paz::FragmentFunction::Data
 #elif defined(PAZ_LINUX)
     unsigned int _id = 0;
     std::unordered_map<unsigned int, unsigned int> _outputTypes;
+#else
+    ID3D11PixelShader* _shader = nullptr;
 #endif
     ~Data();
 };

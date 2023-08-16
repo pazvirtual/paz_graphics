@@ -182,6 +182,25 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
 {
     CHECK_PASS
+
+    ID3D11InputLayout* layout;
+    const auto hr = d3d_device()->CreateInputLayout(vertices._data->
+        _inputElemDescriptors.data(), vertices._data->_inputElemDescriptors.
+        size(), _data->_vert->_bytecode->GetBufferPointer(), _data->_vert->
+        _bytecode->GetBufferSize(), &layout);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create input layout (HRESULT " +
+            std::to_string(hr) + ").");
+    }
+    d3d_context()->IASetInputLayout(layout);
+    d3d_context()->IASetPrimitiveTopology(
+        D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP); //TEMP
+    std::vector<unsigned int> offsets(vertices._data->_buffers.size(), 0);
+    d3d_context()->IASetVertexBuffers(0, vertices._data->_buffers.size(),
+        vertices._data->_buffers.data(), vertices._data->_strides.data(),
+        offsets.data());
+    d3d_context()->Draw(vertices._data->_numVertices, 0);
 }
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
