@@ -484,6 +484,9 @@ void paz::RenderPass::depth(DepthTestMode mode)
 
 void paz::RenderPass::end()
 {
+    [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+        endEncoding];
+    _data->_renderEncoder = nullptr;
     if(_data->_fbo)
     {
         for(auto n : _data->_fbo->_colorAttachments)
@@ -495,9 +498,6 @@ void paz::RenderPass::end()
             _data->_fbo->_depthStencilAttachment->ensureMipmaps();
         }
     }
-    [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-        endEncoding];
-    _data->_renderEncoder = nullptr;
 }
 
 void paz::RenderPass::cull(CullMode mode)
