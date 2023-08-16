@@ -479,25 +479,25 @@ bool paz::Window::KeyReleased(Key key)
     return ::KeyReleased.at(static_cast<int>(key));
 }
 
-bool paz::Window::MouseDown(int button)
+bool paz::Window::MouseDown(MouseButton button)
 {
     initialize();
 
-    return ::MouseDown.at(button);
+    return ::MouseDown.at(static_cast<int>(button));
 }
 
-bool paz::Window::MousePressed(int button)
+bool paz::Window::MousePressed(MouseButton button)
 {
     initialize();
 
-    return ::MousePressed.at(button);
+    return ::MousePressed.at(static_cast<int>(button));
 }
 
-bool paz::Window::MouseReleased(int button)
+bool paz::Window::MouseReleased(MouseButton button)
 {
     initialize();
 
-    return ::MouseReleased.at(button);
+    return ::MouseReleased.at(static_cast<int>(button));
 }
 
 std::pair<double, double> paz::Window::MousePos()
