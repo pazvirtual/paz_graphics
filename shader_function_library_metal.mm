@@ -15,7 +15,8 @@
 
 static id<MTLLibrary> create_library(std::string src, bool isVert)
 {
-    src = (isVert ? paz::vert2metal(src) : paz::frag2metal(src));
+    bool temp;
+    src = (isVert ? paz::vert2metal(src, temp) : paz::frag2metal(src));
 
     NSError* error = nil;
     id<MTLLibrary> lib = [DEVICE newLibraryWithSource:[NSString
@@ -79,12 +80,6 @@ void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
         throw std::runtime_error("Failed to compile vertex function \"" + name +
             "\": " + e.what());
     }
-}
-
-void paz::ShaderFunctionLibrary::geometry(const std::string& /* name */, const
-    std::string& /* src */)
-{
-    throw std::logic_error("NOT IMPLEMENTED");
 }
 
 void paz::ShaderFunctionLibrary::fragment(const std::string& name, const std::
