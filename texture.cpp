@@ -80,22 +80,16 @@ paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
 
 void paz::Texture::Data::init(const void* data)
 {
-    const auto filters = min_mag_filter(_minFilter, _magFilter);
-    const auto min = filters.first;
-    const auto mag = filters.second;
-
+    const auto filters = min_mag_filter(_minFilter, _magFilter, _mipFilter);
     glGenTextures(1, &_id);
     glBindTexture(GL_TEXTURE_2D, _id);
     glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(_format), _width, _height,
         0, gl_format(_format), gl_type(_format), data);
-    if(_mipFilter != MipmapFilter::None)
-    {
-        glGenerateMipmap(GL_TEXTURE_2D);
-    }
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filters.first);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filters.second);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_mode(_wrapS));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_mode(_wrapT));
+    ensureMipmaps();
 }
 
 void paz::Texture::Data::resize(int width, int height)
@@ -107,10 +101,15 @@ void paz::Texture::Data::resize(int width, int height)
         glBindTexture(GL_TEXTURE_2D, _id);
         glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(_format), _width,
             _height, 0, gl_format(_format), gl_type(_format), nullptr);
-        if(_mipFilter != MipmapFilter::None)
-        {
-            glGenerateMipmap(GL_TEXTURE_2D);
-        }
+        ensureMipmaps();
+    }
+}
+
+void paz::Texture::Data::ensureMipmaps()
+{
+    if(_mipFilter != MipmapFilter::None)
+    {
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
 }
 

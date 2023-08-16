@@ -263,6 +263,17 @@ void paz::RenderPass::depth(DepthTestMode mode)
 
 void paz::RenderPass::end()
 {
+    if(_data->_fbo)
+    {
+        for(auto n : _data->_fbo->_colorAttachments)
+        {
+            n->ensureMipmaps();
+        }
+        if(_data->_fbo->_depthStencilAttachment)
+        {
+            _data->_fbo->_depthStencilAttachment->ensureMipmaps();
+        }
+    }
     const GLenum error = glGetError();
     if(error != GL_NO_ERROR)
     {
@@ -294,7 +305,7 @@ void paz::RenderPass::cull(CullMode mode)
     }
 }
 
-void paz::RenderPass::read(const std::string& name, const Texture& tex) const
+void paz::RenderPass::read(const std::string& name, const Texture& tex)
 {
     glActiveTexture(GL_TEXTURE0 + NextSlot);
     glBindTexture(GL_TEXTURE_2D, tex._data->_id);
@@ -302,34 +313,33 @@ void paz::RenderPass::read(const std::string& name, const Texture& tex) const
     ++NextSlot;
 }
 
-void paz::RenderPass::uniform(const std::string& name, int x) const
+void paz::RenderPass::uniform(const std::string& name, int x)
 {
     CHECK_UNIFORM
     glUniform1i(std::get<0>(_data->_shader->_uniformIds.at(name)), x);
 }
 
-void paz::RenderPass::uniform(const std::string& name, int x, int y) const
+void paz::RenderPass::uniform(const std::string& name, int x, int y)
 {
     CHECK_UNIFORM
     glUniform2i(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y);
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z)
-    const
 {
     CHECK_UNIFORM
     glUniform3i(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y, z);
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
-    w) const
+    w)
 {
     CHECK_UNIFORM
     glUniform4i(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y, z, w);
 }
 
 void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
-    size) const
+    size)
 {
     CHECK_UNIFORM
     switch(std::get<1>(_data->_shader->_uniformIds.at(name)))
@@ -358,35 +368,35 @@ void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
     }
 }
 
-void paz::RenderPass::uniform(const std::string& name, unsigned int x) const
+void paz::RenderPass::uniform(const std::string& name, unsigned int x)
 {
     CHECK_UNIFORM
     glUniform1ui(std::get<0>(_data->_shader->_uniformIds.at(name)), x);
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
-    int y) const
+    int y)
 {
     CHECK_UNIFORM
     glUniform2ui(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y);
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
-    int y, unsigned int z) const
+    int y, unsigned int z)
 {
     CHECK_UNIFORM
     glUniform3ui(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y, z);
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
-    int y, unsigned int z, unsigned int w) const
+    int y, unsigned int z, unsigned int w)
 {
     CHECK_UNIFORM
     glUniform4ui(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y, z, w);
 }
 
 void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
-    std::size_t size) const
+    std::size_t size)
 {
     CHECK_UNIFORM
     switch(std::get<1>(_data->_shader->_uniformIds.at(name)))
@@ -415,34 +425,34 @@ void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
     }
 }
 
-void paz::RenderPass::uniform(const std::string& name, float x) const
+void paz::RenderPass::uniform(const std::string& name, float x)
 {
     CHECK_UNIFORM
     glUniform1f(std::get<0>(_data->_shader->_uniformIds.at(name)), x);
 }
 
-void paz::RenderPass::uniform(const std::string& name, float x, float y) const
+void paz::RenderPass::uniform(const std::string& name, float x, float y)
 {
     CHECK_UNIFORM
     glUniform2f(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y);
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
-    z) const
+    z)
 {
     CHECK_UNIFORM
     glUniform3f(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y, z);
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
-    z, float w) const
+    z, float w)
 {
     CHECK_UNIFORM
     glUniform4f(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y, z, w);
 }
 
 void paz::RenderPass::uniform(const std::string& name, const float* x, std::
-    size_t size) const
+    size_t size)
 {
     CHECK_UNIFORM
     switch(std::get<1>(_data->_shader->_uniformIds.at(name)))

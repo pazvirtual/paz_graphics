@@ -24,6 +24,7 @@ struct paz::Texture::Data
     double _scale = 1.;
     ~Data();
     void init(const void* data = nullptr);
+    void ensureMipmaps();
     void resize(int width, int height);
 };
 

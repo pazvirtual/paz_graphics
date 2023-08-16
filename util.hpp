@@ -17,7 +17,7 @@ namespace paz
     constexpr int GlMinorVersion = 1;
 
     std::pair<GLint, GLint> min_mag_filter(MinMagFilter minFilter, MinMagFilter
-        magFilter, MipmapFilter mipmapFilter = MipmapFilter::None);
+        magFilter, MipmapFilter mipmapFilter);
     GLint gl_internal_format(TextureFormat format);
     GLenum gl_format(TextureFormat format);
     GLenum gl_type(TextureFormat format);
