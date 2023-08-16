@@ -2,9 +2,7 @@
 #include <cmath>
 #include <iomanip>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846264338328
-#endif
+static constexpr double Pi = 3.14159265358979323846264338328; // M_PI
 
 #define CATCH \
     catch(const std::exception& e) \
@@ -30,7 +28,7 @@
 
 static constexpr float ZNear = 1.;
 static constexpr float ZFar = 5.;
-static constexpr float YFov = 65.*M_PI/180.;
+static constexpr float YFov = 65.*Pi/180.;
 // Texture widths are odd to verify robustness.
 static constexpr int ShadowRes = 1999;
 // Setting window dimensions to odd numbers of physical pixels will cause test
