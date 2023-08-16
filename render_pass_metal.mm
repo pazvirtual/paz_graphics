@@ -489,7 +489,7 @@ void paz::RenderPass::end()
     _data->_renderEncoder = nullptr;
 }
 
-void paz::RenderPass::cull(CullMode mode) const
+void paz::RenderPass::cull(CullMode mode)
 {
     if(mode == CullMode::Disable)
     {
@@ -674,7 +674,7 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
 }
 
 void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
-    vertices) const
+    vertices)
 {
     check_attributes(vertices._data->_buffers, _data->_vertexAttributeStrides,
         vertices._data->_numVertices);
@@ -691,7 +691,7 @@ void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
 }
 
 void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
-    const IndexBuffer& indices) const
+    const IndexBuffer& indices)
 {
     check_attributes(vertices._data->_buffers, _data->_vertexAttributeStrides,
         vertices._data->_numVertices);
