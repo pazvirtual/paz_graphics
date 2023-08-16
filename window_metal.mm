@@ -9,6 +9,7 @@
 #include "window.hpp"
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
+#include <chrono>
 
 #define APP_DELEGATE static_cast<AppDelegate*>([NSApp delegate])
 #define VIEW_CONTROLLER static_cast<ViewController*>([[static_cast<\
