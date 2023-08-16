@@ -23,9 +23,6 @@ endif
 INCL := -I..
 LIBS := ../libpazgraphics.a
 ifeq ($(OSPRETTY), macOS)
-#TEMP
-    LIBS += /Users/ben/opengl2metal/vert.o /Users/ben/opengl2metal/frag.o
-#TEMP
     LIBS += -framework MetalKit -framework Metal -framework Cocoa
 else
     LIBS += $(LIBPATH)/libglfw3.a -lstdc++fs
