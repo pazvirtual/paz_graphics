@@ -20,18 +20,23 @@ layout(triangle_strip, max_vertices = 4) out;
 in float glLineWidth[];
 void main()
 {
-    vec2 para = (gl_in[1].gl_Position.xy - gl_in[0].gl_Position.xy);
-    para /= length(para);
-    vec2 perp = vec2(-para.y, para.x);
-    para /= vec2(paz_Width, paz_Height);
-    perp /= vec2(paz_Width, paz_Height);
-    gl_Position = vec4(gl_in[0].gl_Position.xy - glLineWidth[0]*perp, 0, 1);
+    vec2 size = vec2(paz_Width, paz_Height);
+    vec2 para = normalize((gl_in[1].gl_Position.xy/gl_in[1].gl_Position.w -
+        gl_in[0].gl_Position.xy/gl_in[1].gl_Position.w)*size);
+    vec2 perp = vec2(-para.y, para.x)/size;
+    float s0 = glLineWidth[0]*gl_in[0].gl_Position.w;
+    float s1 = glLineWidth[1]*gl_in[1].gl_Position.w;
+    gl_Position = vec4(gl_in[0].gl_Position.xy - s0*perp, gl_in[0].
+        gl_Position.zw);
     EmitVertex();
-    gl_Position = vec4(gl_in[1].gl_Position.xy - glLineWidth[1]*perp, 0, 1);
+    gl_Position = vec4(gl_in[1].gl_Position.xy - s1*perp, gl_in[0].
+        gl_Position.zw);
     EmitVertex();
-    gl_Position = vec4(gl_in[0].gl_Position.xy + glLineWidth[0]*perp, 0, 1);
+    gl_Position = vec4(gl_in[0].gl_Position.xy + s0*perp, gl_in[0].
+        gl_Position.zw);
     EmitVertex();
-    gl_Position = vec4(gl_in[1].gl_Position.xy + glLineWidth[1]*perp, 0, 1);
+    gl_Position = vec4(gl_in[1].gl_Position.xy + s1*perp, gl_in[0].
+        gl_Position.zw);
     EmitVertex();
     EndPrimitive();
 }
