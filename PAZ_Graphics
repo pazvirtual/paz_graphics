@@ -39,6 +39,7 @@ namespace paz
             int c, b;
             switch(_format)
             {
+                case ImageFormat::R8UInt:          c = 1; b = 1; break;
                 case ImageFormat::R8SInt:          c = 1; b = 1; break;
                 case ImageFormat::R8UNorm:         c = 1; b = 1; break;
                 case ImageFormat::R8SNorm:         c = 1; b = 1; break;
