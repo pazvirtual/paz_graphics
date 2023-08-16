@@ -145,14 +145,17 @@ paz::RenderPass::RenderPass(const Shader& shader)
         _frag];
     [[pipelineDescriptor colorAttachments][0] setPixelFormat:[[VIEW_CONTROLLER
         mtkView] colorPixelFormat]];
+    [pipelineDescriptor setDepthAttachmentPixelFormat:[[VIEW_CONTROLLER mtkView]
+        depthStencilPixelFormat]];
     _data->_pipelineState = create(pipelineDescriptor, _data->_vertexArgs,
         _data->_fragmentArgs);
     [pipelineDescriptor release];
 }
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
-    LoadAction depthLoadAction)
+    LoadAction depthLoadAction, BlendMode blendMode)
 {
+assert(blendMode == BlendMode::Disable);//TEMP
     MTLRenderPassDescriptor* renderPassDescriptor;
     if(_fbo)
     {
