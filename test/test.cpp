@@ -325,8 +325,7 @@ int main()
         const paz::Image<std::uint8_t, 3> img = paz::Window::PrintScreen();
         for(const auto& n : SamplePoints)
         {
-            if(std::abs(img[3*(ImgRes*n[0] + n[1])] - static_cast<int>(n[2])) >
-                Threshold)
+            if(std::abs(img[3*(ImgRes*n[0] + n[1])] - n[2]) > Threshold)
             {
                 throw std::runtime_error("Incorrect pixel value at (" + std::
                     to_string(n[0]) + ", " + std::to_string(n[1]) + ").");
