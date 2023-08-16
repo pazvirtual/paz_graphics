@@ -6,6 +6,7 @@
 #import "util_metal.hh"
 #import "app_delegate.hh"
 #import "view_controller.hh"
+#include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
@@ -20,8 +21,8 @@ static void clean(void* texture)
     }
 }
 
-static void init(void* texture, int width, int height, int numChannels, int
-    numBits, paz::Texture::DataType type)
+static id<MTLTexture> init(int width, int height, int numChannels, int numBits,
+    paz::Texture::DataType type)
 {
     MTLTextureDescriptor* textureDescriptor = [[MTLTextureDescriptor alloc]
         init];
@@ -30,35 +31,43 @@ static void init(void* texture, int width, int height, int numChannels, int
     [textureDescriptor setHeight:height];
     [textureDescriptor setUsage:MTLTextureUsageRenderTarget|
         MTLTextureUsageShaderRead];
-    texture = [DEVICE newTextureWithDescriptor:textureDescriptor];
+    id<MTLTexture> texture = [DEVICE newTextureWithDescriptor:
+        textureDescriptor];
     [textureDescriptor release];
+    return texture;
 }
 
-paz::RenderTarget::RenderTarget() {}
+paz::RenderTarget::RenderTarget()
+{
+    _data = std::make_unique<Data>();
+}
 
 paz::RenderTarget::~RenderTarget()
 {
-    clean(_texture);
+    clean(Texture::_data->_texture);
     paz::Window::UnregisterTarget(this);
 }
 
 paz::RenderTarget::RenderTarget(double scale, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter)
+    DataType type, MinMagFilter minFilter, MinMagFilter magFilter) :
+    RenderTarget()
 {
     _scale = scale;
-    _numChannels = numChannels;
-    _numBits = numBits;
-    _type = type;
-    init(_texture, _scale*Window::ViewportWidth(), _scale*Window::
-        ViewportHeight(), _numChannels, _numBits, _type);
-    _sampler = create_sampler(minFilter, magFilter);
+    _data->_numChannels = numChannels;
+    _data->_numBits = numBits;
+    _data->_type = type;
+    Texture::_data->_texture = ::init(_scale*Window::ViewportWidth(), _scale*
+        Window::ViewportHeight(), _data->_numChannels, _data->_numBits, _data->
+        _type);
+    Texture::_data->_sampler = create_sampler(minFilter, magFilter);
     paz::Window::RegisterTarget(this);
 }
 
 void paz::RenderTarget::resize(GLsizei width, GLsizei height)
 {
-    clean(_texture);
-    init(_texture, _scale*width, _scale*height, _numChannels, _numBits, _type);
+    clean(Texture::_data->_texture);
+    Texture::_data->_texture = ::init(_scale*width, _scale*height, _data->
+        _numChannels, _data->_numBits, _data->_type);
 }
 
 #endif

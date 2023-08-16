@@ -6,34 +6,40 @@
 #import "util_metal.hh"
 #import "app_delegate.hh"
 #import "view_controller.hh"
+#include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
     contentViewController] mtkView] device]
 
-paz::Texture::Texture() {}
+paz::Texture::Texture()
+{
+    _data = std::make_unique<Data>();
+}
 
 paz::Texture::~Texture()
 {
-    if(_texture)
+    if(_data->_texture)
     {
-        [(id<MTLTexture>)_texture release];
+        [(id<MTLTexture>)_data->_texture release];
     }
-    if(_sampler)
+    if(_data->_sampler)
     {
-        [(id<MTLSamplerState>)_sampler release];
+        [(id<MTLSamplerState>)_data->_sampler release];
     }
 }
 
 paz::Texture::Texture(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter)
+    DataType type, MinMagFilter minFilter, MinMagFilter magFilter) :
+    Texture()
 {
     init(width, height, numChannels, numBits, type, minFilter, magFilter,
         nullptr);
 }
 
 paz::Texture::Texture(int width, int height, int numChannels, int numBits, const
-    std::vector<float>& data, MinMagFilter minFilter, MinMagFilter magFilter)
+    std::vector<float>& data, MinMagFilter minFilter, MinMagFilter magFilter) :
+    Texture()
 {
     std::vector<float> v(data.size());
     for(int i = 0; i < height; ++i)
@@ -57,17 +63,17 @@ void paz::Texture::init(int width, int height, int numChannels, int numBits,
     [textureDescriptor setWidth:width];
     [textureDescriptor setHeight:height];
     [textureDescriptor setUsage:MTLTextureUsageShaderRead];
-    _texture = [DEVICE newTextureWithDescriptor:textureDescriptor];
+    _data->_texture = [DEVICE newTextureWithDescriptor:textureDescriptor];
     [textureDescriptor release];
     if(data)
     {
-        [(id<MTLTexture>)_texture replaceRegion:MTLRegionMake2D(0, 0, width,
-            height) mipmapLevel:0 withBytes:data bytesPerRow:width*numChannels*
-            numBits/8];
+        [(id<MTLTexture>)_data->_texture replaceRegion:MTLRegionMake2D(0, 0,
+            width, height) mipmapLevel:0 withBytes:data bytesPerRow:width*
+            numChannels*numBits/8];
     }
-    if(!_sampler)
+    if(!_data->_sampler)
     {
-        _sampler = create_sampler(minFilter, magFilter);
+        _data->_sampler = create_sampler(minFilter, magFilter);
     }
 }
 

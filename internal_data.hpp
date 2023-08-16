@@ -48,8 +48,8 @@ struct paz::IndexBuffer::Data
 struct paz::Framebuffer::Data
 {
 #ifdef PAZ_MACOS
-        std::vector<const RenderTarget*> colorAttachments;
-        const DepthStencilTarget* depthAttachment = nullptr;
+        std::vector<const RenderTarget*> _colorAttachments;
+        const DepthStencilTarget* _depthAttachment = nullptr;
 #else
         unsigned int _id = 0;
         int _numTextures = 0;

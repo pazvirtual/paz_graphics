@@ -5,6 +5,7 @@
 #include "PAZ_Graphics"
 #import "app_delegate.hh"
 #import "view_controller.hh"
+#include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
@@ -12,23 +13,26 @@
 
 paz::Framebuffer::~Framebuffer()
 {
-    colorAttachments.clear();
+    _data->_colorAttachments.clear();
 }
 
 void paz::Framebuffer::attach(const RenderTarget& target)
 {
-    colorAttachments.push_back(&target);
+    _data->_colorAttachments.push_back(&target);
 }
 
 void paz::Framebuffer::attach(const DepthStencilTarget& target)
 {
-    if(depthAttachment)
+    if(_data->_depthAttachment)
     {
         throw std::runtime_error("A depth/stencil target is already attached");
     }
-    depthAttachment = &target;
+    _data->_depthAttachment = &target;
 }
 
-paz::Framebuffer::Framebuffer() {}
+paz::Framebuffer::Framebuffer()
+{
+    _data = std::make_unique<Data>();
+}
 
 #endif

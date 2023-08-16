@@ -5,6 +5,7 @@
 #include "PAZ_Graphics"
 #import "app_delegate.hh"
 #import "view_controller.hh"
+#include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
@@ -12,18 +13,20 @@
 
 paz::IndexBuffer::~IndexBuffer()
 {
-    if(_data)
+    if(_data->_data)
     {
-        [(id<MTLBuffer>)_data setPurgeableState:MTLPurgeableStateEmpty];
-        [(id<MTLBuffer>)_data release];
+        [(id<MTLBuffer>)_data->_data setPurgeableState:MTLPurgeableStateEmpty];
+        [(id<MTLBuffer>)_data->_data release];
     }
 }
 
 paz::IndexBuffer::IndexBuffer(const std::vector<unsigned int>& indices)
 {
+    _data = std::make_unique<Data>();
+
     _numIndices = indices.size();
-    _data = [DEVICE newBufferWithBytes:indices.data() length:sizeof(unsigned
-        int)*_numIndices options:MTLStorageModeShared];
+    _data->_data = [DEVICE newBufferWithBytes:indices.data() length:sizeof(
+        unsigned int)*_numIndices options:MTLStorageModeShared];
 }
 
 #endif

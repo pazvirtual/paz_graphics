@@ -6,6 +6,7 @@
 #import "app_delegate.hh"
 #import "view_controller.hh"
 #include "opengl2metal.hpp"
+#include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
@@ -34,18 +35,21 @@ static id<MTLLibrary> create_library(std::string src, bool isVert)
     return lib;
 }
 
-paz::ShaderFunctionLibrary::ShaderFunctionLibrary() {}
+paz::ShaderFunctionLibrary::ShaderFunctionLibrary()
+{
+    _data = std::make_unique<Data>();
+}
 
 paz::ShaderFunctionLibrary::~ShaderFunctionLibrary()
 {
-    for(const auto& n : _verts)
+    for(const auto& n : _data->_verts)
     {
         if(n.second)
         {
             [(id<MTLLibrary>)n.second release];
         }
     }
-    for(const auto& n : _frags)
+    for(const auto& n : _data->_frags)
     {
         if(n.second)
         {
@@ -57,23 +61,23 @@ paz::ShaderFunctionLibrary::~ShaderFunctionLibrary()
 void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
     string& src)
 {
-    if(_verts.count(name))
+    if(_data->_verts.count(name))
     {
         throw std::runtime_error("Vertex function \"" + name + "\" has already "
             "been defined.");
     }
-    _verts[name] = create_library(src, true);
+    _data->_verts[name] = create_library(src, true);
 }
 
 void paz::ShaderFunctionLibrary::fragment(const std::string& name, const std::
     string& src)
 {
-    if(_frags.count(name))
+    if(_data->_frags.count(name))
     {
         throw std::runtime_error("Fragment function \"" + name + "\" has alread"
             "y been defined.");
     }
-    _frags[name] = create_library(src, false);
+    _data->_frags[name] = create_library(src, false);
 }
 
 #endif
