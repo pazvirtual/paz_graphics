@@ -4,6 +4,8 @@
 
 #include "PAZ_Graphics"
 #include "util.hpp"
+#include "gl_core_4_1.h"
+#include <GLFW/glfw3.h>
 
 #define CASE_STRING(x) case x: return #x;
 #define CASE(a, b) case TextureFormat::a: return GL_##b;

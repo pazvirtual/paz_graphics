@@ -5,9 +5,7 @@
 #include "PAZ_Graphics"
 #include "internal_data.hpp"
 #include "window.hpp"
-#ifndef __gl_h_
 #include "gl_core_4_1.h"
-#endif
 #include <GLFW/glfw3.h>
 
 #define CASE_STRING(x) case x: return #x;

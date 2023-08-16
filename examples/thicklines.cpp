@@ -1,18 +1,17 @@
 #include "PAZ_Graphics"
 #include "PAZ_IO"
 
-static const std::string VertSrc = 1 + R"===(
+static const std::string LineVertSrc = 1 + R"===(
 layout(location = 0) in vec2 pos;
 out float a;
 void main()
 {
     gl_Position = vec4(pos.x, pos.y, 0, 1);
-    gl_LineWidth = 20.;
     a = float(gl_VertexID%2);
 }
 )===";
 
-static const std::string FragSrc = 1 + R"===(
+static const std::string LineFragSrc = 1 + R"===(
 layout(location = 0) out vec4 color;
 in float a;
 void main()
@@ -62,15 +61,29 @@ static void set_mode(int m)
 
 }
 
-int main()
+int main(int, char** argv)
 {
+    const std::string appDir = paz::split_path(argv[0])[0];
+
     set_mode(0);
 
-    const paz::VertexFunction vert(VertSrc);
-    const paz::FragmentFunction frag(FragSrc);
+    paz::VertexBuffer quadVerts;
+    quadVerts.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
-    paz::RenderPass render(vert, frag, paz::BlendMode::Additive);
+    const paz::VertexFunction lineVert(LineVertSrc);
+    const paz::VertexFunction quadVert(paz::load_file(appDir + "/quad.vert").
+        str());
+    const paz::FragmentFunction lineFrag(LineFragSrc);
+    const paz::FragmentFunction sdfFrag(paz::load_file(appDir + "/sdf.frag").
+        str());
 
+    paz::Framebuffer buff;
+    buff.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA16Float));
+
+    paz::RenderPass basePass(buff, lineVert, lineFrag);
+    paz::RenderPass sdfPass(quadVert, sdfFrag);
+
+    int width = 1;
     while(!paz::Window::Done())
     {
         if(paz::Window::KeyPressed(paz::Key::One))
@@ -85,26 +98,39 @@ int main()
         {
             set_mode(2);
         }
+        if(paz::Window::KeyPressed(paz::Key::Up))
+        {
+            width = std::min(width + 1, 10);
+        }
+        if(paz::Window::KeyPressed(paz::Key::Down))
+        {
+            width = std::max(width - 1, 1);
+        }
         if(paz::Window::KeyPressed(paz::Key::Q))
         {
             paz::Window::Quit();
         }
 
-        render.begin({paz::LoadAction::Clear});
-        render.cull(paz::CullMode::Back);
+        basePass.begin({paz::LoadAction::Clear});
         if(mode == 0)
         {
-            render.draw(paz::PrimitiveType::Lines, vertices);
+            basePass.draw(paz::PrimitiveType::Lines, vertices);
         }
         else if(mode == 1)
         {
-            render.draw(paz::PrimitiveType::LineStrip, vertices);
+            basePass.draw(paz::PrimitiveType::LineStrip, vertices);
         }
         else
         {
-            render.draw(paz::PrimitiveType::LineLoop, vertices);
+            basePass.draw(paz::PrimitiveType::LineLoop, vertices);
         }
-        render.end();
+        basePass.end();
+
+        sdfPass.begin({paz::LoadAction::Clear});
+        sdfPass.read("base", buff.colorAttachment(0));
+        sdfPass.uniform("width", width);
+        sdfPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
+        sdfPass.end();
 
         paz::Window::EndFrame();
     }

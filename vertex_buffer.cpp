@@ -6,9 +6,7 @@
 #include "util.hpp"
 #include "internal_data.hpp"
 #include "window.hpp"
-#ifndef __gl_h_
 #include "gl_core_4_1.h"
-#endif
 #include <GLFW/glfw3.h>
 #include <numeric>
 
@@ -19,9 +17,6 @@ paz::VertexBuffer::Data::~Data()
         glDeleteBuffers(1, &n);
     }
     glDeleteVertexArrays(1, &_id);
-    glDeleteBuffers(1, &_lineStripId);
-    glDeleteBuffers(1, &_lineLoopId);
-    glDeleteBuffers(1, &_thickLinesId);
 }
 
 paz::VertexBuffer::Data::Data()
@@ -47,39 +42,6 @@ void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)
     if(!_numVertices)
     {
         _numVertices = m;
-        {
-            std::vector<unsigned int> idx(_numVertices + 2);
-            std::iota(idx.begin(), idx.end(), -1);
-            idx[0] = 0;
-            idx.back() = _numVertices - 1;
-            glGenBuffers(1, &_lineStripId);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _lineStripId);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*idx.size(),
-                idx.data(), GL_STATIC_DRAW);
-        }
-        {
-            std::vector<unsigned int> idx(_numVertices + 3);
-            std::iota(idx.begin(), idx.end(), -1);
-            idx[0] = _numVertices - 1;
-            idx[idx.size() - 2] = 0;
-            idx.back() = 1;
-            glGenBuffers(1, &_lineLoopId);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _lineLoopId);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*idx.size(),
-                idx.data(), GL_STATIC_DRAW);
-        }
-        {
-            std::vector<unsigned int> idx(2*_numVertices);
-            for(unsigned int i = 0; i < _numVertices; ++i)
-            {
-                idx[2*i] = i;
-                idx[2*i + 1] = i;
-            }
-            glGenBuffers(1, &_thickLinesId);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _thickLinesId);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*idx.size(),
-                idx.data(), GL_STATIC_DRAW);
-        }
     }
     else if(m != _numVertices)
     {
