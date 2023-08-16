@@ -203,9 +203,9 @@ int main(int, char** argv)
         str());
 
     paz::Framebuffer buff;
-    buff.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA32Float, paz::
+    buff.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA16Float, paz::
         MinMagFilter::Linear, paz::MinMagFilter::Linear));
-    buff.attach(paz::RenderTarget(1., paz::TextureFormat::Depth16UNorm));
+    buff.attach(paz::RenderTarget(1., paz::TextureFormat::Depth32Float));
 
     paz::RenderPass scenePass(buff, sceneVert, sceneFrag);
     paz::RenderPass aaPass(quadVert, aaFrag);
