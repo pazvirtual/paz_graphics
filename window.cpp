@@ -1175,11 +1175,8 @@ paz::Image paz::Window::ReadPixels()
             std::to_string(hr) + ").");
     }
 
-
     DeviceContext->CopySubresourceRegion(staging, 0, 0, 0, 0,
         final_framebuffer().colorAttachment(0)._data->_texture, 0, nullptr);
-
-    std::vector<std::uint16_t> linearFlipped(4*width*height);
 
     D3D11_MAPPED_SUBRESOURCE mappedSr;
     hr = DeviceContext->Map(staging, 0, D3D11_MAP_READ, 0, &mappedSr);
@@ -1188,10 +1185,6 @@ paz::Image paz::Window::ReadPixels()
         throw std::runtime_error("Failed to map staging texture (HRESULT " +
             std::to_string(hr) + ").");
     }
-    std::copy(reinterpret_cast<std::uint16_t*>(mappedSr.pData),
-        reinterpret_cast<std::uint16_t*>(mappedSr.pData) + 4*width*height,
-        linearFlipped.begin());
-    DeviceContext->Unmap(staging, 0);
 
     Image srgb(ImageFormat::RGBA8UNorm_sRGB, width, height);
     static constexpr double d = 1./std::numeric_limits<std::uint16_t>::max();
@@ -1200,15 +1193,19 @@ paz::Image paz::Window::ReadPixels()
         for(int x = 0; x < width; ++x)
         {
             const int yFlipped = height - 1 - y;
+            std::uint16_t* rowStart = reinterpret_cast<std::uint16_t*>(
+                reinterpret_cast<unsigned char*>(mappedSr.pData) + mappedSr.
+                RowPitch*yFlipped);
             for(int i = 0; i < 3; ++i)
             {
-                srgb.bytes()[4*(width*y + x) + i] = to_srgb(linearFlipped[4*
-                    (width*yFlipped + x) + i]*d);
+                srgb.bytes()[4*(width*y + x) + i] = to_srgb(*(rowStart + 4*x +
+                    i)*d);
             }
-            srgb.bytes()[4*(width*y + x) + 3] = linearFlipped[4*(width*yFlipped
-                + x) + 3]*d;
+            srgb.bytes()[4*(width*y + x) + 3] = *(rowStart + 4*x + 3)*d;
         }
     }
+
+    DeviceContext->Unmap(staging, 0);
 #endif
 
     return srgb;
