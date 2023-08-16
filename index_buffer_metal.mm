@@ -14,6 +14,7 @@
 
 paz::IndexBuffer::Data::~Data()
 {
+    //TEMP - purging before `paz::Window::EndFrame()` will break rendering
     if(_data)
     {
         [static_cast<id<MTLBuffer>>(_data) setPurgeableState:

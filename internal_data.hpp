@@ -50,6 +50,21 @@ struct paz::VertexBuffer::Data
     void checkSize(int dim, std::size_t size);
 };
 
+struct paz::InstanceBuffer::Data
+{
+#ifdef PAZ_MACOS
+    std::vector<std::vector<unsigned char>> _buffers;
+#else
+    unsigned int _id = 0;
+    std::vector<unsigned int> _ids;
+    std::vector<unsigned int> _types;
+    Data();
+    ~Data();
+#endif
+    std::size_t _numInstances = 0;
+    void checkSize(int dim, std::size_t size);
+};
+
 struct paz::IndexBuffer::Data
 {
 #ifdef PAZ_MACOS
