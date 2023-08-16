@@ -167,7 +167,7 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
         [[pipelineDescriptor colorAttachments][i] setPixelFormat:
             [static_cast<id<MTLTexture>>(_data->_fbo->_colorAttachments[i]->
             _texture) pixelFormat]];
-        if(modes[i] != paz::BlendMode::Disable)
+        if(i < modes.size() && modes[i] != paz::BlendMode::Disable)
         {
             [[pipelineDescriptor colorAttachments][i] setBlendingEnabled:YES];
             [[pipelineDescriptor colorAttachments][i] setRgbBlendOperation:
