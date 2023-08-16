@@ -24,6 +24,10 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
     initialize();
 
     _data = std::make_shared<Data>();
+
+    _data->_vert = vert._data;
+    _data->_frag = frag._data;
+    _data->_fbo = fbo._data;
 }
 
 paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
@@ -44,6 +48,29 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     }
 
     begin_frame();
+    _data->_rasterDescriptor.FillMode = D3D11_FILL_SOLID;
+    _data->_rasterDescriptor.CullMode = D3D11_CULL_NONE;
+    _data->_rasterDescriptor.FrontCounterClockwise = true;
+    _data->_rasterDescriptor.DepthClipEnable = true;
+    ID3D11RasterizerState* state;
+    const auto hr = d3d_device()->CreateRasterizerState(&_data->
+        _rasterDescriptor, &state);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create rasterizer state (HRESULT " +
+            std::to_string(hr) + ").");
+    }
+    d3d_context()->RSSetState(state);
+
+    if(_data->_fbo->_width)
+    {
+        D3D11_VIEWPORT viewport =
+        {
+            0.f, 0.f, static_cast<float>(_data->_fbo->_width), static_cast<
+                float>(_data->_fbo->_height), 0.f, 1.f
+        };
+        d3d_context()->RSSetViewports(1, &viewport);
+    }
 }
 
 void paz::RenderPass::depth(DepthTestMode mode)
@@ -177,6 +204,9 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
 
 paz::Framebuffer paz::RenderPass::framebuffer() const
 {
+    Framebuffer temp;
+    temp._data = _data->_fbo;
+    return temp;
 }
 
 #endif

@@ -137,6 +137,10 @@ struct paz::RenderPass::Data
 #elif defined(PAZ_LINUX)
     BlendMode _blendMode = BlendMode::Disable;
     ShaderData _shader;
+#else
+    D3D11_RASTERIZER_DESC _rasterDescriptor = {};
+    std::shared_ptr<VertexFunction::Data> _vert;
+    std::shared_ptr<FragmentFunction::Data> _frag;
 #endif
     std::shared_ptr<Framebuffer::Data> _fbo;
 };
