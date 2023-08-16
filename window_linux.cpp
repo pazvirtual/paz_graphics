@@ -384,9 +384,6 @@ paz::Initializer::Initializer()
         focus_callback(focused); });
     glfwSetWindowSizeCallback(WindowPtr, [](GLFWwindow*, int width, int height){
         resize_callback(width, height); });
-
-    // Get initial cursor position.
-    glfwGetCursorPos(WindowPtr, &MousePos.first, &MousePos.second);
 }
 
 void paz::Window::MakeFullscreen()
@@ -521,7 +518,16 @@ std::pair<double, double> paz::Window::MousePos()
 {
     initialize();
 
-    return ::MousePos;
+    if(CursorDisabled)
+    {
+        return ::MousePos;
+    }
+    else
+    {
+        double xPos, yPos;
+        glfwGetCursorPos(WindowPtr, &xPos, &yPos);
+        return {xPos, WindowHeight - yPos};
+    }
 }
 
 std::pair<double, double> paz::Window::ScrollOffset()

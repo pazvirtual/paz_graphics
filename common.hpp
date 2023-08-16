@@ -7,9 +7,6 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#ifndef VC_EXTRALEAN
-#define VC_EXTRALEAN
-#endif
 #include <d3d11.h>
 #endif
 #include <unordered_set>
