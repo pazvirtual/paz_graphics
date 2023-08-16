@@ -16,13 +16,16 @@
 
 static bool CursorDisabled = false;
 
-struct Initializer
+namespace paz
 {
-    Initializer();
-    ~Initializer();
-};
+    struct Initializer
+    {
+        Initializer();
+        ~Initializer();
+    };
+}
 
-static Initializer Initializer;
+static paz::Initializer Initializer;
 
 static std::function<void(void)> Draw = [](){};
 
@@ -34,12 +37,12 @@ static std::unordered_set<paz::DepthStencilTarget*> DepthStencilTargets;
 
 static CGPoint PrevOrigin;
 
-Initializer::~Initializer()
+paz::Initializer::~Initializer()
 {
     [NSApp release];
 }
 
-Initializer::Initializer()
+paz::Initializer::Initializer()
 {
     @try
     {

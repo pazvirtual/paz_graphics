@@ -38,13 +38,16 @@ static std::pair<double, double> ScrollOffset = {};
 
 static bool CursorDisabled = false;
 
-struct Initializer
+namespace paz
 {
-    Initializer();
-    ~Initializer();
-};
+    struct Initializer
+    {
+        Initializer();
+        ~Initializer();
+    };
+}
 
-static Initializer Initializer;
+static paz::Initializer Initializer;
 
 static std::chrono::time_point<std::chrono::steady_clock> FrameStart;
 static double CurFrameTime = 1./60.;
@@ -114,12 +117,12 @@ static void resize_callback(int width, int height)
     paz::Window::ResizeTargets();
 }
 
-Initializer::~Initializer()
+paz::Initializer::~Initializer()
 {
     glfwTerminate();
 }
 
-Initializer::Initializer()
+paz::Initializer::Initializer()
 {
     if(!glfwInit())
     {
