@@ -58,16 +58,49 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
     _data->_frag = frag._data;
     _data->_fbo = fbo._data;
 
-    // Set blending mode.
-    // ...
+    // Set blending mode. (Applies to all color render targets.)
+    D3D11_BLEND_DESC blendDescriptor = {};
+    blendDescriptor.RenderTarget[0].BlendEnable = mode != BlendMode::Disable;
+    blendDescriptor.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    blendDescriptor.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    blendDescriptor.RenderTarget[0].RenderTargetWriteMask =
+        D3D11_COLOR_WRITE_ENABLE_ALL;
+    if(mode == BlendMode::Additive)
+    {
+        blendDescriptor.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
+        blendDescriptor.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+        blendDescriptor.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+        blendDescriptor.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+    }
+    else if(mode == BlendMode::Blend)
+    {
+        blendDescriptor.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+        blendDescriptor.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+        blendDescriptor.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        blendDescriptor.RenderTarget[0].DestBlendAlpha =
+            D3D11_BLEND_INV_SRC_ALPHA;
+    }
+    else if(mode != BlendMode::Disable)
+    {
+        throw std::logic_error("Invalid blending function.");
+    }
+    ID3D11BlendState* blendState;
+    auto hr = d3d_device()->CreateBlendState(&blendDescriptor, &blendState);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create blend state (HRESULT " +
+            std::to_string(hr) + ").");
+    }
+    d3d_context()->OMSetBlendState(blendState, nullptr, 0xffffffff);
+    blendState->Release();
 
     // Check vertex and fragment function I/O compatibility. (Linking?)
     // ...
 
     // Get texture and sampler binding locations.
     ID3D11ShaderReflection* reflection;
-    auto hr = D3DReflect(_data->_frag->_bytecode->GetBufferPointer(), _data->
-        _frag->_bytecode->GetBufferSize(), IID_ID3D11ShaderReflection,
+    hr = D3DReflect(_data->_frag->_bytecode->GetBufferPointer(), _data->_frag->
+        _bytecode->GetBufferSize(), IID_ID3D11ShaderReflection,
         reinterpret_cast<void**>(&reflection));
     if(hr)
     {
