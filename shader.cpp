@@ -48,25 +48,55 @@ paz::Shader::Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
         throw std::runtime_error("Failed to link shader program:\n" + errorLog);
     }
 
-    // Get uniforms.
-    GLint n;
-    GLsizei bufSiz;
-    glGetProgramiv(_data->_id, GL_ACTIVE_UNIFORMS, &n);
-    glGetProgramiv(_data->_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, &bufSiz);
-    for(GLint i = 0; i < n; ++i)
+    // Get vertex attributes.
     {
-        GLint size;
-        GLenum type;
-        std::vector<GLchar> buf;
-        buf.resize(bufSiz);
-        glGetActiveUniform(_data->_id, i, bufSiz, nullptr, &size, &type, buf.
-            data());
-        const std::string name(buf.data());
-        std::size_t end = name.find("[", 0);
-        const GLuint location = glGetUniformLocation(_data->_id, name.substr(0,
-            end).c_str());
-        _data->_uniformIds[name.substr(0, end)] = std::make_tuple(location,
-            type, size);
+        GLint n;
+        GLsizei bufSiz;
+        glGetProgramiv(_data->_id, GL_ACTIVE_ATTRIBUTES, &n);
+        glGetProgramiv(_data->_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &bufSiz);
+        for(GLint i = 0; i < n; ++i)
+        {
+            GLint size;
+            GLenum type;
+            std::vector<GLchar> buf(bufSiz);
+            glGetActiveAttrib(_data->_id, i, bufSiz, nullptr, &size, &type, buf.
+                data());
+            const std::string name(buf.data());
+            std::size_t end = name.find("[", 0);
+            const GLint location = glGetAttribLocation(_data->_id, name.substr(
+                0, end).c_str());
+            if(location < 0)
+            {
+                throw std::logic_error("Vertex attribute \"" + name.substr(0,
+                    end) + "\" is not active.");
+            }
+            if(size >= 0)
+            {
+                _data->_attribTypes[location] = type;
+            }
+        }
+    }
+
+    // Get uniforms.
+    {
+        GLint n;
+        GLsizei bufSiz;
+        glGetProgramiv(_data->_id, GL_ACTIVE_UNIFORMS, &n);
+        glGetProgramiv(_data->_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, &bufSiz);
+        for(GLint i = 0; i < n; ++i)
+        {
+            GLint size;
+            GLenum type;
+            std::vector<GLchar> buf(bufSiz);
+            glGetActiveUniform(_data->_id, i, bufSiz, nullptr, &size, &type,
+                buf.data());
+            const std::string name(buf.data());
+            std::size_t end = name.find("[", 0);
+            const GLuint location = glGetUniformLocation(_data->_id, name.
+                substr(0, end).c_str());
+            _data->_uniformIds[name.substr(0, end)] = std::make_tuple(location,
+                type, size);
+        }
     }
 }
 
