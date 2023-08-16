@@ -10,16 +10,17 @@
 #import <MetalKit/MetalKit.h>
 
 template<typename T, int NumChannels>
-static std::vector<T> flip_image(const paz::Image<T, NumChannels>& image)
+static paz::Image<T, NumChannels> flip_image(const paz::Image<T, NumChannels>&
+    image)
 {
-    std::vector<T> v(image.width()*image.height()*NumChannels);
+    paz::Image<T, NumChannels> flipped(image.width(), image.height());
     for(int i = 0; i < image.height(); ++i)
     {
         std::copy(image.begin() + image.width()*i*NumChannels, image.begin() +
-            (image.width()*i + image.width())*NumChannels, v.begin() + image.
-            width()*(image.height() - i - 1)*NumChannels);
+            (image.width()*i + image.width())*NumChannels, flipped.begin() +
+            image.width()*(image.height() - i - 1)*NumChannels);
     }
-    return v;
+    return flipped;
 }
 
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
