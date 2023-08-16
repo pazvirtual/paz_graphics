@@ -2,6 +2,9 @@
 #define PAZ_GRAPHICS_INTERNAL_DATA_HPP
 
 #include "detect_os.hpp"
+#ifndef PAZ_MACOS
+#include "shader.hpp"
+#endif
 #include "PAZ_Graphics"
 
 struct paz::Texture::Data
@@ -101,6 +104,7 @@ struct paz::RenderPass::Data
     ~Data();
 #else
     BlendMode _blendMode = BlendMode::Disable;
+    ShaderData _shader;
 #endif
     std::shared_ptr<Framebuffer::Data> _fbo;
 };
