@@ -16,13 +16,6 @@
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
     contentViewController] mtkView] device]
 
-#if 1
-#define UNUSED_ARG return;
-#else
-#define UNUSED_ARG throw std::runtime_error("Shader does not take argument \"" \
-    + name + "\".");
-#endif
-
 #define CASE(a, b, n) case MTLDataType##a: return {MTLVertexFormat##a, n* \
     sizeof(b)};
 
@@ -346,10 +339,8 @@ void paz::RenderPass::cull(CullMode mode) const
 
 void paz::RenderPass::read(const std::string& name, const Texture& tex) const
 {
-    bool used = false;
     if(_data->_vertexArgs.count(name))
     {
-        used = true;
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setVertexTexture:
             (id<MTLTexture>)tex.Texture::_data->_texture atIndex:_data->
             _vertexArgs.at(name)];
@@ -365,7 +356,6 @@ void paz::RenderPass::read(const std::string& name, const Texture& tex) const
     }
     if(_data->_fragmentArgs.count(name))
     {
-        used = true;
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setFragmentTexture:
             (id<MTLTexture>)tex.Texture::_data->_texture atIndex:_data->
             _fragmentArgs.at(name)];
@@ -378,10 +368,6 @@ void paz::RenderPass::read(const std::string& name, const Texture& tex) const
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder
             setFragmentSamplerState:(id<MTLSamplerState>)tex._data->_sampler
             atIndex:_data->_fragmentArgs.at(samplerName)];
-    }
-    if(!used)
-    {
-        UNUSED_ARG
     }
 }
 
@@ -413,22 +399,15 @@ void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
 void paz::RenderPass::uniform(const std::string& name, const int* x, int n)
     const
 {
-    bool used = false;
     if(_data->_vertexArgs.count(name))
     {
-        used = true;
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setVertexBytes:x
             length:n*sizeof(int) atIndex:_data->_vertexArgs.at(name)];
     }
     if(_data->_fragmentArgs.count(name))
     {
-        used = true;
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setFragmentBytes:x
             length:n*sizeof(int) atIndex:_data->_fragmentArgs.at(name)];
-    }
-    if(!used)
-    {
-        UNUSED_ARG
     }
 }
 
@@ -461,23 +440,16 @@ void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
 void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
     int n) const
 {
-    bool used = false;
     if(_data->_vertexArgs.count(name))
     {
-        used = true;
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setVertexBytes:x
             length:n*sizeof(unsigned int) atIndex:_data->_vertexArgs.at(name)];
     }
     if(_data->_fragmentArgs.count(name))
     {
-        used = true;
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setFragmentBytes:x
             length:n*sizeof(unsigned int) atIndex:_data->_fragmentArgs.at(
             name)];
-    }
-    if(!used)
-    {
-        UNUSED_ARG
     }
 }
 
@@ -509,22 +481,15 @@ void paz::RenderPass::uniform(const std::string& name, float x, float y, float
 void paz::RenderPass::uniform(const std::string& name, const float* x, int n)
     const
 {
-    bool used = false;
     if(_data->_vertexArgs.count(name))
     {
-        used = true;
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setVertexBytes:x
             length:n*sizeof(float) atIndex:_data->_vertexArgs.at(name)];
     }
     if(_data->_fragmentArgs.count(name))
     {
-        used = true;
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setFragmentBytes:x
             length:n*sizeof(float) atIndex:_data->_fragmentArgs.at(name)];
-    }
-    if(!used)
-    {
-        UNUSED_ARG
     }
 }
 
