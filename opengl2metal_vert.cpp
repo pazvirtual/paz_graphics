@@ -36,6 +36,74 @@ std::string paz::vert2metal(const std::string& src)
     out << "#include <metal_stdlib>" << std::endl << "#include <simd/simd.h>" <<
         std::endl << "using namespace metal;" << std::endl;
 
+    // Define reinterpretation functions.
+    out << 1 + R"===(
+auto floatBitsToInt(float v)
+{
+    return as_type<int>(v);
+}
+auto floatBitsToInt(thread const float2& v)
+{
+    return as_type<int2>(v);
+}
+auto floatBitsToInt(thread const float3& v)
+{
+    return as_type<int3>(v);
+}
+auto floatBitsToInt(thread const float4& v)
+{
+    return as_type<int4>(v);
+}
+auto floatBitsToUint(float v)
+{
+    return as_type<uint>(v);
+}
+auto floatBitsToUint(thread const float2& v)
+{
+    return as_type<uint2>(v);
+}
+auto floatBitsToUint(thread const float3& v)
+{
+    return as_type<uint3>(v);
+}
+auto floatBitsToUint(thread const float4& v)
+{
+    return as_type<uint4>(v);
+}
+auto intBitsToFloat(int v)
+{
+    return as_type<float>(v);
+}
+auto intBitsToFloat(thread const int2& v)
+{
+    return as_type<float2>(v);
+}
+auto intBitsToFloat(thread const int3& v)
+{
+    return as_type<float3>(v);
+}
+auto intBitsToFloat(thread const int4& v)
+{
+    return as_type<float4>(v);
+}
+auto uintBitsToFloat(uint v)
+{
+    return as_type<float>(v);
+}
+auto uintBitsToFloat(thread const uint2& v)
+{
+    return as_type<float2>(v);
+}
+auto uintBitsToFloat(thread const uint3& v)
+{
+    return as_type<float3>(v);
+}
+auto uintBitsToFloat(thread const uint4& v)
+{
+    return as_type<float4>(v);
+}
+)===";
+
     std::string line;
     std::size_t l = 0;
     while(std::getline(in, line))
