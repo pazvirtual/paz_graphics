@@ -402,11 +402,13 @@ paz::Image<std::uint8_t, 4> paz::Window::ReadPixels()
     {
         for(int x = 0; x < width; ++x)
         {
-            for(int i = 0; i < 4; ++i)
+            const int yFlipped = height - 1 - y;
+            for(int i = 0; i < 3; ++i)
             {
-                rgba[4*(width*y + x) + 3 - i] = bgraFlipped[4*(width*(height - 1
-                    - y) + x) + i];
+                rgba[4*(width*y + x) + i] = bgraFlipped[4*(width*yFlipped + x) +
+                    2 - i];
             }
+            rgba[4*(width*y + x) + 3] = bgraFlipped[4*(width*yFlipped + x) + 3];
         }
     }
 
