@@ -2,6 +2,7 @@ PROJNAME := PAZ_Graphics
 LIBNAME := $(shell tr '[:upper:]' '[:lower:]' <<< $(shell sed 's/_//g' <<< $(PROJNAME)))
 ifeq ($(OS), Windows_NT)
     LIBPATH := /mingw64/lib
+    INCLPATH := /mingw64/include
     OSPRETTY := Windows
 else
     ifeq ($(shell uname -s), Darwin)
@@ -11,6 +12,7 @@ else
         LIBPATH := /usr/local/lib64
         OSPRETTY := Linux
     endif
+    INCLPATH := /usr/local/include
 endif
 CXXVER := 14
 OPTIM := fast
@@ -37,10 +39,21 @@ ifeq ($(OSPRETTY), macOS)
     OBJ += $(OBJCSRC:%.mm=%.o)
 endif
 
+REINSTALLHEADER := $(shell cmp -s $(PROJNAME) $(INCLPATH)/$(PROJNAME); echo $$?)
+
 default: $(OBJ)
 	$(RM) lib$(LIBNAME).a
 	ar $(ARFLAGS) lib$(LIBNAME).a $^
 	make -C examples
+
+ifneq ($(REINSTALLHEADER), 0)
+install:
+	cp $(PROJNAME) $(INCLPATH)/
+	cp lib$(LIBNAME).a $(LIBPATH)/
+else
+install:
+	cp lib$(LIBNAME).a $(LIBPATH)/
+endif
 
 analyze: $(OBJCSRC)
 	$(foreach n, $(OBJCSRC), clang++ --analyze $(n) $(CXXFLAGS) && $(RM) $(n:%.mm=%.plist);)
