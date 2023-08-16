@@ -5,9 +5,9 @@
 #define M_PI 3.14159265358979323846264338328
 #endif
 
-static constexpr float ZNear = 0.1f;
-static constexpr float ZFar = 100.f;
-static constexpr float YFov = 65.f*M_PI/180.f;
+static constexpr float ZNear = 0.1;
+static constexpr float ZFar = 100.;
+static constexpr float YFov = 65.*M_PI/180.;
 static constexpr int Res = 2000;
 
 static constexpr std::array<float, 4*4> GroundPos =
@@ -51,14 +51,12 @@ static constexpr std::array<float, 4*3*2*6> CubePos =
     P1 P8 P5
 };
 
-#define N1  1,  0,  0, 0, //TEMP
-#define N2 -1,  0,  0, 0, //TEMP
-#define N3  0,  1,  0, 0, //TEMP
-#define N4  0, -1,  0, 0, //TEMP
-#define N5  0,  0,  1, 0, //TEMP
-#define N6  0,  0, -1, 0, //TEMP
-
-#define NN 0, 0, 0, 0, //TEMP
+#define N1  1,  0,  0, 0,
+#define N2 -1,  0,  0, 0,
+#define N3  0,  1,  0, 0,
+#define N4  0, -1,  0, 0,
+#define N5  0,  0,  1, 0,
+#define N6  0,  0, -1, 0,
 
 static constexpr std::array<float, 4*3*2*6> CubeNor =
 {
@@ -134,6 +132,46 @@ void main()
 }
 )===";
 
+#define C1 0.825336 // cos(0.6)
+#define S1 0.564642 // sin(0.6)
+static constexpr std::array<float, 16> lightView =
+{
+    1,                0,                0, 0,
+    0,               C1,               S1, 0,
+    0,              -S1,               C1, 0,
+    0, -2.5*C1 + 0.5*S1, -2.5*S1 - 0.5*C1, 1
+};
+static const auto lightProjection = paz::perspective(YFov, 1.5, ZNear, ZFar);
+
+paz::Texture compute_shadow_map(const paz::VertexBuffer& groundVerts, const
+    paz::VertexBuffer& cubeVerts)
+{
+    paz::RenderTarget shadowMap(Res, Res, paz::TextureFormat::Depth32Float,
+        paz::MinMagFilter::Linear, paz::MinMagFilter::Linear);
+
+    paz::Framebuffer framebuffer;
+    framebuffer.attach(shadowMap);
+
+    paz::ShaderFunctionLibrary lib;
+    lib.vertex("shadow", ShadowVertSrc);
+    lib.fragment("shadow", ShadowFragSrc);
+
+    const paz::Shader shadow(lib, "shadow", lib, "shadow");
+
+    paz::RenderPass calcShadows(framebuffer, shadow);
+
+    calcShadows.begin({}, paz::LoadAction::Clear);
+    calcShadows.depth(paz::DepthTestMode::Less);
+    calcShadows.uniform("lightView", lightView);
+    calcShadows.uniform("lightProjection", lightProjection);
+    calcShadows.primitives(paz::PrimitiveType::TriangleStrip, groundVerts);
+    calcShadows.cull(paz::CullMode::Front);
+    calcShadows.primitives(paz::PrimitiveType::Triangles, cubeVerts);
+    calcShadows.end();
+
+    return shadowMap;
+}
+
 int main(int, char** argv)
 {
     const std::string appDir = paz::split_path(argv[0])[0];
@@ -146,41 +184,15 @@ int main(int, char** argv)
     cubeVerts.attribute(4, CubePos);
     cubeVerts.attribute(4, CubeNor);
 
-    paz::RenderTarget shadowMap(Res, Res, paz::TextureFormat::Depth32Float,
-        paz::MinMagFilter::Linear, paz::MinMagFilter::Linear);
-
-    paz::Framebuffer framebuffer;
-    framebuffer.attach(shadowMap);
-
     paz::ShaderFunctionLibrary lib;
-    lib.vertex("shadow", ShadowVertSrc);
-    lib.fragment("shadow", ShadowFragSrc);
     lib.vertex("scene", SceneVertSrc);
     lib.fragment("scene", SceneFragSrc);
 
-    const paz::Shader shadow(lib, "shadow", lib, "shadow");
     const paz::Shader render(lib, "scene", lib, "scene");
 
-    paz::RenderPass calcShadows(framebuffer, shadow);
     paz::RenderPass renderScene(render);
 
-    const float c1 = std::cos(0.6);
-    const float s1 = std::sin(0.6);
-    const std::array<float, 16> lightView = {1,                  0,                  0, 0,
-                                             0,                 c1,                 s1, 0,
-                                             0,                -s1,                 c1, 0,
-                                             0, -2.5f*c1 + 0.5f*s1, -2.5f*s1 - 0.5f*c1, 1};
-    const auto lightProjection = paz::perspective(YFov, paz::Window::
-        AspectRatio(), ZNear, ZFar);
-
-    calcShadows.begin({}, paz::LoadAction::Clear);
-    calcShadows.depth(paz::DepthTestMode::Less);
-    calcShadows.uniform("lightView", lightView);
-    calcShadows.uniform("lightProjection", lightProjection);
-    calcShadows.primitives(paz::PrimitiveType::TriangleStrip, groundVerts);
-    calcShadows.cull(paz::CullMode::Front);
-    calcShadows.primitives(paz::PrimitiveType::Triangles, cubeVerts);
-    calcShadows.end();
+    const paz::Texture shadowMap = compute_shadow_map(groundVerts, cubeVerts);
 
     double time = 0.;
     paz::Window::Loop([&]()
