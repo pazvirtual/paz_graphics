@@ -444,6 +444,8 @@ namespace paz
         static void SetTitle(const std::string& title);
         static bool IsKeyWindow();
         static bool IsFullscreen();
+        static int ViewportWidth();
+        static int ViewportHeight();
         static int Width();
         static int Height();
         static bool KeyDown(Key key);

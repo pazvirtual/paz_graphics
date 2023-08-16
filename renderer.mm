@@ -33,9 +33,11 @@
 
 - (void)mtkView:(MTKView*)__unused view drawableSizeWillChange:(CGSize)size
 {
+    _viewportSize = size;
+
     const CGFloat scale = [[NSScreen mainScreen] backingScaleFactor];
-    _viewportSize.x = size.width/scale;
-    _viewportSize.y = size.height/scale;
+    _size.width = size.width/scale;
+    _size.height = size.height/scale;
 
     _aspectRatio = size.width/size.height;
 

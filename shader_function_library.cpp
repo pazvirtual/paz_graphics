@@ -49,6 +49,11 @@ paz::ShaderFunctionLibrary::~ShaderFunctionLibrary()
 void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
     string& src)
 {
+    if(_vertexIds.count(name))
+    {
+        throw std::runtime_error("Vertex function \"" + name + "\" has already "
+            "been defined.");
+    }
     paz::vert2metal(src);
     _vertexIds[name] = compile_shader(src, true);
 }
@@ -56,6 +61,11 @@ void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
 void paz::ShaderFunctionLibrary::fragment(const std::string& name, const std::
     string& src)
 {
+    if(_fragmentIds.count(name))
+    {
+        throw std::runtime_error("Fragment function \"" + name + "\" has alread"
+            "y been defined.");
+    }
     paz::frag2metal(src);
     _fragmentIds[name] = compile_shader(src, false);
 }

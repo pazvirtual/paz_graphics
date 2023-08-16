@@ -74,14 +74,24 @@ bool paz::Window::IsFullscreen()
     return [[APP_DELEGATE window] contentView].inFullScreenMode;
 }
 
+int paz::Window::ViewportWidth()
+{
+    return [RENDERER viewportSize].width;
+}
+
+int paz::Window::ViewportHeight()
+{
+    return [RENDERER viewportSize].height;
+}
+
 int paz::Window::Width()
 {
-    return [RENDERER viewportSize].x;
+    return [RENDERER size].width;
 }
 
 int paz::Window::Height()
 {
-    return [RENDERER viewportSize].y;
+    return [RENDERER size].height;
 }
 
 bool paz::Window::KeyDown(int key)
@@ -168,7 +178,7 @@ void paz::Window::ResizeTargets()
 {
     for(auto& n : _targets)
     {
-        n->resize(Width(), Height());
+        n->resize(ViewportWidth(), ViewportHeight());
     }
 }
 

@@ -33,29 +33,7 @@ static id<MTLLibrary> create_library(std::string src, bool isVert)
     return lib;
 }
 
-paz::ShaderFunctionLibrary::ShaderFunctionLibrary(const std::vector<std::pair<
-    std::string, std::string>>& vertSrcs, const std::vector<std::pair<std::
-    string, std::string>>& fragSrcs)
-{
-    for(const auto& n : vertSrcs)
-    {
-         if(_verts.count(n.first))
-         {
-             throw std::runtime_error("Vertex function \"" + n.first + "\" has "
-                 "already been defined.");
-         }
-        _verts[n.first] = create_library(n.second, true);
-    }
-    for(const auto& n : fragSrcs)
-    {
-         if(_frags.count(n.first))
-         {
-             throw std::runtime_error("Fragment function \"" + n.first + "\" ha"
-                 "s already been defined.");
-         }
-        _frags[n.first] = create_library(n.second, false);
-    }
-}
+paz::ShaderFunctionLibrary::ShaderFunctionLibrary() {}
 
 paz::ShaderFunctionLibrary::~ShaderFunctionLibrary()
 {
@@ -73,6 +51,28 @@ paz::ShaderFunctionLibrary::~ShaderFunctionLibrary()
             [(id<MTLLibrary>)n.second release];
         }
     }
+}
+
+void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
+    string& src)
+{
+    if(_verts.count(name))
+    {
+        throw std::runtime_error("Vertex function \"" + name + "\" has already "
+            "been defined.");
+    }
+    _verts[name] = create_library(src, true);
+}
+
+void paz::ShaderFunctionLibrary::fragment(const std::string& name, const std::
+    string& src)
+{
+    if(_frags.count(name))
+    {
+        throw std::runtime_error("Fragment function \"" + name + "\" has alread"
+            "y been defined.");
+    }
+    _frags[name] = create_library(src, false);
 }
 
 #endif

@@ -33,8 +33,8 @@ paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     type, MinMagFilter minFilter, MinMagFilter magFilter)
 {
     _scale = scale;
-    float width = _scale*Window::Width();
-    float height = _scale*Window::Height();
+    float width = _scale*Window::ViewportWidth();
+    float height = _scale*Window::ViewportHeight();
 
     _mipmap = false;//TEMP
     const auto filters = min_mag_filter(minFilter, magFilter/*, mipmapFilter*/);

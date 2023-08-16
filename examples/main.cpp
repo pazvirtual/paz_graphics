@@ -184,8 +184,8 @@ int main()
 
         // Propagate physics.
         std::pair<double, double> m = paz::Window::MousePos();
-        m.first = std::min(m.first, (double)(paz::Window::Width() - 1));
-        m.second = std::min(m.second, (double)(paz::Window::Height() - 1));
+        m.first = std::min(m.first, (double)paz::Window::Width());
+        m.second = std::min(m.second, (double)paz::Window::Height());
         m.first = std::max(m.first*2./paz::Window::Height(), 0.);
         m.second = std::max(m.second*2./paz::Window::Height(), 0.);
         m.first -= paz::Window::AspectRatio();

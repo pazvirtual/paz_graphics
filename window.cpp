@@ -14,7 +14,6 @@ static constexpr int MinorVersion = 1;
 static GLFWwindow* WindowPtr;
 static int WindowWidth;
 static int WindowHeight;
-static float ContentScaleFactor;
 static bool WindowIsKey;
 static bool WindowIsFullscreen;
 static int PrevX;
@@ -168,11 +167,6 @@ void paz::Window::Init()
     glfwGetFramebufferSize(WindowPtr, &FboWidth, &FboHeight);
     FboAspectRatio = (float)FboWidth/FboHeight;
 
-    // Detect display scale factor.
-    float xScale, yScale;
-    glfwGetWindowContentScale(WindowPtr, &xScale, &yScale);
-    ContentScaleFactor = std::min(xScale, yScale);
-
     // Activate vsync.
     glfwSwapInterval(1);
 
@@ -242,14 +236,24 @@ bool paz::Window::IsFullscreen()
     return WindowIsFullscreen;
 }
 
-int paz::Window::Width()
+int paz::Window::ViewportWidth()
 {
     return FboWidth;
 }
 
-int paz::Window::Height()
+int paz::Window::ViewportHeight()
 {
     return FboHeight;
+}
+
+int paz::Window::Width()
+{
+    return WindowWidth;
+}
+
+int paz::Window::Height()
+{
+    return WindowHeight;
 }
 
 bool paz::Window::KeyDown(int key)
@@ -351,7 +355,7 @@ void paz::Window::ResizeTargets()
 {
     for(auto& n : _targets)
     {
-        n->resize(Width(), Height());
+        n->resize(ViewportWidth(), ViewportHeight());
     }
 }
 

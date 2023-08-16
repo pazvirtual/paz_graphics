@@ -9,7 +9,8 @@
 
 @interface Renderer : NSObject<MTKViewDelegate>
 @property(readonly) float aspectRatio;
-@property(readonly) vector_uint2 viewportSize;
+@property(readonly) CGSize viewportSize;
+@property(readonly) CGSize size;
 @property(readonly) id<MTLCommandBuffer> _Nullable commandBuffer;
 @property(readonly) id<MTLBuffer> _Nonnull skyVertices;
 @property(readonly) id<MTLBuffer> _Nonnull quadVertices;
