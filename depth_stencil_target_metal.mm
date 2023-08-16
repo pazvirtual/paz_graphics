@@ -37,13 +37,11 @@ static MTLPixelFormat depth_pixel_format(unsigned int b, paz::Texture::DataType
 static id<MTLTexture> init(int width, int height, int numBits, paz::Texture::
     DataType type)
 {
-    _width = width;
-    _height = height;
     MTLTextureDescriptor* textureDescriptor = [[MTLTextureDescriptor alloc]
         init];
     [textureDescriptor setPixelFormat:depth_pixel_format(numBits, type)];
-    [textureDescriptor setWidth:_width];
-    [textureDescriptor setHeight:_height];
+    [textureDescriptor setWidth:width];
+    [textureDescriptor setHeight:height];
     [textureDescriptor setUsage:MTLTextureUsageRenderTarget|
         MTLTextureUsageShaderRead];
     [textureDescriptor setStorageMode:MTLStorageModePrivate];
