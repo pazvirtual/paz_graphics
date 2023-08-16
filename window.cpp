@@ -11,6 +11,7 @@
 #include "gl_core_4_1.h"
 #endif
 #include <GLFW/glfw3.h>
+#include <cmath>
 
 static GLFWwindow* WindowPtr;
 static int WindowWidth;
@@ -455,8 +456,10 @@ void paz::Window::Resize(int width, int height, bool viewportCoords)
 
     if(viewportCoords)
     {
-        float xScale, yScale;
-        glfwGetWindowContentScale(xScale, yScale);
+        int w, h;
+        glfwGetWindowSize(WindowPtr, &w, &h);
+        const float xScale = ViewportWidth()/w;
+        const float yScale = ViewportHeight()/h;
         width = std::round(width/xScale);
         height = std::round(height/yScale);
     }
