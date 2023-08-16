@@ -35,11 +35,9 @@ int main(int, char** argv)
     const paz::FragmentFunction tonemap(paz::load_file(appDir +
         "/tonemap.frag").str());
 
-    const paz::Shader s(particleVert, particleFrag);
-    const paz::Shader t(quad, tonemap);
-
-    paz::RenderPass r(renderFramebuffer, s, paz::BlendMode::Additive);
-    paz::RenderPass u(t);
+    paz::RenderPass r(renderFramebuffer, particleVert, particleFrag, paz::
+        BlendMode::Additive);
+    paz::RenderPass u(quad, tonemap);
 
     paz::VertexBuffer q;
     q.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});

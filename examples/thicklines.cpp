@@ -38,9 +38,7 @@ int main()
     const paz::VertexFunction vert(VertSrc);
     const paz::FragmentFunction frag(FragSrc);
 
-    const paz::Shader shader(vert, frag);
-
-    paz::RenderPass render(shader);
+    paz::RenderPass render(vert, frag);
 
     while(!paz::Window::Done())
     {
