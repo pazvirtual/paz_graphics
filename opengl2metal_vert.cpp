@@ -18,6 +18,8 @@ std::string paz::vert2metal(const std::string& src)
     std::stringstream sigBuffer;
     std::stringstream mainBuffer;
 
+    std::unordered_set<std::string> curArgNames;
+
     std::size_t numOpen = 0;
     std::size_t numClose = 0;
 
@@ -84,6 +86,10 @@ std::string paz::vert2metal(const std::string& src)
             }
         }
 
+        // Do this check here and save the result.
+        const bool isFun = mode == Mode::None && std::regex_match(line, std::
+            regex("\\s*[a-zA-Z_][a-zA-Z_0-9]*\\s+[a-zA-Z_][a-zA-Z_0-9]*\\(.*"));
+
         // Check for inputs and outputs out of scope.
         if(mode != Mode::Main)
         {
@@ -97,24 +103,21 @@ std::string paz::vert2metal(const std::string& src)
                 throw std::runtime_error("Line " + std::to_string(l) + ": Shade"
                     "r inputs cannot be accessed outside of main function.");
             }
-            for(const auto& n : outputs)
+            if(!isFun && mode != Mode::Sig)
             {
-                if(std::regex_match(line, std::regex(".*\\b" + n.first +
-                    "\\b.*")))
+                for(const auto& n : outputs)
                 {
-                    throw std::runtime_error("Line " + std::to_string(l) + ": S"
-                        "hader outputs cannot be accessed outside of main funct"
-                        "ion.");
+                    if(std::regex_match(line, std::regex(".*\\b" + n.first + "\\b.*")) && !curArgNames.count(n.first))
+                    {
+                        throw std::runtime_error("Line " + std::to_string(l) + ": Shader outputs cannot be accessed outside of main function.");
+                    }
                 }
-            }
-            for(const auto& n : inputs)
-            {
-                if(std::regex_match(line, std::regex(".*\\b" + n.second.first +
-                    "\\b.*")))
+                for(const auto& n : inputs)
                 {
-                    throw std::runtime_error("Line " + std::to_string(l) + ": S"
-                        "hader inputs cannot be accessed outside of main functi"
-                        "on.");
+                    if(std::regex_match(line, std::regex(".*\\b" + n.second.first + "\\b.*")) && !curArgNames.count(n.second.first))
+                    {
+                        throw std::runtime_error("Line " + std::to_string(l) + ": Shader inputs cannot be accessed outside of main function.");
+                    }
                 }
             }
         }
@@ -124,6 +127,7 @@ std::string paz::vert2metal(const std::string& src)
         {
             out << line << std::endl;
             mode = Mode::None;
+            curArgNames.clear();
             continue;
         }
 
@@ -183,7 +187,7 @@ std::string paz::vert2metal(const std::string& src)
             if(numOpen == numClose)
             {
                 mode = Mode::Fun;
-                out << process_sig(sigBuffer.str()) << std::endl;
+                out << process_sig(sigBuffer.str(), curArgNames) << std::endl;
                 sigBuffer.clear();
                 numOpen = 0;
                 numClose = 0;
@@ -295,8 +299,7 @@ std::string paz::vert2metal(const std::string& src)
         }
 
         // Process private functions.
-        if(mode == Mode::None && std::regex_match(line, std::regex("\\s*[a-zA-Z"
-            "_][a-zA-Z_0-9]*\\s+[a-zA-Z_][a-zA-Z_0-9]*\\(.*")))
+        if(isFun)
         {
             // Check if the signature is complete.
             numOpen = std::count(line.begin(), line.end(), '(');
@@ -304,7 +307,7 @@ std::string paz::vert2metal(const std::string& src)
             if(numOpen == numClose)
             {
                 mode = Mode::Fun;
-                out << process_sig(line) << std::endl;
+                out << process_sig(line, curArgNames) << std::endl;
             }
             else
             {

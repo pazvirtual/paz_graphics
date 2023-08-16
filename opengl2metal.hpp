@@ -1,7 +1,8 @@
-#ifndef PAZ_GRAPHICS_OPENGL2METAL_HPP
-#define PAZ_GRAPHICS_OPENGL2METAL_HPP
+#ifndef OPENGL2METAL_HPP
+#define OPENGL2METAL_HPP
 
 #include <iostream>
+#include <unordered_set>
 
 namespace paz
 {
@@ -16,7 +17,8 @@ namespace paz
 
     std::string vert2metal(const std::string& src);
     std::string frag2metal(const std::string& src);
-    std::string process_sig(const std::string& sig);
+    std::string process_sig(const std::string& sig, std::unordered_set<std::
+        string>& argNames);
 }
 
 #endif
