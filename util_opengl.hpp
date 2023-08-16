@@ -1,9 +1,9 @@
-#ifndef PAZ_GRAPHICS_UTIL_HPP
-#define PAZ_GRAPHICS_UTIL_HPP
+#ifndef PAZ_GRAPHICS_UTIL_OPENGL_HPP
+#define PAZ_GRAPHICS_UTIL_OPENGL_HPP
 
 #include "detect_os.hpp"
 
-#ifndef PAZ_MACOS
+#ifdef PAZ_LINUX
 
 #include "PAZ_Graphics"
 

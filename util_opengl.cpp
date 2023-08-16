@@ -1,9 +1,9 @@
 #include "detect_os.hpp"
 
-#ifndef PAZ_MACOS
+#ifdef PAZ_LINUX
 
 #include "PAZ_Graphics"
-#include "util.hpp"
+#include "util_opengl.hpp"
 #include "gl_core_4_1.h"
 #include <GLFW/glfw3.h>
 
