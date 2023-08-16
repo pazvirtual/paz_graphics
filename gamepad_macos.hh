@@ -2,7 +2,7 @@
 
 #ifdef PAZ_MACOS
 
-#include "PAZ_Engine"
+#include "PAZ_Graphics"
 #import <IOKit/hid/IOHIDManager.h>
 
 namespace paz

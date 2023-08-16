@@ -65,16 +65,19 @@ static id<MTLSamplerState> create_sampler(paz::MinMagFilter minFilter, paz::
     return sampler;
 }
 
-template<typename T, int NumChannels>
-static paz::Image<T, NumChannels> flip_image(const paz::Image<T, NumChannels>&
-    image)
+static paz::Image flip_image(const paz::Image& image)
 {
-    paz::Image<T, NumChannels> flipped(image.width(), image.height());
+    if(image.height() < 2)
+    {
+        return image;
+    }
+    paz::Image flipped = image;
+    const std::size_t bytesPerRow = image.bytes().size()/image.height();
     for(int i = 0; i < image.height(); ++i)
     {
-        std::copy(image.begin() + image.width()*i*NumChannels, image.begin() +
-            (image.width()*i + image.width())*NumChannels, flipped.begin() +
-            image.width()*(image.height() - i - 1)*NumChannels);
+        std::copy(image.bytes().begin() + bytesPerRow*i, image.bytes().begin() +
+            bytesPerRow*(i + 1), flipped.bytes().begin() + bytesPerRow*(image.
+            height() - i - 1));
     }
     return flipped;
 }
@@ -101,9 +104,8 @@ paz::Texture::Texture()
     initialize();
 }
 
-paz::Texture::Texture(const Image& image, TextureFormat format, MinMagFilter
-    minFilter, MinMagFilter magFilter, MipmapFilter mipFilter, WrapMode wrapS,
-    WrapMode wrapT)
+paz::Texture::Texture(const Image& image, MinMagFilter minFilter, MinMagFilter
+    magFilter, MipmapFilter mipFilter, WrapMode wrapS, WrapMode wrapT)
 {
     initialize();
 
@@ -116,7 +118,7 @@ paz::Texture::Texture(const Image& image, TextureFormat format, MinMagFilter
     _data->_mipFilter = mipFilter;
     _data->_wrapS = wrapS;
     _data->_wrapT = wrapT;
-    _data->init(image.bytes().data());
+    _data->init(flip_image(image).bytes().data());
 }
 
 paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
