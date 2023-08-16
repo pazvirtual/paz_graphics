@@ -6,6 +6,7 @@
 #import "app_delegate.hh"
 #import "view_controller.hh"
 #import "renderer.hh"
+#include "window.hpp"
 #import <MetalKit/MetalKit.h>
 
 #define APP_DELEGATE (AppDelegate*)[NSApp delegate]
@@ -109,37 +110,22 @@ int paz::Window::Height()
     return [RENDERER size].height;
 }
 
-bool paz::Window::KeyDown(int key)
+bool paz::Window::KeyDown(Key key)
 {
     // The following ensures that very brief key presses are not missed when
     // checking `key_down()`.
-    return [VIEW_CONTROLLER keyDown].at(key) || [VIEW_CONTROLLER keyPressed].at(
-        key);
-}
-
-bool paz::Window::KeyPressed(int key)
-{
-    return [VIEW_CONTROLLER keyPressed].at(key);
-}
-
-bool paz::Window::KeyReleased(int key)
-{
-    return [VIEW_CONTROLLER keyReleased].at(key);
-}
-
-bool paz::Window::KeyDown(Key key)
-{
-    return KeyDown(static_cast<int>(key));
+    return [VIEW_CONTROLLER keyDown].at(static_cast<int>(key)) ||
+        [VIEW_CONTROLLER keyPressed].at(static_cast<int>(key));
 }
 
 bool paz::Window::KeyPressed(Key key)
 {
-    return KeyPressed(static_cast<int>(key));
+    return [VIEW_CONTROLLER keyPressed].at(static_cast<int>(key));
 }
 
 bool paz::Window::KeyReleased(Key key)
 {
-    return KeyReleased(static_cast<int>(key));
+    return [VIEW_CONTROLLER keyReleased].at(static_cast<int>(key));
 }
 
 bool paz::Window::MouseDown(unsigned int button)
@@ -179,11 +165,6 @@ std::pair<double, double> paz::Window::ScrollOffset()
     return [VIEW_CONTROLLER scrollOffset];
 }
 
-void paz::Window::ResetEvents()
-{
-    [VIEW_CONTROLLER resetEvents];
-}
-
 void paz::Window::SetCursorMode(CursorMode mode)
 {
     [APP_DELEGATE setCursorMode:mode];
@@ -195,15 +176,15 @@ float paz::Window::AspectRatio()
     return [RENDERER aspectRatio];
 }
 
-void paz::Window::ResizeTargets()
+void paz::resize_targets()
 {
     for(auto& n : ColorTargets)
     {
-        n->resize(ViewportWidth(), ViewportHeight());
+        n->resize(paz::Window::ViewportWidth(), paz::Window::ViewportHeight());
     }
     for(auto& n : DepthStencilTargets)
     {
-        n->resize(ViewportWidth(), ViewportHeight());
+        n->resize(paz::Window::ViewportWidth(), paz::Window::ViewportHeight());
     }
 }
 
@@ -221,10 +202,10 @@ void paz::Window::Loop(const std::function<void(void)>& draw)
     }
 }
 
-void paz::Window::DrawInRenderer()//TEMP
+void paz::draw_in_renderer()
 {
     Draw();
-    ResetEvents();
+    [VIEW_CONTROLLER resetEvents];
     const auto now = std::chrono::steady_clock::now();
     CurFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
         FrameStart).count()*1e-6;
@@ -252,7 +233,7 @@ void paz::Window::SetMinSize(int width, int height)
     [[APP_DELEGATE window] setFrame:frame display:YES];
 }
 
-void paz::Window::RegisterTarget(ColorTarget* target)
+void paz::register_target(ColorTarget* target)
 {
     if(ColorTargets.count(target))
     {
@@ -261,7 +242,7 @@ void paz::Window::RegisterTarget(ColorTarget* target)
     ColorTargets.insert(target);
 }
 
-void paz::Window::RegisterTarget(DepthStencilTarget* target)
+void paz::register_target(DepthStencilTarget* target)
 {
     if(DepthStencilTargets.count(target))
     {
@@ -271,7 +252,7 @@ void paz::Window::RegisterTarget(DepthStencilTarget* target)
     DepthStencilTargets.insert(target);
 }
 
-void paz::Window::UnregisterTarget(ColorTarget* target)
+void paz::unregister_target(ColorTarget* target)
 {
     if(!ColorTargets.count(target))
     {
@@ -280,7 +261,7 @@ void paz::Window::UnregisterTarget(ColorTarget* target)
     ColorTargets.erase(target);
 }
 
-void paz::Window::UnregisterTarget(DepthStencilTarget* target)
+void paz::unregister_target(DepthStencilTarget* target)
 {
     if(!DepthStencilTargets.count(target))
     {

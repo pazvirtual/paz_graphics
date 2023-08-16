@@ -4,6 +4,7 @@
 
 #include "PAZ_Graphics"
 #import "renderer.hh"
+#include "window.hpp"
 #import <simd/simd.h>
 #import <ModelIO/ModelIO.h>
 
@@ -42,7 +43,7 @@
 
     _aspectRatio = size.width/size.height;
 
-    paz::Window::ResizeTargets();
+    paz::resize_targets();
 }
 
 - (void)drawInMTKView:(MTKView*)view
@@ -56,7 +57,7 @@
         _commandBuffer = [_commandQueue commandBuffer];
 
         // Encode drawing commands.
-        paz::Window::DrawInRenderer();
+        paz::draw_in_renderer();
 
         // Render.
         [_commandBuffer presentDrawable:[view currentDrawable]];

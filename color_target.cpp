@@ -3,10 +3,11 @@
 #ifndef PAZ_MACOS
 
 #include "PAZ_Graphics"
+#include "window.hpp"
 
 paz::ColorTarget::~ColorTarget()
 {
-    paz::Window::UnregisterTarget(this);
+    unregister_target(this);
 }
 
 paz::ColorTarget::ColorTarget(double scale, int numChannels, int numBits,
@@ -16,7 +17,7 @@ paz::ColorTarget::ColorTarget(double scale, int numChannels, int numBits,
     Texture::init(_scale*Window::ViewportWidth(), _scale*Window::
         ViewportHeight(), numChannels, numBits, type, minFilter, magFilter,
         nullptr);
-    paz::Window::RegisterTarget(this);
+    register_target(this);
 }
 
 void paz::ColorTarget::resize(int width, int height)

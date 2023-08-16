@@ -6,6 +6,7 @@
 #import "util_metal.hh"
 #import "app_delegate.hh"
 #import "view_controller.hh"
+#include "window.hpp"
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
@@ -52,7 +53,7 @@ static id<MTLTexture> init(int width, int height, int numBits, paz::Texture::
 
 paz::DepthStencilTarget::~DepthStencilTarget()
 {
-    paz::Window::UnregisterTarget(this);
+    unregister_target(this);
 }
 
 paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
@@ -67,7 +68,7 @@ paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     _data->_texture = ::init(_scale*Window::ViewportWidth(), _scale*Window::
         ViewportHeight(), _data->_numBits, _data->_type);
     _data->_sampler = create_sampler(_data->_minFilter, _data->_magFilter);
-    paz::Window::RegisterTarget(this);
+    register_target(this);
 }
 
 void paz::DepthStencilTarget::resize(int width, int height)

@@ -5,6 +5,7 @@
 #include "PAZ_Graphics"
 #include "keycodes.hpp"
 #include "util.hpp"
+#include "window.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
@@ -114,7 +115,20 @@ static void resize_callback(int width, int height)
 
     glfwGetFramebufferSize(WindowPtr, &FboWidth, &FboHeight);
     FboAspectRatio = (float)FboWidth/FboHeight;
-    paz::Window::ResizeTargets();
+    paz::resize_targets();
+}
+
+static void reset_events()
+{
+    if(CursorDisabled)
+    {
+        ::MousePos = {};
+    }
+    ::ScrollOffset = {};
+    ::KeyPressed = {};
+    ::KeyReleased = {};
+    ::MousePressed = {};
+    ::MouseReleased = {};
 }
 
 paz::Initializer::~Initializer()
@@ -273,34 +287,19 @@ int paz::Window::Height()
     return WindowHeight;
 }
 
-bool paz::Window::KeyDown(int key)
-{
-    return ::KeyDown.at(key);
-}
-
-bool paz::Window::KeyPressed(int key)
-{
-    return ::KeyPressed.at(key);
-}
-
-bool paz::Window::KeyReleased(int key)
-{
-    return ::KeyReleased.at(key);
-}
-
 bool paz::Window::KeyDown(Key key)
 {
-    return KeyDown(static_cast<int>(key));
+    return ::KeyDown.at(static_cast<int>(key));
 }
 
 bool paz::Window::KeyPressed(Key key)
 {
-    return KeyPressed(static_cast<int>(key));
+    return ::KeyPressed.at(static_cast<int>(key));
 }
 
 bool paz::Window::KeyReleased(Key key)
 {
-    return KeyReleased(static_cast<int>(key));
+    return ::KeyReleased.at(static_cast<int>(key));
 }
 
 bool paz::Window::MouseDown(unsigned int button)
@@ -326,19 +325,6 @@ std::pair<double, double> paz::Window::MousePos()
 std::pair<double, double> paz::Window::ScrollOffset()
 {
     return ::ScrollOffset;
-}
-
-void paz::Window::ResetEvents()
-{
-    if(CursorDisabled)
-    {
-        ::MousePos = {};
-    }
-    ::ScrollOffset = {};
-    ::KeyPressed = {};
-    ::KeyReleased = {};
-    ::MousePressed = {};
-    ::MouseReleased = {};
 }
 
 void paz::Window::SetCursorMode(CursorMode mode)
@@ -367,15 +353,15 @@ float paz::Window::AspectRatio()
     return FboAspectRatio;
 }
 
-void paz::Window::ResizeTargets()
+void paz::resize_targets()
 {
     for(auto& n : ColorTargets)
     {
-        n->resize(ViewportWidth(), ViewportHeight());
+        n->resize(paz::Window::ViewportWidth(), paz::Window::ViewportHeight());
     }
     for(auto& n : DepthStencilTargets)
     {
-        n->resize(ViewportWidth(), ViewportHeight());
+        n->resize(paz::Window::ViewportWidth(), paz::Window::ViewportHeight());
     }
 }
 
@@ -391,7 +377,7 @@ void paz::Window::Loop(const std::function<void(void)>& draw)
         }
         draw();
         glfwSwapBuffers(WindowPtr);
-        ResetEvents();
+        reset_events();
         const auto now = std::chrono::steady_clock::now();
         CurFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now
             - FrameStart).count()*1e-6;
@@ -446,7 +432,7 @@ void paz::Window::Resize(int width, int height)
     glfwSetWindowSize(WindowPtr, width, height);
 }
 
-void paz::Window::RegisterTarget(ColorTarget* target)
+void paz::register_target(ColorTarget* target)
 {
     if(ColorTargets.count(target))
     {
@@ -455,7 +441,7 @@ void paz::Window::RegisterTarget(ColorTarget* target)
     ColorTargets.insert(target);
 }
 
-void paz::Window::RegisterTarget(DepthStencilTarget* target)
+void paz::register_target(DepthStencilTarget* target)
 {
     if(DepthStencilTargets.count(target))
     {
@@ -465,7 +451,7 @@ void paz::Window::RegisterTarget(DepthStencilTarget* target)
     DepthStencilTargets.insert(target);
 }
 
-void paz::Window::UnregisterTarget(ColorTarget* target)
+void paz::unregister_target(ColorTarget* target)
 {
     if(!ColorTargets.count(target))
     {
@@ -474,7 +460,7 @@ void paz::Window::UnregisterTarget(ColorTarget* target)
     ColorTargets.erase(target);
 }
 
-void paz::Window::UnregisterTarget(DepthStencilTarget* target)
+void paz::unregister_target(DepthStencilTarget* target)
 {
     if(!DepthStencilTargets.count(target))
     {

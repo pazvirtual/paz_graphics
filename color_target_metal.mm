@@ -6,6 +6,7 @@
 #import "util_metal.hh"
 #import "app_delegate.hh"
 #import "view_controller.hh"
+#include "window.hpp"
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
@@ -30,7 +31,7 @@ static id<MTLTexture> init(int width, int height, int numChannels, int numBits,
 
 paz::ColorTarget::~ColorTarget()
 {
-    paz::Window::UnregisterTarget(this);
+    unregister_target(this);
 }
 
 paz::ColorTarget::ColorTarget(double scale, int numChannels, int numBits,
@@ -45,7 +46,7 @@ paz::ColorTarget::ColorTarget(double scale, int numChannels, int numBits,
     _data->_texture = ::init(_scale*Window::ViewportWidth(), _scale*Window::
         ViewportHeight(), _data->_numChannels, _data->_numBits, _data->_type);
     _data->_sampler = create_sampler(minFilter, magFilter);
-    paz::Window::RegisterTarget(this);
+    register_target(this);
 }
 
 void paz::ColorTarget::resize(int width, int height)
