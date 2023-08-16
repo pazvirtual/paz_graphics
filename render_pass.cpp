@@ -524,22 +524,20 @@ void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
         glBindVertexArray(vertices._data->_id);
         if(type == PrimitiveType::LineStrip)
         {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices._data->
-                _lineStripIndices._data->_id);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices._data->_lineStripId);
             glDrawElements(GL_LINE_STRIP_ADJACENCY, vertices._data->_numVertices
                 + 2, GL_UNSIGNED_INT, 0);
         }
         else if(type == PrimitiveType::LineLoop)
         {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices._data->
-                _lineLoopIndices._data->_id);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices._data->_lineLoopId);
             glDrawElements(GL_LINE_STRIP_ADJACENCY, vertices._data->_numVertices
                 + 3, GL_UNSIGNED_INT, 0);
         }
         else if(type == PrimitiveType::Lines)
         {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices._data->
-                _thickLinesIndices._data->_id);
+                _thickLinesId);
             for(unsigned int i = 0; i < vertices._data->_numVertices/2; ++i)
             {
                 glDrawElements(GL_LINE_STRIP_ADJACENCY, 4, GL_UNSIGNED_INT,
