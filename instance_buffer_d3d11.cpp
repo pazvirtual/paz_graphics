@@ -11,10 +11,6 @@ paz::InstanceBuffer::Data::~Data()
 {
 }
 
-paz::InstanceBuffer::Data::Data()
-{
-}
-
 paz::InstanceBuffer::InstanceBuffer()
 {
 }
@@ -27,40 +23,36 @@ void paz::InstanceBuffer::Data::checkSize(int dim, std::size_t size)
 {
 }
 
-void paz::InstanceBuffer::Data::addAttribute(int dim, DataType type)
-{
-}
-
 void paz::InstanceBuffer::addAttribute(int dim, DataType type)
 {
 }
 
-void paz::InstanceBuffer::addAttribute(int dim, const GLfloat* data, std::size_t
+void paz::InstanceBuffer::addAttribute(int dim, const float* data, std::size_t
     size)
 {
 }
 
-void paz::InstanceBuffer::addAttribute(int dim, const GLuint* data, std::size_t
+void paz::InstanceBuffer::addAttribute(int dim, const unsigned int* data, std::
+    size_t size)
+{
+}
+
+void paz::InstanceBuffer::addAttribute(int dim, const int* data, std::size_t
     size)
 {
 }
 
-void paz::InstanceBuffer::addAttribute(int dim, const GLint* data, std::size_t
-    size)
+void paz::InstanceBuffer::subAttribute(std::size_t idx, const float* data, std::
+    size_t size)
 {
 }
 
-void paz::InstanceBuffer::subAttribute(std::size_t idx, const GLfloat* data,
-    std::size_t size)
+void paz::InstanceBuffer::subAttribute(std::size_t idx, const unsigned int*
+    data, std::size_t size)
 {
 }
 
-void paz::InstanceBuffer::subAttribute(std::size_t idx, const GLuint* data,
-    std::size_t size)
-{
-}
-
-void paz::InstanceBuffer::subAttribute(std::size_t idx, const GLint* data, std::
+void paz::InstanceBuffer::subAttribute(std::size_t idx, const int* data, std::
     size_t size)
 {
 }

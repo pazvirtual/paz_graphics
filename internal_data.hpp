@@ -6,6 +6,9 @@
 #include "shader_opengl.hpp"
 #endif
 #include "PAZ_Graphics"
+#ifdef PAZ_WINDOWS
+#include <d3d11.h>
+#endif
 #include <unordered_map>
 #include <unordered_set>
 
@@ -14,8 +17,10 @@ struct paz::Texture::Data
 #ifdef PAZ_MACOS
     void* _sampler = nullptr;
     void* _texture = nullptr;
-#else
+#elif defined(PAZ_LINUX)
     unsigned int _id = 0;
+#else
+    ID3D11Texture2D* _texture = nullptr;
 #endif
     int _width = 0;
     int _height = 0;
@@ -39,7 +44,7 @@ struct paz::VertexBuffer::Data
     std::vector<void*> _buffers;
     void* _lineLoopIndices = nullptr;
     void* _triangleFanIndices = nullptr;
-#else
+#elif defined(PAZ_LINUX)
     unsigned int _id = 0;
     std::vector<unsigned int> _ids;
     std::vector<unsigned int> _types;
@@ -56,7 +61,7 @@ struct paz::InstanceBuffer::Data
 {
 #ifdef PAZ_MACOS
     std::vector<void*> _buffers;
-#else
+#elif defined(PAZ_LINUX)
     unsigned int _id = 0;
     std::vector<unsigned int> _ids;
     std::vector<unsigned int> _types;
@@ -75,7 +80,7 @@ struct paz::IndexBuffer::Data
     void* _data = nullptr;
     void* _lineLoopIndices = nullptr;
     void* _triangleFanIndices = nullptr;
-#else
+#elif defined(PAZ_LINUX)
     unsigned int _id = 0;
 #endif
     std::size_t _numIndices = 0;
@@ -101,7 +106,7 @@ struct paz::VertexFunction::Data
 {
 #ifdef PAZ_MACOS
     void* _function = nullptr;
-#else
+#elif defined(PAZ_LINUX)
     unsigned int _id = 0;
 #endif
     ~Data();
@@ -111,7 +116,7 @@ struct paz::FragmentFunction::Data
 {
 #ifdef PAZ_MACOS
     void* _function = nullptr;
-#else
+#elif defined(PAZ_LINUX)
     unsigned int _id = 0;
     std::unordered_map<unsigned int, unsigned int> _outputTypes;
 #endif
@@ -129,7 +134,7 @@ struct paz::RenderPass::Data
     std::shared_ptr<VertexFunction::Data> _vert;
     std::shared_ptr<FragmentFunction::Data> _frag;
     ~Data();
-#else
+#elif defined(PAZ_LINUX)
     BlendMode _blendMode = BlendMode::Disable;
     ShaderData _shader;
 #endif
