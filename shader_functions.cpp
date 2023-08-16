@@ -187,8 +187,10 @@ void main()
     paz_angleNext = fract(paz_angleNext*0.5/M_PI + 0.5)*2.*M_PI - M_PI;
     float paz_a = sin(0.5*(M_PI - abs(paz_anglePrev)));
     float paz_b = sin(0.5*(M_PI - abs(paz_angleNext)));
-    const mat2 paz_r = mat2(cos(PAZ_ANG), -sin(PAZ_ANG), sin(PAZ_ANG), cos(PAZ_ANG));
-    const mat2 paz_s = mat2(cos(PAZ_ANG), sin(PAZ_ANG), -sin(PAZ_ANG), cos(PAZ_ANG));
+    const mat2 paz_r = mat2(cos(PAZ_ANG), -sin(PAZ_ANG), sin(PAZ_ANG), cos(
+        PAZ_ANG));
+    const mat2 paz_s = mat2(cos(PAZ_ANG), sin(PAZ_ANG), -sin(PAZ_ANG), cos(
+        PAZ_ANG));
     if(paz_anglePrev > PAZ_ANG)
     {
         paz_paraPrev = paz_s*paz_para;
@@ -289,9 +291,13 @@ paz::VertexFunction::Data::~Data()
     {
         glDeleteShader(_id);
     }
-    if(_thickLinesId)
+    if(_thickLinesVertId)
     {
-        glDeleteShader(_thickLinesId);
+        glDeleteShader(_thickLinesVertId);
+    }
+    if(_thickLinesGeomId)
+    {
+        glDeleteShader(_thickLinesGeomId);
     }
 }
 
@@ -327,24 +333,21 @@ paz::VertexFunction::VertexFunction(const std::string& src)
     {
         vert2metal(src);
         const std::string fixedSrc = fix_initializers(src);
-        const bool usesGlLineWidth = uses_gl_line_width(fixedSrc);
-        if(usesGlLineWidth)
+        _data->_id = compile_shader("#define gl_LineWidth glLineWidth\nfloat gl"
+            "LineWidth;\n" + fixedSrc, GL_VERTEX_SHADER);
+        if(uses_gl_line_width(fixedSrc))
         {
             std::string block;
             std::string block0;
             std::string block1;
             const std::string modifiedSrc = prep_for_geom(fixedSrc, block,
                 block0, block1);
-            _data->_id = compile_shader("#define gl_LineWidth glLineWidth\nout "
-                "float glLineWidth;\n" + modifiedSrc, GL_VERTEX_SHADER);
-            _data->_thickLinesId = compile_shader(Src0 + block + Src1 + block0 +
-                Src2 + block0 + Src3 + block1 + Src4 + block1 + Src5,
+            _data->_thickLinesVertId = compile_shader("#define gl_LineWidth glL"
+                "ineWidth\nout float glLineWidth;\n" + modifiedSrc,
+                GL_VERTEX_SHADER);
+            _data->_thickLinesGeomId = compile_shader(Src0 + block + Src1 +
+                block0 + Src2 + block0 + Src3 + block1 + Src4 + block1 + Src5,
                 GL_GEOMETRY_SHADER);
-        }
-        else
-        {
-            _data->_id = compile_shader(fixedSrc, GL_VERTEX_SHADER);
-            _data->_thickLinesId = 0;
         }
     }
     catch(const std::exception& e)
