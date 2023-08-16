@@ -2,6 +2,8 @@
 *.a
 *.exe
 *.zip
+*_arm64
+*_x86_64
 test/test
 examples/example2d
 examples/particles
