@@ -15,6 +15,7 @@ namespace paz
     void resize_targets();
     Framebuffer final_framebuffer();
     unsigned char to_srgb(double x);
+    Image flip_image(const Image& img);
 #ifndef PAZ_MACOS
     void begin_frame();
 #endif

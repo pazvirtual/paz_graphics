@@ -170,6 +170,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             " " + std::to_string(hr) + ").");
     }
     d3d_context()->OMSetDepthStencilState(depthStencilState, 1);
+    depthStencilState->Release();
 
     const auto numColor = _data->_fbo->_colorAttachments.size();
     std::vector<ID3D11RenderTargetView*> colorTargets(numColor);
@@ -186,6 +187,10 @@ if(numColor)
     static constexpr std::array<float, 4> black = {0, 0, 0, 1};
     d3d_context()->ClearRenderTargetView(colorTargets[0], black.data()); //TEMP
 }
+if(depthLoadAction == LoadAction::Clear &&_data->_fbo->_depthStencilAttachment)
+{
+    d3d_context()->ClearDepthStencilView(_data->_fbo->_depthStencilAttachment->_dsView, D3D11_CLEAR_DEPTH, 1.f, 0);
+}
 
     D3D11_VIEWPORT viewport = {};
     if(_data->_fbo->_width)
@@ -198,7 +203,7 @@ if(numColor)
         viewport.Width = _data->_fbo->_scale*Window::ViewportWidth();
         viewport.Height = _data->_fbo->_scale*Window::ViewportHeight();
     }
-    viewport.MinDepth = -1.f; //TEMP - check other APIs
+    viewport.MinDepth = 0.f;
     viewport.MaxDepth = 1.f;
     d3d_context()->RSSetViewports(1, &viewport);
 }
@@ -206,12 +211,61 @@ if(numColor)
 void paz::RenderPass::depth(DepthTestMode mode)
 {
     CHECK_PASS
+    D3D11_DEPTH_STENCIL_DESC depthStencilDescriptor = {};
+    depthStencilDescriptor.DepthEnable = mode != DepthTestMode::Disable;
+    depthStencilDescriptor.DepthWriteMask = mode < DepthTestMode::Never ?
+        D3D11_DEPTH_WRITE_MASK_ZERO : D3D11_DEPTH_WRITE_MASK_ALL;
+    if(mode == DepthTestMode::NeverNoMask || mode == DepthTestMode::Never)
+    {
+        depthStencilDescriptor.DepthFunc = D3D11_COMPARISON_NEVER;
+    }
+    else if(mode == DepthTestMode::LessNoMask || mode == DepthTestMode::Less)
+    {
+        depthStencilDescriptor.DepthFunc = D3D11_COMPARISON_LESS;
+    }
+    else if(mode == DepthTestMode::EqualNoMask || mode == DepthTestMode::Equal)
+    {
+        depthStencilDescriptor.DepthFunc = D3D11_COMPARISON_EQUAL;
+    }
+    else if(mode == DepthTestMode::LessEqualNoMask || mode == DepthTestMode::
+        LessEqual)
+    {
+        depthStencilDescriptor.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+    }
+    else if(mode == DepthTestMode::GreaterNoMask || mode == DepthTestMode::
+        Greater)
+    {
+        depthStencilDescriptor.DepthFunc = D3D11_COMPARISON_GREATER;
+    }
+    else if(mode == DepthTestMode::NotEqualNoMask || mode == DepthTestMode::
+        NotEqual)
+    {
+        depthStencilDescriptor.DepthFunc = D3D11_COMPARISON_NOT_EQUAL;
+    }
+    else if(mode == DepthTestMode::GreaterEqualNoMask || mode == DepthTestMode::
+        GreaterEqual)
+    {
+        depthStencilDescriptor.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
+    }
+    else if(mode == DepthTestMode::AlwaysNoMask || mode == DepthTestMode::Always)
+    {
+        depthStencilDescriptor.DepthFunc = D3D11_COMPARISON_ALWAYS;
+    }
+    ID3D11DepthStencilState* depthStencilState;
+    const auto hr = d3d_device()->CreateDepthStencilState(
+        &depthStencilDescriptor, &depthStencilState);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create depth/stencil state (HRESULT"
+            " " + std::to_string(hr) + ").");
+    }
+    d3d_context()->OMSetDepthStencilState(depthStencilState, 1);
+    depthStencilState->Release();
 }
 
 void paz::RenderPass::end()
 {
     CHECK_PASS
-    // ...
     CurPass = nullptr;
 }
 
