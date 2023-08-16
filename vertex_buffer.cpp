@@ -19,6 +19,9 @@ paz::VertexBuffer::Data::~Data()
         glDeleteBuffers(1, &n);
     }
     glDeleteVertexArrays(1, &_id);
+    glDeleteBuffers(1, &_lineStripId);
+    glDeleteBuffers(1, &_lineLoopId);
+    glDeleteBuffers(1, &_thickLinesId);
 }
 
 paz::VertexBuffer::Data::Data()
@@ -49,7 +52,10 @@ void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)
             std::iota(idx.begin(), idx.end(), -1);
             idx[0] = 0;
             idx.back() = _numVertices - 1;
-            _lineStripIndices = IndexBuffer(idx);
+            glGenBuffers(1, &_lineStripId);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _lineStripId);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*idx.size(),
+                idx.data(), GL_STATIC_DRAW);
         }
         {
             std::vector<unsigned int> idx(_numVertices + 3);
@@ -57,7 +63,10 @@ void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)
             idx[0] = _numVertices - 1;
             idx[idx.size() - 2] = 0;
             idx.back() = 1;
-            _lineLoopIndices = IndexBuffer(idx);
+            glGenBuffers(1, &_lineLoopId);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _lineLoopId);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*idx.size(),
+                idx.data(), GL_STATIC_DRAW);
         }
         {
             std::vector<unsigned int> idx(2*_numVertices);
@@ -66,7 +75,10 @@ void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)
                 idx[2*i] = i;
                 idx[2*i + 1] = i;
             }
-            _thickLinesIndices = IndexBuffer(idx);
+            glGenBuffers(1, &_thickLinesId);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _thickLinesId);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*idx.size(),
+                idx.data(), GL_STATIC_DRAW);
         }
     }
     else if(m != _numVertices)
