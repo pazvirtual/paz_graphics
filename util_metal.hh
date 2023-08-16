@@ -14,6 +14,7 @@ namespace paz
     int bytes_per_pixel(TextureFormat format);
     id<MTLSamplerState> create_sampler(MinMagFilter minFilter, MinMagFilter
         magFilter, MipmapFilter mipFilter, WrapMode wrapS, WrapMode wrapT);
+    id<MTLDepthStencilState> depth_stencil_state(DepthTestMode mode);
 }
 
 #endif

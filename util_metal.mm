@@ -12,6 +12,8 @@
 #define CASE0(a, b) case TextureFormat::a: return MTLPixelFormat##b;
 #define CASE1(f, n, b) case TextureFormat::f: return n*b/8;
 #define CASE2(a, b) case paz::WrapMode::a: return MTLSamplerAddressMode##b;
+#define DEPTH(a) static const DepthStencilState a(DepthTestMode::a);
+#define CASE3(a) case DepthTestMode::a: return a._state;
 
 static MTLSamplerMinMagFilter min_mag_filter(paz::MinMagFilter f)
 {
@@ -157,6 +159,132 @@ id<MTLSamplerState> paz::create_sampler(MinMagFilter minFilter, MinMagFilter
         descriptor];
     [descriptor release];
     return sampler;
+}
+
+id<MTLDepthStencilState> paz::depth_stencil_state(DepthTestMode mode)
+{
+    struct DepthStencilState
+    {
+        id<MTLDepthStencilState> _state;
+        DepthStencilState(paz::DepthTestMode mode)
+        {
+            MTLDepthStencilDescriptor* depthStencilDescriptor =
+                [[MTLDepthStencilDescriptor alloc] init];
+            if(mode == paz::DepthTestMode::Disable)
+            {
+                [depthStencilDescriptor setDepthWriteEnabled:NO];
+            }
+            else
+            {
+                if(mode == paz::DepthTestMode::Never || mode == paz::
+                    DepthTestMode::NeverNoMask)
+                {
+                    [depthStencilDescriptor setDepthCompareFunction:
+                        MTLCompareFunctionNever];
+                }
+                else if(mode == paz::DepthTestMode::Less || mode == paz::
+                    DepthTestMode::LessNoMask)
+                {
+                    [depthStencilDescriptor setDepthCompareFunction:
+                        MTLCompareFunctionLess];
+                }
+                else if(mode == paz::DepthTestMode::Equal || mode == paz::
+                    DepthTestMode::EqualNoMask)
+                {
+                    [depthStencilDescriptor setDepthCompareFunction:
+                        MTLCompareFunctionEqual];
+                }
+                else if(mode == paz::DepthTestMode::LessEqual || mode == paz::
+                    DepthTestMode::LessEqualNoMask)
+                {
+                    [depthStencilDescriptor setDepthCompareFunction:
+                        MTLCompareFunctionLessEqual];
+                }
+                else if(mode == paz::DepthTestMode::Greater || mode == paz::
+                    DepthTestMode::GreaterNoMask)
+                {
+                    [depthStencilDescriptor setDepthCompareFunction:
+                        MTLCompareFunctionGreater];
+                }
+                else if(mode == paz::DepthTestMode::NotEqual || mode == paz::
+                    DepthTestMode::NotEqualNoMask)
+                {
+                    [depthStencilDescriptor setDepthCompareFunction:
+                        MTLCompareFunctionNotEqual];
+                }
+                else if(mode == paz::DepthTestMode::GreaterEqual || mode ==
+                    paz::DepthTestMode::GreaterEqualNoMask)
+                {
+                    [depthStencilDescriptor setDepthCompareFunction:
+                        MTLCompareFunctionGreaterEqual];
+                }
+                else if(mode == paz::DepthTestMode::Always || mode == paz::
+                    DepthTestMode::AlwaysNoMask)
+                {
+                    [depthStencilDescriptor setDepthCompareFunction:
+                        MTLCompareFunctionAlways];
+                }
+                else
+                {
+                    throw std::runtime_error("Invalid depth testing function.");
+                }
+                if(mode >= paz::DepthTestMode::Never)
+                {
+                    [depthStencilDescriptor setDepthWriteEnabled:YES];
+                }
+            }
+            _state = [DEVICE newDepthStencilStateWithDescriptor:
+                depthStencilDescriptor];
+            [depthStencilDescriptor release];
+        }
+        ~DepthStencilState()
+        {
+            if(_state)
+            {
+                [_state release];
+            }
+        }
+    };
+
+    DEPTH(NeverNoMask);
+    DEPTH(LessNoMask);
+    DEPTH(EqualNoMask);
+    DEPTH(LessEqualNoMask);
+    DEPTH(GreaterNoMask);
+    DEPTH(NotEqualNoMask);
+    DEPTH(GreaterEqualNoMask);
+    DEPTH(AlwaysNoMask);
+    DEPTH(Never);
+    DEPTH(Less);
+    DEPTH(Equal);
+    DEPTH(LessEqual);
+    DEPTH(Greater);
+    DEPTH(NotEqual);
+    DEPTH(GreaterEqual);
+    DEPTH(Always);
+
+    switch(mode)
+    {
+        CASE3(NeverNoMask);
+        CASE3(LessNoMask);
+        CASE3(EqualNoMask);
+        CASE3(LessEqualNoMask);
+        CASE3(GreaterNoMask);
+        CASE3(NotEqualNoMask);
+        CASE3(GreaterEqualNoMask);
+        CASE3(AlwaysNoMask);
+        CASE3(Never);
+        CASE3(Less);
+        CASE3(Equal);
+        CASE3(LessEqual);
+        CASE3(Greater);
+        CASE3(NotEqual);
+        CASE3(GreaterEqual);
+        CASE3(Always);
+        case DepthTestMode::Disable: return nil;
+    }
+
+    throw std::logic_error("Invalid depth testing function");
 }
 
 #endif
