@@ -129,6 +129,7 @@ static std::pair<double, double> GamepadRightStick;
 static double GamepadLeftTrigger = -1.;
 static double GamepadRightTrigger = -1.;
 static bool GamepadActive;
+static bool MouseActive;
 static bool CursorDisabled;
 static bool FrameInProgress;
 static bool HidpiEnabled = true;
@@ -346,6 +347,7 @@ static double PrevFrameTime = 1./60.;
 static void key_callback(int key, int action)
 {
     GamepadActive = false;
+    MouseActive = false;
 
     const paz::Key k = paz::convert_keycode(key);
     if(k == paz::Key::Unknown)
@@ -369,6 +371,7 @@ static void key_callback(int key, int action)
 static void mouse_button_callback(int button, int action)
 {
     GamepadActive = false;
+    MouseActive = true;
 
     if(action == GLFW_PRESS)
     {
@@ -385,6 +388,7 @@ static void mouse_button_callback(int button, int action)
 static void cursor_position_callback(double xPos, double yPos)
 {
     GamepadActive = false;
+    MouseActive = true;
 
     MousePos.first = xPos;
     MousePos.second = WindowHeight - yPos;
@@ -393,6 +397,7 @@ static void cursor_position_callback(double xPos, double yPos)
 static void scroll_callback(double xOffset, double yOffset)
 {
     GamepadActive = false;
+    MouseActive = true;
 
     ScrollOffset.first = xOffset;
     ScrollOffset.second = yOffset;
@@ -425,6 +430,7 @@ static void poll_events()
             if(state.buttons[i] == GLFW_PRESS)
             {
                 GamepadActive = true;
+                MouseActive = false;
                 if(!GamepadDown[idx])
                 {
                     GamepadPressed[idx] = true;
@@ -436,6 +442,7 @@ static void poll_events()
                 if(GamepadDown[idx])
                 {
                     GamepadActive = true;
+                    MouseActive = false;
                     GamepadReleased[idx] = true;
                 }
                 GamepadDown[idx] = false;
@@ -444,31 +451,37 @@ static void poll_events()
         if(std::abs(state.axes[GLFW_GAMEPAD_AXIS_LEFT_X]) > 0.1)
         {
             GamepadActive = true;
+            MouseActive = false;
             GamepadLeftStick.first = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
         }
         if(std::abs(state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y]) > 0.1)
         {
             GamepadActive = true;
+            MouseActive = false;
             GamepadLeftStick.second = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
         }
         if(std::abs(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X]) > 0.1)
         {
             GamepadActive = true;
+            MouseActive = false;
             GamepadRightStick.first = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X];
         }
         if(std::abs(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y]) > 0.1)
         {
             GamepadActive = true;
+            MouseActive = false;
             GamepadRightStick.second = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
         }
         if(state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > -0.9)
         {
             GamepadActive = true;
+            MouseActive = false;
             GamepadLeftTrigger = state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER];
         }
         if(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > -0.9)
         {
             GamepadActive = true;
+            MouseActive = false;
             GamepadRightTrigger = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER];
         }
     }
@@ -862,6 +875,13 @@ bool paz::Window::GamepadActive()
     initialize();
 
     return ::GamepadActive;
+}
+
+bool paz::Window::MouseActive()
+{
+    initialize();
+
+    return ::MouseActive;
 }
 
 void paz::Window::SetCursorMode(CursorMode mode)

@@ -317,6 +317,13 @@ bool paz::Window::GamepadActive()
     return [VIEW_CONTROLLER gamepadActive];
 }
 
+bool paz::Window::MouseActive()
+{
+    initialize();
+
+    return [VIEW_CONTROLLER mouseActive];
+}
+
 void paz::Window::SetCursorMode(CursorMode mode)
 {
     initialize();
