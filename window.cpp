@@ -64,6 +64,16 @@ void paz::Window::Init()
 
     // Get display size.
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    if(!monitor)
+    {
+        throw std::runtime_error("Failed to get primary monitor. You may be usi"
+            "ng a remote shell"
+#ifdef PAZ_LINUX
+            " and need to set the `DISPLAY` environment variable.");
+#else
+            ".");
+#endif
+    }
     const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
     const int displayWidth = videoMode->width;
     const int displayHeight = videoMode->height;
@@ -81,9 +91,8 @@ void paz::Window::Init()
     _isFullscreen = false;
     if(!_window)
     {
-        glfwTerminate();
-        throw std::runtime_error("Failed to open GLFW window - your GPU may not"
-            " be OpenGL " + std::to_string(MajorVersion) + "." + std::to_string(
+        throw std::runtime_error("Failed to open GLFW window. Your GPU may not "
+            "be OpenGL " + std::to_string(MajorVersion) + "." + std::to_string(
             MinorVersion) + " compatible.");
     }
     glfwMakeContextCurrent((GLFWwindow*)_window);
@@ -92,7 +101,6 @@ void paz::Window::Init()
     // Load OpenGL functions.
     if(ogl_LoadFunctions() == ogl_LOAD_FAILED)
     {
-        glfwTerminate();
         throw std::runtime_error("Could not load OpenGL functions.");
     }
 
