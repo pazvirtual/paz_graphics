@@ -12,6 +12,15 @@
 
 namespace paz
 {
+    template<typename Iter>
+    using require_input_iterator = std::enable_if_t<std::is_base_of<std::
+        input_iterator_tag, typename std::iterator_traits<Iter>::
+        iterator_category>::value>;
+
+    template<typename Iter, typename T>
+    using require_value_type = std::enable_if_t<std::is_same<typename std::
+        iterator_traits<Iter>::value_type, T>::value>;
+
     class Texture
     {
         friend class Framebuffer;
@@ -124,23 +133,22 @@ namespace paz
         ~VertexBuffer();
         VertexBuffer();
 
-        template<typename InputIt, std::enable_if_t<std::is_same<typename std::
-            iterator_traits<InputIt>::value_type, float>::value>* = nullptr>
+        template<typename InputIt, require_input_iterator<InputIt>* = nullptr,
+            require_value_type<InputIt, float>* = nullptr>
         void attribute(int dim, InputIt first, InputIt last)
         {
             attribute(dim, &*first, std::distance(first, last));
         }
 
-        template<typename InputIt, std::enable_if_t<std::is_same<typename std::
-            iterator_traits<InputIt>::value_type, unsigned int>::value>* =
-            nullptr>
+        template<typename InputIt, require_input_iterator<InputIt>* = nullptr,
+            require_value_type<InputIt, unsigned int>* = nullptr>
         void attribute(int dim, InputIt first, InputIt last)
         {
             attribute(dim, &*first, std::distance(first, last));
         }
 
-        template<typename InputIt, std::enable_if_t<std::is_same<typename std::
-            iterator_traits<InputIt>::value_type, int>::value>* = nullptr>
+        template<typename InputIt, require_input_iterator<InputIt>* = nullptr,
+            require_value_type<InputIt, int>* = nullptr>
         void attribute(int dim, InputIt first, InputIt last)
         {
             attribute(dim, &*first, std::distance(first, last));
