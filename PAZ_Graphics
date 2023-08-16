@@ -336,6 +336,10 @@ namespace paz
         void draw(PrimitiveType type, const VertexBuffer& vertices);
         void draw(PrimitiveType type, const VertexBuffer& vertices, const
             IndexBuffer& indices);
+        void draw(PrimitiveType type, const VertexBuffer& vertices, const
+            VertexBuffer& instanceUniforms);
+        void draw(PrimitiveType type, const VertexBuffer& vertices, const
+            VertexBuffer& instanceUniforms, const IndexBuffer& indices);
         Framebuffer framebuffer() const;
     };
 
