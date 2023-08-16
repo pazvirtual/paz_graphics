@@ -27,9 +27,10 @@ paz::VertexBuffer::VertexBuffer()
     glGenVertexArrays(1, &_data->_id);
 }
 
-void paz::VertexBuffer::attribute(int dim, const std::vector<GLfloat>& data)
+void paz::VertexBuffer::attribute(int dim, const GLfloat* data, std::size_t
+    size)
 {
-    check_size(dim, _numVertices, data);
+    check_size(dim, _numVertices, size);
 
     const std::size_t i = _data->_ids.size();
 
@@ -47,13 +48,12 @@ void paz::VertexBuffer::attribute(int dim, const std::vector<GLfloat>& data)
         default: throw std::logic_error("Vertex attribute dimensions must be 1,"
             " 2, or 4.");
     }
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*dim*_numVertices, data.data(),
-        GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*size, data, GL_STATIC_DRAW);
 }
 
-void paz::VertexBuffer::attribute(int dim, const std::vector<GLuint>& data)
+void paz::VertexBuffer::attribute(int dim, const GLuint* data, std::size_t size)
 {
-    check_size(dim, _numVertices, data);
+    check_size(dim, _numVertices, size);
 
     const std::size_t i = _data->_ids.size();
 
@@ -71,13 +71,12 @@ void paz::VertexBuffer::attribute(int dim, const std::vector<GLuint>& data)
         default: throw std::logic_error("Vertex attribute dimensions must be 1,"
             " 2, or 4.");
     }
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLuint)*dim*_numVertices, data.data(),
-        GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLuint)*size, data, GL_STATIC_DRAW);
 }
 
-void paz::VertexBuffer::attribute(int dim, const std::vector<GLint>& data)
+void paz::VertexBuffer::attribute(int dim, const GLint* data, std::size_t size)
 {
-    check_size(dim, _numVertices, data);
+    check_size(dim, _numVertices, size);
 
     const std::size_t i = _data->_ids.size();
 
@@ -95,8 +94,7 @@ void paz::VertexBuffer::attribute(int dim, const std::vector<GLint>& data)
         default: throw std::logic_error("Vertex attribute dimensions must be 1,"
             " 2, or 4.");
     }
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLint)*dim*_numVertices, data.data(),
-        GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLint)*size, data, GL_STATIC_DRAW);
 }
 
 #endif

@@ -116,12 +116,41 @@ namespace paz
         VertexBuffer(const VertexBuffer&) = delete;
         VertexBuffer& operator=(const VertexBuffer&) = delete;
 
+        void attribute(int dim, const float* data, std::size_t size);
+        void attribute(int dim, const unsigned int* data, std::size_t size);
+        void attribute(int dim, const int* data, std::size_t size);
+
     public:
         ~VertexBuffer();
         VertexBuffer();
-        void attribute(int dim, const std::vector<float>& data);
-        void attribute(int dim, const std::vector<unsigned int>& data);
-        void attribute(int dim, const std::vector<int>& data);
+
+        template<typename InputIt, std::enable_if_t<std::is_same<typename std::
+            iterator_traits<InputIt>::value_type, float>::value>* = nullptr>
+        void attribute(int dim, InputIt first, InputIt last)
+        {
+            attribute(dim, &*first, std::distance(first, last));
+        }
+
+        template<typename InputIt, std::enable_if_t<std::is_same<typename std::
+            iterator_traits<InputIt>::value_type, unsigned int>::value>* =
+            nullptr>
+        void attribute(int dim, InputIt first, InputIt last)
+        {
+            attribute(dim, &*first, std::distance(first, last));
+        }
+
+        template<typename InputIt, std::enable_if_t<std::is_same<typename std::
+            iterator_traits<InputIt>::value_type, int>::value>* = nullptr>
+        void attribute(int dim, InputIt first, InputIt last)
+        {
+            attribute(dim, &*first, std::distance(first, last));
+        }
+
+        template<class C>
+        void attribute(int dim, const C& data)
+        {
+            attribute(dim, data.begin(), data.end());
+        }
     };
 
     class IndexBuffer
