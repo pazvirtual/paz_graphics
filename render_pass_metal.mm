@@ -396,7 +396,8 @@ void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
     uniform(name, v.data(), v.size());
 }
 
-void paz::RenderPass::uniform(const std::string& name, int* x, int n) const
+void paz::RenderPass::uniform(const std::string& name, const int* x, int n)
+    const
 {
     bool used = false;
     if(_vertexArgs.count(name))
@@ -443,8 +444,8 @@ void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     uniform(name, v.data(), v.size());
 }
 
-void paz::RenderPass::uniform(const std::string& name, unsigned int* x, int n)
-    const
+void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
+    int n) const
 {
     bool used = false;
     if(_vertexArgs.count(name))

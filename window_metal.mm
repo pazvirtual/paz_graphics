@@ -20,6 +20,8 @@ double paz::Window::_frameTime = 1./60.;
 
 std::unordered_set<paz::RenderTarget*> paz::Window::_targets;
 
+static CGPoint PrevOrigin;
+
 paz::Window::~Window()
 {
     [NSApp release];
@@ -46,21 +48,31 @@ void paz::Window::Init()
 
 void paz::Window::MakeFullscreen()
 {
-    if(!([[APP_DELEGATE window] styleMask]&NSWindowStyleMaskFullScreen))
+    if(!IsFullscreen())
     {
-        [[APP_DELEGATE window] toggleFullscreen];
+        [[[APP_DELEGATE window] contentView] enterFullScreenMode:[NSScreen
+            mainScreen] withOptions:nil];
+        PrevOrigin = [[APP_DELEGATE window] frame].origin;
+        [[APP_DELEGATE window] setFrameOrigin:[[NSScreen mainScreen] frame].
+            origin];
     }
 }
 
 void paz::Window::MakeWindowed()
 {
-    if([[APP_DELEGATE window] styleMask]&NSWindowStyleMaskFullScreen)
+    if(IsFullscreen())
     {
-        [[APP_DELEGATE window] toggleFullscreen];
+        [[[APP_DELEGATE window] contentView] exitFullScreenModeWithOptions:nil];
+        [[APP_DELEGATE window] setFrameOrigin:PrevOrigin];
     }
 }
 
 // ...
+
+bool paz::Window::IsFullscreen()
+{
+    return [[APP_DELEGATE window] contentView].inFullScreenMode;
+}
 
 int paz::Window::Width()
 {
