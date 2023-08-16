@@ -303,7 +303,7 @@ namespace paz
         static void MakeResizable();
         static void MakeNotResizable();
         static void Resize(int width, int height);
-        static Image<float, 3> PrintScreen();
+        static Image<std::uint8_t, 3> PrintScreen();
     };
 }
 
