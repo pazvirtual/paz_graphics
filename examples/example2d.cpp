@@ -54,8 +54,7 @@ static double normalize_angle(const double n)
 static void init(paz::RenderPass& scenePass, paz::RenderPass& textPass, paz::
     RenderPass& postPass, const std::string& appDir)
 {
-    paz::RenderTarget render(1., paz::TextureFormat::RGBA16Float, paz::
-        MinMagFilter::Linear, paz::MinMagFilter::Linear);
+    paz::RenderTarget render(1., paz::TextureFormat::RGBA16Float);
     paz::Framebuffer renderFramebuffer;
     renderFramebuffer.attach(render);
 
@@ -85,8 +84,7 @@ int main(int, char** argv)
 
     paz::Window::SetMinSize(640, 480);
 
-    const paz::Texture font(paz::load_pbm(appDir + "/font.pbm"), paz::
-        MinMagFilter::Nearest, paz::MinMagFilter::Nearest);
+    const paz::Texture font(paz::load_pbm(appDir + "/font.pbm"));
 
     paz::RenderPass scenePass, textPass, postPass;
     init(scenePass, textPass, postPass, appDir);

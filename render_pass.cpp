@@ -37,11 +37,11 @@ static GLenum primitive_type(paz::PrimitiveType t)
 static void check_attributes(const std::vector<unsigned int>& a, const std::
     unordered_map<unsigned int, unsigned int>& b)
 {
-    if(a.size() < b.size())
+    if(a.size() != b.size())
     {
-        throw std::invalid_argument("Vertex buffer has too few of attributes fo"
-            "r shader (got " + std::to_string(a.size()) + ", expected at least "
-            + std::to_string(b.size()) + ").");
+        throw std::invalid_argument("Vertex buffer has wrong number of attribut"
+            "es for shader (got " + std::to_string(a.size()) + ", expected " +
+            std::to_string(b.size()) + ").");
     }
     for(std::size_t i = 0; i < a.size(); ++i)
     {

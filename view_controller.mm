@@ -72,6 +72,9 @@
     [_mtkView setClearColor:MTLClearColorMake(0., 0., 0., 0.)];
     [_mtkView setDepthStencilPixelFormat:MTLPixelFormatDepth32Float];
 
+    // This is required for `paz::Window::PrintScreen()`.
+    [_mtkView setFramebufferOnly:NO];
+
     [_renderer mtkView:_mtkView drawableSizeWillChange:[_mtkView drawableSize]];
 }
 

@@ -5,9 +5,6 @@
 #include "PAZ_Graphics"
 #include "internal_data.hpp"
 
-paz::Framebuffer::Data::~Data() {}
-paz::Framebuffer::Data::Data() {}
-
 paz::Framebuffer::Framebuffer()
 {
     _data = std::make_shared<Data>();

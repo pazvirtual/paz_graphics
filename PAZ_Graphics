@@ -98,9 +98,11 @@ namespace paz
     public:
         Texture();
         Texture(int width, int height, TextureFormat format, MinMagFilter
-            minFilter, MinMagFilter magFilter);
-        Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
-            minFilter, MinMagFilter magFilter, bool normalized = true);
+            minFilter = MinMagFilter::Nearest, MinMagFilter magFilter =
+            MinMagFilter::Nearest);
+        Texture(const Image<std::uint8_t, 1>& image, MinMagFilter minFilter =
+            MinMagFilter::Nearest, MinMagFilter magFilter = MinMagFilter::
+            Nearest, bool normalized = true);
         // ...
         void resize(int width, int height);
         int width() const;
@@ -110,10 +112,12 @@ namespace paz
     class RenderTarget : public Texture
     {
     public:
-        RenderTarget(double scale, TextureFormat format, MinMagFilter minFilter,
-            MinMagFilter magFilter);
+        RenderTarget(double scale, TextureFormat format, MinMagFilter minFilter
+            = MinMagFilter::Nearest, MinMagFilter magFilter = MinMagFilter::
+            Nearest);
         RenderTarget(int width, int height, TextureFormat format, MinMagFilter
-            minFilter, MinMagFilter magFilter);
+            minFilter = MinMagFilter::Nearest, MinMagFilter magFilter =
+            MinMagFilter::Nearest);
     };
 
     class VertexBuffer

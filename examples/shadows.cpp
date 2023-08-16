@@ -76,6 +76,7 @@ static constexpr std::array<float, 4*3*2*6> CubeNor =
 
 static const std::string ShadowVertSrc = 1 + R"===(
 layout(location = 0) in vec4 position;
+layout(location = 1) in vec4 normal;
 uniform mat4 lightProjection;
 uniform mat4 lightView;
 void main()

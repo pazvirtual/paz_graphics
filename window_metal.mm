@@ -294,7 +294,30 @@ void paz::unregister_target(void* target)
 
 paz::Image<float, 3> paz::Window::PrintScreen()
 {
-    throw std::logic_error("NOT IMPLEMENTED");
+    initialize();
+
+    const int width = ViewportWidth();
+    const int height = ViewportHeight();
+
+    Image<std::uint8_t, 4> bgraFlipped(width, height);
+    [[[[VIEW_CONTROLLER mtkView] currentDrawable] texture] getBytes:bgraFlipped.
+        data() bytesPerRow:4*width fromRegion:MTLRegionMake2D(0, 0, width,
+        height) mipmapLevel:0];
+
+    Image<float, 3> rgb(ViewportWidth(), ViewportHeight());
+    for(int y = 0; y < ViewportHeight(); ++y)
+    {
+        for(int x = 0; x < ViewportWidth(); ++x)
+        {
+            for(int i = 0; i < 3; ++i)
+            {
+                rgb[3*(width*y + x) + 2 - i] = bgraFlipped[4*(width*(height -
+                    1 - y) + x) + i]/255.f;
+            }
+        }
+    }
+
+    return rgb;
 }
 
 #endif
