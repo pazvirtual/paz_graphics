@@ -31,6 +31,7 @@ std::string paz::vert2metal(const std::string& src)
     std::unordered_map<std::string, std::pair<std::string, bool>> buffers;
     std::map<unsigned int, std::pair<std::string, std::string>> inputs;
     std::map<std::string, std::pair<std::string, bool>> outputs;
+    std::unordered_set<std::string> structs;
 
     // Include headers.
     out << "#include <metal_stdlib>" << std::endl << "#include <simd/simd.h>" <<
@@ -74,6 +75,14 @@ std::string paz::vert2metal(const std::string& src)
             throw std::runtime_error("Only braced initializer lists are support"
                 "ed for array definition.");
         }
+        for(const auto& n : structs)
+        {
+            if(std::regex_match(line, std::regex(".*\\b" + n + "\\s*\\(.*")))
+            {
+                throw std::runtime_error("Only braced initializer lists are sup"
+                    "ported for struct definition.");
+            }
+        }
         if(std::regex_match(line, std::regex(".*\\b(float|u?int|[iu]?vec[2-4])"
             "\\s*\\[.*")))
         {
@@ -110,6 +119,14 @@ std::string paz::vert2metal(const std::string& src)
         const bool isFun = mode == Mode::None && std::regex_match(line, std::
             regex("\\s*[a-zA-Z_][a-zA-Z_0-9]*\\s+[a-zA-Z_][a-zA-Z_0-9]*\\(.*"));
 
+        // Check for struct type declarations.
+        if(std::regex_match(line, std::regex("\\s*struct\\s+[a-zA-Z_][a-zA-Z_0-"
+            "9]*\\b.*")))
+        {
+            structs.insert(std::regex_replace(line, std::regex("^\\s*struct\\s+"
+                "([a-zA-Z_][a-zA-Z_0-9]*)\\b"), "$1"));
+        }
+
         // Check for inputs and outputs out of scope.
         if(mode != Mode::Main)
         {
@@ -127,16 +144,22 @@ std::string paz::vert2metal(const std::string& src)
             {
                 for(const auto& n : outputs)
                 {
-                    if(std::regex_match(line, std::regex(".*\\b" + n.first + "\\b.*")) && !curArgNames.count(n.first))
+                    if(std::regex_match(line, std::regex(".*\\b" + n.first +
+                        "\\b.*")) && !curArgNames.count(n.first))
                     {
-                        throw std::runtime_error("Line " + std::to_string(l) + ": Shader outputs cannot be accessed outside of main function.");
+                        throw std::runtime_error("Line " + std::to_string(l) +
+                            ": Shader outputs cannot be accessed outside of mai"
+                            "n function.");
                     }
                 }
                 for(const auto& n : inputs)
                 {
-                    if(std::regex_match(line, std::regex(".*\\b" + n.second.first + "\\b.*")) && !curArgNames.count(n.second.first))
+                    if(std::regex_match(line, std::regex(".*\\b" + n.second.
+                        first + "\\b.*")) && !curArgNames.count(n.second.first))
                     {
-                        throw std::runtime_error("Line " + std::to_string(l) + ": Shader inputs cannot be accessed outside of main function.");
+                        throw std::runtime_error("Line " + std::to_string(l) +
+                            ": Shader inputs cannot be accessed outside of main"
+                            " function.");
                     }
                 }
             }

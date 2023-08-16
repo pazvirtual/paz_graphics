@@ -14,6 +14,66 @@
 #endif
 #include <GLFW/glfw3.h>
 
+static std::string fix_initializers(const std::string& src)
+{
+    int inInit = 0;
+    std::string curType;
+    std::string types;
+
+    std::istringstream in(src);
+    std::ostringstream out;
+    std::string line;
+    while(std::getline(in, line))
+    {
+        if(std::regex_match(line, std::regex("\\s*struct\\s+[a-zA-Z_][a-zA-Z_0-"
+            "9]*\\b.*")))
+        {
+            types += (types.empty() ? "" : "|") + std::regex_replace(line, std::
+                regex("^\\s*struct\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\b"), "$1");
+        }
+        else if(std::regex_match(line, std::regex(".*\\b(float|u?int|[iu]?vec[2"
+            "-4])\\s+[a-zA-Z_][a-zA-Z_0-9]*\\s*\\[.*\\]\\s*=.*")))
+        {
+            inInit = 2;
+            curType = std::regex_replace(line, std::regex(".*\\b(float|u?int|[i"
+                "u]?vec[2-4])\\s+[a-zA-Z_][a-zA-Z_0-9]*\\s*\\[.*\\]\\s*=.*"),
+                "$1") + "[]";
+        }
+        else if(!types.empty() && std::regex_match(line, std::regex(".*\\b(cons"
+            "t\\s+)?(" + types + ")\\s+[a-zA-Z_][a-zA-Z_0-9]*\\s*=.*")))
+        {
+            inInit = 2;
+            curType = std::regex_replace(line, std::regex(".*\\b(const\\s+)?(" +
+                types + ")\\s+[a-zA-Z_][a-zA-Z_0-9]*\\s*=.*"), "$2");
+        }
+
+        std::size_t pos = 0;
+        if(inInit)
+        {
+            while(pos < line.size())
+            {
+                if(inInit == 2 && line[pos] == '{')
+                {
+                    line[pos] = '(';
+                    line.insert(pos, curType);
+                    pos += curType.size();
+                    inInit = 1;
+                }
+                else if(inInit == 1 && line[pos] == '}')
+                {
+                    line[pos] = ')';
+                    inInit = 0;
+                }
+                ++pos;
+            }
+        }
+
+        out << line << std::endl;
+    }
+
+    return out.str();
+}
+
 static bool uses_gl_line_width(const std::string& vertSrc)
 {
     std::istringstream iss(vertSrc);
@@ -205,9 +265,8 @@ static unsigned int compile_shader(const std::string& src, GLenum type)
     // Compile shader.
     unsigned int shader = glCreateShader(type);
     const std::string headerStr = "#version " + std::to_string(paz::
-        GlMajorVersion) + std::to_string(paz::GlMinorVersion) + "0 core\n#exten"
-        "sion ARB_shading_language_420pack : require\n#define depthSampler2D sa"
-        "mpler2D\n";
+        GlMajorVersion) + std::to_string(paz::GlMinorVersion) + "0 core\n#defin"
+        "e depthSampler2D sampler2D\n";
     std::array<const char*, 2> srcStrs = {headerStr.c_str(), src.c_str()};
     glShaderSource(shader, srcStrs.size(), srcStrs.data(), NULL);
     glCompileShader(shader);
@@ -267,14 +326,15 @@ paz::VertexFunction::VertexFunction(const std::string& src)
     try
     {
         vert2metal(src);
-        const bool usesGlLineWidth = uses_gl_line_width(src);
+        const std::string fixedSrc = fix_initializers(src);
+        const bool usesGlLineWidth = uses_gl_line_width(fixedSrc);
         if(usesGlLineWidth)
         {
             std::string block;
             std::string block0;
             std::string block1;
-            const std::string modifiedSrc = prep_for_geom(src, block, block0,
-                block1);
+            const std::string modifiedSrc = prep_for_geom(fixedSrc, block,
+                block0, block1);
             _data->_id = compile_shader("#define gl_LineWidth glLineWidth\nout "
                 "float glLineWidth;\n" + modifiedSrc, GL_VERTEX_SHADER);
             _data->_thickLinesId = compile_shader(Src0 + block + Src1 + block0 +
@@ -283,7 +343,7 @@ paz::VertexFunction::VertexFunction(const std::string& src)
         }
         else
         {
-            _data->_id = compile_shader(src, GL_VERTEX_SHADER);
+            _data->_id = compile_shader(fixedSrc, GL_VERTEX_SHADER);
             _data->_thickLinesId = 0;
         }
     }
@@ -303,7 +363,8 @@ paz::FragmentFunction::FragmentFunction(const std::string& src)
     try
     {
         frag2metal(src);
-        _data->_id = compile_shader(src, GL_FRAGMENT_SHADER);
+        const std::string fixedSrc = fix_initializers(src);
+        _data->_id = compile_shader(fixedSrc, GL_FRAGMENT_SHADER);
     }
     catch(const std::exception& e)
     {
