@@ -12,6 +12,7 @@ static constexpr float YFov = 65.*M_PI/180.;
 static constexpr int Res = 2000;
 static constexpr int Size = 16;
 static constexpr int Scale = 8;
+static constexpr float Eps = 1e-4;
 
 static constexpr std::array<float, 4*4> GroundPos =
 {
@@ -29,16 +30,17 @@ static constexpr std::array<float, 4*4> GroundNor =
     0, 0, 1, 0
 };
 
-static constexpr std::array<float, 2*4> GroundUv = {4, 0, 4, 4, 0, 0, 0, 4};
+static constexpr std::array<float, 2*4> GroundUv = {4.f - Eps, Eps, 4.f - Eps,
+    4.f - Eps, Eps, Eps, Eps, 4.f - Eps};
 
-#define P1  0.5, -0.5, -2, 1,
-#define P2  0.5, -0.5, -1, 1,
-#define P3 -0.5, -0.5, -1, 1,
-#define P4 -0.5, -0.5, -2, 1,
-#define P5  0.5,  0.5, -2, 1,
-#define P6  0.5,  0.5, -1, 1,
-#define P7 -0.5,  0.5, -1, 1,
-#define P8 -0.5,  0.5, -2, 1,
+#define P1  0.5 + Eps, -0.5 - Eps, -2, 1,
+#define P2  0.5 + Eps, -0.5 - Eps, -1, 1,
+#define P3 -0.5 - Eps, -0.5 - Eps, -1, 1,
+#define P4 -0.5 - Eps, -0.5 - Eps, -2, 1,
+#define P5  0.5 + Eps,  0.5 + Eps, -2, 1,
+#define P6  0.5 + Eps,  0.5 + Eps, -1, 1,
+#define P7 -0.5 - Eps,  0.5 + Eps, -1, 1,
+#define P8 -0.5 - Eps,  0.5 + Eps, -2, 1,
 
 static constexpr std::array<float, 4*3*2*6> CubePos =
 {
@@ -79,7 +81,8 @@ static constexpr std::array<float, 4*3*2*6> CubeNor =
     N6 N6 N6
 };
 
-#define UV 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0,
+#define UV Eps, Eps, Eps, 1.f - Eps, 1.f - Eps, 1.f - Eps, Eps,\
+    Eps, 1.f - Eps, 1.f - Eps, 1.f - Eps, Eps,
 
 static constexpr std::array<float, 2*3*2*6> CubeUv = {UV UV UV UV UV UV};
 
