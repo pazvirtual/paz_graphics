@@ -169,7 +169,7 @@ paz::Texture compute_shadow_map(const paz::VertexBuffer& groundVerts, const
     calcShadows.primitives(paz::PrimitiveType::Triangles, cubeVerts);
     calcShadows.end();
 
-    return shadowMap;
+    return static_cast<paz::Texture>(shadowMap);
 }
 
 int main(int, char** argv)
