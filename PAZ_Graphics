@@ -188,6 +188,7 @@ namespace paz
     class VertexFunction
     {
         friend class Shader;
+        friend class RenderPass;
 
         struct Data;
         std::shared_ptr<Data> _data;
@@ -200,6 +201,7 @@ namespace paz
     class FragmentFunction
     {
         friend class Shader;
+        friend class RenderPass;
 
         struct Data;
         std::shared_ptr<Data> _data;

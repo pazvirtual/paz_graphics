@@ -78,29 +78,29 @@ void paz::resize_targets()
     {
         width = Window::ViewportWidth();
         height = Window::ViewportHeight();
-        for(auto n : initialize().renderTargets)
+        for(auto n : initialize()._renderTargets)
         {
             reinterpret_cast<Texture::Data*>(n)->resize(width, height);
         }
     }
 }
 
-void paz::register_target(void* target)
+void paz::register_target(void* t)
 {
-    if(initialize().renderTargets.count(target))
+    if(initialize()._renderTargets.count(t))
     {
         throw std::logic_error("Render target has already been registered.");
     }
-    initialize().renderTargets.insert(target);
+    initialize()._renderTargets.insert(t);
 }
 
-void paz::unregister_target(void* target)
+void paz::unregister_target(void* t)
 {
-    if(!initialize().renderTargets.count(target))
+    if(!initialize()._renderTargets.count(t))
     {
         throw std::logic_error("Render target was not registered.");
     }
-    initialize().renderTargets.erase(target);
+    initialize()._renderTargets.erase(t);
 }
 
 void paz::Window::MakeFullscreen()

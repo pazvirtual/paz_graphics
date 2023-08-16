@@ -36,69 +36,50 @@ static id<MTLLibrary> create_library(std::string src, bool isVert)
     return lib;
 }
 
-paz::ShaderFunctionLibrary::Data::~Data()
+paz::VertexFunction::Data::~Data()
 {
-    for(const auto& n : _verts)
-    {
-        if(n.second)
-        {
-            [static_cast<id<MTLLibrary>>(n.second) release];
-        }
-    }
-    for(const auto& n : _frags)
-    {
-        if(n.second)
-        {
-            [static_cast<id<MTLLibrary>>(n.second) release];
-        }
-    }
+    [static_cast<id<MTLFunction>>(_function) release];
 }
 
-paz::ShaderFunctionLibrary::ShaderFunctionLibrary()
+paz::FragmentFunction::Data::~Data()
+{
+    [static_cast<id<MTLFunction>>(_function) release];
+}
+
+paz::VertexFunction::VertexFunction()
 {
     initialize();
 
     _data = std::make_shared<Data>();
+};
+
+paz::FragmentFunction::FragmentFunction()
+{
+    initialize();
+
+    _data = std::make_shared<Data>();
+};
+
+paz::VertexFunction::VertexFunction(const std::string& src)
+{
+    initialize();
+
+    _data = std::make_shared<Data>();
+
+    id<MTLLibrary> lib = create_library(src, true);
+    _data->_function = [lib newFunctionWithName:@"vertMain"];
+    [lib release];
 }
 
-void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
-    string& src)
+paz::FragmentFunction::FragmentFunction(const std::string& src)
 {
-    if(_data->_verts.count(name))
-    {
-        throw std::runtime_error("Vertex function \"" + name + "\" has already "
-            "been defined.");
-    }
+    initialize();
 
-    try
-    {
-        _data->_verts[name] = create_library(src, true);
-    }
-    catch(const std::exception& e)
-    {
-        throw std::runtime_error("Failed to compile vertex function \"" + name +
-            "\": " + e.what());
-    }
-}
+    _data = std::make_shared<Data>();
 
-void paz::ShaderFunctionLibrary::fragment(const std::string& name, const std::
-    string& src)
-{
-    if(_data->_frags.count(name))
-    {
-        throw std::runtime_error("Fragment function \"" + name + "\" has alread"
-            "y been defined.");
-    }
-
-    try
-    {
-        _data->_frags[name] = create_library(src, false);
-    }
-    catch(const std::exception& e)
-    {
-        throw std::runtime_error("Failed to compile fragment function \"" + name
-            + "\": " + e.what());
-    }
+    id<MTLLibrary> lib = create_library(src, false);
+    _data->_function = [lib newFunctionWithName:@"fragMain"];
+    [lib release];
 }
 
 #endif

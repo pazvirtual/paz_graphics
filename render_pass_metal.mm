@@ -144,9 +144,9 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
     MTLRenderPipelineDescriptor* pipelineDescriptor =
         [[MTLRenderPipelineDescriptor alloc] init];
     [pipelineDescriptor setVertexFunction:static_cast<id<MTLFunction>>(shader.
-        _data->_vert)];
+        _data->_vert._data->_function)];
     [pipelineDescriptor setFragmentFunction:static_cast<id<MTLFunction>>(shader.
-        _data->_frag)];
+        _data->_frag._data->_function)];
     for(std::size_t i = 0; i < _data->_fbo->_colorAttachments.size(); ++i)
     {
         [[pipelineDescriptor colorAttachments][i] setPixelFormat:
@@ -211,9 +211,9 @@ paz::RenderPass::RenderPass(const Shader& shader, BlendMode blendMode)
     MTLRenderPipelineDescriptor* pipelineDescriptor =
         [[MTLRenderPipelineDescriptor alloc] init];
     [pipelineDescriptor setVertexFunction:static_cast<id<MTLFunction>>(shader.
-        _data->_vert)];
+        _data->_vert._data->_function)];
     [pipelineDescriptor setFragmentFunction:static_cast<id<MTLFunction>>(shader.
-        _data->_frag)];
+        _data->_frag._data->_function)];
     [[pipelineDescriptor colorAttachments][0] setPixelFormat:[[VIEW_CONTROLLER
         mtkView] colorPixelFormat]];
     if(blendMode != paz::BlendMode::Disable)
