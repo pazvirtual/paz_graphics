@@ -40,8 +40,12 @@
 - (void)loadView
 {
     _device = MTLCreateSystemDefaultDevice();
-    _mtkView = [[MTKView alloc] initWithFrame:_contentRect device:_device];
+    if(!_device)
+    {
+        throw std::runtime_error("Metal is not supported on this device.");
+    }
 
+    _mtkView = [[MTKView alloc] initWithFrame:_contentRect device:_device];
     [self setView:_mtkView];
 }
 
@@ -49,11 +53,17 @@
 {
     [super viewDidLoad];
 
-    if(![_mtkView device])
-    {
-        throw std::runtime_error("Metal is not supported on this device.");
-    }
+    [_mtkView setClearColor:MTLClearColorMake(0., 0., 0., 0.)];
+    [_mtkView setDepthStencilPixelFormat:MTLPixelFormatDepth32Float];
 
+    // This is required for `paz::Window::PrintScreen()`.
+    [_mtkView setFramebufferOnly:NO];
+
+    // This is required for on-demand rendering.
+    [_mtkView setEnableSetNeedsDisplay:NO];
+    [_mtkView setPaused:YES];
+
+    // Create renderer and set as delegate.
     @try
     {
         _renderer = [[Renderer alloc] initWithMetalKitView:_mtkView];
@@ -69,15 +79,6 @@
     }
 
     [_mtkView setDelegate:_renderer];
-    [_mtkView setClearColor:MTLClearColorMake(0., 0., 0., 0.)];
-    [_mtkView setDepthStencilPixelFormat:MTLPixelFormatDepth32Float];
-
-    // This is required for `paz::Window::PrintScreen()`.
-    [_mtkView setFramebufferOnly:NO];
-
-    // This is required for on-demand rendering.
-    [_mtkView setEnableSetNeedsDisplay:NO];
-    [_mtkView setPaused:YES];
 
     [_renderer mtkView:_mtkView drawableSizeWillChange:[_mtkView drawableSize]];
 }

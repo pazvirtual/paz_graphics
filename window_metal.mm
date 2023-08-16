@@ -83,10 +83,16 @@ paz::Initializer::Initializer()
 
 void paz::resize_targets()
 {
-    for(auto n : RenderTargets)
+    static int width;
+    static int height;
+    if(width != Window::ViewportWidth() || height != Window::ViewportHeight())
     {
-        reinterpret_cast<Texture::Data*>(n)->resize(Window::ViewportWidth(),
-            Window::ViewportHeight());
+        width = Window::ViewportWidth();
+        height = Window::ViewportHeight();
+        for(auto n : RenderTargets)
+        {
+            reinterpret_cast<Texture::Data*>(n)->resize(width, height);
+        }
     }
 }
 
@@ -294,6 +300,7 @@ void paz::Window::EndFrame()
         FrameStart).count()*1e-6;
     FrameStart = now;
     poll_events();
+    resize_targets();
 }
 
 double paz::Window::FrameTime()
