@@ -44,7 +44,7 @@ int main(int, char** argv)
     paz::RenderPass u(quad, tonemap);
 
     paz::VertexBuffer q;
-    q.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
+    q.addAttribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
     paz::InstanceBuffer instances;
     {

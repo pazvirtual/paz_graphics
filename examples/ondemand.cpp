@@ -20,7 +20,8 @@ int main(int, char** argv)
     }
 
     paz::VertexBuffer quadVertices;
-    quadVertices.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
+    quadVertices.addAttribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1,
+        1});
 
     const paz::Texture font(paz::parse_pbm(paz::read_bytes(appDir + "/font.pbm"
         )));

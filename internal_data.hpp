@@ -44,8 +44,10 @@ struct paz::VertexBuffer::Data
     std::vector<unsigned int> _ids;
     std::vector<unsigned int> _types;
     Data();
+    void addAttribute(int dim, DataType type);
 #endif
     std::size_t _numVertices = 0;
+    std::vector<int> _dims;
     ~Data();
     void checkSize(int dim, std::size_t size);
 };

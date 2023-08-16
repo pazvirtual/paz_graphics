@@ -40,6 +40,21 @@ paz::IndexBuffer::IndexBuffer()
     initialize();
 }
 
+paz::IndexBuffer::IndexBuffer(std::size_t size)
+{
+    initialize();
+
+    _data = std::make_shared<Data>();
+
+    _data->_numIndices = size;
+    _data->_data = [DEVICE newBufferWithLength:sizeof(unsigned int)*size
+        options:MTLStorageModeShared];
+    _data->_lineLoopIndices = [DEVICE newBufferWithLength:sizeof(unsigned int)*
+        (size + 1) options:MTLStorageModeShared];
+    _data->_triangleFanIndices = [DEVICE newBufferWithLength:sizeof(unsigned
+        int)*(size < 3 ? 0 : 3*size - 6) options:MTLStorageModeShared];
+}
+
 paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
 {
     initialize();
@@ -70,9 +85,42 @@ paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
     }
 }
 
+void paz::IndexBuffer::sub(const unsigned int* data, std::size_t size)
+{
+    if(size != _data->_numIndices)
+    {
+        throw std::runtime_error("Number of instances is fixed.");
+    }
+    std::copy(data, data + size, reinterpret_cast<unsigned int*>([static_cast<
+        id<MTLBuffer>>(_data->_data) contents]));
+    {
+        std::vector<unsigned int> idx(size + 1);
+        std::copy(data, data + size, idx.begin());
+        idx.back() = idx[0];
+        std::copy(idx.begin(), idx.end(), reinterpret_cast<unsigned int*>(
+            [static_cast<id<MTLBuffer>>(_data->_lineLoopIndices) contents]));
+    }
+    {
+        std::vector<unsigned int> idx(size < 3 ? 0 : 3*size - 6);
+        for(std::size_t i = 0; i < idx.size()/3; ++i)
+        {
+            idx[3*i] = data[0];
+            idx[3*i + 1] = data[i + 1];
+            idx[3*i + 2] = data[i + 2];
+        }
+        std::copy(idx.begin(), idx.end(), reinterpret_cast<unsigned int*>(
+            [static_cast<id<MTLBuffer>>(_data->_triangleFanIndices) contents]));
+    }
+}
+
 bool paz::IndexBuffer::empty() const
 {
     return !_data || !_data->_numIndices;
+}
+
+std::size_t paz::IndexBuffer::size() const
+{
+    return _data ? _data->_numIndices : 0;
 }
 
 #endif
