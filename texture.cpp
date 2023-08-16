@@ -1,9 +1,10 @@
-#include "PAZ_Graphics"
+#include "detect_os.hpp"
 
 #ifndef PAZ_MACOS
 
+#include "PAZ_Graphics"
 #include "util.hpp"
-
+#include "internal_data.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
@@ -11,23 +12,28 @@
 
 paz::Texture::~Texture()
 {
-    if(_id)
+    if(_data->_id)
     {
-        glDeleteTextures(1, &_id);
+        glDeleteTextures(1, &_data->_id);
     }
 }
 
-paz::Texture::Texture() {}
+paz::Texture::Texture()
+{
+    _data = std::make_unique<Data>();
+}
 
 paz::Texture::Texture(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter)
+    DataType type, MinMagFilter minFilter, MinMagFilter magFilter) :
+    Texture()
 {
     init(width, height, numChannels, numBits, type, minFilter, magFilter,
         nullptr);
 }
 
 paz::Texture::Texture(int width, int height, int numChannels, int numBits, const
-    std::vector<float>& data, MinMagFilter minFilter, MinMagFilter magFilter)
+    std::vector<float>& data, MinMagFilter minFilter, MinMagFilter magFilter) :
+    Texture()
 {
     init(width, height, numChannels, numBits, DataType::Float, minFilter,
         magFilter, data.data());
@@ -44,31 +50,31 @@ void paz::Texture::init(int width, int height, int numChannels, int numBits,
     const auto min = filters.first;
     const auto mag = filters.second;
 
-    _internalFormat = internal_format(numChannels, numBits, type);
+    _data->_internalFormat = internal_format(numChannels, numBits, type);
     const bool isInt = (type == DataType::UInt || type == DataType::SInt);
     if(numChannels == 1)
     {
-        _format = isInt ? GL_RED_INTEGER : GL_RED;
+        _data->_format = isInt ? GL_RED_INTEGER : GL_RED;
     }
     else if(numChannels == 2)
     {
-        _format = isInt ? GL_RG_INTEGER : GL_RG;
+        _data->_format = isInt ? GL_RG_INTEGER : GL_RG;
     }
     else if(numChannels == 4)
     {
-        _format = isInt ? GL_RGBA_INTEGER : GL_RGBA;
+        _data->_format = isInt ? GL_RGBA_INTEGER : GL_RGBA;
     }
     else
     {
         throw std::runtime_error("Texture must have 1, 2, or 4 channels.");
     }
 
-    _type = gl_type(type);
+    _data->_type = gl_type(type);
 
-    glGenTextures(1, &_id);
-    glBindTexture(GL_TEXTURE_2D, _id);
-    glTexImage2D(GL_TEXTURE_2D, 0, _internalFormat, width, height, 0, _format,
-        _type, data);
+    glGenTextures(1, &_data->_id);
+    glBindTexture(GL_TEXTURE_2D, _data->_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, _data->_internalFormat, width, height, 0,
+        _data->_format, _data->_type, data);
     if(_mipmap)
     {
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -81,9 +87,9 @@ void paz::Texture::init(int width, int height, int numChannels, int numBits,
 
 void paz::Texture::resize(GLsizei width, GLsizei height)
 {
-    glBindTexture(GL_TEXTURE_2D, _id);
-    glTexImage2D(GL_TEXTURE_2D, 0, _internalFormat, width, height, 0, _format,
-        _type, nullptr);
+    glBindTexture(GL_TEXTURE_2D, _data->_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, _data->_internalFormat, width, height, 0,
+        _data->_format, _data->_type, nullptr);
     if(_mipmap)
     {
         glGenerateMipmap(GL_TEXTURE_2D);

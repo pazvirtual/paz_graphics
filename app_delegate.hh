@@ -1,10 +1,11 @@
-#ifndef APP_DELEGATE_HH
-#define APP_DELEGATE_HH
+#ifndef PAZ_GRAPHICS_APP_DELEGATE_HH
+#define PAZ_GRAPHICS_APP_DELEGATE_HH
 
-#include "PAZ_Graphics"
+#include "detect_os.hpp"
 
 #ifdef PAZ_MACOS
 
+#include "PAZ_Graphics"
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <Cocoa/Cocoa.h>

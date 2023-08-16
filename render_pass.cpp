@@ -1,13 +1,18 @@
-#include "PAZ_Graphics"
+#include "detect_os.hpp"
 
 #ifndef PAZ_MACOS
 
+#include "PAZ_Graphics"
+#include "internal_data.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
 #include <GLFW/glfw3.h>
 
 #define CASE_STRING(x) case x: return #x;
+
+#define CHECK_UNIFORM if(!_data->_shader->_data->_uniformIds.count(name)) \
+    return;
 
 static constexpr float Transparent[] = {0.f, 0.f, 0.f, 0.f};
 static int NextSlot = 0;
@@ -46,21 +51,21 @@ static std::string gl_error(GLenum error)
     return "Error code " + std::to_string(error) + " not recognized";
 }
 
-paz::RenderPass::~RenderPass()
-{
-    _fbo = nullptr;
-    _shader = nullptr;
-}
+paz::RenderPass::~RenderPass() {}
 
 paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader)
 {
+    _data = std::make_unique<Data>();
+
     _fbo = &fbo;
-    _shader = &shader;
+    _data->_shader = &shader;
 }
 
 paz::RenderPass::RenderPass(const Shader& shader)
 {
-    _shader = &shader;
+    _data = std::make_unique<Data>();
+
+    _data->_shader = &shader;
 }
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
@@ -70,7 +75,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     NextSlot = 0;
     if(_fbo)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, _fbo->_id);
+        glBindFramebuffer(GL_FRAMEBUFFER, _fbo->_data->_id);
         //glViewport(0, 0, _fbo->width(), _fbo->height());
         glViewport(0, 0, Window::ViewportWidth(), Window::ViewportHeight());//TEMP
         for(std::size_t i = 0; i < colorLoadActions.size(); ++i)
@@ -86,7 +91,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
                     ".");
             }
         }
-        if(_fbo->_hasDepthAttachment)
+        if(_fbo->_data->_hasDepthAttachment)
         {
             if(depthLoadAction == LoadAction::Clear)
             {
@@ -114,7 +119,12 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             glClear(GL_DEPTH_BUFFER_BIT);
         }
     }
-    _shader->use();
+
+    if(!_data->_shader->_data->_id)
+    {
+        throw std::runtime_error("Shader is not initialized.");
+    }
+    glUseProgram(_data->_shader->_data->_id);
 }
 
 void paz::RenderPass::depth(DepthTestMode depthMode)
@@ -206,108 +216,211 @@ void paz::RenderPass::cull(CullMode mode) const
 void paz::RenderPass::read(const std::string& name, const Texture& tex) const
 {
     glActiveTexture(GL_TEXTURE0 + NextSlot);
-    glBindTexture(GL_TEXTURE_2D, tex._id);
-    _shader->uniform(name, NextSlot);
+    glBindTexture(GL_TEXTURE_2D, tex._data->_id);
+    uniform(name, NextSlot);
     ++NextSlot;
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x) const
 {
-    _shader->uniform(name, x);
+    CHECK_UNIFORM
+    glUniform1i(std::get<0>(_data->_shader->_data->_uniformIds.at(name)), x);
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y) const
 {
-    _shader->uniform(name, x, y);
+    CHECK_UNIFORM
+    glUniform2i(std::get<0>(_data->_shader->_data->_uniformIds.at(name)), x, y);
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z)
     const
 {
-    _shader->uniform(name, x, y, z);
+    CHECK_UNIFORM
+    glUniform3i(std::get<0>(_data->_shader->_data->_uniformIds.at(name)), x, y,
+        z);
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
     w) const
 {
-    _shader->uniform(name, x, y, z, w);
+    CHECK_UNIFORM
+    glUniform4i(std::get<0>(_data->_shader->_data->_uniformIds.at(name)), x, y,
+        z, w);
 }
 
 void paz::RenderPass::uniform(const std::string& name, const int* x, int n)
     const
 {
-    _shader->uniform(name, x, n);
+    CHECK_UNIFORM
+    switch(std::get<1>(_data->_shader->_data->_uniformIds.at(name)))
+    {
+        case GL_INT:
+            glUniform1iv(std::get<0>(_data->_shader->_data->_uniformIds.at(
+                name)), n, x);
+            break;
+        case GL_INT_VEC2:
+            glUniform2iv(std::get<0>(_data->_shader->_data->_uniformIds.at(
+                name)), n/2, x);
+            break;
+        case GL_INT_VEC3:
+            glUniform3iv(std::get<0>(_data->_shader->_data->_uniformIds.at(
+                name)), n/3, x);
+            break;
+        case GL_INT_VEC4:
+            glUniform4iv(std::get<0>(_data->_shader->_data->_uniformIds.at(
+                name)), n/4, x);
+            break;
+        default:
+            throw std::invalid_argument("Unsupported type " + std::to_string(
+                std::get<1>(_data->_shader->_data->_uniformIds.at(name))) +
+                " for uniform \"" + name + "\".");
+            break;
+    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x) const
 {
-    _shader->uniform(name, x);
+    CHECK_UNIFORM
+    glUniform1ui(std::get<0>(_data->_shader->_data->_uniformIds.at(name)), x);
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y) const
 {
-    _shader->uniform(name, x, y);
+    CHECK_UNIFORM
+    glUniform2ui(std::get<0>(_data->_shader->_data->_uniformIds.at(name)), x,
+        y);
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z) const
 {
-    _shader->uniform(name, x, y, z);
+    CHECK_UNIFORM
+    glUniform3ui(std::get<0>(_data->_shader->_data->_uniformIds.at(name)), x, y,
+        z);
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z, unsigned int w) const
 {
-    _shader->uniform(name, x, y, z, w);
+    CHECK_UNIFORM
+    glUniform4ui(std::get<0>(_data->_shader->_data->_uniformIds.at(name)), x, y,
+        z, w);
 }
 
 void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
     int n) const
 {
-    _shader->uniform(name, x, n);
+    CHECK_UNIFORM
+    switch(std::get<1>(_data->_shader->_data->_uniformIds.at(name)))
+    {
+        case GL_UNSIGNED_INT:
+            glUniform1uiv(std::get<0>(_data->_shader->_data->_uniformIds.at(
+                name)), n, x);
+            break;
+        case GL_UNSIGNED_INT_VEC2:
+            glUniform2uiv(std::get<0>(_data->_shader->_data->_uniformIds.at(
+                name)), n/2, x);
+            break;
+        case GL_UNSIGNED_INT_VEC3:
+            glUniform3uiv(std::get<0>(_data->_shader->_data->_uniformIds.at(
+                name)), n/3, x);
+            break;
+        case GL_UNSIGNED_INT_VEC4:
+            glUniform4uiv(std::get<0>(_data->_shader->_data->_uniformIds.at(
+                name)), n/4, x);
+            break;
+        default:
+            throw std::invalid_argument("Unsupported type " + std::to_string(
+                std::get<1>(_data->_shader->_data->_uniformIds.at(name))) +
+                " for uniform \"" + name + "\".");
+            break;
+    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x) const
 {
-    _shader->uniform(name, x);
+    CHECK_UNIFORM
+    glUniform1f(std::get<0>(_data->_shader->_data->_uniformIds.at(name)), x);
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y) const
 {
-    _shader->uniform(name, x, y);
+    CHECK_UNIFORM
+    glUniform2f(std::get<0>(_data->_shader->_data->_uniformIds.at(name)), x, y);
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z) const
 {
-    _shader->uniform(name, x, y, z);
+    CHECK_UNIFORM
+    glUniform3f(std::get<0>(_data->_shader->_data->_uniformIds.at(name)), x, y,
+        z);
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z, float w) const
 {
-    _shader->uniform(name, x, y, z, w);
+    CHECK_UNIFORM
+    glUniform4f(std::get<0>(_data->_shader->_data->_uniformIds.at(name)), x, y,
+        z, w);
 }
 
 void paz::RenderPass::uniform(const std::string& name, const float* x, int n)
     const
 {
-    _shader->uniform(name, x, n);
+    CHECK_UNIFORM
+    switch(std::get<1>(_data->_shader->_data->_uniformIds.at(name)))
+    {
+        case GL_FLOAT:
+            glUniform1fv(std::get<0>(_data->_shader->_data->_uniformIds.at(
+                name)), n, x);
+            break;
+        case GL_FLOAT_VEC2:
+            glUniform2fv(std::get<0>(_data->_shader->_data->_uniformIds.at(
+                name)), n/2, x);
+            break;
+        case GL_FLOAT_VEC3:
+            glUniform3fv(std::get<0>(_data->_shader->_data->_uniformIds.at(
+                name)), n/3, x);
+            break;
+        case GL_FLOAT_VEC4:
+            glUniform4fv(std::get<0>(_data->_shader->_data->_uniformIds.at(
+                name)), n/4, x);
+            break;
+        case GL_FLOAT_MAT2:
+            glUniformMatrix2fv(std::get<0>(_data->_shader->_data->_uniformIds.
+                at(name)), n/4, GL_FALSE, x);
+            break;
+        case GL_FLOAT_MAT3:
+            glUniformMatrix3fv(std::get<0>(_data->_shader->_data->_uniformIds.
+                at(name)), n/9, GL_FALSE, x);
+            break;
+        case GL_FLOAT_MAT4:
+            glUniformMatrix4fv(std::get<0>(_data->_shader->_data->_uniformIds.
+                at(name)), n/16, GL_FALSE, x);
+            break;
+        default:
+            throw std::invalid_argument("Unsupported type " + std::to_string(
+                std::get<1>(_data->_shader->_data->_uniformIds.at(name))) +
+                " for uniform \"" + name + "\".");
+            break;
+    }
 }
 
 void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
     vertices, int offset) const
 {
-    glBindVertexArray(vertices._id);
+    glBindVertexArray(vertices._data->_id);
     glDrawArrays(primitive_type(type), offset, vertices._numVertices);
 }
 
 void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
     const IndexBuffer& indices, int offset) const
 {
-    glBindVertexArray(vertices._id);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._id);
+    glBindVertexArray(vertices._data->_id);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);
     glDrawElements(primitive_type(type), indices._numIndices, GL_UNSIGNED_INT,
         (void*)(std::intptr_t)offset);
 }

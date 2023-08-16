@@ -1,7 +1,8 @@
-#include "PAZ_Graphics"
+#include "detect_os.hpp"
 
 #ifndef PAZ_MACOS
 
+#include "PAZ_Graphics"
 #include "keycodes.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"

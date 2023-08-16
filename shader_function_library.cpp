@@ -1,10 +1,11 @@
-#include "PAZ_Graphics"
+#include "detect_os.hpp"
 
 #ifndef PAZ_MACOS
 
+#include "PAZ_Graphics"
 #include "util.hpp"
 #include "opengl2metal.hpp"
-
+#include "internal_data.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
@@ -32,15 +33,18 @@ static unsigned int compile_shader(const std::string& src, bool isVertexShader)
     return shader;
 }
 
-paz::ShaderFunctionLibrary::ShaderFunctionLibrary() {}
+paz::ShaderFunctionLibrary::ShaderFunctionLibrary()
+{
+    _data = std::make_unique<Data>();
+}
 
 paz::ShaderFunctionLibrary::~ShaderFunctionLibrary()
 {
-    for(auto& n : _vertexIds)
+    for(auto& n : _data->_vertexIds)
     {
         glDeleteShader(n.second);
     }
-    for(auto& n : _fragmentIds)
+    for(auto& n : _data->_fragmentIds)
     {
         glDeleteShader(n.second);
     }
@@ -49,25 +53,25 @@ paz::ShaderFunctionLibrary::~ShaderFunctionLibrary()
 void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
     string& src)
 {
-    if(_vertexIds.count(name))
+    if(_data->_vertexIds.count(name))
     {
         throw std::runtime_error("Vertex function \"" + name + "\" has already "
             "been defined.");
     }
     paz::vert2metal(src);
-    _vertexIds[name] = compile_shader(src, true);
+    _data->_vertexIds[name] = compile_shader(src, true);
 }
 
 void paz::ShaderFunctionLibrary::fragment(const std::string& name, const std::
     string& src)
 {
-    if(_fragmentIds.count(name))
+    if(_data->_fragmentIds.count(name))
     {
         throw std::runtime_error("Fragment function \"" + name + "\" has alread"
             "y been defined.");
     }
     paz::frag2metal(src);
-    _fragmentIds[name] = compile_shader(src, false);
+    _data->_fragmentIds[name] = compile_shader(src, false);
 }
 
 #endif

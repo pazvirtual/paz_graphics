@@ -1,7 +1,8 @@
-#include "PAZ_Graphics"
+#include "detect_os.hpp"
 
 #ifdef PAZ_MACOS
 
+#include "PAZ_Graphics"
 #import "renderer.hh"
 #import <simd/simd.h>
 #import <ModelIO/ModelIO.h>

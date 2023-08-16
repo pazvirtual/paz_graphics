@@ -1,3 +1,7 @@
+#include "detect_os.hpp"
+
+#ifdef PAZ_MACOS
+
 #import "util_metal.hh"
 #import "app_delegate.hh"
 #import "view_controller.hh"
@@ -228,3 +232,5 @@ id<MTLSamplerState> paz::create_sampler(Texture::MinMagFilter minFilter,
     [descriptor release];
     return sampler;
 }
+
+#endif

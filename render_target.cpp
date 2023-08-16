@@ -1,8 +1,10 @@
-#include "PAZ_Graphics"
+#include "detect_os.hpp"
 
 #ifndef PAZ_MACOS
 
+#include "PAZ_Graphics"
 #include "util.hpp"
+#include "internal_data.hpp"
 
 #define CASE_STRING(x) case x: return #x;
 
@@ -11,21 +13,25 @@
 #endif
 #include <GLFW/glfw3.h>
 
-paz::RenderTarget::RenderTarget() {}
-
-paz::RenderTarget::~RenderTarget()
+paz::RenderTarget::RenderTarget()
 {
-    paz::Window::UnregisterTarget(this);
+    _data = std::make_unique<Data>();
 }
 
 paz::RenderTarget::RenderTarget(double scale, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter)
+    DataType type, MinMagFilter minFilter, MinMagFilter magFilter) :
+    RenderTarget()
 {
     _scale = scale;
     Texture::init(_scale*Window::ViewportWidth(), _scale*Window::
         ViewportHeight(), numChannels, numBits, type, minFilter, magFilter,
         nullptr);
     paz::Window::RegisterTarget(this);
+}
+
+paz::RenderTarget::~RenderTarget()
+{
+    paz::Window::UnregisterTarget(this);
 }
 
 void paz::RenderTarget::resize(GLsizei width, GLsizei height)

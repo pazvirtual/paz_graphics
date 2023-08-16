@@ -1,10 +1,11 @@
-#ifndef UTIL_METAL_HH
-#define UTIL_METAL_HH
+#ifndef PAZ_GRAPHICS_UTIL_METAL_HH
+#define PAZ_GRAPHICS_UTIL_METAL_HH
 
-#include "PAZ_Graphics"
+#include "detect_os.hpp"
 
 #ifdef PAZ_MACOS
 
+#include "PAZ_Graphics"
 #import <MetalKit/MetalKit.h>
 
 namespace paz

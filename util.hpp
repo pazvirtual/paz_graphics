@@ -1,10 +1,11 @@
-#ifndef UTIL_HPP
-#define UTIL_HPP
+#ifndef PAZ_GRAPHICS_UTIL_HPP
+#define PAZ_GRAPHICS_UTIL_HPP
 
-#include "PAZ_Graphics"
+#include "detect_os.hpp"
 
 #ifndef PAZ_MACOS
 
+#include "PAZ_Graphics"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif

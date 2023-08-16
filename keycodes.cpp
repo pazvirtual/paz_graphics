@@ -1,3 +1,4 @@
+#include "detect_os.hpp"
 #include "keycodes.hpp"
 
 #ifdef PAZ_MACOS

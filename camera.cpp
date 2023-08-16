@@ -1,5 +1,4 @@
 #include "PAZ_Graphics"
-
 #include <cmath>
 
 std::array<float, 16> paz::perspective(float yFov, float ratio, float zNear,

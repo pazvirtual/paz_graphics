@@ -1,7 +1,8 @@
-#include "PAZ_Graphics"
+#include "detect_os.hpp"
 
 #ifndef PAZ_MACOS
 
+#include "PAZ_Graphics"
 #include "util.hpp"
 
 std::pair<GLint, GLint> paz::min_mag_filter(Texture::MinMagFilter minFilter,

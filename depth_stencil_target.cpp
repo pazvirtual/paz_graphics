@@ -1,9 +1,10 @@
-#include "PAZ_Graphics"
+#include "detect_os.hpp"
 
 #ifndef PAZ_MACOS
 
+#include "PAZ_Graphics"
 #include "util.hpp"
-
+#include "internal_data.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
@@ -41,15 +42,15 @@ paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     const auto min = filters.first;
     const auto mag = filters.second;
 
-    _internalFormat = depth_internal_format(numBits, type);
-    _format = GL_DEPTH_COMPONENT;
+    Texture::_data->_internalFormat = depth_internal_format(numBits, type);
+    Texture::_data->_format = GL_DEPTH_COMPONENT;
 
-    _type = gl_type(type);
+    Texture::_data->_type = gl_type(type);
 
-    glGenTextures(1, &_id);
-    glBindTexture(GL_TEXTURE_2D, _id);
-    glTexImage2D(GL_TEXTURE_2D, 0, _internalFormat, width, height, 0, _format,
-        _type, nullptr);
+    glGenTextures(1, &Texture::_data->_id);
+    glBindTexture(GL_TEXTURE_2D, Texture::_data->_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, Texture::_data->_internalFormat, width,
+        height, 0, Texture::_data->_format, Texture::_data->_type, nullptr);
     if(_mipmap)
     {
         glGenerateMipmap(GL_TEXTURE_2D);

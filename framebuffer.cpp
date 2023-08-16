@@ -1,7 +1,9 @@
-#include "PAZ_Graphics"
+#include "detect_os.hpp"
 
 #ifndef PAZ_MACOS
 
+#include "PAZ_Graphics"
+#include "internal_data.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
@@ -32,15 +34,15 @@ static std::string framebuffer_status(GLenum status)
 
 paz::Framebuffer::~Framebuffer()
 {
-    glDeleteFramebuffers(1, &_id);
+    glDeleteFramebuffers(1, &_data->_id);
 }
 
 void paz::Framebuffer::attach(const RenderTarget& target)
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, _id);
-    glFramebufferTexture(GL_FRAMEBUFFER, Attachments[_numTextures], target._id,
-        0);
-    glDrawBuffers(++_numTextures, Attachments);
+    glBindFramebuffer(GL_FRAMEBUFFER, _data->_id);
+    glFramebufferTexture(GL_FRAMEBUFFER, Attachments[_data->_numTextures],
+        target.Texture::_data->_id, 0);
+    glDrawBuffers(++_data->_numTextures, Attachments);
     const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if(status != GL_FRAMEBUFFER_COMPLETE)
     {
@@ -51,20 +53,23 @@ void paz::Framebuffer::attach(const RenderTarget& target)
 
 void paz::Framebuffer::attach(const DepthStencilTarget& target)
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, _id);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, target._id, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, _data->_id);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, target.Texture::
+        _data->_id, 0);
     const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if(status != GL_FRAMEBUFFER_COMPLETE)
     {
         throw std::runtime_error("Framebuffer incomplete: " +
             framebuffer_status(status) + ".");
     }
-    _hasDepthAttachment = true;
+    _data->_hasDepthAttachment = true;
 }
 
 paz::Framebuffer::Framebuffer()
 {
-    glGenFramebuffers(1, &_id);
+    _data = std::make_unique<Data>();
+
+    glGenFramebuffers(1, &_data->_id);
 }
 
 #endif

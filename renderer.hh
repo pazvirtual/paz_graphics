@@ -1,10 +1,11 @@
-#ifndef RENDERER_HH
-#define RENDERER_HH
+#ifndef PAZ_GRAPHICS_RENDERER_HH
+#define PAZ_GRAPHICS_RENDERER_HH
 
-#include "PAZ_Graphics"
+#include "detect_os.hpp"
 
 #ifdef PAZ_MACOS
 
+#include "PAZ_Graphics"
 #import <MetalKit/MetalKit.h>
 
 @interface Renderer : NSObject<MTKViewDelegate>
