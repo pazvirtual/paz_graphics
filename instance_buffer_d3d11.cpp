@@ -26,18 +26,21 @@ void paz::InstanceBuffer::Data::addAttribute(int dim, DataType type, const void*
     checkSize(dim, size);
     _buffers.emplace_back();
     _strides.push_back(TypeSize*dim);
-    D3D11_BUFFER_DESC bufDescriptor = {};
-    bufDescriptor.Usage = D3D11_USAGE_DEFAULT;
-    bufDescriptor.ByteWidth = TypeSize*size;
-    bufDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    D3D11_SUBRESOURCE_DATA srData = {};
-    srData.pSysMem = data;
-    const auto hr = d3d_device()->CreateBuffer(&bufDescriptor, &srData,
-        &_buffers.back());
-    if(hr)
+    if(size)
     {
-        throw std::runtime_error("Failed to create instance buffer (HRESULT " +
-            std::to_string(hr) + ").");
+        D3D11_BUFFER_DESC bufDescriptor = {};
+        bufDescriptor.Usage = D3D11_USAGE_DEFAULT;
+        bufDescriptor.ByteWidth = TypeSize*size;
+        bufDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+        D3D11_SUBRESOURCE_DATA srData = {};
+        srData.pSysMem = data;
+        const auto hr = d3d_device()->CreateBuffer(&bufDescriptor, &srData,
+            &_buffers.back());
+        if(hr)
+        {
+            throw std::runtime_error("Failed to create instance buffer (HRESULT"
+                " " + std::to_string(hr) + ").");
+        }
     }
     const unsigned int slot = _inputElemDescriptors.size();
     D3D11_INPUT_ELEMENT_DESC inputDescriptor = {};
