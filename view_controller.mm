@@ -164,6 +164,18 @@
     }
 }
 
+- (void)scrollWheel:(NSEvent*)event
+{
+    _scrollOffset.first = [event scrollingDeltaX];
+    _scrollOffset.second = [event scrollingDeltaY];
+
+    if([event hasPreciseScrollingDeltas])
+    {
+        _scrollOffset.first *= 0.1;
+        _scrollOffset.second *= 0.1;
+    }
+}
+
 - (void)flagsChanged:(NSEvent*)event
 {
     static const int shift = static_cast<int>(paz::Window::Key::LeftShift);
