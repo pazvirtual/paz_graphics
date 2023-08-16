@@ -1,17 +1,14 @@
 #include "PAZ_Graphics"
+#include <cmath>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846264338328
+#endif
 
 static constexpr float ZNear = 0.1f;
 static constexpr float ZFar = 100.f;
 static constexpr float YFov = 65.f*M_PI/180.f;
 //static constexpr int Res = 2000;
-
-static constexpr std::array<float, 2*4> QuadPos =
-{
-     1, -1,
-     1,  1,
-    -1, -1,
-    -1,  1
-};
 
 static constexpr std::array<float, 4*4> GroundPos =
 {
@@ -83,28 +80,25 @@ uniform depthSampler2D shadowMap;
 layout(location = 0) out vec4 color;
 void main()
 {
-    vec3 projCoords = lightSpcPos.xyz/lightSpcPos.w;
+    vec3 projCoords = 0.5*lightSpcPos.xyz/lightSpcPos.w + 0.5;
     float depth = projCoords.z;
-    vec2 uv = projCoords.xy*0.5 + 0.5;
+    vec2 uv = projCoords.xy;
     if(depth - 1e-4 > texture(shadowMap, uv).r)
     {
         color = vec4(0.);
     }
     else
     {
-        color = vec4(0.5/length(projCoords.xy));
+        color = vec4(0.5/length(uv));
     }
     color += 0.1;
-    color.rgb = pow(clamp(color.rgb, vec3(0.), vec3(1.)), 0.4545);
+    color.rgb = pow(clamp(color.rgb, vec3(0.), vec3(1.)), vec3(0.4545));
 }
 )===";
 
 int main(int, char** argv)
 {
     const std::string appDir = paz::split_path(argv[0])[0];
-
-    paz::VertexBuffer quadVerts;
-    quadVerts.attribute(2, QuadPos);
 
     paz::VertexBuffer groundVerts;
     groundVerts.attribute(4, GroundPos);

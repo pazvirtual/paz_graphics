@@ -175,10 +175,13 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
 
 void paz::RenderPass::depth(DepthTestMode mode)
 {
-    if(mode == DepthTestMode::Disable && DepthTestEnabled)
+    if(mode == DepthTestMode::Disable)
     {
-        DepthTestEnabled = false;
-        glDisable(GL_DEPTH_TEST);
+        if(DepthTestEnabled)
+        {
+            DepthTestEnabled = false;
+            glDisable(GL_DEPTH_TEST);
+        }
     }
     else
     {

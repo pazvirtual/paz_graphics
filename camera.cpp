@@ -8,9 +8,9 @@ std::array<float, 16> paz::perspective(float yFov, float ratio, float zNear,
     std::array<float, 16> res = {};
     res[0] = 1.f/(ratio*tanHalfFov);
     res[5] = 1.f/tanHalfFov;
-    res[10] = zFar/(zNear - zFar);
+    res[10] = (zNear + zFar)/(zNear - zFar);
     res[11] = -1.f;
-    res[14] = -(zFar*zNear)/(zFar - zNear);
+    res[14] = 2.f*zFar*zNear/(zNear - zFar);
     return res;
 }
 
