@@ -3,7 +3,7 @@
 #ifdef PAZ_WINDOWS
 
 #include "PAZ_Graphics"
-#include "util_d3d11.hpp"
+#include "util_windows.hpp"
 #include "internal_data.hpp"
 #include "common.hpp"
 

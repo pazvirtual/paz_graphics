@@ -8,7 +8,7 @@
 #import "renderer.hh"
 #include "internal_data.hpp"
 #include "common.hpp"
-#include "util_metal.hh"
+#include "util_macos.hh"
 #import <MetalKit/MetalKit.h>
 
 #define VIEW_CONTROLLER static_cast<ViewController*>([[static_cast<\

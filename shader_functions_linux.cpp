@@ -3,7 +3,7 @@
 #ifdef PAZ_LINUX
 
 #include "PAZ_Graphics"
-#include "util_opengl.hpp"
+#include "util_linux.hpp"
 #include "shading_lang.hpp"
 #include "internal_data.hpp"
 #include "common.hpp"

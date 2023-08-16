@@ -11,7 +11,7 @@
 #include "keycodes.hpp"
 #include "common.hpp"
 #include "internal_data.hpp"
-#include "util_d3d11.hpp"
+#include "util_windows.hpp"
 #include <d3dcompiler.h>
 #include <windowsx.h>
 #include <cmath>

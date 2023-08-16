@@ -3,14 +3,14 @@
 #ifdef PAZ_LINUX
 
 #include "PAZ_Graphics"
-#include "util_opengl.hpp"
+#include "util_linux.hpp"
 #include "internal_data.hpp"
 #include "common.hpp"
 #include "gl_core_4_1.h"
 #include <GLFW/glfw3.h>
 #include <numeric>
 
-paz::InstanceBuffer::Data::~Data()
+paz::VertexBuffer::Data::~Data()
 {
     for(auto& n : _ids)
     {
@@ -19,38 +19,38 @@ paz::InstanceBuffer::Data::~Data()
     glDeleteVertexArrays(1, &_id);
 }
 
-paz::InstanceBuffer::Data::Data()
+paz::VertexBuffer::Data::Data()
 {
     glGenVertexArrays(1, &_id);
 }
 
-paz::InstanceBuffer::InstanceBuffer()
+paz::VertexBuffer::VertexBuffer()
 {
     initialize();
 
     _data = std::make_shared<Data>();
 }
 
-paz::InstanceBuffer::InstanceBuffer(std::size_t size) : InstanceBuffer()
+paz::VertexBuffer::VertexBuffer(std::size_t size) : VertexBuffer()
 {
-    _data->_numInstances = size;
+    _data->_numVertices = size;
 }
 
-void paz::InstanceBuffer::Data::checkSize(int dim, std::size_t size)
+void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)
 {
     const std::size_t m = size/dim;
-    if(!_numInstances)
+    if(!_numVertices)
     {
-        _numInstances = m;
+        _numVertices = m;
     }
-    else if(m != _numInstances)
+    else if(m != _numVertices)
     {
-        throw std::runtime_error("Number of instances for each attribute must m"
-            "atch.");
+        throw std::runtime_error("Number of vertices for each attribute must ma"
+            "tch.");
     }
 }
 
-void paz::InstanceBuffer::Data::addAttribute(int dim, DataType type)
+void paz::VertexBuffer::Data::addAttribute(int dim, DataType type)
 {
     const std::size_t i = _ids.size();
     _dims.push_back(dim);
@@ -98,19 +98,19 @@ void paz::InstanceBuffer::Data::addAttribute(int dim, DataType type)
                 default: throw std::logic_error("Invalid data type.");
             }
             break;
-        default: throw std::logic_error("Instance attribute dimensions must be "
-            "1, 2, or 4.");
+        default: throw std::logic_error("Vertex attribute dimensions must be 1,"
+            " 2, or 4.");
     }
 }
 
-void paz::InstanceBuffer::addAttribute(int dim, DataType type)
+void paz::VertexBuffer::addAttribute(int dim, DataType type)
 {
-    if(!_data->_numInstances)
+    if(!_data->_numVertices)
     {
-        throw std::runtime_error("Instance buffer size has not been set.");
+        throw std::runtime_error("Vertex buffer size has not been set.");
     }
     _data->addAttribute(dim, type);
-    std::size_t s = dim*_data->_numInstances;
+    std::size_t s = dim*_data->_numVertices;
     switch(type)
     {
         case DataType::SInt: s *= sizeof(int); break;
@@ -121,7 +121,7 @@ void paz::InstanceBuffer::addAttribute(int dim, DataType type)
     glBufferData(GL_ARRAY_BUFFER, s, nullptr, GL_DYNAMIC_DRAW);
 }
 
-void paz::InstanceBuffer::addAttribute(int dim, const GLfloat* data, std::size_t
+void paz::VertexBuffer::addAttribute(int dim, const GLfloat* data, std::size_t
     size)
 {
     _data->checkSize(dim, size);
@@ -129,7 +129,7 @@ void paz::InstanceBuffer::addAttribute(int dim, const GLfloat* data, std::size_t
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*size, data, GL_STATIC_DRAW);
 }
 
-void paz::InstanceBuffer::addAttribute(int dim, const GLuint* data, std::size_t
+void paz::VertexBuffer::addAttribute(int dim, const GLuint* data, std::size_t
     size)
 {
     _data->checkSize(dim, size);
@@ -137,7 +137,7 @@ void paz::InstanceBuffer::addAttribute(int dim, const GLuint* data, std::size_t
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLuint)*size, data, GL_STATIC_DRAW);
 }
 
-void paz::InstanceBuffer::addAttribute(int dim, const GLint* data, std::size_t
+void paz::VertexBuffer::addAttribute(int dim, const GLint* data, std::size_t
     size)
 {
     _data->checkSize(dim, size);
@@ -145,8 +145,8 @@ void paz::InstanceBuffer::addAttribute(int dim, const GLint* data, std::size_t
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLint)*size, data, GL_STATIC_DRAW);
 }
 
-void paz::InstanceBuffer::subAttribute(std::size_t idx, const GLfloat* data,
-    std::size_t size)
+void paz::VertexBuffer::subAttribute(std::size_t idx, const GLfloat* data, std::
+    size_t size)
 {
     if(idx >= _data->_ids.size())
     {
@@ -163,8 +163,8 @@ void paz::InstanceBuffer::subAttribute(std::size_t idx, const GLfloat* data,
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLfloat)*size, data);
 }
 
-void paz::InstanceBuffer::subAttribute(std::size_t idx, const GLuint* data,
-    std::size_t size)
+void paz::VertexBuffer::subAttribute(std::size_t idx, const GLuint* data, std::
+    size_t size)
 {
     if(idx >= _data->_ids.size())
     {
@@ -181,7 +181,7 @@ void paz::InstanceBuffer::subAttribute(std::size_t idx, const GLuint* data,
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLuint)*size, data);
 }
 
-void paz::InstanceBuffer::subAttribute(std::size_t idx, const GLint* data, std::
+void paz::VertexBuffer::subAttribute(std::size_t idx, const GLint* data, std::
     size_t size)
 {
     if(idx >= _data->_ids.size())
@@ -199,14 +199,14 @@ void paz::InstanceBuffer::subAttribute(std::size_t idx, const GLint* data, std::
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(GLint)*size, data);
 }
 
-bool paz::InstanceBuffer::empty() const
+bool paz::VertexBuffer::empty() const
 {
-    return !_data || !_data->_numInstances;
+    return !_data || !_data->_numVertices;
 }
 
-std::size_t paz::InstanceBuffer::size() const
+std::size_t paz::VertexBuffer::size() const
 {
-    return _data ? _data->_numInstances : 0;
+    return _data ? _data->_numVertices : 0;
 }
 
 #endif

@@ -3,7 +3,7 @@
 #ifdef PAZ_LINUX
 
 #include "PAZ_Graphics"
-#include "util_opengl.hpp"
+#include "util_linux.hpp"
 #include "gl_core_4_1.h"
 #include <GLFW/glfw3.h>
 
