@@ -163,9 +163,7 @@ paz::Texture compute_shadow_map(const paz::VertexBuffer& groundVerts, const
     const paz::VertexFunction shadowVert(ShadowVertSrc);
     const paz::FragmentFunction shadowFrag(ShadowFragSrc);
 
-    const paz::Shader shadow(shadowVert, shadowFrag);
-
-    paz::RenderPass calcShadows(framebuffer, shadow);
+    paz::RenderPass calcShadows(framebuffer, shadowVert, shadowFrag);
 
     calcShadows.begin({}, paz::LoadAction::Clear);
     calcShadows.depth(paz::DepthTestMode::Less);
@@ -196,9 +194,7 @@ int main(int, char** argv)
     const paz::VertexFunction sceneVert(SceneVertSrc);
     const paz::FragmentFunction sceneFrag(SceneFragSrc);
 
-    const paz::Shader render(sceneVert, sceneFrag);
-
-    paz::RenderPass renderScene(render);
+    paz::RenderPass renderScene(sceneVert, sceneFrag);
 
     const paz::Texture shadowMap = compute_shadow_map(groundVerts, cubeVerts);
     paz::Image<std::uint8_t, 1> img(Scale*Size, Scale*Size);

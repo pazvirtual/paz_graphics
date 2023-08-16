@@ -132,21 +132,22 @@ paz::RenderPass::Data::~Data()
 
 paz::RenderPass::RenderPass() {}
 
-paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
-    BlendMode blendMode)
+paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
+    const FragmentFunction& frag, BlendMode blendMode)
 {
     initialize();
 
     _data = std::make_shared<Data>();
 
-    _data->_shader = shader._data;
+    _data->_vert = vert._data;
+    _data->_frag = frag._data;
     _data->_fbo = fbo._data;
     MTLRenderPipelineDescriptor* pipelineDescriptor =
         [[MTLRenderPipelineDescriptor alloc] init];
-    [pipelineDescriptor setVertexFunction:static_cast<id<MTLFunction>>(shader.
-        _data->_vert._data->_function)];
-    [pipelineDescriptor setFragmentFunction:static_cast<id<MTLFunction>>(shader.
-        _data->_frag._data->_function)];
+    [pipelineDescriptor setVertexFunction:static_cast<id<MTLFunction>>(_data->
+        _vert->_function)];
+    [pipelineDescriptor setFragmentFunction:static_cast<id<MTLFunction>>(_data->
+        _frag->_function)];
     for(std::size_t i = 0; i < _data->_fbo->_colorAttachments.size(); ++i)
     {
         [[pipelineDescriptor colorAttachments][i] setPixelFormat:
@@ -201,19 +202,21 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
     [pipelineDescriptor release];
 }
 
-paz::RenderPass::RenderPass(const Shader& shader, BlendMode blendMode)
+paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
+    frag, BlendMode blendMode)
 {
     initialize();
 
     _data = std::make_shared<Data>();
 
-    _data->_shader = shader._data;
+    _data->_vert = vert._data;
+    _data->_frag = frag._data;
     MTLRenderPipelineDescriptor* pipelineDescriptor =
         [[MTLRenderPipelineDescriptor alloc] init];
-    [pipelineDescriptor setVertexFunction:static_cast<id<MTLFunction>>(shader.
-        _data->_vert._data->_function)];
-    [pipelineDescriptor setFragmentFunction:static_cast<id<MTLFunction>>(shader.
-        _data->_frag._data->_function)];
+    [pipelineDescriptor setVertexFunction:static_cast<id<MTLFunction>>(_data->
+        _vert->_function)];
+    [pipelineDescriptor setFragmentFunction:static_cast<id<MTLFunction>>(_data->
+        _frag->_function)];
     [[pipelineDescriptor colorAttachments][0] setPixelFormat:[[VIEW_CONTROLLER
         mtkView] colorPixelFormat]];
     if(blendMode != paz::BlendMode::Disable)

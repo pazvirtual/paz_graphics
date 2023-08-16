@@ -58,27 +58,23 @@ static void init(paz::RenderPass& scenePass, paz::RenderPass& textPass, paz::
     paz::Framebuffer renderFramebuffer;
     renderFramebuffer.attach(render);
 
-    const paz::VertexFunction shaderVert(paz::load_file(appDir +
-        "/shader.vert").str());
+    const paz::VertexFunction sceneVert(paz::load_file(appDir + "/shader.vert").
+        str());
     const paz::VertexFunction fontVert(paz::load_file(appDir + "/font.vert").
         str());
     const paz::VertexFunction quadVert(paz::load_file(appDir + "/quad.vert").
         str());
-    const paz::FragmentFunction shaderFrag(paz::load_file(appDir +
+    const paz::FragmentFunction sceneFrag(paz::load_file(appDir +
         "/shader.frag").str());
     const paz::FragmentFunction fontFrag(paz::load_file(appDir + "/font.frag").
         str());
     const paz::FragmentFunction postFrag(paz::load_file(appDir + "/post.frag").
         str());
 
-    const paz::Shader sceneShader(shaderVert, shaderFrag);
-    const paz::Shader textShader(fontVert, fontFrag);
-    const paz::Shader postShader(quadVert, postFrag);
-
-    scenePass = paz::RenderPass(renderFramebuffer, sceneShader);
-    textPass = paz::RenderPass(renderFramebuffer, textShader, paz::BlendMode::
-        Additive);
-    postPass = paz::RenderPass(postShader);
+    scenePass = paz::RenderPass(renderFramebuffer, sceneVert, sceneFrag);
+    textPass = paz::RenderPass(renderFramebuffer, fontVert, fontFrag, paz::
+        BlendMode::Additive);
+    postPass = paz::RenderPass(quadVert, postFrag);
 }
 
 int main(int, char** argv)

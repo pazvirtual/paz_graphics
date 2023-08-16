@@ -88,23 +88,6 @@ struct paz::FragmentFunction::Data
     ~Data();
 };
 
-struct paz::Shader::Data
-{
-#ifdef PAZ_MACOS
-    paz::VertexFunction _vert;
-    paz::FragmentFunction _frag;
-#else
-    unsigned int _id = 0;
-    // uniformIDs[name] = (id, type, size)
-    std::unordered_map<std::string, std::tuple<unsigned int, unsigned int, int>>
-        _uniformIds;
-    // attribTypes[location] = type (array attributes are not supported)
-    std::unordered_map<unsigned int, unsigned int> _attribTypes;
-    bool _thickLines = false;
-    ~Data();
-#endif
-};
-
 struct paz::RenderPass::Data
 {
 #ifdef PAZ_MACOS
@@ -113,11 +96,12 @@ struct paz::RenderPass::Data
     std::unordered_map<std::string, int> _vertexArgs;
     std::unordered_map<std::string, int> _fragmentArgs;
     std::vector<std::size_t> _vertexAttributeStrides;
+    std::shared_ptr<VertexFunction::Data> _vert;
+    std::shared_ptr<FragmentFunction::Data> _frag;
     ~Data();
 #else
     BlendMode _blendMode = BlendMode::Disable;
 #endif
-    std::shared_ptr<Shader::Data> _shader;
     std::shared_ptr<Framebuffer::Data> _fbo;
 };
 

@@ -29,7 +29,7 @@ int main(int, char** argv)
     const paz::FragmentFunction fontFrag(paz::load_file(appDir + "/font.frag").
         str());
 
-    paz::RenderPass textPass(paz::Shader(fontVert, fontFrag));
+    paz::RenderPass textPass(fontVert, fontFrag);
 
     double time = 0.;
     for(std::size_t k = 0; k < NumSteps; ++k)

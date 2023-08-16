@@ -187,7 +187,6 @@ namespace paz
 
     class VertexFunction
     {
-        friend class Shader;
         friend class RenderPass;
 
         struct Data;
@@ -200,7 +199,6 @@ namespace paz
 
     class FragmentFunction
     {
-        friend class Shader;
         friend class RenderPass;
 
         struct Data;
@@ -211,17 +209,6 @@ namespace paz
         FragmentFunction(const std::string& src);
     };
 
-    class Shader
-    {
-        friend class RenderPass;
-
-        struct Data;
-        std::shared_ptr<Data> _data;
-
-    public:
-        Shader(const VertexFunction& vert, const FragmentFunction& frag);
-    };
-
     class RenderPass
     {
         struct Data;
@@ -229,9 +216,10 @@ namespace paz
 
     public:
         RenderPass();
-        RenderPass(const Framebuffer& fbo, const Shader& shader, BlendMode mode
-            = BlendMode::Disable);
-        RenderPass(const Shader& shader, BlendMode mode = BlendMode::Disable);
+        RenderPass(const Framebuffer& fbo, const VertexFunction& vert, const
+            FragmentFunction& frag, BlendMode mode = BlendMode::Disable);
+        RenderPass(const VertexFunction& vert, const FragmentFunction& frag,
+            BlendMode mode = BlendMode::Disable);
         void begin(const std::vector<LoadAction>& colorLoadActions = {},
             LoadAction depthLoadAction = LoadAction::DontCare);
         void end();
