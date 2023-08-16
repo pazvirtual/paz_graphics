@@ -82,7 +82,9 @@ int main(int, char** argv)
 
     const std::string msg = paz::load_file(appDir + "/msg.txt").str();
 
+    paz::Window::SetTitle("PAZ_Graphics: example2d");
     paz::Window::SetMinSize(640, 480);
+    paz::Window::SetMaxSize(800, 800);
 
     const paz::Texture font(paz::load_pbm(appDir + "/font.pbm"));
 

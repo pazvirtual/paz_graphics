@@ -56,7 +56,7 @@ void paz::initialize()
 
 static std::chrono::time_point<std::chrono::steady_clock> FrameStart = std::
     chrono::steady_clock::now();
-static double CurFrameTime = 1./60.;
+static double PrevFrameTime = 1./60.;
 
 static std::unordered_set<void*> RenderTargets;
 
@@ -394,7 +394,7 @@ void paz::Window::Commit()
     glfwSwapBuffers(WindowPtr);
     reset_events();
     const auto now = std::chrono::steady_clock::now();
-    CurFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
+    PrevFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
         FrameStart).count()*1e-6;
     FrameStart = now;
     glfwPollEvents();
@@ -413,7 +413,7 @@ void paz::Window::Quit()
 
 double paz::Window::FrameTime()
 {
-    return CurFrameTime;
+    return PrevFrameTime;
 }
 
 void paz::Window::SetMinSize(int width, int height)
