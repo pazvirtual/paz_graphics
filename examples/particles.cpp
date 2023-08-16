@@ -98,8 +98,8 @@ int main(int, char** argv)
         // Drawing.
         r.begin({paz::RenderPass::LoadAction::Clear}, paz::RenderPass::
             LoadAction::DontCare);
-        r.uniform("projection", p.data(), 16);
-        r.uniform("view", v.data(), 16);
+        r.uniform("projection", p);
+        r.uniform("view", v);
         for(auto it = particles.rbegin(); it != particles.rend(); ++it)
         {
             r.uniform("origin", (float)it->second[0], (float)it->second[1],
