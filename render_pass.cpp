@@ -39,9 +39,9 @@ static void check_attributes(const std::vector<unsigned int>& a, const std::
 {
     if(a.size() < b.size())
     {
-        throw std::invalid_argument("Vertex buffer has too few of attributes fo"
-            "r shader (got " + std::to_string(a.size()) + ", expected at least "
-            + std::to_string(b.size()) + ").");
+        throw std::invalid_argument("Vertex buffer has too few attributes for s"
+            "hader (got " + std::to_string(a.size()) + ", expected at least " +
+            std::to_string(b.size()) + ").");
     }
     for(std::size_t i = 0; i < a.size(); ++i)
     {
