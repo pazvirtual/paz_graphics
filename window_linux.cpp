@@ -217,15 +217,18 @@ static void mouse_button_callback(int button, int action)
     GamepadActive = false;
     MouseActive = true;
 
-    if(action == GLFW_PRESS)
+    if(button < paz::NumMouseButtons)
     {
-        MouseDown[button] = true;
-        MousePressed[button] = true;
-    }
-    else if(action == GLFW_RELEASE)
-    {
-        MouseDown[button] = false;
-        MouseReleased[button] = true;
+        if(action == GLFW_PRESS)
+        {
+            MouseDown[button] = true;
+            MousePressed[button] = true;
+        }
+        else if(action == GLFW_RELEASE)
+        {
+            MouseDown[button] = false;
+            MouseReleased[button] = true;
+        }
     }
 }
 

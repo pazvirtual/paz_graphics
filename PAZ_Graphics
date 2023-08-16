@@ -202,7 +202,7 @@ namespace paz
     };
 
     static constexpr int NumKeys = static_cast<int>(Key::Unknown);
-    static constexpr int NumMouseButtons = 8;
+    static constexpr int NumMouseButtons = 5;
     static constexpr int NumGamepadButtons = static_cast<int>(GamepadButton::
         Unknown);
 

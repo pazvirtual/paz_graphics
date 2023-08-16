@@ -16,7 +16,7 @@
 #include <windowsx.h>
 #include <cmath>
 #include <chrono>
-#include <mutex>
+#include <algorithm>
 
 static const std::string QuadVertSrc = 1 + R"===(
 struct InputData
@@ -541,7 +541,6 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
             break;
         }
-#if 0
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
@@ -551,67 +550,62 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         case WM_MBUTTONUP:
         case WM_XBUTTONUP:
         {
-    GamepadActive = false;
-    MouseActive = true;
+            GamepadActive = false;
+            MouseActive = true;
 
-    if(action == GLFW_PRESS)
-    {
-        MouseDown[button] = true;
-        MousePressed[button] = true;
-    }
-    else if(action == GLFW_RELEASE)
-    {
-        MouseDown[button] = false;
-        MouseReleased[button] = true;
-    }
-
-            int i, button, action;
-
-            if (uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONUP)
-                button = GLFW_MOUSE_BUTTON_LEFT;
-            else if (uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONUP)
-                button = GLFW_MOUSE_BUTTON_RIGHT;
-            else if (uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP)
-                button = GLFW_MOUSE_BUTTON_MIDDLE;
-            else if (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
-                button = GLFW_MOUSE_BUTTON_4;
-            else
-                button = GLFW_MOUSE_BUTTON_5;
-
-            if (uMsg == WM_LBUTTONDOWN || uMsg == WM_RBUTTONDOWN ||
-                uMsg == WM_MBUTTONDOWN || uMsg == WM_XBUTTONDOWN)
+            int button;
+            if(uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONUP)
             {
-                action = GLFW_PRESS;
+                button = 0;
             }
-            else
-                action = GLFW_RELEASE;
-
-            for (i = 0;  i <= GLFW_MOUSE_BUTTON_LAST;  i++)
+            else if(uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONUP)
             {
-                if (window->mouseButtons[i] == GLFW_PRESS)
-                    break;
+                button = 1;
+            }
+            else if(uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP)
+            {
+                button = 2;
+            }
+            else if(GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
+            {
+                button = 3;
+            }
+            else // XBUTTON2
+            {
+                button = 4;
             }
 
-            if (i > GLFW_MOUSE_BUTTON_LAST)
+            if(std::none_of(MouseDown.begin(), MouseDown.end(), [](bool x){
+                return x; }))
+            {
                 SetCapture(hWnd);
-
-            _glfwInputMouseClick(window, button, action, getKeyMods());
-
-            for (i = 0;  i <= GLFW_MOUSE_BUTTON_LAST;  i++)
-            {
-                if (window->mouseButtons[i] == GLFW_PRESS)
-                    break;
             }
 
-            if (i > GLFW_MOUSE_BUTTON_LAST)
-                ReleaseCapture();
+            if(uMsg == WM_LBUTTONDOWN || uMsg == WM_RBUTTONDOWN || uMsg ==
+                WM_MBUTTONDOWN || uMsg == WM_XBUTTONDOWN)
+            {
+                MouseDown[button] = true;
+                MousePressed[button] = true;
+            }
+            else
+            {
+                MouseDown[button] = false;
+                MouseReleased[button] = true;
+            }
 
-            if (uMsg == WM_XBUTTONDOWN || uMsg == WM_XBUTTONUP)
+            if(std::none_of(MouseDown.begin(), MouseDown.end(), [](bool x){
+                return x; }))
+            {
+                ReleaseCapture();
+            }
+
+            if(uMsg == WM_XBUTTONDOWN || uMsg == WM_XBUTTONUP)
+            {
                 return TRUE;
+            }
 
             return 0;
         }
-#endif
         case WM_MOUSEMOVE:
         {
             GamepadActive = false;
@@ -953,7 +947,7 @@ paz::Initializer::Initializer()
     // Create window and initialize Direct3D.
     WNDCLASSEXW PazWindow = {};
     PazWindow.cbSize = sizeof(WNDCLASSEXW);
-    PazWindow.style = CS_DBLCLKS|CS_PARENTDC|CS_GLOBALCLASS;
+    PazWindow.style = CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
     PazWindow.lpfnWndProc = window_proc;
     PazWindow.hCursor = LoadCursor(nullptr, IDC_ARROW);
     PazWindow.lpszClassName = L"PazWindow";
