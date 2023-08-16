@@ -11,35 +11,43 @@
 #endif
 #include <GLFW/glfw3.h>
 
-paz::Shader::Data::~Data()
+paz::ShaderData::~ShaderData()
 {
-    glDeleteProgram(_id);
+    if(_id)
+    {
+        glDeleteProgram(_id);
+    }
 }
 
-paz::Shader::Shader(const VertexFunction& vert, const FragmentFunction& frag)
+paz::ShaderData::ShaderData() {}
+
+void paz::ShaderData::init(unsigned int vertId, unsigned int thickLinesId,
+    unsigned int fragId)
 {
+    if(_id)
+    {
+        throw std::logic_error("Shader has already been initialized.");
+    }
+
     initialize();
 
-    _data = std::make_shared<Data>();
-
     // Link shaders.
-    _data->_id = glCreateProgram();
-    glAttachShader(_data->_id, vert._data->_id);
-    GLuint thickLinesId = vert._data->_thickLinesId;
+    _id = glCreateProgram();
+    glAttachShader(_id, vertId);
     if(thickLinesId)
     {
-        _data->_thickLines = true;
-        glAttachShader(_data->_id, thickLinesId);
+        _thickLines = true;
+        glAttachShader(_id, thickLinesId);
     }
-    glAttachShader(_data->_id, frag._data->_id);
-    glLinkProgram(_data->_id);
+    glAttachShader(_id, fragId);
+    glLinkProgram(_id);
 
     // Check linking.
     int success;
-    glGetProgramiv(_data->_id, GL_LINK_STATUS, &success);
+    glGetProgramiv(_id, GL_LINK_STATUS, &success);
     if(!success)
     {
-        std::string errorLog = get_log(_data->_id, true);
+        std::string errorLog = get_log(_id, true);
         throw std::runtime_error("Failed to link shader program:\n" + errorLog);
     }
 
@@ -47,14 +55,14 @@ paz::Shader::Shader(const VertexFunction& vert, const FragmentFunction& frag)
     {
         GLint n;
         GLsizei bufSiz;
-        glGetProgramiv(_data->_id, GL_ACTIVE_ATTRIBUTES, &n);
-        glGetProgramiv(_data->_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &bufSiz);
+        glGetProgramiv(_id, GL_ACTIVE_ATTRIBUTES, &n);
+        glGetProgramiv(_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &bufSiz);
         for(GLint i = 0; i < n; ++i)
         {
             GLint size;
             GLenum type;
             std::vector<GLchar> buf(bufSiz);
-            glGetActiveAttrib(_data->_id, i, bufSiz, nullptr, &size, &type, buf.
+            glGetActiveAttrib(_id, i, bufSiz, nullptr, &size, &type, buf.
                 data());
             std::string name(buf.data());
             name = name.substr(0, name.find("[", 0));
@@ -63,8 +71,7 @@ paz::Shader::Shader(const VertexFunction& vert, const FragmentFunction& frag)
             {
                 continue;
             }
-            const GLint location = glGetAttribLocation(_data->_id, name.
-                c_str());
+            const GLint location = glGetAttribLocation(_id, name.c_str());
             if(location < 0)
             {
                 throw std::logic_error("Vertex attribute \"" + name + "\" is no"
@@ -72,7 +79,7 @@ paz::Shader::Shader(const VertexFunction& vert, const FragmentFunction& frag)
             }
             if(size >= 0)
             {
-                _data->_attribTypes[location] = type;
+                _attribTypes[location] = type;
             }
         }
     }
@@ -81,21 +88,21 @@ paz::Shader::Shader(const VertexFunction& vert, const FragmentFunction& frag)
     {
         GLint n;
         GLsizei bufSiz;
-        glGetProgramiv(_data->_id, GL_ACTIVE_UNIFORMS, &n);
-        glGetProgramiv(_data->_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, &bufSiz);
+        glGetProgramiv(_id, GL_ACTIVE_UNIFORMS, &n);
+        glGetProgramiv(_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, &bufSiz);
         for(GLint i = 0; i < n; ++i)
         {
             GLint size;
             GLenum type;
             std::vector<GLchar> buf(bufSiz);
-            glGetActiveUniform(_data->_id, i, bufSiz, nullptr, &size, &type,
-                buf.data());
+            glGetActiveUniform(_id, i, bufSiz, nullptr, &size, &type, buf.
+                data());
             const std::string name(buf.data());
             std::size_t end = name.find("[", 0);
-            const GLuint location = glGetUniformLocation(_data->_id, name.
-                substr(0, end).c_str());
-            _data->_uniformIds[name.substr(0, end)] = std::make_tuple(location,
-                type, size);
+            const GLuint location = glGetUniformLocation(_id, name.substr(0,
+                end).c_str());
+            _uniformIds[name.substr(0, end)] = std::make_tuple(location, type,
+                size);
         }
     }
 }

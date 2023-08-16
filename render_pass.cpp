@@ -12,7 +12,7 @@
 #include <GLFW/glfw3.h>
 
 #define CASE(a, b) case paz::PrimitiveType::a: return GL_##b;
-#define CHECK_UNIFORM if(!_data->_shader->_uniformIds.count(name)) return;
+#define CHECK_UNIFORM if(!_data->_shader._uniformIds.count(name)) return;
 
 static constexpr float Transparent[] = {0.f, 0.f, 0.f, 0.f};
 static int NextSlot = 0;
@@ -58,25 +58,28 @@ static void check_attributes(const std::vector<unsigned int>& a, const std::
 
 paz::RenderPass::RenderPass() {}
 
-paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
-    BlendMode mode)
+paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
+    const FragmentFunction& frag, BlendMode mode)
 {
     initialize();
 
     _data = std::make_shared<Data>();
 
     _data->_fbo = fbo._data;
-    _data->_shader = shader._data;
+    _data->_shader.init(vert._data->_id, vert._data->_thickLinesId, frag._data->
+        _id);
     _data->_blendMode = mode;
 }
 
-paz::RenderPass::RenderPass(const Shader& shader, BlendMode mode)
+paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
+    frag, BlendMode mode)
 {
     initialize();
 
     _data = std::make_shared<Data>();
 
-    _data->_shader = shader._data;
+    _data->_shader.init(vert._data->_id, vert._data->_thickLinesId, frag._data->
+        _id);
     _data->_blendMode = mode;
 }
 
@@ -180,12 +183,12 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         }
     }
 
-    if(!_data->_shader->_id)
+    if(!_data->_shader._id)
     {
         throw std::runtime_error("Shader is not initialized.");
     }
-    glUseProgram(_data->_shader->_id);
-    if(_data->_shader->_thickLines)
+    glUseProgram(_data->_shader._id);
+    if(_data->_shader._thickLines)
     {
         uniform("paz_Width", Window::ViewportWidth());
         uniform("paz_Height", Window::ViewportHeight());
@@ -321,54 +324,54 @@ void paz::RenderPass::read(const std::string& name, const Texture& tex)
 void paz::RenderPass::uniform(const std::string& name, int x)
 {
     CHECK_UNIFORM
-    glUniform1i(std::get<0>(_data->_shader->_uniformIds.at(name)), x);
+    glUniform1i(std::get<0>(_data->_shader._uniformIds.at(name)), x);
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y)
 {
     CHECK_UNIFORM
-    glUniform2i(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y);
+    glUniform2i(std::get<0>(_data->_shader._uniformIds.at(name)), x, y);
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z)
 {
     CHECK_UNIFORM
-    glUniform3i(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y, z);
+    glUniform3i(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z);
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
     w)
 {
     CHECK_UNIFORM
-    glUniform4i(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y, z, w);
+    glUniform4i(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z, w);
 }
 
 void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
     size)
 {
     CHECK_UNIFORM
-    switch(std::get<1>(_data->_shader->_uniformIds.at(name)))
+    switch(std::get<1>(_data->_shader._uniformIds.at(name)))
     {
         case GL_INT:
-            glUniform1iv(std::get<0>(_data->_shader->_uniformIds.at(name)),
-                size, x);
+            glUniform1iv(std::get<0>(_data->_shader._uniformIds.at(name)), size,
+                x);
             break;
         case GL_INT_VEC2:
-            glUniform2iv(std::get<0>(_data->_shader->_uniformIds.at(name)),
-                size/2, x);
+            glUniform2iv(std::get<0>(_data->_shader._uniformIds.at(name)), size/
+                2, x);
             break;
         case GL_INT_VEC3:
-            glUniform3iv(std::get<0>(_data->_shader->_uniformIds.at(name)),
-                size/3, x);
+            glUniform3iv(std::get<0>(_data->_shader._uniformIds.at(name)), size/
+                3, x);
             break;
         case GL_INT_VEC4:
-            glUniform4iv(std::get<0>(_data->_shader->_uniformIds.at(name)),
-                size/4, x);
+            glUniform4iv(std::get<0>(_data->_shader._uniformIds.at(name)), size/
+                4, x);
             break;
         default:
             throw std::invalid_argument("Unsupported type " + std::to_string(
-                std::get<1>(_data->_shader->_uniformIds.at(name))) +
-                " for uniform \"" + name + "\".");
+                std::get<1>(_data->_shader._uniformIds.at(name))) + " for unifo"
+                "rm \"" + name + "\".");
             break;
     }
 }
@@ -376,56 +379,56 @@ void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
 void paz::RenderPass::uniform(const std::string& name, unsigned int x)
 {
     CHECK_UNIFORM
-    glUniform1ui(std::get<0>(_data->_shader->_uniformIds.at(name)), x);
+    glUniform1ui(std::get<0>(_data->_shader._uniformIds.at(name)), x);
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y)
 {
     CHECK_UNIFORM
-    glUniform2ui(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y);
+    glUniform2ui(std::get<0>(_data->_shader._uniformIds.at(name)), x, y);
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z)
 {
     CHECK_UNIFORM
-    glUniform3ui(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y, z);
+    glUniform3ui(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z);
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z, unsigned int w)
 {
     CHECK_UNIFORM
-    glUniform4ui(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y, z, w);
+    glUniform4ui(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z, w);
 }
 
 void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
     std::size_t size)
 {
     CHECK_UNIFORM
-    switch(std::get<1>(_data->_shader->_uniformIds.at(name)))
+    switch(std::get<1>(_data->_shader._uniformIds.at(name)))
     {
         case GL_UNSIGNED_INT:
-            glUniform1uiv(std::get<0>(_data->_shader->_uniformIds.at(name)),
+            glUniform1uiv(std::get<0>(_data->_shader._uniformIds.at(name)),
                 size, x);
             break;
         case GL_UNSIGNED_INT_VEC2:
-            glUniform2uiv(std::get<0>(_data->_shader->_uniformIds.at(name)),
+            glUniform2uiv(std::get<0>(_data->_shader._uniformIds.at(name)),
                 size/2, x);
             break;
         case GL_UNSIGNED_INT_VEC3:
-            glUniform3uiv(std::get<0>(_data->_shader->_uniformIds.at(name)),
+            glUniform3uiv(std::get<0>(_data->_shader._uniformIds.at(name)),
                 size/3, x);
             break;
         case GL_UNSIGNED_INT_VEC4:
-            glUniform4uiv(std::get<0>(_data->_shader->_uniformIds.at(name)),
+            glUniform4uiv(std::get<0>(_data->_shader._uniformIds.at(name)),
                 size/4, x);
             break;
         default:
             throw std::invalid_argument("Unsupported type " + std::to_string(
-                std::get<1>(_data->_shader->_uniformIds.at(name))) +
-                " for uniform \"" + name + "\".");
+                std::get<1>(_data->_shader._uniformIds.at(name))) + " for unifo"
+                "rm \"" + name + "\".");
             break;
     }
 }
@@ -433,67 +436,67 @@ void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
 void paz::RenderPass::uniform(const std::string& name, float x)
 {
     CHECK_UNIFORM
-    glUniform1f(std::get<0>(_data->_shader->_uniformIds.at(name)), x);
+    glUniform1f(std::get<0>(_data->_shader._uniformIds.at(name)), x);
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y)
 {
     CHECK_UNIFORM
-    glUniform2f(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y);
+    glUniform2f(std::get<0>(_data->_shader._uniformIds.at(name)), x, y);
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z)
 {
     CHECK_UNIFORM
-    glUniform3f(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y, z);
+    glUniform3f(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z);
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z, float w)
 {
     CHECK_UNIFORM
-    glUniform4f(std::get<0>(_data->_shader->_uniformIds.at(name)), x, y, z, w);
+    glUniform4f(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z, w);
 }
 
 void paz::RenderPass::uniform(const std::string& name, const float* x, std::
     size_t size)
 {
     CHECK_UNIFORM
-    switch(std::get<1>(_data->_shader->_uniformIds.at(name)))
+    switch(std::get<1>(_data->_shader._uniformIds.at(name)))
     {
         case GL_FLOAT:
-            glUniform1fv(std::get<0>(_data->_shader->_uniformIds.at(name)),
-                size, x);
+            glUniform1fv(std::get<0>(_data->_shader._uniformIds.at(name)), size,
+                x);
             break;
         case GL_FLOAT_VEC2:
-            glUniform2fv(std::get<0>(_data->_shader->_uniformIds.at(name)),
-                size/2, x);
+            glUniform2fv(std::get<0>(_data->_shader._uniformIds.at(name)), size/
+                2, x);
             break;
         case GL_FLOAT_VEC3:
-            glUniform3fv(std::get<0>(_data->_shader->_uniformIds.at(name)),
-                size/3, x);
+            glUniform3fv(std::get<0>(_data->_shader._uniformIds.at(name)), size/
+                3, x);
             break;
         case GL_FLOAT_VEC4:
-            glUniform4fv(std::get<0>(_data->_shader->_uniformIds.at(name)),
-                size/4, x);
+            glUniform4fv(std::get<0>(_data->_shader._uniformIds.at(name)), size/
+                4, x);
             break;
         case GL_FLOAT_MAT2:
-            glUniformMatrix2fv(std::get<0>(_data->_shader->_uniformIds.at(
-                name)), size/4, GL_FALSE, x);
+            glUniformMatrix2fv(std::get<0>(_data->_shader._uniformIds.at(name)),
+                size/4, GL_FALSE, x);
             break;
         case GL_FLOAT_MAT3:
-            glUniformMatrix3fv(std::get<0>(_data->_shader->_uniformIds.at(
-                name)), size/9, GL_FALSE, x);
+            glUniformMatrix3fv(std::get<0>(_data->_shader._uniformIds.at(name)),
+                size/9, GL_FALSE, x);
             break;
         case GL_FLOAT_MAT4:
-            glUniformMatrix4fv(std::get<0>(_data->_shader->_uniformIds.at(
-                name)), size/16, GL_FALSE, x);
+            glUniformMatrix4fv(std::get<0>(_data->_shader._uniformIds.at(name)),
+                size/16, GL_FALSE, x);
             break;
         default:
             throw std::invalid_argument("Unsupported type " + std::to_string(
-                std::get<1>(_data->_shader->_uniformIds.at(name))) +
-                " for uniform \"" + name + "\".");
+                std::get<1>(_data->_shader._uniformIds.at(name))) + " for unifo"
+                "rm \"" + name + "\".");
             break;
     }
 }
@@ -501,7 +504,7 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
 void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
     vertices)
 {
-    check_attributes(vertices._data->_types, _data->_shader->_attribTypes);
+    check_attributes(vertices._data->_types, _data->_shader._attribTypes);
 
     // Ensure that depth test mode and face culling mode do not persist.
     if(!DepthCalledThisPass)
@@ -520,7 +523,7 @@ void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
 void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
     const IndexBuffer& indices)
 {
-    check_attributes(vertices._data->_types, _data->_shader->_attribTypes);
+    check_attributes(vertices._data->_types, _data->_shader._attribTypes);
 
     // Ensure that depth test mode and face culling mode do not persist.
     if(!DepthCalledThisPass)

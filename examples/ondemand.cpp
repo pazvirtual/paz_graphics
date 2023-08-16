@@ -2,7 +2,7 @@
 #include <sstream>
 #include <iomanip>
 
-static constexpr std::size_t NumSteps = 1000;
+static constexpr std::size_t NumSteps = 500;
 static constexpr std::size_t Res = 500;
 
 int main(int, char** argv)
