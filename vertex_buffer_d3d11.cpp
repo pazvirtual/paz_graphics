@@ -65,8 +65,8 @@ void paz::VertexBuffer::addAttribute(int dim, const float* data, std::size_t
     bufDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     D3D11_SUBRESOURCE_DATA srData = {};
     srData.pSysMem = data;
-    const auto hr = d3d_device()->CreateBuffer(&bufDescriptor, &srData,
-        &_data->_buffers.back());
+    const auto hr = d3d_device()->CreateBuffer(&bufDescriptor, &srData, &_data->
+        _buffers.back());
     if(hr)
     {
         throw std::runtime_error("Failed to create vertex buffer (HRESULT " +
@@ -76,8 +76,7 @@ void paz::VertexBuffer::addAttribute(int dim, const float* data, std::size_t
     D3D11_INPUT_ELEMENT_DESC inputDescriptor = {};
     inputDescriptor.SemanticName = "ATTR";
     inputDescriptor.SemanticIndex = slot;
-    inputDescriptor.Format = dxgi_format(dim, paz::
-        DataType::Float);
+    inputDescriptor.Format = dxgi_format(dim, paz::DataType::Float);
     inputDescriptor.InputSlot = slot;
     inputDescriptor.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
     inputDescriptor.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;

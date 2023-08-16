@@ -50,6 +50,40 @@ paz::RenderPass::Data::~Data()
     }
 }
 
+void paz::RenderPass::Data::mapUniforms()
+{
+    if(_vertUniformBuf)
+    {
+        D3D11_MAPPED_SUBRESOURCE mappedSr;
+        const auto hr = d3d_context()->Map(_vertUniformBuf, 0,
+            D3D11_MAP_WRITE_DISCARD, 0, &mappedSr);
+        if(hr)
+        {
+            throw std::runtime_error("Failed to map vertex function constant bu"
+                "ffer (HRESULT " + std::to_string(hr) + ").");
+        }
+        std::copy(_vertUniformData.begin(), _vertUniformData.end(),
+            reinterpret_cast<unsigned char*>(mappedSr.pData));
+        d3d_context()->Unmap(_vertUniformBuf, 0);
+        d3d_context()->VSSetConstantBuffers(0, 1, &_vertUniformBuf);
+    }
+    if(_fragUniformBuf)
+    {
+        D3D11_MAPPED_SUBRESOURCE mappedSr;
+        const auto hr = d3d_context()->Map(_fragUniformBuf, 0,
+            D3D11_MAP_WRITE_DISCARD, 0, &mappedSr);
+        if(hr)
+        {
+            throw std::runtime_error("Failed to map fragment function constant "
+                "buffer (HRESULT " + std::to_string(hr) + ").");
+        }
+        std::copy(_fragUniformData.begin(), _fragUniformData.end(),
+            reinterpret_cast<unsigned char*>(mappedSr.pData));
+        d3d_context()->Unmap(_fragUniformBuf, 0);
+        d3d_context()->PSSetConstantBuffers(0, 1, &_fragUniformBuf);
+    }
+}
+
 paz::RenderPass::RenderPass()
 {
     initialize();
@@ -536,6 +570,8 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
 {
     CHECK_PASS
 
+    _data->mapUniforms();
+
     ID3D11InputLayout* layout;
     const auto hr = d3d_device()->CreateInputLayout(vertices._data->
         _inputElemDescriptors.data(), vertices._data->_inputElemDescriptors.
@@ -546,44 +582,15 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
         throw std::runtime_error("Failed to create input layout (HRESULT " +
             std::to_string(hr) + ").");
     }
-    if(_data->_vertUniformBuf)
-    {
-        D3D11_MAPPED_SUBRESOURCE mappedSr;
-        const auto hr = d3d_context()->Map(_data->_vertUniformBuf, 0,
-            D3D11_MAP_WRITE_DISCARD, 0, &mappedSr);
-        if(hr)
-        {
-            throw std::runtime_error("Failed to map vertex function constant bu"
-                "ffer (HRESULT " + std::to_string(hr) + ").");
-        }
-        std::copy(_data->_vertUniformData.begin(), _data->_vertUniformData.
-            end(), reinterpret_cast<unsigned char*>(mappedSr.pData));
-        d3d_context()->Unmap(_data->_vertUniformBuf, 0);
-        d3d_context()->VSSetConstantBuffers(0, 1, &_data->_vertUniformBuf);
-    }
-    if(_data->_fragUniformBuf)
-    {
-        D3D11_MAPPED_SUBRESOURCE mappedSr;
-        const auto hr = d3d_context()->Map(_data->_fragUniformBuf, 0,
-            D3D11_MAP_WRITE_DISCARD, 0, &mappedSr);
-        if(hr)
-        {
-            throw std::runtime_error("Failed to map fragment function constant "
-                "buffer (HRESULT " + std::to_string(hr) + ").");
-        }
-        std::copy(_data->_fragUniformData.begin(), _data->_fragUniformData.
-            end(), reinterpret_cast<unsigned char*>(mappedSr.pData));
-        d3d_context()->Unmap(_data->_fragUniformBuf, 0);
-        d3d_context()->PSSetConstantBuffers(0, 1, &_data->_fragUniformBuf);
-    }
     d3d_context()->IASetInputLayout(layout);
+    layout->Release();
+
     d3d_context()->IASetPrimitiveTopology(primitive_topology(type));
     const std::vector<unsigned int> offsets(vertices._data->_buffers.size(), 0);
     d3d_context()->IASetVertexBuffers(0, vertices._data->_buffers.size(),
         vertices._data->_buffers.data(), vertices._data->_strides.data(),
         offsets.data());
     d3d_context()->Draw(vertices._data->_numVertices, 0);
-    layout->Release();
 }
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
@@ -591,13 +598,50 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
 {
     CHECK_PASS
 
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    _data->mapUniforms();
+
+    ID3D11InputLayout* layout;
+    const auto hr = d3d_device()->CreateInputLayout(vertices._data->
+        _inputElemDescriptors.data(), vertices._data->_inputElemDescriptors.
+        size(), _data->_vert->_bytecode->GetBufferPointer(), _data->_vert->
+        _bytecode->GetBufferSize(), &layout);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create input layout (HRESULT " +
+            std::to_string(hr) + ").");
+    }
+    d3d_context()->IASetInputLayout(layout);
+    layout->Release();
+
+    d3d_context()->IASetPrimitiveTopology(primitive_topology(type));
+    const std::vector<unsigned int> offsets(vertices._data->_buffers.size(), 0);
+    d3d_context()->IASetVertexBuffers(0, vertices._data->_buffers.size(),
+        vertices._data->_buffers.data(), vertices._data->_strides.data(),
+        offsets.data());
+    d3d_context()->IASetIndexBuffer(indices._data->_buffer,
+        DXGI_FORMAT_R32_UINT, 0);
+    d3d_context()->DrawIndexed(indices._data->_numIndices, 0, 0);
 }
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     const InstanceBuffer& instances)
 {
     CHECK_PASS
+
+    _data->mapUniforms();
+
+    ID3D11InputLayout* layout;
+    const auto hr = d3d_device()->CreateInputLayout(vertices._data->
+        _inputElemDescriptors.data(), vertices._data->_inputElemDescriptors.
+        size(), _data->_vert->_bytecode->GetBufferPointer(), _data->_vert->
+        _bytecode->GetBufferSize(), &layout);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create input layout (HRESULT " +
+            std::to_string(hr) + ").");
+    }
+    d3d_context()->IASetInputLayout(layout);
+    layout->Release();
 
     throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
@@ -606,6 +650,21 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     const InstanceBuffer& instances, const IndexBuffer& indices)
 {
     CHECK_PASS
+
+    _data->mapUniforms();
+
+    ID3D11InputLayout* layout;
+    const auto hr = d3d_device()->CreateInputLayout(vertices._data->
+        _inputElemDescriptors.data(), vertices._data->_inputElemDescriptors.
+        size(), _data->_vert->_bytecode->GetBufferPointer(), _data->_vert->
+        _bytecode->GetBufferSize(), &layout);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create input layout (HRESULT " +
+            std::to_string(hr) + ").");
+    }
+    d3d_context()->IASetInputLayout(layout);
+    layout->Release();
 
     throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
