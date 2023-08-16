@@ -122,6 +122,7 @@ int main(int, char** argv)
     double width = 0.5*(MaxWidth - MinWidth);
     while(!paz::Window::Done())
     {
+        paz::Window::PollEvents();
         paz::Window::SetCursorMode(paz::Window::GamepadActive() ? paz::
             CursorMode::Disable : paz::CursorMode::Normal);
 

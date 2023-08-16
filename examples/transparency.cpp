@@ -87,6 +87,7 @@ int main(int, char** argv)
 
     while(!paz::Window::Done())
     {
+        paz::Window::PollEvents();
         paz::Window::SetCursorMode(paz::Window::GamepadActive() ? paz::
             CursorMode::Disable : paz::CursorMode::Normal);
         if(paz::Window::KeyPressed(paz::Key::Q) || paz::Window::GamepadPressed(

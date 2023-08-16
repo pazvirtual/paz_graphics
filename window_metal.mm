@@ -33,22 +33,6 @@ static double PrevFrameTime = 1./60.;
 
 static CGPoint PrevOrigin;
 
-static void poll_events()
-{
-    while(true)
-    {
-        NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:
-            [NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES];
-        if(!event)
-        {
-            break;
-        }
-        [NSApp sendEvent:event];
-        [NSApp updateWindows];
-    }
-    [VIEW_CONTROLLER pollGamepadState];
-}
-
 paz::Initializer::~Initializer()
 {
     [NSApp release];
@@ -65,7 +49,6 @@ paz::Initializer::Initializer()
         [NSApp setDelegate:delegate];
         [delegate release];
         [NSApp finishLaunching];
-        poll_events();
     }
     @catch(NSException* e)
     {
@@ -358,6 +341,22 @@ bool paz::Window::Done()
     return [APP_DELEGATE done];
 }
 
+void paz::Window::PollEvents()
+{
+    while(true)
+    {
+        NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:
+            [NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES];
+        if(!event)
+        {
+            break;
+        }
+        [NSApp sendEvent:event];
+        [NSApp updateWindows];
+    }
+    [VIEW_CONTROLLER pollGamepadState];
+}
+
 void paz::Window::EndFrame()
 {
     initialize();
@@ -371,7 +370,6 @@ void paz::Window::EndFrame()
     PrevFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
         FrameStart).count()*1e-6;
     FrameStart = now;
-    poll_events();
     resize_targets();
 }
 

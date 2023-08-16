@@ -36,6 +36,7 @@ int main(int, char** argv)
     double time = 0.;
     for(std::size_t k = 0; k < NumSteps; ++k)
     {
+        paz::Window::PollEvents();
         std::string str;
         {
             std::stringstream ss;
