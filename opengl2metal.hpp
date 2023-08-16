@@ -5,12 +5,13 @@
 
 namespace paz
 {
-    enum class FunMode
+    enum class Mode
     {
-        None, // Not in a function
-        Main, // In main function
-        Sig,  // In signature of private function
-        Fun   // In private function
+        None,  // None of the following
+        Main,  // In main function
+        Sig,   // In signature of private function
+        Fun,   // In private function
+        Struct // In struct definition
     };
 
     std::string vert2metal(const std::string& src);

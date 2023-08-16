@@ -14,7 +14,7 @@ std::string paz::vert2metal(const std::string& src)
     std::istringstream in(src);
     std::ostringstream out;
 
-    FunMode mode = FunMode::None;
+    Mode mode = Mode::None;
     std::stringstream sigBuffer;
     std::stringstream mainBuffer;
 
@@ -87,7 +87,7 @@ std::string paz::vert2metal(const std::string& src)
         }
 
         // Check for inputs and outputs out of scope.
-        if(mode != FunMode::Main)
+        if(mode != Mode::Main)
         {
             if(std::regex_match(line, std::regex(".*\\bgl_Position\\b.*")))
             {
@@ -117,16 +117,17 @@ std::string paz::vert2metal(const std::string& src)
         }
 
         // End private function.
-        if(mode == FunMode::Fun && line == "}")
+        if(mode == Mode::Fun && line == "}")
         {
             out << line << std::endl;
-            mode = FunMode::None;
+            mode = Mode::None;
             continue;
         }
 
+        // Detect beginning of main function.
         if(line == "void main()")
         {
-            mode = FunMode::Main;
+            mode = Mode::Main;
             continue;
         }
 
@@ -148,8 +149,8 @@ std::string paz::vert2metal(const std::string& src)
             "texture($1, $1Sampler,");
 
         // Process global variables.
-        if(mode == FunMode::None && std::regex_match(line, std::regex("\\s*cons"
-            "t\\s.*=.*")))
+        if(mode == Mode::None && std::regex_match(line, std::regex("\\s*const\\"
+            "s.*=.*")))
         {
             line = std::regex_replace(line, std::regex("\\s*const\\b"),
                 "constant");
@@ -157,8 +158,26 @@ std::string paz::vert2metal(const std::string& src)
             continue;
         }
 
+        // Handle struct definitions.
+        if(mode == Mode::None && std::regex_match(line, std::regex("\\s*struct"
+            "\\s[a-zA-Z_][a-zA-Z_0-9]*")))
+        {
+            out << line << std::endl;
+            mode = Mode::Struct;
+            continue;
+        }
+        if(mode == Mode::Struct)
+        {
+            out << line << std::endl;
+            if(line == "};")
+            {
+                mode = Mode::None;
+            }
+            continue;
+        }
+
         // Continue processing private function signature (see below).
-        if(mode == FunMode::Sig)
+        if(mode == Mode::Sig)
         {
             line = std::regex_replace(line, std::regex("^\\s+"), "");
             sigBuffer << " " << line;
@@ -168,7 +187,7 @@ std::string paz::vert2metal(const std::string& src)
             numClose += std::count(line.begin(), line.end(), ')');
             if(numOpen == numClose)
             {
-                mode = FunMode::Fun;
+                mode = Mode::Fun;
                 out << process_sig(sigBuffer.str()) << std::endl;
                 sigBuffer.clear();
                 numOpen = 0;
@@ -178,14 +197,14 @@ std::string paz::vert2metal(const std::string& src)
         }
 
         // Preserve body of private function.
-        if(mode == FunMode::Fun)
+        if(mode == Mode::Fun)
         {
             out << line << std::endl;
             continue;
         }
 
         // Process main function lines.
-        if(mode == FunMode::Main)
+        if(mode == Mode::Main)
         {
             if(line == "{" || line == "}")
             {
@@ -260,20 +279,20 @@ std::string paz::vert2metal(const std::string& src)
         }
 
         // Process private functions.
-        if(mode == FunMode::None && std::regex_match(line, std::regex("\\s*[a-z"
-            "A-Z_][a-zA-Z_0-9]*\\s+[a-zA-Z_][a-zA-Z_0-9]*\\(.*")))
+        if(mode == Mode::None && std::regex_match(line, std::regex("\\s*[a-zA-Z"
+            "_][a-zA-Z_0-9]*\\s+[a-zA-Z_][a-zA-Z_0-9]*\\(.*")))
         {
             // Check if the signature is complete.
             numOpen = std::count(line.begin(), line.end(), '(');
             numClose = std::count(line.begin(), line.end(), ')');
             if(numOpen == numClose)
             {
-                mode = FunMode::Fun;
+                mode = Mode::Fun;
                 out << process_sig(line) << std::endl;
             }
             else
             {
-                mode = FunMode::Sig;
+                mode = Mode::Sig;
                 sigBuffer << line;
             }
             continue;
