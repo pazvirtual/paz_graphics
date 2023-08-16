@@ -61,7 +61,7 @@ static void init(paz::RenderPass& scenePass, paz::RenderPass& textPass, paz::
     paz::ShaderFunctionLibrary shaders;
     shaders.vertex("shader", paz::load_file(appDir + "/shader.vert").str());
     shaders.vertex("font", paz::load_file(appDir + "/font.vert").str());
-    shaders.vertex("quad", paz::load_file(appDir + "/quad.vert").str()),
+    shaders.vertex("quad", paz::load_file(appDir + "/quad.vert").str());
     shaders.fragment("shader", paz::load_file(appDir + "/shader.frag").str());
     shaders.fragment("font", paz::load_file(appDir + "/font.frag").str());
     shaders.fragment("post", paz::load_file(appDir + "/post.frag").str());
