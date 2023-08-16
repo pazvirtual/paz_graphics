@@ -39,10 +39,11 @@ paz::Shader::Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
     // Link shaders.
     _data->_id = glCreateProgram();
     glAttachShader(_data->_id, vertLibrary._data->_vertexIds.at(vertName));
-    if(vertLibrary._data->_thickLines.at(vertName))
+    GLuint thickLinesId = vertLibrary._data->_thickLinesIds.at(vertName);
+    if(thickLinesId)
     {
         _data->_thickLines = true;
-        glAttachShader(_data->_id, vertLibrary._data->_thickLinesId);
+        glAttachShader(_data->_id, thickLinesId);
     }
     glAttachShader(_data->_id, fragLibrary._data->_fragmentIds.at(fragName));
     glLinkProgram(_data->_id);
