@@ -184,6 +184,7 @@ void paz::Window::ResizeTargets()
 
 void paz::Window::LoopInternal()
 {
+    _frameStart = std::chrono::steady_clock::now();
     while(![APP_DELEGATE done])
     {
 
