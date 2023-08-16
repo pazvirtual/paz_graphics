@@ -214,7 +214,6 @@ int main(int, char** argv)
         renderScene.uniform("projection", projection);
         renderScene.uniform("lightView", lightView);
         renderScene.uniform("lightProjection", lightProjection);
-        renderScene.cull(paz::CullMode::Back); //TEMP
         renderScene.primitives(paz::PrimitiveType::TriangleStrip, groundVerts);
         renderScene.primitives(paz::PrimitiveType::Triangles, cubeVerts);
         renderScene.end();

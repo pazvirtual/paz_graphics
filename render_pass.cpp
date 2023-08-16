@@ -20,6 +20,8 @@ static int NextSlot = 0;
 static bool DepthTestEnabled = false;
 static bool DepthMaskEnabled = true;
 static bool BlendEnabled = false;
+static bool DepthCalledThisPass;
+static bool CullCalledThisPass;
 
 static GLenum primitive_type(paz::PrimitiveType t)
 {
@@ -82,6 +84,8 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
 {
     glGetError();
+    DepthCalledThisPass = false;
+    CullCalledThisPass = false;
     NextSlot = 0;
     if(_data->_fbo)
     {
@@ -185,6 +189,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
 
 void paz::RenderPass::depth(DepthTestMode mode)
 {
+    DepthCalledThisPass = true;
     if(mode == DepthTestMode::Disable)
     {
         if(DepthTestEnabled)
@@ -266,8 +271,9 @@ void paz::RenderPass::end()
     }
 }
 
-void paz::RenderPass::cull(CullMode mode) const
+void paz::RenderPass::cull(CullMode mode)
 {
+    CullCalledThisPass = true;
     if(mode == CullMode::Disable)
     {
         glDisable(GL_CULL_FACE);
@@ -478,18 +484,38 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
 }
 
 void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
-    vertices) const
+    vertices)
 {
     check_attributes(vertices._data->_types, _data->_shader->_attribTypes);
+
+    // Ensure that depth test mode and face culling mode do not persist.
+    if(!DepthCalledThisPass)
+    {
+        depth(DepthTestMode::Disable);
+    }
+    if(!CullCalledThisPass)
+    {
+        cull(CullMode::Disable);
+    }
 
     glBindVertexArray(vertices._data->_id);
     glDrawArrays(primitive_type(type), 0, vertices._data->_numVertices);
 }
 
 void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
-    const IndexBuffer& indices) const
+    const IndexBuffer& indices)
 {
     check_attributes(vertices._data->_types, _data->_shader->_attribTypes);
+
+    // Ensure that depth test mode and face culling mode do not persist.
+    if(!DepthCalledThisPass)
+    {
+        depth(DepthTestMode::Disable);
+    }
+    if(!CullCalledThisPass)
+    {
+        cull(CullMode::Disable);
+    }
 
     glBindVertexArray(vertices._data->_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);

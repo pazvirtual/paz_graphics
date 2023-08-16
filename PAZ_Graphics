@@ -231,7 +231,7 @@ namespace paz
             LoadAction depthLoadAction = LoadAction::DontCare);
         void end();
         void depth(DepthTestMode depthMode);
-        void cull(CullMode mode) const;
+        void cull(CullMode mode);
         void read(const std::string& name, const Texture& tex) const;
         void uniform(const std::string& name, int x) const;
         void uniform(const std::string& name, int x, int y) const;
@@ -261,9 +261,9 @@ namespace paz
             uniform(name, &*std::begin(data), std::distance(&*std::begin(data),
                 &*std::end(data)));
         }
-        void primitives(PrimitiveType type, const VertexBuffer& vertices) const;
+        void primitives(PrimitiveType type, const VertexBuffer& vertices);
         void indexed(PrimitiveType type, const VertexBuffer& vertices, const
-            IndexBuffer& indices) const;
+            IndexBuffer& indices);
         Framebuffer framebuffer() const;
     };
 
