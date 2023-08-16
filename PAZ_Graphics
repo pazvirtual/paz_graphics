@@ -84,7 +84,16 @@ namespace paz
 
     public:
         virtual ~RenderTarget();
-        RenderTarget(double scale, int numChannels, int numBits, DataType type,
+        void resize(int width, int height) override;
+    };
+
+    class ColorTarget : public RenderTarget
+    {
+        ColorTarget(const ColorTarget&) = delete;
+        ColorTarget& operator=(const ColorTarget&) = delete;
+
+    public:
+        ColorTarget(double scale, int numChannels, int numBits, DataType type,
             MinMagFilter minFilter, MinMagFilter magFilter);
         void resize(int width, int height) override;
     };
@@ -149,7 +158,7 @@ namespace paz
 
     public:
         ~Framebuffer();
-        void attach(const RenderTarget& target);
+        void attach(const ColorTarget& target);
         void attach(const DepthStencilTarget& target);
         Framebuffer();
     };
@@ -289,7 +298,6 @@ namespace paz
     class Window
     {
         friend class RenderTarget;
-        friend class DepthStencilTarget;
 
         static bool KeyDown(int key);
         static bool KeyPressed(int key);

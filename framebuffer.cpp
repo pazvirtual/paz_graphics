@@ -37,7 +37,7 @@ paz::Framebuffer::~Framebuffer()
     glDeleteFramebuffers(1, &_data->_id);
 }
 
-void paz::Framebuffer::attach(const RenderTarget& target)
+void paz::Framebuffer::attach(const ColorTarget& target)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, _data->_id);
     glFramebufferTexture(GL_FRAMEBUFFER, Attachments[_data->_numTextures],

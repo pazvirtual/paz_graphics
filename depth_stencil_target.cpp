@@ -59,8 +59,6 @@ paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    paz::Window::RegisterTarget(this);
 }
 
 void paz::DepthStencilTarget::resize(GLsizei width, GLsizei height)
