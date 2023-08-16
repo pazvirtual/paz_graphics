@@ -224,6 +224,38 @@ auto uintBitsToFloat(thread const uint4& v)
     // Fix HLSL matrix issues. (WIP)
     out << "#define mul(a, b) ((a)*(b))" << std::endl;
 
+    // Define GLSL-like modulo.
+    out << 1 + R"===(
+float mod(float x, float y)
+{
+    return x - y*floor(x/y);
+}
+float2 mod(thread const float2& x, float y)
+{
+    return x - y*floor(x/y);
+}
+float3 mod(thread const float3& x, float y)
+{
+    return x - y*floor(x/y);
+}
+float4 mod(thread const float4& x, float y)
+{
+    return x - y*floor(x/y);
+}
+float2 mod(thread const float2& x, thread const float2& y)
+{
+    return x - y*floor(x/y);
+}
+float3 mod(thread const float3& x, thread const float3& y)
+{
+    return x - y*floor(x/y);
+}
+float4 mod(thread const float4& x, thread const float4& y)
+{
+    return x - y*floor(x/y);
+}
+)===";
+
     std::string line;
     std::size_t l = 0;
     while(std::getline(in, line))
