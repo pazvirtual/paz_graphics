@@ -1,5 +1,5 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#ifndef RENDERER_HH
+#define RENDERER_HH
 
 #include "PAZ_Graphics"
 

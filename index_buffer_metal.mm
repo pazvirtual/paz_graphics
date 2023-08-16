@@ -2,8 +2,8 @@
 
 #ifdef PAZ_MACOS
 
-#import "app_delegate.h"
-#import "view_controller.h"
+#import "app_delegate.hh"
+#import "view_controller.hh"
 #import <MetalKit/MetalKit.h>
 
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \

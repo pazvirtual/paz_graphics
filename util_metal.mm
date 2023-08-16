@@ -1,4 +1,4 @@
-#include "util_metal.h"
+#import "util_metal.hh"
 
 MTLPixelFormat paz::pixel_format(unsigned int c, unsigned int b, TextureBase::
     DataType t)

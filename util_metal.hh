@@ -1,5 +1,5 @@
-#ifndef UTIL_METAL_H
-#define UTIL_METAL_H
+#ifndef UTIL_METAL_HH
+#define UTIL_METAL_HH
 
 #include "PAZ_Graphics"
 

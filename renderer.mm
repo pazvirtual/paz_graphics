@@ -2,7 +2,7 @@
 
 #ifdef PAZ_MACOS
 
-#import "renderer.h"
+#import "renderer.hh"
 #import <simd/simd.h>
 #import <ModelIO/ModelIO.h>
 

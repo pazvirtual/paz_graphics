@@ -1,11 +1,11 @@
-#ifndef VIEW_CONTROLLER_H
-#define VIEW_CONTROLLER_H
+#ifndef VIEW_CONTROLLER_HH
+#define VIEW_CONTROLLER_HH
 
 #include "PAZ_Graphics"
 
 #ifdef PAZ_MACOS
 
-#import "renderer.h"
+#import "renderer.hh"
 #import <AppKit/AppKit.h>
 #import <MetalKit/MetalKit.h>
 #include <array>

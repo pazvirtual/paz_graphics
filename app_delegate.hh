@@ -1,5 +1,5 @@
-#ifndef APP_DELEGATE_H
-#define APP_DELEGATE_H
+#ifndef APP_DELEGATE_HH
+#define APP_DELEGATE_HH
 
 #include "PAZ_Graphics"
 
@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <Cocoa/Cocoa.h>
-
 #include <sys/param.h>
 
 @interface AppDelegate : NSObject<NSApplicationDelegate, NSWindowDelegate>

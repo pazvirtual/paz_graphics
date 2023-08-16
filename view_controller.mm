@@ -2,10 +2,8 @@
 
 #ifdef PAZ_MACOS
 
+#import "view_controller.hh"
 #include "keycodes.hpp"
-#import "app_delegate.h"//TEMP
-#import "view_controller.h"
-#import "renderer.h"
 
 @implementation ViewController
 {

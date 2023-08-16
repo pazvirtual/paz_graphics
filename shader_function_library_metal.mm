@@ -2,8 +2,8 @@
 
 #ifdef PAZ_MACOS
 
-#import "app_delegate.h"
-#import "view_controller.h"
+#import "app_delegate.hh"
+#import "view_controller.hh"
 #include "opengl2metal.hpp"
 #import <MetalKit/MetalKit.h>
 
