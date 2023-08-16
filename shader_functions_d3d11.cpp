@@ -53,19 +53,20 @@ static std::size_t process_uniforms(const std::vector<std::tuple<std::string,
     for(const auto& n : in)
     {
         // Array elements are not packed.
-        if(std::get<3>(n) > 1)
+        const auto arraySize = std::get<3>(n);
+        const auto size = std::get<2>(n);
+        if(arraySize > 1 && TypeSize*size != 16)
         {
             throw std::logic_error("NOT IMPLEMENTED");
         }
 
         // Constants must be 16 B-aligned.
-        const auto size = std::get<2>(n);
         if(offset%16 && (offset + TypeSize*size - 1)/16 != offset/16)
         {
             offset += 16 - offset%16;
         }
         out[std::get<0>(n)] = {offset, std::get<1>(n), std::get<2>(n)};
-        offset += TypeSize*size;
+        offset += TypeSize*size*arraySize;
     }
     return ((offset + 15)/16)*16;
 }
