@@ -1,7 +1,7 @@
 const int numChars = 42;
 const float scale = 0.005;
 
-uniform uint baseSize;
+uniform int baseSize;
 uniform float aspectRatio;
 uniform int character;
 uniform int col;

@@ -128,7 +128,7 @@ bool paz::Window::KeyReleased(Key key)
     return [VIEW_CONTROLLER keyReleased].at(static_cast<int>(key));
 }
 
-bool paz::Window::MouseDown(unsigned int button)
+bool paz::Window::MouseDown(int button)
 {
     // The following ensures that very brief mouse button presses are not missed
     // when checking `mouse_down()`.
@@ -136,12 +136,12 @@ bool paz::Window::MouseDown(unsigned int button)
         mousePressed].at(button);
 }
 
-bool paz::Window::MousePressed(unsigned int button)
+bool paz::Window::MousePressed(int button)
 {
     return [VIEW_CONTROLLER mousePressed].at(button);
 }
 
-bool paz::Window::MouseReleased(unsigned int button)
+bool paz::Window::MouseReleased(int button)
 {
     return [VIEW_CONTROLLER mouseReleased].at(button);
 }

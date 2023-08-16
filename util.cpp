@@ -274,20 +274,48 @@ GLint paz::internal_format(int c, int b, Texture::DataType t)
     throw std::runtime_error("Invalid texture format requested.");
 }
 
-GLenum paz::gl_type(Texture::DataType t)
+GLenum paz::gl_type(Texture::DataType t, int numBits)
 {
     if(t == Texture::DataType::UInt || t == Texture::DataType::UNorm)
     {
-        return GL_UNSIGNED_INT;
+        if(numBits == 8)
+        {
+            return GL_UNSIGNED_BYTE;
+        }
+        else if(numBits == 16)
+        {
+            return GL_UNSIGNED_SHORT;
+        }
+        else if(numBits == 32)
+        {
+            return GL_UNSIGNED_INT;
+        }
     }
-    else if(t == Texture::DataType::SInt || t == Texture::DataType::
-        SNorm)
+    else if(t == Texture::DataType::SInt || t == Texture::DataType::SNorm)
     {
-        return GL_INT;
+        if(numBits == 8)
+        {
+            return GL_BYTE;
+        }
+        else if(numBits == 16)
+        {
+            return GL_SHORT;
+        }
+        else if(numBits == 32)
+        {
+            return GL_INT;
+        }
     }
     else if(t == Texture::DataType::Float)
     {
-        return GL_FLOAT;
+        if(numBits == 16)
+        {
+            return GL_HALF_FLOAT;
+        }
+        else if(numBits == 32)
+        {
+            return GL_FLOAT;
+        }
     }
 
     throw std::runtime_error("Invalid type requested.");

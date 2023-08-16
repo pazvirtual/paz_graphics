@@ -37,11 +37,13 @@ static MTLPixelFormat depth_pixel_format(unsigned int b, paz::Texture::DataType
 static id<MTLTexture> init(int width, int height, int numBits, paz::Texture::
     DataType type)
 {
+    _width = width;
+    _height = height;
     MTLTextureDescriptor* textureDescriptor = [[MTLTextureDescriptor alloc]
         init];
     [textureDescriptor setPixelFormat:depth_pixel_format(numBits, type)];
-    [textureDescriptor setWidth:width];
-    [textureDescriptor setHeight:height];
+    [textureDescriptor setWidth:_width];
+    [textureDescriptor setHeight:_height];
     [textureDescriptor setUsage:MTLTextureUsageRenderTarget|
         MTLTextureUsageShaderRead];
     [textureDescriptor setStorageMode:MTLStorageModePrivate];
@@ -60,13 +62,14 @@ paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     type, MinMagFilter minFilter, MinMagFilter magFilter)
 {
     _scale = scale;
+    _width = _scale*Window::ViewportWidth();
+    _height = _scale*Window::ViewportHeight();
     _data->_numChannels = 1;
     _data->_numBits = numBits;
     _data->_type = type;
     _data->_minFilter = minFilter;
     _data->_magFilter = magFilter;
-    _data->_texture = ::init(_scale*Window::ViewportWidth(), _scale*Window::
-        ViewportHeight(), _data->_numBits, _data->_type);
+    _data->_texture = ::init(_width, _height, _data->_numBits, _data->_type);
     _data->_sampler = create_sampler(_data->_minFilter, _data->_magFilter);
     register_target(this);
 }
@@ -77,6 +80,8 @@ void paz::DepthStencilTarget::resize(int width, int height)
     {
         [(id<MTLTexture>)_data->_texture release];
     }
+    _width = _scale*width;
+    _height = _scale*_height;
     _data->_texture = ::init(_scale*width, _scale*height, _data->_numBits,
         _data->_type);
 }

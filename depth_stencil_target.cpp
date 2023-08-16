@@ -39,8 +39,8 @@ paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     type, MinMagFilter minFilter, MinMagFilter magFilter)
 {
     _scale = scale;
-    float width = _scale*Window::ViewportWidth();
-    float height = _scale*Window::ViewportHeight();
+    _width = _scale*Window::ViewportWidth();
+    _height = _scale*Window::ViewportHeight();
 
     _mipmap = false;//TEMP
     const auto filters = min_mag_filter(minFilter, magFilter/*, mipmapFilter*/);
@@ -50,12 +50,12 @@ paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     Texture::_data->_internalFormat = depth_internal_format(numBits, type);
     Texture::_data->_format = GL_DEPTH_COMPONENT;
 
-    Texture::_data->_type = gl_type(type);
+    Texture::_data->_type = gl_type(type, numBits);
 
     glGenTextures(1, &Texture::_data->_id);
     glBindTexture(GL_TEXTURE_2D, Texture::_data->_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, Texture::_data->_internalFormat, width,
-        height, 0, Texture::_data->_format, Texture::_data->_type, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, Texture::_data->_internalFormat, _width,
+        _height, 0, Texture::_data->_format, Texture::_data->_type, nullptr);
     if(_mipmap)
     {
         glGenerateMipmap(GL_TEXTURE_2D);

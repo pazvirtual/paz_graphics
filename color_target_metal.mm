@@ -38,13 +38,15 @@ paz::ColorTarget::ColorTarget(double scale, int numChannels, int numBits,
     DataType type, MinMagFilter minFilter, MinMagFilter magFilter)
 {
     _scale = scale;
+    _width = _scale*Window::ViewportWidth();
+    _height = _scale*Window::ViewportHeight();
     _data->_numChannels = numChannels;
     _data->_numBits = numBits;
     _data->_type = type;
     _data->_minFilter = minFilter;
     _data->_magFilter = magFilter;
-    _data->_texture = ::init(_scale*Window::ViewportWidth(), _scale*Window::
-        ViewportHeight(), _data->_numChannels, _data->_numBits, _data->_type);
+    _data->_texture = ::init(_width, _height, _data->_numChannels, _data->
+        _numBits, _data->_type);
     _data->_sampler = create_sampler(minFilter, magFilter);
     register_target(this);
 }

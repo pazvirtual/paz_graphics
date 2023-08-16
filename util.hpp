@@ -20,7 +20,7 @@ namespace paz
         Texture::MinMagFilter magFilter, paz::Texture::MipmapFilter mipmapFilter
         = Texture::MipmapFilter::None);
     GLint internal_format(int c, int b, Texture::DataType t);
-    GLenum gl_type(Texture::DataType t);
+    GLenum gl_type(Texture::DataType t, int numBits);
     std::string get_log(unsigned int id, bool isProgram);
     std::string gl_error(GLenum error);
 }

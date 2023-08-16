@@ -23,38 +23,13 @@ paz::Texture::Texture()
     _data = std::make_unique<Data>();
 }
 
-paz::Texture::Texture(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter) :
-    Texture()
-{
-    init(width, height, numChannels, numBits, type, minFilter, magFilter,
-        nullptr);
-}
-
-paz::Texture::Texture(int width, int height, int numChannels, int numBits, const
-    std::vector<float>& data, MinMagFilter minFilter, MinMagFilter magFilter) :
-    Texture()
-{
-    init(width, height, numChannels, numBits, DataType::Float, minFilter,
-        magFilter, data.data());
-}
-
-// ...
-
-paz::Texture::Texture(int width, int height, int numChannels, int numBits, const
-    std::vector<unsigned int>& data, MinMagFilter minFilter, MinMagFilter
-    magFilter) : Texture()
-{
-    init(width, height, numChannels, numBits, DataType::UInt, minFilter,
-        magFilter, data.data());
-}
-
-// ...
-
 void paz::Texture::init(int width, int height, int numChannels, int numBits,
     DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
     data)
 {
+    _width = width;
+    _height = height;
+
     _mipmap = false;//TEMP
     const auto filters = min_mag_filter(minFilter, magFilter/*, mipmapFilter*/);
     const auto min = filters.first;
@@ -79,11 +54,11 @@ void paz::Texture::init(int width, int height, int numChannels, int numBits,
         throw std::runtime_error("Texture must have 1, 2, or 4 channels.");
     }
 
-    _data->_type = gl_type(type);
+    _data->_type = gl_type(type, numBits);
 
     glGenTextures(1, &_data->_id);
     glBindTexture(GL_TEXTURE_2D, _data->_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, _data->_internalFormat, width, height, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, _data->_internalFormat, _width, _height, 0,
         _data->_format, _data->_type, data);
     if(_mipmap)
     {
@@ -97,8 +72,11 @@ void paz::Texture::init(int width, int height, int numChannels, int numBits,
 
 void paz::Texture::resize(GLsizei width, GLsizei height)
 {
+    _width = width;
+    _height = height;
+
     glBindTexture(GL_TEXTURE_2D, _data->_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, _data->_internalFormat, width, height, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, _data->_internalFormat, _width, _height, 0,
         _data->_format, _data->_type, nullptr);
     if(_mipmap)
     {

@@ -1,6 +1,7 @@
 #ifndef PAZ_GRAPHICS
 #define PAZ_GRAPHICS
 
+#include <PAZ_IO>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -54,6 +55,9 @@ namespace paz
 
         bool _mipmap = false;
 
+        int _width = 0;
+        int _height = 0;
+
         Texture();
         void init(int width, int height, int numChannels, int numBits, DataType
             type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
@@ -62,16 +66,30 @@ namespace paz
     public:
         virtual ~Texture();
         Texture(int width, int height, int numChannels, int numBits, DataType
-            type, MinMagFilter minFilter, MinMagFilter magFilter);
-        Texture(int width, int height, int numChannels, int numBits, const std::
-            vector<float>& data, MinMagFilter minFilter, MinMagFilter
-            magFilter);
-        // ...
-        Texture(int width, int height, int numChannels, int numBits, const std::
-            vector<unsigned int>& data, MinMagFilter minFilter, MinMagFilter
-            magFilter); // WHAT ABOUT NORMALIZATION ?
+            type, MinMagFilter minFilter, MinMagFilter magFilter) : Texture()
+        {
+            init(width, height, numChannels, numBits, type, minFilter,
+                magFilter, nullptr);
+        }
+        template<int NumChannels>
+        Texture(const Image<std::uint8_t, NumChannels>& image, MinMagFilter
+            minFilter, MinMagFilter magFilter, bool normalized = true) :
+            Texture()
+        {
+            init(image.width(), image.height(), NumChannels, 8*sizeof(std::
+                uint8_t), normalized ? DataType::UNorm : DataType::UInt,
+                minFilter, magFilter, image.data());
+        }
         // ...
         void resize(int width, int height);
+        int width() const
+        {
+            return _width;
+        }
+        int height() const
+        {
+            return _height;
+        }
     };
 
     class RenderTarget : public Texture
@@ -87,26 +105,32 @@ namespace paz
 
     class ColorTarget : public RenderTarget
     {
+        friend void resize_targets();
+
         ColorTarget(const ColorTarget&) = delete;
         ColorTarget& operator=(const ColorTarget&) = delete;
+
+        void resize(int width, int height);
 
     public:
         virtual ~ColorTarget();
         ColorTarget(double scale, int numChannels, int numBits, DataType type,
             MinMagFilter minFilter, MinMagFilter magFilter);
-        void resize(int width, int height);
     };
 
     class DepthStencilTarget : public RenderTarget
     {
+        friend void resize_targets();
+
         DepthStencilTarget(const DepthStencilTarget&) = delete;
         DepthStencilTarget& operator=(const DepthStencilTarget&) = delete;
+
+        void resize(int width, int height);
 
     public:
         virtual ~DepthStencilTarget();
         DepthStencilTarget(double scale, int numBits, DataType type,
             MinMagFilter minFilter, MinMagFilter magFilter);
-        void resize(int width, int height);
     };
 
     class VertexBuffer
@@ -370,9 +394,9 @@ namespace paz
         static bool KeyDown(Key key);
         static bool KeyPressed(Key key);
         static bool KeyReleased(Key key);
-        static bool MouseDown(unsigned int button);
-        static bool MousePressed(unsigned int button);
-        static bool MouseReleased(unsigned int button);
+        static bool MouseDown(int button);
+        static bool MousePressed(int button);
+        static bool MouseReleased(int button);
         static std::pair<double, double> MousePos();
         static std::pair<double, double> ScrollOffset();
         static void SetCursorMode(CursorMode mode);
@@ -383,7 +407,7 @@ namespace paz
         static void SetMinSize(int width, int height);
         static void SetMaxSize(int width, int height);
         static void Resize(int width, int height);
-        static std::vector<float> PrintScreen();
+        static Image<float, 3> PrintScreen();
     };
 }
 
