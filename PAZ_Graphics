@@ -88,7 +88,8 @@ namespace paz
         RG8SNorm, RG16UInt, RG16SInt, RG16UNorm, RG16SNorm, RG16Float, RG32UInt,
         RG32SInt, RG32Float, RGBA8UInt, RGBA8SInt, RGBA8UNorm, RGBA8SNorm,
         RGBA16UInt, RGBA16SInt, RGBA16UNorm, RGBA16SNorm, RGBA16Float,
-        RGBA32UInt, RGBA32SInt, RGBA32Float, Depth16UNorm, Depth32Float
+        RGBA32UInt, RGBA32SInt, RGBA32Float, Depth16UNorm, Depth32Float,
+        BGRA8UNorm
     };
 
     enum class MinMagFilter
@@ -368,7 +369,7 @@ namespace paz
         static void MakeResizable();
         static void MakeNotResizable();
         static void Resize(int width, int height, bool viewportCoords);
-        static Image<std::uint8_t, 3> GetPixels();
+        static Image<std::uint8_t, 3> ReadPixels();
     };
 }
 

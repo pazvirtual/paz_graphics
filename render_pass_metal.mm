@@ -198,198 +198,64 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
 }
 
 paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
-    frag, BlendMode blendMode)
-{
-    initialize();
-
-    _data = std::make_shared<Data>();
-
-    _data->_vert = vert._data;
-    _data->_frag = frag._data;
-    MTLRenderPipelineDescriptor* pipelineDescriptor =
-        [[MTLRenderPipelineDescriptor alloc] init];
-    [pipelineDescriptor setVertexFunction:static_cast<id<MTLFunction>>(_data->
-        _vert->_function)];
-    [pipelineDescriptor setFragmentFunction:static_cast<id<MTLFunction>>(_data->
-        _frag->_function)];
-    [[pipelineDescriptor colorAttachments][0] setPixelFormat:[[VIEW_CONTROLLER
-        mtkView] colorPixelFormat]];
-    if(blendMode != paz::BlendMode::Disable)
-    {
-        [[pipelineDescriptor colorAttachments][0] setBlendingEnabled:YES];
-        [[pipelineDescriptor colorAttachments][0] setRgbBlendOperation:
-            MTLBlendOperationAdd];
-        [[pipelineDescriptor colorAttachments][0] setAlphaBlendOperation:
-            MTLBlendOperationAdd];
-        if(blendMode == paz::BlendMode::Additive)
-        {
-                [[pipelineDescriptor colorAttachments][0]
-                    setSourceRGBBlendFactor:MTLBlendFactorOne];
-                [[pipelineDescriptor colorAttachments][0]
-                    setSourceAlphaBlendFactor:MTLBlendFactorOne];
-                [[pipelineDescriptor colorAttachments][0]
-                    setDestinationRGBBlendFactor:MTLBlendFactorOne];
-                [[pipelineDescriptor colorAttachments][0]
-                    setDestinationAlphaBlendFactor:MTLBlendFactorOne];
-        }
-        else if(blendMode == paz::BlendMode::Blend)
-        {
-            [[pipelineDescriptor colorAttachments][0] setSourceRGBBlendFactor:
-                MTLBlendFactorSourceAlpha];
-            [[pipelineDescriptor colorAttachments][0] setSourceAlphaBlendFactor:
-                MTLBlendFactorSourceAlpha];
-            [[pipelineDescriptor colorAttachments][0]
-                setDestinationRGBBlendFactor:MTLBlendFactorOneMinusSourceAlpha];
-            [[pipelineDescriptor colorAttachments][0]
-                setDestinationAlphaBlendFactor:
-                MTLBlendFactorOneMinusSourceAlpha];
-        }
-        // ...
-        else
-        {
-            throw std::runtime_error("Invalid blending function.");
-        }
-    }
-    [pipelineDescriptor setDepthAttachmentPixelFormat:[[VIEW_CONTROLLER mtkView]
-        depthStencilPixelFormat]];
-    _data->_pipelineState = create(pipelineDescriptor, _data->_vertexArgs,
-        _data->_fragmentArgs, _data->_vertexAttributeStrides);
-    [pipelineDescriptor release];
-}
+    frag, BlendMode mode) : RenderPass(final_framebuffer(), vert, frag, mode) {}
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
 {
     [RENDERER ensureCommandBuffer];
 
-    MTLRenderPassDescriptor* renderPassDescriptor;
-    if(_data->_fbo)
+    MTLRenderPassDescriptor* renderPassDescriptor = [[MTLRenderPassDescriptor
+        alloc] init];
+    if(!renderPassDescriptor)
     {
-        renderPassDescriptor = [[MTLRenderPassDescriptor alloc] init];
-        if(!renderPassDescriptor)
-        {
-            throw std::runtime_error("Failed to create render pass descriptor"
-                ".");
-        }
-
-        for(std::size_t i = 0; i < _data->_fbo->_colorAttachments.size(); ++i)
-        {
-            [[renderPassDescriptor colorAttachments][i] setTexture:
-                static_cast<id<MTLTexture>>(_data->_fbo->_colorAttachments[i]->
-                _texture)];
-            if(colorLoadActions.empty() || colorLoadActions[i] == LoadAction::
-                DontCare)
-            {
-                [[renderPassDescriptor colorAttachments][i] setLoadAction:
-                    MTLLoadActionDontCare];
-            }
-            else if(colorLoadActions[i] == LoadAction::Clear ||
-                colorLoadActions[i] == LoadAction::FillOnes || colorLoadActions[
-                i] == LoadAction::FillZeros)
-            {
-                if(colorLoadActions[i] == LoadAction::FillOnes)
-                {
-                    [[renderPassDescriptor colorAttachments][i] setClearColor:
-                        MTLClearColorMake(1., 1., 1., 1.)];
-                }
-                else if(colorLoadActions[i] == LoadAction::FillZeros)
-                {
-                    [[renderPassDescriptor colorAttachments][i] setClearColor:
-                        MTLClearColorMake(0., 0., 0., 0.)];
-                }
-                [[renderPassDescriptor colorAttachments][i] setLoadAction:
-                    MTLLoadActionClear];
-            }
-            else if(colorLoadActions[i] == LoadAction::Load)
-            {
-                [[renderPassDescriptor colorAttachments][i] setLoadAction:
-                    MTLLoadActionLoad];
-            }
-            else
-            {
-                throw std::runtime_error("Invalid color attachment load action."
-                    );
-            }
-            [[renderPassDescriptor colorAttachments][i] setStoreAction:
-                MTLStoreActionStore];
-        }
-
-        if(_data->_fbo->_depthStencilAttachment)
-        {
-            [[renderPassDescriptor depthAttachment] setTexture:static_cast<id<
-                MTLTexture>>(_data->_fbo->_depthStencilAttachment->_texture)];
-            if(depthLoadAction == LoadAction::DontCare)
-            {
-                [[renderPassDescriptor depthAttachment] setLoadAction:
-                    MTLLoadActionDontCare];
-            }
-            else if(depthLoadAction == LoadAction::Clear || depthLoadAction ==
-                LoadAction::FillOnes || depthLoadAction == LoadAction::
-                FillZeros)
-            {
-                if(depthLoadAction == LoadAction::FillZeros)
-                {
-                    [[renderPassDescriptor depthAttachment] setClearDepth:0.];
-                }
-                [[renderPassDescriptor depthAttachment] setLoadAction:
-                    MTLLoadActionClear];
-            }
-            else if(depthLoadAction == LoadAction::Load)
-            {
-                [[renderPassDescriptor depthAttachment] setLoadAction:
-                    MTLLoadActionLoad];
-            }
-            else
-            {
-                throw std::runtime_error("Invalid depth attachment load action."
-                    );
-            }
-            [[renderPassDescriptor depthAttachment] setStoreAction:
-                MTLStoreActionStore];
-        }
+        throw std::runtime_error("Failed to create render pass descriptor.");
     }
-    else // Output pass
-    {
-        renderPassDescriptor = [RENDERER currentRenderPassDescriptor];
-        if(!renderPassDescriptor)
-        {
-            throw std::runtime_error("Failed to grab current render pass descri"
-                "ptor.");
-        }
 
-        if(colorLoadActions.empty() || colorLoadActions[0] == LoadAction::
+    for(std::size_t i = 0; i < _data->_fbo->_colorAttachments.size(); ++i)
+    {
+        [[renderPassDescriptor colorAttachments][i] setTexture:static_cast<id<
+            MTLTexture>>(_data->_fbo->_colorAttachments[i]->_texture)];
+        if(colorLoadActions.empty() || colorLoadActions[i] == LoadAction::
             DontCare)
         {
-            [[renderPassDescriptor colorAttachments][0] setLoadAction:
+            [[renderPassDescriptor colorAttachments][i] setLoadAction:
                 MTLLoadActionDontCare];
         }
-        else if(colorLoadActions[0] == LoadAction::Clear || colorLoadActions[0]
-            == LoadAction::FillOnes || colorLoadActions[0] == LoadAction::
+        else if(colorLoadActions[i] == LoadAction::Clear || colorLoadActions[i]
+            == LoadAction::FillOnes || colorLoadActions[i] == LoadAction::
             FillZeros)
         {
-            if(colorLoadActions[0] == LoadAction::FillOnes)
+            if(colorLoadActions[i] == LoadAction::FillOnes)
             {
-                [[renderPassDescriptor colorAttachments][0] setClearColor:
+                [[renderPassDescriptor colorAttachments][i] setClearColor:
                     MTLClearColorMake(1., 1., 1., 1.)];
             }
-            else if(colorLoadActions[0] == LoadAction::FillZeros)
+            else if(colorLoadActions[i] == LoadAction::FillZeros)
             {
-                [[renderPassDescriptor colorAttachments][0] setClearColor:
+                [[renderPassDescriptor colorAttachments][i] setClearColor:
                     MTLClearColorMake(0., 0., 0., 0.)];
             }
-            [[renderPassDescriptor colorAttachments][0] setLoadAction:
+            [[renderPassDescriptor colorAttachments][i] setLoadAction:
                 MTLLoadActionClear];
         }
-        else if(colorLoadActions[0] == LoadAction::Load)
+        else if(colorLoadActions[i] == LoadAction::Load)
         {
-            [[renderPassDescriptor colorAttachments][0] setLoadAction:
+            [[renderPassDescriptor colorAttachments][i] setLoadAction:
                 MTLLoadActionLoad];
         }
         else
         {
             throw std::runtime_error("Invalid color attachment load action.");
         }
+        [[renderPassDescriptor colorAttachments][i] setStoreAction:
+            MTLStoreActionStore];
+    }
 
+    if(_data->_fbo->_depthStencilAttachment)
+    {
+        [[renderPassDescriptor depthAttachment] setTexture:static_cast<id<
+            MTLTexture>>(_data->_fbo->_depthStencilAttachment->_texture)];
         if(depthLoadAction == LoadAction::DontCare)
         {
             [[renderPassDescriptor depthAttachment] setLoadAction:
@@ -414,21 +280,20 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         {
             throw std::runtime_error("Invalid depth attachment load action.");
         }
+        [[renderPassDescriptor depthAttachment] setStoreAction:
+            MTLStoreActionStore];
     }
 
     _data->_renderEncoder = [[RENDERER commandBuffer]
         renderCommandEncoderWithDescriptor:renderPassDescriptor];
 
-    if(_data->_fbo)
-    {
-        [renderPassDescriptor release];
+    [renderPassDescriptor release];
 
-        if(_data->_fbo->_width)
-        {
-            [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-                setViewport:{0., 0., static_cast<double>(_data->_fbo->_width),
-                static_cast<double>(_data->_fbo->_height), 0., 1.}];
-        }
+    if(_data->_fbo->_width)
+    {
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setViewport:{0., 0., static_cast<double>(_data->_fbo->_width),
+            static_cast<double>(_data->_fbo->_height), 0., 1.}];
     }
 
     // Flip winding order to CCW to match OpenGL standard.
@@ -451,16 +316,13 @@ void paz::RenderPass::end()
     [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
         endEncoding];
     _data->_renderEncoder = nullptr;
-    if(_data->_fbo)
+    for(auto n : _data->_fbo->_colorAttachments)
     {
-        for(auto n : _data->_fbo->_colorAttachments)
-        {
-            n->ensureMipmaps();
-        }
-        if(_data->_fbo->_depthStencilAttachment)
-        {
-            _data->_fbo->_depthStencilAttachment->ensureMipmaps();
-        }
+        n->ensureMipmaps();
+    }
+    if(_data->_fbo->_depthStencilAttachment)
+    {
+        _data->_fbo->_depthStencilAttachment->ensureMipmaps();
     }
 }
 

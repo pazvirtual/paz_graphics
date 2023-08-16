@@ -322,7 +322,7 @@ int main()
 
     try
     {
-        const paz::Image<std::uint8_t, 3> img = paz::Window::GetPixels();
+        const paz::Image<std::uint8_t, 3> img = paz::Window::ReadPixels();
         for(const auto& n : SamplePoints)
         {
             if(std::abs(img[3*(ImgRes*n[0] + n[1])] - n[2]) > Threshold)

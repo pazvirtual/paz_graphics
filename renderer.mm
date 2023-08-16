@@ -20,9 +20,7 @@
     if(self = [super init])
     {
         _device = view.device;
-
         _commandQueue = [_device newCommandQueue];
-
         _view = view;
     }
 
@@ -52,12 +50,9 @@
 {
     @try
     {
-        [_commandBuffer presentDrawable:[view currentDrawable]];
-
+        [_commandBuffer presentDrawable:[_view currentDrawable]];
         [_commandBuffer commit];
-
         [_commandBuffer waitUntilCompleted];
-
         _commandBuffer = nil;
     }
     @catch(NSException* e)
@@ -70,6 +65,11 @@
 - (MTLRenderPassDescriptor*)currentRenderPassDescriptor
 {
     return [_view currentRenderPassDescriptor];
+}
+
+- (id<MTLTexture>)outputTex
+{
+    return [[_view currentDrawable] texture];
 }
 @end
 

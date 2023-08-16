@@ -126,6 +126,8 @@ GLint paz::gl_internal_format(TextureFormat format)
 
         CASE(Depth16UNorm, DEPTH_COMPONENT16)
         CASE(Depth32Float, DEPTH_COMPONENT32F)
+
+        CASE(BGRA8UNorm, BGRA8)
     }
 
     throw std::runtime_error("Invalid texture format requested.");
@@ -176,6 +178,8 @@ GLenum paz::gl_format(TextureFormat format)
 
         CASE(Depth16UNorm, DEPTH_COMPONENT)
         CASE(Depth32Float, DEPTH_COMPONENT)
+
+        CASE(BGRA8UNorm, BGRA)
     }
 
     throw std::runtime_error("Invalid texture format requested.");
@@ -226,6 +230,8 @@ GLenum paz::gl_type(TextureFormat format)
 
         CASE(Depth16UNorm, UNSIGNED_SHORT)
         CASE(Depth32Float, FLOAT)
+
+        CASE(BGRA8UNorm, UNSIGNED_BYTE)
     }
 
     throw std::runtime_error("Invalid texture format requested.");

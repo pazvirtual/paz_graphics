@@ -1,5 +1,8 @@
-#include "PAZ_Graphics"
+#ifndef PAZ_GRAPHICS_WINDOW_HPP
+#define PAZ_GRAPHICS_WINDOW_HPP
 
+#include "PAZ_Graphics"
+#include "detect_os.hpp"
 #include <unordered_set>
 
 namespace paz
@@ -7,8 +10,10 @@ namespace paz
     void register_target(void* t);
     void unregister_target(void* t);
     void resize_targets();
-    class Framebuffer;
     Framebuffer final_framebuffer();
+#ifndef PAZ_MACOS
+    void begin_frame();
+#endif
     struct Initializer
     {
         std::unordered_set<void*> _renderTargets;
@@ -21,3 +26,5 @@ namespace paz
     // method of `paz::Window`.
     Initializer& initialize();
 }
+
+#endif

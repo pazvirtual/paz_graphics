@@ -16,6 +16,7 @@
 - (nonnull instancetype)initWithMetalKitView:(nonnull MTKView*)view;
 - (nullable MTLRenderPassDescriptor*)currentRenderPassDescriptor;
 - (void)ensureCommandBuffer;
+- (nonnull id<MTLTexture>)outputTex;
 @end
 
 #endif

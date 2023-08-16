@@ -59,6 +59,8 @@ MTLPixelFormat paz::pixel_format(TextureFormat format)
 
         CASE0(Depth16UNorm, Depth16Unorm)
         CASE0(Depth32Float, Depth32Float)
+
+        CASE0(BGRA8UNorm, BGRA8Unorm)
     }
 
     throw std::runtime_error("Invalid texture format requested.");
@@ -109,6 +111,8 @@ int paz::bytes_per_pixel(TextureFormat format)
 
         CASE1(Depth16UNorm, 1, 16)
         CASE1(Depth32Float, 1, 32)
+
+        CASE1(BGRA8UNorm, 4, 8)
     }
 
     throw std::runtime_error("Invalid texture format requested.");

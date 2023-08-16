@@ -28,7 +28,6 @@ static int MinWidth = GLFW_DONT_CARE;
 static int MinHeight = GLFW_DONT_CARE;
 static int MaxWidth = GLFW_DONT_CARE;
 static int MaxHeight = GLFW_DONT_CARE;
-
 static std::array<bool, paz::NumKeys> KeyDown = {};
 static std::array<bool, paz::NumKeys> KeyPressed = {};
 static std::array<bool, paz::NumKeys> KeyReleased = {};
@@ -37,8 +36,8 @@ static std::array<bool, paz::NumMouseButtons> MousePressed = {};
 static std::array<bool, paz::NumMouseButtons> MouseReleased = {};
 static std::pair<double, double> MousePos = {};
 static std::pair<double, double> ScrollOffset = {};
-
-static bool CursorDisabled = false;
+static bool CursorDisabled;
+static bool FrameInProgress;
 
 paz::Initializer& paz::initialize()
 {
@@ -411,6 +410,8 @@ void paz::Window::EndFrame()
 {
     initialize();
 
+    FrameInProgress = false;
+
     glBindFramebuffer(GL_READ_FRAMEBUFFER, final_framebuffer()._data->_id);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glBlitFramebuffer(0, 0, final_framebuffer().colorAttachment(0)._data->
@@ -549,21 +550,15 @@ void paz::unregister_target(void* t)
     initialize()._renderTargets.erase(t);
 }
 
-paz::Framebuffer paz::final_framebuffer()
-{
-    static const Framebuffer f = []()
-    {
-        Framebuffer f;
-        f.attach(RenderTarget(1., TextureFormat::RGBA8UNorm));
-        f.attach(RenderTarget(1., TextureFormat::Depth16UNorm));
-        return f;
-    }();
-    return f;
-}
-
-paz::Image<std::uint8_t, 3> paz::Window::GetPixels()
+paz::Image<std::uint8_t, 3> paz::Window::ReadPixels()
 {
     initialize();
+
+    if(FrameInProgress)
+    {
+        throw std::logic_error("Failed to read window pixels: Called before `pa"
+            "z::Window::EndFrame`.");
+    }
 
     Image<std::uint8_t, 3> image(ViewportWidth(), ViewportHeight());
     glActiveTexture(GL_TEXTURE0);
@@ -577,6 +572,11 @@ paz::Image<std::uint8_t, 3> paz::Window::GetPixels()
             gl_error(error) + ".");
     }
     return image;
+}
+
+void paz::begin_frame()
+{
+    FrameInProgress = true;
 }
 
 #endif

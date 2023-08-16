@@ -283,6 +283,19 @@ void paz::Window::EndFrame()
 {
     initialize();
 
+    [RENDERER ensureCommandBuffer];
+    id<MTLTexture> tex = static_cast<id<MTLTexture>>(final_framebuffer().
+        colorAttachment(0)._data->_texture);
+    id<MTLBlitCommandEncoder> blitEncoder = [[RENDERER commandBuffer]
+        blitCommandEncoder];
+    [blitEncoder copyFromTexture:tex sourceSlice:0 sourceLevel:0 sourceOrigin:
+        MTLOriginMake(0, 0, 0) sourceSize:MTLSizeMake(final_framebuffer().
+        colorAttachment(0).width(), final_framebuffer().colorAttachment(0).
+        height(), 1) toTexture:[RENDERER outputTex] destinationSlice:0
+        destinationLevel:0 destinationOrigin:MTLOriginMake(0, 0, 0)];
+    [blitEncoder synchronizeTexture:tex slice:0 level:0];
+    [blitEncoder endEncoding];
+
     [[VIEW_CONTROLLER mtkView] draw];
     [VIEW_CONTROLLER resetEvents];
     const auto now = std::chrono::steady_clock::now();
@@ -368,27 +381,33 @@ void paz::Window::Resize(int width, int height, bool viewportCoords)
     resize_targets();
 }
 
-paz::Image<std::uint8_t, 3> paz::Window::PrintScreen()
+paz::Image<std::uint8_t, 3> paz::Window::ReadPixels()
 {
     initialize();
+
+    if([RENDERER commandBuffer])
+    {
+        throw std::logic_error("Failed to read window pixels: Called before `pa"
+            "z::Window::EndFrame`.");
+    }
 
     const int width = ViewportWidth();
     const int height = ViewportHeight();
 
     Image<std::uint8_t, 4> bgraFlipped(width, height);
-    [[[[VIEW_CONTROLLER mtkView] currentDrawable] texture] getBytes:bgraFlipped.
-        data() bytesPerRow:4*width fromRegion:MTLRegionMake2D(0, 0, width,
-        height) mipmapLevel:0];
+    [static_cast<id<MTLTexture>>(final_framebuffer().colorAttachment(0)._data->
+        _texture) getBytes:bgraFlipped.data() bytesPerRow:4*width fromRegion:
+        MTLRegionMake2D(0, 0, width, height) mipmapLevel:0];
 
-    Image<std::uint8_t, 3> rgb(ViewportWidth(), ViewportHeight());
-    for(int y = 0; y < ViewportHeight(); ++y)
+    Image<std::uint8_t, 3> rgb(width, height);
+    for(int y = 0; y < height; ++y)
     {
-        for(int x = 0; x < ViewportWidth(); ++x)
+        for(int x = 0; x < width; ++x)
         {
             for(int i = 0; i < 3; ++i)
             {
-                rgb[3*(width*y + x) + 2 - i] = bgraFlipped[4*(width*(height -
-                    1 - y) + x) + i];
+                rgb[3*(width*y + x) + 2 - i] = bgraFlipped[4*(width*(height - 1
+                    - y) + x) + i];
             }
         }
     }

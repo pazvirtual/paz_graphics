@@ -170,6 +170,8 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         throw std::runtime_error("Render pass has not been initialized.");
     }
 
+    begin_frame();
+
     glGetError();
     DepthCalledThisPass = false;
     CullCalledThisPass = false;

@@ -53,10 +53,7 @@
 {
     [super viewDidLoad];
 
-    [_mtkView setClearColor:MTLClearColorMake(0., 0., 0., 0.)];
-    [_mtkView setDepthStencilPixelFormat:MTLPixelFormatDepth32Float];
-
-    // This is required for `paz::Window::PrintScreen()`.
+    // This is required for blitting to screen.
     [_mtkView setFramebufferOnly:NO];
 
     // This is required for on-demand rendering.
