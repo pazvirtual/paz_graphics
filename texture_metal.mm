@@ -16,17 +16,44 @@
 #define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
     [NSApp delegate]) window] contentViewController]) mtkView] device]
 
-static id<MTLSamplerState> create_sampler(MinMagFilter minFilter, MinMagFilter
-    magFilter, MipmapFilter mipFilter, WrapMode wrapS, WrapMode wrapT)
+#define CASE(a, b) case paz::WrapMode::a: return MTLSamplerAddressMode##b;
+
+static MTLSamplerMinMagFilter min_mag_filter(paz::MinMagFilter f)
+{
+    switch(f)
+    {
+        case paz::MinMagFilter::Linear: return MTLSamplerMinMagFilterLinear;
+        case paz::MinMagFilter::Nearest: return MTLSamplerMinMagFilterNearest;
+    }
+
+    throw std::logic_error("Invalid texture filter requested.");
+}
+
+static MTLSamplerAddressMode address_mode(paz::WrapMode m)
+{
+    switch(m)
+    {
+        CASE(Repeat, Repeat)
+        CASE(MirrorRepeat, MirrorRepeat)
+        CASE(ClampToEdge, ClampToEdge)
+        CASE(ClampToZero, ClampToZero)
+    }
+
+    throw std::logic_error("Invalid texture wrapping mode requested.");
+}
+
+static id<MTLSamplerState> create_sampler(paz::MinMagFilter minFilter, paz::
+    MinMagFilter magFilter, paz::MipmapFilter mipFilter, paz::WrapMode wrapS,
+    paz::WrapMode wrapT)
 {
     MTLSamplerDescriptor* descriptor = [[MTLSamplerDescriptor alloc] init];
     [descriptor setMinFilter:min_mag_filter(minFilter)];
     [descriptor setMagFilter:min_mag_filter(magFilter)];
-    if(mipFilter == MipmapFilter::Linear)
+    if(mipFilter == paz::MipmapFilter::Linear)
     {
         [descriptor setMipFilter:MTLSamplerMipFilterLinear];
     }
-    else if(mipFilter == MipmapFilter::Nearest)
+    else if(mipFilter == paz::MipmapFilter::Nearest)
     {
         [descriptor setMipFilter:MTLSamplerMipFilterNearest];
     }

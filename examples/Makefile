@@ -19,31 +19,27 @@ else
     endif
     CXXFLAGS += -pthread
 endif
-INCL := -I..
-LIBS := ../libpazgraphics.a $(LIBPATH)/libpazio.a
+CXXFLAGS += -I..
+LDLIBS := ../libpazgraphics.a $(LIBPATH)/libpazio.a
 ifeq ($(OSPRETTY), macOS)
-    LIBS += -framework MetalKit -framework Metal -framework Cocoa
+    LDLIBS += -framework MetalKit -framework Metal -framework Cocoa
 else
-    LIBS += $(LIBPATH)/libglfw3.a -lstdc++fs
+    LDLIBS += $(LIBPATH)/libglfw3.a -lstdc++fs
     ifeq ($(OSPRETTY), Linux)
-        LIBS += -lGL -lX11 -ldl
+        LDLIBS += -lGL -lX11 -ldl
     else
-        LIBS += -lgdi32 -lopengl32
+        LDLIBS += -lgdi32 -lopengl32
     endif
 endif
 
 SRC := $(wildcard *.cpp)
-OBJ := $(SRC:.cpp=.o)
-EXE := $(OBJ:.o=)
+EXE := $(SRC:.cpp=)
 
 .PHONY: $(SRC)
 
 all: $(EXE)
 
-%: %.cpp
-	$(CXX) $(CXXFLAGS) -o $@ $< $(INCL) $(LIBS)
-
 clean:
-	$(RM) $(OBJ) $(EXE)
+	$(RM) $(EXE)
 
 print-% : ; @echo $* = $($*)
