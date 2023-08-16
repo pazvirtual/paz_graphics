@@ -98,7 +98,7 @@ uniform mat4 lightView;
 void main()
 {
     vec4 pos = vertexPosition + vec4(xOffset, 0, 0, 0);
-    gl_Position = lightProjection*lightView*pos;
+    gl_Position = mul(lightProjection, mul(lightView, pos));
 }
 )===";
 
@@ -124,9 +124,9 @@ out vec2 uv;
 void main()
 {
     vec4 pos = vertexPosition + vec4(xOffset, 0, 0, 0);
-    lightProjPos = lightProjection*lightView*pos;
-    lightSpcNor = lightView*vertexNormal;
-    gl_Position = projection*view*pos;
+    lightProjPos = mul(lightProjection, mul(lightView, pos));
+    lightSpcNor = mul(lightView, vertexNormal);
+    gl_Position = mul(projection, mul(view, pos));
     uv = vertexUv;
 }
 )===";
@@ -144,9 +144,9 @@ void main()
     vec3 projCoords = 0.5*lightProjPos.xyz/lightProjPos.w + 0.5;
     float depth = projCoords.z;
     vec2 shadowUv = projCoords.xy;
-    color = vec4((max(sign(texture(shadowMap, shadowUv).r + 1e-6 - depth), 0.)*
-        ill + 0.1)*texture(surface, uv).r);
-    color.rgb = clamp(color.rgb, vec3(0.), vec3(1.));
+    float c = (max(sign(texture(shadowMap, shadowUv).r + 1e-6 - depth), 0.)*ill
+        + 0.1)*texture(surface, uv).r;
+    color = vec4(c, c, c, 1);
 }
 )===";
 

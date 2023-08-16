@@ -10,9 +10,9 @@ uniform mat4 projection;
 
 void main()
 {
-    vec4 relOrigin = view*origin;
+    vec4 relOrigin = mul(view, origin);
     vec3 pos = relOrigin.xyz + vec3(position, 0.);
-    gl_Position = projection*vec4(pos, 1.);
+    gl_Position = mul(projection, vec4(pos, 1.));
     uv = 0.5*position + 0.5;
     c = color.rgb;
 }

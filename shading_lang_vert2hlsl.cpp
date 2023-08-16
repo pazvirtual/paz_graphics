@@ -103,6 +103,40 @@ float4 uintBitsToFloat(in uint4 v)
 }
 )===";
 
+    // Fix HLSL matrix issues. (WIP)
+    for(int i = 2; i <= 4; ++i)
+    {
+        for(int j = 2; j <= 4; ++j)
+        {
+            out << "float" << i << "x" << j << " paz_make_float" << i << "x" <<
+                j << "(";
+            for(int x = 0; x < i; ++x)
+            {
+                for(int y = 0; y < j; ++y)
+                {
+                    out << "in float a" << x << y;
+                    if(x + 1 < i || y + 1 < j)
+                    {
+                        out << ", ";
+                    }
+                }
+            }
+            out << ")\n{\n    return float" << i << "x" << j << "(";
+            for(int y = 0; y < j; ++y)
+            {
+                for(int x = 0; x < i; ++x)
+                {
+                    out << "a" << x << y;
+                    if(x + 1 < i || y + 1 < j)
+                    {
+                        out << ", ";
+                    }
+                }
+            }
+            out << ");\n}\n";
+        }
+    }
+
     std::string line;
     std::size_t l = 0;
     while(std::getline(in, line))
@@ -269,6 +303,10 @@ float4 uintBitsToFloat(in uint4 v)
         }
 
         // Apply global definitions.
+        line = std::regex_replace(line, std::regex("\\bmat([2-4])\\s*\\("),
+            "paz_make_float$1x$1(");
+        line = std::regex_replace(line, std::regex("\\bmat([2-4])x([2-4])\\s*\\"
+            "("), "paz_make_float$1x$2(");
         line = std::regex_replace(line, std::regex("\\bmat([2-4])x([2-4])"),
             "float$1x$2");
         line = std::regex_replace(line, std::regex("\\bmat([2-4])"),

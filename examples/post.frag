@@ -17,7 +17,7 @@ void main()
         vec3 c = mix(texture(source, u0).rgb, texture(source, u1).rgb, 0.5);
         col = mix(col, c, 0.1);
     }
-    float d = length(uv - vec2(0.5))*1.41421;
-    col *= vec3(1. - d*d);
+    float d = length(uv - vec2(0.5, 0.5))*1.41421;
+    col *= 1. - d*d;
     color = vec4(col, 1.);
 }

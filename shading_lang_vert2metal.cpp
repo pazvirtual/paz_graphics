@@ -103,7 +103,7 @@ auto uintBitsToFloat(thread const uint4& v)
 }
 )===";
 
-    // Fix matrix multiplication issues. (WIP)
+    // Fix HLSL matrix issues. (WIP)
     out << "#define mul(a, b) ((a)*(b))" << std::endl;
 
     std::string line;
