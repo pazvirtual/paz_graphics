@@ -482,6 +482,7 @@ namespace paz
         static float AspectRatio();
         static void Quit();
         static bool Done();
+        static void PollEvents();
         static void EndFrame();
         static double FrameTime();
         static void SetMinSize(int width, int height);

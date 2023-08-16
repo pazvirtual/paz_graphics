@@ -475,79 +475,6 @@ static void resize_callback(int width, int height)
     paz::resize_targets();
 }
 
-static void poll_events()
-{
-    glfwPollEvents();
-    GLFWgamepadstate state;
-    if(glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
-    {
-        for(int i = 0; i <= GLFW_GAMEPAD_BUTTON_LAST; ++i)
-        {
-            const int idx = static_cast<int>(paz::convert_button(i));
-            if(state.buttons[i] == GLFW_PRESS)
-            {
-                GamepadActive = true;
-                MouseActive = false;
-                if(!GamepadDown[idx])
-                {
-                    GamepadPressed[idx] = true;
-                }
-                GamepadDown[idx] = true;
-            }
-            else if(state.buttons[i] == GLFW_RELEASE)
-            {
-                if(GamepadDown[idx])
-                {
-                    GamepadActive = true;
-                    MouseActive = false;
-                    GamepadReleased[idx] = true;
-                }
-                GamepadDown[idx] = false;
-            }
-        }
-        if(std::abs(state.axes[GLFW_GAMEPAD_AXIS_LEFT_X]) > 0.1)
-        {
-            GamepadActive = true;
-            MouseActive = false;
-            GamepadLeftStick.first = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
-        }
-        if(std::abs(state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y]) > 0.1)
-        {
-            GamepadActive = true;
-            MouseActive = false;
-            GamepadLeftStick.second = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
-        }
-        if(std::abs(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X]) > 0.1)
-        {
-            GamepadActive = true;
-            MouseActive = false;
-            GamepadRightStick.first = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X];
-        }
-        if(std::abs(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y]) > 0.1)
-        {
-            GamepadActive = true;
-            MouseActive = false;
-            GamepadRightStick.second = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
-        }
-        if(state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > -0.9)
-        {
-            GamepadActive = true;
-            MouseActive = false;
-            GamepadLeftTrigger = state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER];
-        }
-        if(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > -0.9)
-        {
-            GamepadActive = true;
-            MouseActive = false;
-            GamepadRightTrigger = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER];
-        }
-    }
-    if(CursorDisabled)
-    {
-        glfwSetCursorPos(WindowPtr, 0, WindowHeight);
-    }
-}
-
 static void reset_events()
 {
     if(CursorDisabled)
@@ -717,9 +644,6 @@ paz::Initializer::Initializer()
         focus_callback(focused); });
     glfwSetWindowSizeCallback(WindowPtr, [](GLFWwindow*, int width, int height){
         resize_callback(width, height); });
-
-    // Poll events.
-    poll_events();
 }
 
 void paz::Window::MakeFullscreen()
@@ -1017,6 +941,81 @@ bool paz::Window::Done()
     return glfwWindowShouldClose(WindowPtr);
 }
 
+void paz::Window::PollEvents()
+{
+    initialize();
+
+    glfwPollEvents();
+    GLFWgamepadstate state;
+    if(glfwGetGamepadState(GLFW_JOYSTICK_1, &state))
+    {
+        for(int i = 0; i <= GLFW_GAMEPAD_BUTTON_LAST; ++i)
+        {
+            const int idx = static_cast<int>(paz::convert_button(i));
+            if(state.buttons[i] == GLFW_PRESS)
+            {
+                ::GamepadActive = true;
+                ::MouseActive = false;
+                if(!::GamepadDown[idx])
+                {
+                    ::GamepadPressed[idx] = true;
+                }
+                ::GamepadDown[idx] = true;
+            }
+            else if(state.buttons[i] == GLFW_RELEASE)
+            {
+                if(::GamepadDown[idx])
+                {
+                    ::GamepadActive = true;
+                    ::MouseActive = false;
+                    ::GamepadReleased[idx] = true;
+                }
+                ::GamepadDown[idx] = false;
+            }
+        }
+        if(std::abs(state.axes[GLFW_GAMEPAD_AXIS_LEFT_X]) > 0.1)
+        {
+            ::GamepadActive = true;
+            ::MouseActive = false;
+            ::GamepadLeftStick.first = state.axes[GLFW_GAMEPAD_AXIS_LEFT_X];
+        }
+        if(std::abs(state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y]) > 0.1)
+        {
+            ::GamepadActive = true;
+            ::MouseActive = false;
+            ::GamepadLeftStick.second = state.axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
+        }
+        if(std::abs(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X]) > 0.1)
+        {
+            ::GamepadActive = true;
+            ::MouseActive = false;
+            ::GamepadRightStick.first = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_X];
+        }
+        if(std::abs(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y]) > 0.1)
+        {
+            ::GamepadActive = true;
+            ::MouseActive = false;
+            ::GamepadRightStick.second = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
+        }
+        if(state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] > -0.9)
+        {
+            ::GamepadActive = true;
+            ::MouseActive = false;
+            ::GamepadLeftTrigger = state.axes[GLFW_GAMEPAD_AXIS_LEFT_TRIGGER];
+        }
+        if(state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] > -0.9)
+        {
+            ::GamepadActive = true;
+            ::MouseActive = false;
+            ::GamepadRightTrigger = state.axes[GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER];
+        }
+    }
+    if(CursorDisabled)
+    {
+        glfwSetCursorPos(WindowPtr, 0, WindowHeight);
+    }
+}
+
 void paz::Window::EndFrame()
 {
     initialize();
@@ -1089,7 +1088,6 @@ void paz::Window::EndFrame()
     PrevFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
         FrameStart).count()*1e-6;
     FrameStart = now;
-    poll_events();
 }
 
 void paz::Window::Quit()

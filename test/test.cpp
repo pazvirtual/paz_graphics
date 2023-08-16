@@ -326,6 +326,12 @@ int main()
 
     try
     {
+        paz::Window::PollEvents();
+    }
+    CATCH
+
+    try
+    {
         const float c = std::cos(Angle);
         const float s = std::sin(Angle);
         const float c0 = std::cos(5.5);
