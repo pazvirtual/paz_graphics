@@ -52,11 +52,6 @@ namespace paz
         struct Data;
         std::unique_ptr<Data> _data;
 
-        bool _mipmap = false;
-
-        int _width = 0;
-        int _height = 0;
-
         Texture();
         void init(const void* data = nullptr);
 
@@ -68,14 +63,8 @@ namespace paz
             minFilter, MinMagFilter magFilter, bool normalized = true);
         // ...
         void resize(int width, int height);
-        int width() const
-        {
-            return _width;
-        }
-        int height() const
-        {
-            return _height;
-        }
+        int width() const;
+        int height() const;
     };
 
     class RenderTarget : public Texture
@@ -97,8 +86,6 @@ namespace paz
 
         struct Data;
         std::unique_ptr<Data> _data;
-
-        std::size_t _numVertices = 0;
 
         VertexBuffer(const VertexBuffer&) = delete;
         VertexBuffer& operator=(const VertexBuffer&) = delete;
@@ -123,8 +110,6 @@ namespace paz
 
         struct Data;
         std::unique_ptr<Data> _data;
-
-        std::size_t _numIndices;
 
         IndexBuffer(const IndexBuffer&) = delete;
         IndexBuffer& operator=(const IndexBuffer&) = delete;
@@ -223,8 +208,6 @@ namespace paz
     private:
         struct Data;
         std::unique_ptr<Data> _data;
-
-        const Framebuffer* _fbo = nullptr;
 
         RenderPass(const RenderPass&) = delete;
         RenderPass& operator=(const RenderPass&) = delete;

@@ -16,8 +16,8 @@ paz::RenderTarget::RenderTarget(double scale, Format format, MinMagFilter
     _data->_isRenderTarget = true;
     _data->_scale = scale;
 
-    _width = _data->_scale*Window::ViewportWidth();
-    _height = _data->_scale*Window::ViewportHeight();
+    _data->_width = _data->_scale*Window::ViewportWidth();
+    _data->_height = _data->_scale*Window::ViewportHeight();
 
     init();
 
@@ -33,8 +33,8 @@ paz::RenderTarget::RenderTarget(int width, int height, Format format,
     _data->_isRenderTarget = true;
     _data->_scale = 0.;
 
-    _width = width;
-    _height = height;
+    _data->_width = width;
+    _data->_height = height;
 
     init();
 

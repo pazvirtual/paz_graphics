@@ -30,7 +30,7 @@ paz::VertexBuffer::VertexBuffer()
 void paz::VertexBuffer::attribute(int dim, const GLfloat* data, std::size_t
     size)
 {
-    check_size(dim, _numVertices, size);
+    check_size(dim, _data->_numVertices, size);
 
     const std::size_t i = _data->_ids.size();
 
@@ -53,7 +53,7 @@ void paz::VertexBuffer::attribute(int dim, const GLfloat* data, std::size_t
 
 void paz::VertexBuffer::attribute(int dim, const GLuint* data, std::size_t size)
 {
-    check_size(dim, _numVertices, size);
+    check_size(dim, _data->_numVertices, size);
 
     const std::size_t i = _data->_ids.size();
 
@@ -76,7 +76,7 @@ void paz::VertexBuffer::attribute(int dim, const GLuint* data, std::size_t size)
 
 void paz::VertexBuffer::attribute(int dim, const GLint* data, std::size_t size)
 {
-    check_size(dim, _numVertices, size);
+    check_size(dim, _data->_numVertices, size);
 
     const std::size_t i = _data->_ids.size();
 
