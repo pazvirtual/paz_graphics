@@ -34,7 +34,9 @@ static constexpr float ZFar = 5.;
 static constexpr float YFov = 65.*M_PI/180.;
 // Texture widths are odd to verify robustness.
 static constexpr int ShadowRes = 1999;
-static constexpr int ImgRes = 199;
+// Setting window dimensions to odd numbers of physical pixels will cause test
+// to fail on HiDPI displays.
+static constexpr int ImgRes = 200;
 static constexpr int Size = 16;
 static constexpr int Scale = 8;
 static constexpr float Eps = 1e-4;
@@ -45,15 +47,15 @@ static constexpr int Threshold = 0.01*std::numeric_limits<std::uint8_t>::max();
 static constexpr std::array<std::array<int, 3>, 10> SamplePoints =
 {{
     {171,  83, 0},
-    {115, 158, 88},
+    {115, 158, 40},
     {  3,  59, 0},
-    { 62,  69, 17},
-    {100, 162, 73},
-    { 97, 130, 1},
+    { 62,  69, 10},
+    {100, 162, 133},
+    { 97, 130, 9},
     {189,  70, 0},
-    {138,  37, 84},
-    { 75,  70, 14},
-    {134,  64, 0}
+    {138,  37, 120},
+    { 75,  70, 58},
+    {134,  64, 85}
 }};
 
 static constexpr std::array<float, 4*4> GroundPos =
