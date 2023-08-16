@@ -11,41 +11,42 @@
 #define CASE0(a, b) {#a, paz::GamepadButton::b},
 #define CASE1(a, b) {#a, b},
 
-static std::unordered_map<std::string, int> AxisIndices =
-{
-    CASE1(leftx, 0)
-    CASE1(lefty, 1)
-    CASE1(rightx, 2)
-    CASE1(righty, 3)
-    CASE1(lefttrigger, 4)
-    CASE1(righttrigger, 5)
-};
-
-static std::unordered_map<std::string, paz::GamepadButton> ButtonNames =
-{
-    CASE0(a, A)
-    CASE0(b, B)
-    CASE0(x, X)
-    CASE0(y, Y)
-    CASE0(back, Back)
-    CASE0(start, Start)
-    CASE0(guide, Guide)
-    CASE0(leftshoulder, LeftBumper)
-    CASE0(rightshoulder, RightBumper)
-    CASE0(leftstick, LeftThumb)
-    CASE0(rightstick, RightThumb)
-};
-
-static std::unordered_map<std::string, paz::GamepadButton> HatNames =
-{
-    CASE0(dpup, Up)
-    CASE0(dpright, Right)
-    CASE0(dpdown, Down)
-    CASE0(dpleft, Left)
-};
-
 static bool parse_mapping(const std::string& str, paz::GamepadMapping& m)
 {
+    static const std::unordered_map<std::string, int> axisIndices =
+    {
+        CASE1(leftx, 0)
+        CASE1(lefty, 1)
+        CASE1(rightx, 2)
+        CASE1(righty, 3)
+        CASE1(lefttrigger, 4)
+        CASE1(righttrigger, 5)
+    };
+
+    static const std::unordered_map<std::string, paz::GamepadButton>
+        buttonNames =
+    {
+        CASE0(a, A)
+        CASE0(b, B)
+        CASE0(x, X)
+        CASE0(y, Y)
+        CASE0(back, Back)
+        CASE0(start, Start)
+        CASE0(guide, Guide)
+        CASE0(leftshoulder, LeftBumper)
+        CASE0(rightshoulder, RightBumper)
+        CASE0(leftstick, LeftThumb)
+        CASE0(rightstick, RightThumb)
+    };
+
+    static const std::unordered_map<std::string, paz::GamepadButton> hatNames =
+    {
+        CASE0(dpup, Up)
+        CASE0(dpright, Right)
+        CASE0(dpdown, Down)
+        CASE0(dpleft, Left)
+    };
+
     std::stringstream ss(str);
     std::string line;
 
@@ -88,10 +89,10 @@ static bool parse_mapping(const std::string& str, paz::GamepadMapping& m)
         }
         if(val[startPos] == 'a')
         {
-            if(AxisIndices.count(key))
+            if(axisIndices.count(key))
             {
                 const std::size_t endPos = val.find('~');
-                const int idx = AxisIndices.at(key);
+                const int idx = axisIndices.at(key);
                 m.axes[idx].type = paz::GamepadElementType::Axis;
                 m.axes[idx].idx = std::stoi(val.substr(startPos + 1, endPos));
                 m.axes[idx].axisScale = 2/(max - min);
@@ -105,18 +106,18 @@ static bool parse_mapping(const std::string& str, paz::GamepadMapping& m)
         }
         else if(val[startPos] == 'b')
         {
-            if(ButtonNames.count(key))
+            if(buttonNames.count(key))
             {
-                const int idx = static_cast<int>(ButtonNames.at(key));
+                const int idx = static_cast<int>(buttonNames.at(key));
                 m.buttons[idx].type = paz::GamepadElementType::Button;
                 m.buttons[idx].idx = std::stoi(val.substr(startPos + 1));
             }
         }
         else if(val[startPos] == 'h')
         {
-            if(HatNames.count(key))
+            if(hatNames.count(key))
             {
-                const int idx = static_cast<int>(HatNames.at(key));
+                const int idx = static_cast<int>(hatNames.at(key));
                 m.buttons[idx].type = paz::GamepadElementType::HatBit;
                 std::size_t pos = val.find('.');
                 if(pos == std::string::npos)
@@ -134,28 +135,11 @@ static bool parse_mapping(const std::string& str, paz::GamepadMapping& m)
     return true;
 }
 
-static std::unordered_map<std::string, paz::GamepadMapping> GamepadMappings =
-    []()
+static auto& gamepad_mappings()
 {
-    std::unordered_map<std::string, paz::GamepadMapping> res;
-    std::stringstream iss(paz::MacosControllerDb);
-    std::string line;
-    while(std::getline(iss, line))
-    {
-        if(line.empty() || line[0] == '#')
-        {
-            continue;
-        }
-        const std::string guid = line.substr(0, 32);
-        const std::string mappingStr = line.substr(33);
-        paz::GamepadMapping m;
-        if(parse_mapping(mappingStr, m))
-        {
-            res[guid] = m;
-        }
-    }
-    return res;
-}();
+    static std::unordered_map<std::string, paz::GamepadMapping> mappings;
+    return mappings;
+}
 
 static void match_callback(void* context, IOReturn /* result */, void*
     /* sender */, IOHIDDeviceRef device)
@@ -221,7 +205,7 @@ static void match_callback(void* context, IOReturn /* result */, void*
     std::string guid = buf;
 
     // Check if we have a mapping for this type of gamepad.
-    if(!GamepadMappings.count(guid))
+    if(!gamepad_mappings().count(guid))
     {
         return;
     }
@@ -433,7 +417,23 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
         [_window setDelegate:self];
 
         // Load gamepad mappings.
+        std::stringstream iss(paz::MacosControllerDb);
+        std::string line;
+        while(std::getline(iss, line))
         {
+            if(line.empty() || line[0] == '#')
+            {
+                continue;
+            }
+            const std::string guid = line.substr(0, 32);
+            if(!gamepad_mappings().count(guid))
+            {
+                paz::GamepadMapping m;
+                if(parse_mapping(line.substr(33), m))
+                {
+                    gamepad_mappings()[guid] = m;
+                }
+            }
         }
 
         // Set callbacks to detect when a gamepad is connected or removed.
@@ -657,7 +657,7 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
     }
 
     // Use mapping to get state.
-    const auto& mapping = GamepadMappings.at(_gamepads[0].guid);
+    const auto& mapping = gamepad_mappings().at(_gamepads[0].guid);
     for(int i = 0; i < paz::NumGamepadButtons; ++i)
     {
         const auto e = mapping.buttons[i];
