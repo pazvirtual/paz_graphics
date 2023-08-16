@@ -180,7 +180,11 @@ void paz::Window::ResetEvents()
     [VIEW_CONTROLLER resetEvents];
 }
 
-// ...
+void paz::Window::SetCursorMode(CursorMode mode)
+{
+    [APP_DELEGATE setCursorMode:mode];
+    CursorDisabled = (mode == CursorMode::Disable);
+}
 
 float paz::Window::AspectRatio()
 {
