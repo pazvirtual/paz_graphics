@@ -74,8 +74,8 @@ static void init(paz::RenderPass& scenePass, paz::RenderPass& textPass, paz::
         str());
 
     scenePass = paz::RenderPass(renderFramebuffer, sceneVert, sceneFrag);
-    textPass = paz::RenderPass(renderFramebuffer, fontVert, fontFrag, paz::
-        BlendMode::Additive);
+    textPass = paz::RenderPass(renderFramebuffer, fontVert, fontFrag, {paz::
+        BlendMode::One_One});
     postPass = paz::RenderPass(quadVert, postFrag);
 }
 

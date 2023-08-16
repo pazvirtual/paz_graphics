@@ -174,7 +174,7 @@ paz::RenderPass::RenderPass()
 }
 
 paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
-    const FragmentFunction& frag, BlendMode mode)
+    const FragmentFunction& frag, const std::vector<BlendMode>& modes)
 {
     initialize();
 
@@ -183,7 +183,7 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
     _data->_fbo = fbo._data;
     _data->_shader.init(vert._data->_id, frag._data->_id, frag._data->
         _outputTypes);
-    _data->_blendMode = mode;
+    _data->_blendModes = modes;
 
     for(const auto& n : _data->_shader._outputTypes)
     {
@@ -199,7 +199,8 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
 }
 
 paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
-    frag, BlendMode mode) : RenderPass(final_framebuffer(), vert, frag, mode) {}
+    frag, const std::vector<BlendMode>& modes) : RenderPass(final_framebuffer(),
+    vert, frag, modes) {}
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
@@ -269,7 +270,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
                 DepthMaskEnabled = true;
                 glDepthMask(GL_TRUE);
             }
-            glClearBufferfv(GL_DEPTH, 0, White);
+            glClearBufferfv(GL_DEPTH, 0, Clear);
         }
         else if(depthLoadAction != LoadAction::DontCare && depthLoadAction !=
             LoadAction::Load)
@@ -278,7 +279,16 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         }
     }
 
-    if(_data->_blendMode == BlendMode::Disable)
+    bool needBlending = false;
+    for(auto n : _data->_blendModes)
+    {
+        if(n != BlendMode::Disable)
+        {
+            needBlending = true;
+            break;
+        }
+    }
+    if(!needBlending)
     {
         if(BlendEnabled)
         {
@@ -293,22 +303,32 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             BlendEnabled = true;
             glEnable(GL_BLEND);
         }
-        if(_data->_blendMode == BlendMode::Additive)
+        for(std::size_t i = 0; i < _data->_blendModes.size(); ++i)
         {
-            glBlendFunc(GL_ONE, GL_ONE);
-        }
-        else if(_data->_blendMode == BlendMode::Blend)
-        {
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        }
-        else if(_data->_blendMode == BlendMode::BlendPremult)
-        {
-            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-        }
-        // ...
-        else
-        {
-            throw std::runtime_error("Invalid blending function.");
+            if(_data->_blendModes[i] == BlendMode::One_One)
+            {
+                glBlendFunci(i, GL_ONE, GL_ONE);
+            }
+            else if(_data->_blendModes[i] == BlendMode::One_InvSrcAlpha)
+            {
+                glBlendFunci(i, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            else if(_data->_blendModes[i] == BlendMode::SrcAlpha_InvSrcAlpha)
+            {
+                glBlendFunci(i, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            else if(_data->_blendModes[i] == BlendMode::InvSrcAlpha_SrcAlpha)
+            {
+                glBlendFunci(i, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
+            }
+            else if(_data->_blendModes[i] == BlendMode::Zero_InvSrcAlpha)
+            {
+                glBlendFunci(i, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            else
+            {
+                throw std::runtime_error("Invalid blending function.");
+            }
         }
     }
 

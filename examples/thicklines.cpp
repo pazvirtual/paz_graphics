@@ -107,8 +107,8 @@ int main(int, char** argv)
     buff1.attach(paz::RenderTarget(paz::TextureFormat::RGBA16Float, paz::
         MinMagFilter::Linear, paz::MinMagFilter::Linear));
 
-    paz::RenderPass basePass(buff0, lineVert0, lineFrag0, paz::BlendMode::
-        Additive);
+    paz::RenderPass basePass(buff0, lineVert0, lineFrag0, {paz::BlendMode::
+        One_One});
     paz::RenderPass xPass(buff1, lineVert1, lineFrag1);
     paz::RenderPass yPass(lineVert2, lineFrag1);
 

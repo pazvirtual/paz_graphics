@@ -147,7 +147,7 @@ paz::RenderPass::RenderPass()
 }
 
 paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
-    const FragmentFunction& frag, BlendMode blendMode)
+    const FragmentFunction& frag, const std::vector<BlendMode>& modes)
 {
     initialize();
 
@@ -167,14 +167,14 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
         [[pipelineDescriptor colorAttachments][i] setPixelFormat:
             [static_cast<id<MTLTexture>>(_data->_fbo->_colorAttachments[i]->
             _texture) pixelFormat]];
-        if(blendMode != paz::BlendMode::Disable)
+        if(modes[i] != paz::BlendMode::Disable)
         {
             [[pipelineDescriptor colorAttachments][i] setBlendingEnabled:YES];
             [[pipelineDescriptor colorAttachments][i] setRgbBlendOperation:
                 MTLBlendOperationAdd];
             [[pipelineDescriptor colorAttachments][i] setAlphaBlendOperation:
                 MTLBlendOperationAdd];
-            if(blendMode == paz::BlendMode::Additive)
+            if(modes[i] == paz::BlendMode::One_One)
             {
                 [[pipelineDescriptor colorAttachments][i]
                     setSourceRGBBlendFactor:MTLBlendFactorOne];
@@ -185,7 +185,20 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
                 [[pipelineDescriptor colorAttachments][i]
                     setDestinationAlphaBlendFactor:MTLBlendFactorOne];
             }
-            else if(blendMode == paz::BlendMode::Blend)
+            else if(modes[i] == paz::BlendMode::One_InvSrcAlpha)
+            {
+                [[pipelineDescriptor colorAttachments][i]
+                    setSourceRGBBlendFactor:MTLBlendFactorOne];
+                [[pipelineDescriptor colorAttachments][i]
+                    setSourceAlphaBlendFactor:MTLBlendFactorOne];
+                [[pipelineDescriptor colorAttachments][i]
+                    setDestinationRGBBlendFactor:
+                    MTLBlendFactorOneMinusSourceAlpha];
+                [[pipelineDescriptor colorAttachments][i]
+                    setDestinationAlphaBlendFactor:
+                    MTLBlendFactorOneMinusSourceAlpha];
+            }
+            else if(modes[i] == paz::BlendMode::SrcAlpha_InvSrcAlpha)
             {
                 [[pipelineDescriptor colorAttachments][i]
                     setSourceRGBBlendFactor:MTLBlendFactorSourceAlpha];
@@ -198,12 +211,24 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
                     setDestinationAlphaBlendFactor:
                     MTLBlendFactorOneMinusSourceAlpha];
             }
-            else if(blendMode == paz::BlendMode::BlendPremult)
+            else if(modes[i] == paz::BlendMode::InvSrcAlpha_SrcAlpha)
             {
                 [[pipelineDescriptor colorAttachments][i]
-                    setSourceRGBBlendFactor:MTLBlendFactorOne];
+                    setSourceRGBBlendFactor:MTLBlendFactorOneMinusSourceAlpha];
                 [[pipelineDescriptor colorAttachments][i]
-                    setSourceAlphaBlendFactor:MTLBlendFactorOne];
+                    setSourceAlphaBlendFactor:
+                    MTLBlendFactorOneMinusSourceAlpha];
+                [[pipelineDescriptor colorAttachments][i]
+                    setDestinationRGBBlendFactor:MTLBlendFactorSourceAlpha];
+                [[pipelineDescriptor colorAttachments][i]
+                    setDestinationAlphaBlendFactor:MTLBlendFactorSourceAlpha];
+            }
+            else if(modes[i] == paz::BlendMode::Zero_InvSrcAlpha)
+            {
+                [[pipelineDescriptor colorAttachments][i]
+                    setSourceRGBBlendFactor:MTLBlendFactorZero];
+                [[pipelineDescriptor colorAttachments][i]
+                    setSourceAlphaBlendFactor:MTLBlendFactorZero];
                 [[pipelineDescriptor colorAttachments][i]
                     setDestinationRGBBlendFactor:
                     MTLBlendFactorOneMinusSourceAlpha];
@@ -211,7 +236,6 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
                     setDestinationAlphaBlendFactor:
                     MTLBlendFactorOneMinusSourceAlpha];
             }
-            // ...
             else
             {
                 throw std::runtime_error("Invalid blending function.");
@@ -230,7 +254,8 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
 }
 
 paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
-    frag, BlendMode mode) : RenderPass(final_framebuffer(), vert, frag, mode) {}
+    frag, const std::vector<BlendMode>& modes) : RenderPass(final_framebuffer(),
+    vert, frag, modes) {}
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
