@@ -1144,17 +1144,17 @@ paz::Image paz::Window::ReadPixels()
     }
 
     Image srgb(ImageFormat::RGBA8UNorm_sRGB, width, height);
-    for(int i = 0; i < height(); ++i)
+    for(int i = 0; i < height; ++i)
     {
-        for(int j = 0; j < width(); ++j)
+        for(int j = 0; j < width; ++j)
         {
-            srgb.bytes()[4*(width()*i + j) + 0] = to_srgb(linear[4*(width*i + j)
+            srgb.bytes()[4*(width*i + j) + 0] = to_srgb(linear[4*(width*i + j)
                 + 0]);
-            srgb.bytes()[4*(width()*i + j) + 1] = to_srgb(linear[4*(width*i + j)
+            srgb.bytes()[4*(width*i + j) + 1] = to_srgb(linear[4*(width*i + j)
                 + 1]);
-            srgb.bytes()[4*(width()*i + j) + 2] = to_srgb(linear[4*(width*i + j)
+            srgb.bytes()[4*(width*i + j) + 2] = to_srgb(linear[4*(width*i + j)
                 + 2]);
-            srgb.bytes()[4*(width()*i + j) + 3] = linear[4*(width*i + j) + 3];
+            srgb.bytes()[4*(width*i + j) + 3] = linear[4*(width*i + j) + 3];
         }
     }
 #else
