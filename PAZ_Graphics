@@ -370,6 +370,7 @@ namespace paz
         static void MakeNotResizable();
         static void Resize(int width, int height, bool viewportCoords);
         static Image<std::uint8_t, 3> ReadPixels();
+        static float DpiScale();
     };
 }
 
