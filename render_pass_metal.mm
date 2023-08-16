@@ -575,6 +575,10 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
     CHECK_PASS
     check_attributes(vertices._data->_buffers, _data->_vertexAttributeStrides,
         vertices._data->_numVertices);
+    if(!vertices._data->_numVertices)
+    {
+        return;
+    }
 
     for(std::size_t i = 0; i < vertices._data->_buffers.size(); ++i)
     {
@@ -594,6 +598,10 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     CHECK_PASS
     check_attributes(vertices._data->_buffers, _data->_vertexAttributeStrides,
         vertices._data->_numVertices);
+    if(!vertices._data->_numVertices || !indices._data->_numIndices)
+    {
+        return;
+    }
 
     for(std::size_t i = 0; i < vertices._data->_buffers.size(); ++i)
     {
@@ -615,6 +623,10 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
 //    check_attributes(vertices._data->_buffers, instances._data->_buffers,
 //        _data->_vertexAttributeStrides, vertices._data->_numVertices,
 //        instances._data->_numVertices);
+    if(!vertices._data->_numVertices || !instances._data->_numInstances)
+    {
+        return;
+    }
 
     for(std::size_t i = 0; i < vertices._data->_buffers.size(); ++i)
     {
@@ -642,6 +654,11 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
 //    check_attributes(vertices._data->_buffers, instances._data->_buffers,
 //        _data->_vertexAttributeStrides, vertices._data->_numVertices,
 //        instances._data->_numVertices);
+    if(!vertices._data->_numVertices || !instances._data->_numInstances ||
+        !indices._data->_numIndices)
+    {
+        return;
+    }
 
     for(std::size_t i = 0; i < vertices._data->_buffers.size(); ++i)
     {

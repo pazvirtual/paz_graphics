@@ -654,6 +654,10 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
 {
     CHECK_PASS
     check_attributes(vertices._data->_types, _data->_shader._attribTypes);
+    if(!vertices._data->_numVertices)
+    {
+        return;
+    }
 
     // Ensure that depth test mode and face culling mode do not persist.
     if(!DepthCalledThisPass)
@@ -674,6 +678,10 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
 {
     CHECK_PASS
     check_attributes(vertices._data->_types, _data->_shader._attribTypes);
+    if(!vertices._data->_numVertices || !indices._data->_numIndices)
+    {
+        return;
+    }
 
     // Ensure that depth test mode and face culling mode do not persist.
     if(!DepthCalledThisPass)
@@ -697,6 +705,10 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     CHECK_PASS
     check_attributes(vertices._data->_types, instances._data->_types, _data->
         _shader._attribTypes);
+    if(!vertices._data->_numVertices || !instances._data->_numInstances)
+    {
+        return;
+    }
 
     // Ensure that depth test mode and face culling mode do not persist.
     if(!DepthCalledThisPass)
@@ -765,6 +777,11 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     CHECK_PASS
     check_attributes(vertices._data->_types, instances._data->_types, _data->
         _shader._attribTypes);
+    if(!vertices._data->_numVertices || !instances._data->_numInstances ||
+        !indices._data->_numIndices)
+    {
+        return;
+    }
 
     // Ensure that depth test mode and face culling mode do not persist.
     if(!DepthCalledThisPass)

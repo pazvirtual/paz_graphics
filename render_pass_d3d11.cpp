@@ -569,6 +569,10 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
 {
     CHECK_PASS
+    if(!vertices._data->_numVertices)
+    {
+        return;
+    }
 
     _data->mapUniforms();
 
@@ -597,6 +601,10 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     const IndexBuffer& indices)
 {
     CHECK_PASS
+    if(!vertices._data->_numVertices || !indices._data->_numIndices)
+    {
+        return;
+    }
 
     _data->mapUniforms();
 
@@ -627,6 +635,10 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     const InstanceBuffer& instances)
 {
     CHECK_PASS
+    if(!vertices._data->_numVertices || !instances._data->_numInstances)
+    {
+        return;
+    }
 
     _data->mapUniforms();
 
@@ -666,6 +678,11 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     const InstanceBuffer& instances, const IndexBuffer& indices)
 {
     CHECK_PASS
+    if(!vertices._data->_numVertices || !instances._data->_numInstances ||
+        !indices._data->_numIndices)
+    {
+        return;
+    }
 
     _data->mapUniforms();
 
