@@ -271,8 +271,8 @@ int main()
         }
         scenePass.end();
 
-        textPass.begin({}, paz::RenderPass::LoadAction::DontCare, paz::
-            RenderPass::BlendMode::Additive);
+        textPass.begin({paz::RenderPass::LoadAction::Load}, paz::RenderPass::
+            LoadAction::DontCare, paz::RenderPass::BlendMode::Additive);
         textPass.read("font", font);
         textPass.uniform("aspectRatio", paz::Window::AspectRatio());
         int row = 0;
