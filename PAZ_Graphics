@@ -55,7 +55,7 @@ namespace paz
             data);
 
     public:
-        ~Texture();
+        virtual ~Texture();
         Texture(int width, int height, int numChannels, int numBits, DataType
             type, MinMagFilter minFilter, MinMagFilter magFilter);
         Texture(int width, int height, int numChannels, int numBits, const std::
@@ -79,7 +79,7 @@ namespace paz
         RenderTarget(); // For `DepthStencilTarget` to inherit.
 
     public:
-        ~RenderTarget();
+        virtual ~RenderTarget();
         RenderTarget(double scale, int numChannels, int numBits, DataType type,
             MinMagFilter minFilter, MinMagFilter magFilter);
         void resize(int width, int height) override;
@@ -232,8 +232,11 @@ namespace paz
     public:
         enum class PrimitiveType
         {
+            Points,
+            Lines,
+            LineStrip,
             Triangles,
-            // ...
+            TriangleStrip
         };
 
         ~RenderPass();
