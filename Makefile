@@ -43,10 +43,12 @@ endif
 
 REINSTALLHEADER := $(shell cmp -s $(PROJNAME) $(INCLPATH)/$(PROJNAME); echo $$?)
 
-default: $(OBJ)
+default: lib$(LIBNAME).a
+	make -C examples
+
+lib$(LIBNAME).a: $(OBJ)
 	$(RM) lib$(LIBNAME).a
 	ar $(ARFLAGS) lib$(LIBNAME).a $^
-	make -C examples
 
 ifneq ($(REINSTALLHEADER), 0)
 install: $(PROJNAME) lib$(LIBNAME).a
