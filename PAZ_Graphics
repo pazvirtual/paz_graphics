@@ -140,6 +140,11 @@ namespace paz
         void attribute(int dim, const float* data, std::size_t size);
         void attribute(int dim, const unsigned int* data, std::size_t size);
         void attribute(int dim, const int* data, std::size_t size);
+        template<typename T>
+        void attribute(int dim, const std::vector<T>& data)
+        {
+            attribute(dim, data.data(), data.size());
+        }
         template<typename T, require_iterable<T>* = nullptr>
         void attribute(int dim, const T& data)
         {
@@ -165,6 +170,9 @@ namespace paz
         IndexBuffer(const unsigned int* data, std::size_t size);
         IndexBuffer(const std::vector<unsigned int>& data) : IndexBuffer(data.
             data(), data.size()) {}
+        template<typename T, require_iterable<T>* = nullptr>
+        IndexBuffer(const T& data) : IndexBuffer(&*std::begin(data), std::
+            distance(&*std::begin(data), &*std::end(data))) {}
     };
 
     class Framebuffer
