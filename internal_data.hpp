@@ -7,6 +7,12 @@
 #endif
 #include "PAZ_Graphics"
 #ifdef PAZ_WINDOWS
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef VC_EXTRALEAN
+#define VC_EXTRALEAN
+#endif
 #include <d3d11.h>
 #endif
 #include <unordered_map>
