@@ -97,6 +97,7 @@ namespace paz
     public:
         DepthStencilTarget(double scale, int numBits, DataType type,
             MinMagFilter minFilter, MinMagFilter magFilter);
+        void resize(int width, int height) override;
     };
 
     class VertexBuffer
@@ -290,17 +291,9 @@ namespace paz
         friend class RenderTarget;
         friend class DepthStencilTarget;
 
-        static std::function<void(void)> _draw;
-
-        static std::chrono::time_point<std::chrono::steady_clock> _frameStart;
-        static double _frameTime;
-
-        static std::unordered_set<RenderTarget*> _targets;
-
         static bool KeyDown(int key);
         static bool KeyPressed(int key);
         static bool KeyReleased(int key);
-        static void LoopInternal();
         static void ResetEvents();
         static void RegisterTarget(RenderTarget* target);
         static void UnregisterTarget(RenderTarget* target);
@@ -353,12 +346,7 @@ namespace paz
         static void SetCursorMode(CursorMode mode);
         static float AspectRatio();
         static void Quit();
-        template<typename T>
-        static void Loop(const T& draw)
-        {
-            _draw = draw;
-            LoopInternal();
-        }
+        static void Loop(const std::function<void(void)>& draw);
         static double FrameTime();
         static void SetMinSize(int width, int height);
         static void DrawInRenderer();//TEMP (for internal use on macOS builds)
