@@ -1,4 +1,5 @@
 #include "PAZ_Graphics"
+#include <sstream>
 #include <iomanip>
 
 static constexpr std::size_t NumSteps = 1000;
