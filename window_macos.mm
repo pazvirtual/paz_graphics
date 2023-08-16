@@ -236,9 +236,9 @@ std::pair<double, double> paz::Window::MousePos()
     }
     else
     {
-        const NSPoint temp = [[APP_DELEGATE window]
+        const NSPoint pos = [[APP_DELEGATE window]
             mouseLocationOutsideOfEventStream];
-        return {temp.x, temp.y};
+        return {pos.x, pos.y};
     }
 }
 

@@ -5,9 +5,6 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#ifndef VC_EXTRALEAN
-#define VC_EXTRALEAN
-#endif
 
 #ifndef UNICODE
 #define UNICODE
@@ -1404,7 +1401,17 @@ std::pair<double, double> paz::Window::MousePos()
 {
     initialize();
 
-    return ::MousePos;
+    if(CursorDisabled)
+    {
+        return ::MousePos;
+    }
+    else
+    {
+        POINT pos;
+        GetCursorPos(&pos);
+        ScreenToClient(WindowHandle, &pos);
+        return {pos.x, WindowHeight - pos.y};
+    }
 }
 
 std::pair<double, double> paz::Window::ScrollOffset()

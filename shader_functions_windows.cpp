@@ -5,9 +5,6 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#ifndef VC_EXTRALEAN
-#define VC_EXTRALEAN
-#endif
 
 #include "PAZ_Graphics"
 #include "util_windows.hpp"

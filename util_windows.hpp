@@ -8,9 +8,6 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#ifndef VC_EXTRALEAN
-#define VC_EXTRALEAN
-#endif
 
 #include "PAZ_Graphics"
 #include <d3d11.h>
