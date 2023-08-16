@@ -543,6 +543,7 @@ paz::Image<std::uint8_t, 3> paz::Window::PrintScreen()
     initialize();
 
     Image<std::uint8_t, 3> image(ViewportWidth(), ViewportHeight());
+    glReadBuffer(GL_FRONT);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, ViewportWidth(), ViewportHeight());
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
