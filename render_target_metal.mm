@@ -12,15 +12,6 @@
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
     contentViewController] mtkView] device]
 
-static void clean(void* texture)
-{
-    if(texture)
-    {
-        [(id<MTLTexture>)texture release];
-        texture = nullptr;
-    }
-}
-
 static id<MTLTexture> init(int width, int height, int numChannels, int numBits,
     paz::Texture::DataType type)
 {
@@ -44,7 +35,6 @@ paz::RenderTarget::RenderTarget()
 
 paz::RenderTarget::~RenderTarget()
 {
-    clean(Texture::_data->_texture);
     paz::Window::UnregisterTarget(this);
 }
 
@@ -65,7 +55,10 @@ paz::RenderTarget::RenderTarget(double scale, int numChannels, int numBits,
 
 void paz::RenderTarget::resize(GLsizei width, GLsizei height)
 {
-    clean(Texture::_data->_texture);
+    if(Texture::_data->_texture)
+    {
+        [(id<MTLTexture>)Texture::_data->_texture release];
+    }
     Texture::_data->_texture = ::init(_scale*width, _scale*height, _data->
         _numChannels, _data->_numBits, _data->_type);
 }
