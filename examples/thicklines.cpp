@@ -41,9 +41,12 @@ int main()
 
     while(!paz::Window::Done())
     {
+        if(paz::Window::KeyPressed(paz::Key::Q))
+        {
+            paz::Window::Quit();
+        }
+
         render.begin({paz::LoadAction::Clear});
-        render.uniform("width", paz::Window::ViewportWidth());
-        render.uniform("height", paz::Window::ViewportHeight());
         render.primitives(paz::PrimitiveType::Lines, vertices);
         render.end();
 

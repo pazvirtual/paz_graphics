@@ -93,6 +93,7 @@ struct paz::Shader::Data
         _uniformIds;
     // attribTypes[location] = type (array attributes are not supported)
     std::unordered_map<unsigned int, unsigned int> _attribTypes;
+    bool _thickLines = false;
 #endif
     ~Data();
 };
