@@ -1,4 +1,5 @@
 #include "PAZ_Graphics"
+#include "PAZ_IO"
 #include <cmath>
 
 #ifndef M_PI
