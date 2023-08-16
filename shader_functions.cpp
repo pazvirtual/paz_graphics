@@ -126,6 +126,14 @@ static std::string fix_initializers(const std::string& src)
         {
             while(pos < line.size())
             {
+                // This is to prevent issues after a struct has been initialized
+                // by an expression other than a braced initializer list.
+                if(line[pos] == ';')
+                {
+                    inInit = 0;
+                    break;
+                }
+
                 if(inInit == 2 && line[pos] == '{')
                 {
                     line[pos] = '(';
