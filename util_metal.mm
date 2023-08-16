@@ -9,23 +9,21 @@
 #define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
     [NSApp delegate]) window] contentViewController]) mtkView] device]
 
-#define CASE0(a, b) case Texture::Format::a: return MTLPixelFormat##b;
-#define CASE1(f, n, b) case Texture::Format::f: return n*b/8;
+#define CASE0(a, b) case TextureFormat::a: return MTLPixelFormat##b;
+#define CASE1(f, n, b) case TextureFormat::f: return n*b/8;
 
-static MTLSamplerMinMagFilter min_mag_filter(paz::Texture::MinMagFilter f)
+static MTLSamplerMinMagFilter min_mag_filter(paz::MinMagFilter f)
 {
     switch(f)
     {
-        case paz::Texture::MinMagFilter::Linear: return
-            MTLSamplerMinMagFilterLinear;
-        case paz::Texture::MinMagFilter::Nearest: return
-            MTLSamplerMinMagFilterNearest;
+        case paz::MinMagFilter::Linear: return MTLSamplerMinMagFilterLinear;
+        case paz::MinMagFilter::Nearest: return MTLSamplerMinMagFilterNearest;
     }
 
     throw std::logic_error("Invalid texture filter requested.");
 }
 
-MTLPixelFormat paz::pixel_format(Texture::Format format)
+MTLPixelFormat paz::pixel_format(TextureFormat format)
 {
     switch(format)
     {
@@ -75,7 +73,7 @@ MTLPixelFormat paz::pixel_format(Texture::Format format)
     throw std::runtime_error("Invalid texture format requested.");
 }
 
-int paz::bytes_per_pixel(Texture::Format format)
+int paz::bytes_per_pixel(TextureFormat format)
 {
     switch(format)
     {
@@ -125,8 +123,8 @@ int paz::bytes_per_pixel(Texture::Format format)
     throw std::runtime_error("Invalid texture format requested.");
 }
 
-id<MTLSamplerState> paz::create_sampler(Texture::MinMagFilter minFilter,
-    Texture::MinMagFilter magFilter)
+id<MTLSamplerState> paz::create_sampler(MinMagFilter minFilter, MinMagFilter
+    magFilter)
 {
     MTLSamplerDescriptor* descriptor = [[MTLSamplerDescriptor alloc] init];
     [descriptor setMinFilter:min_mag_filter(minFilter)];

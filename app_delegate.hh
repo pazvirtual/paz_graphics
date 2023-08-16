@@ -18,9 +18,9 @@
 @property(readonly) bool done;
 @property(readonly) bool isFocus;
 @property(readonly) CGPoint priorCursorPos;
-@property(readonly) paz::Window::CursorMode cursorMode;
+@property(readonly) paz::CursorMode cursorMode;
 - (id)initWithTitle:(std::string)title;
-- (void)setCursorMode:(paz::Window::CursorMode)mode;
+- (void)setCursorMode:(paz::CursorMode)mode;
 @end
 
 #endif

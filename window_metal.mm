@@ -7,6 +7,7 @@
 #import "view_controller.hh"
 #import "renderer.hh"
 #include "window.hpp"
+#include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
 #define APP_DELEGATE static_cast<AppDelegate*>([NSApp delegate])
@@ -27,14 +28,17 @@ namespace paz
     };
 }
 
-static paz::Initializer Initializer;
+void paz::initialize()
+{
+    static paz::Initializer initializer;
+}
 
 static std::function<void(void)> Draw = [](){};
 
 static std::chrono::time_point<std::chrono::steady_clock> FrameStart;
 static double CurFrameTime = 1./60.;
 
-static std::unordered_set<paz::RenderTarget*> RenderTargets;
+static std::unordered_set<void*> RenderTargets;
 
 static CGPoint PrevOrigin;
 
@@ -64,6 +68,8 @@ paz::Initializer::Initializer()
 
 void paz::Window::MakeFullscreen()
 {
+    initialize();
+
     if(!IsFullscreen())
     {
         [[[APP_DELEGATE window] contentView] enterFullScreenMode:[NSScreen
@@ -76,6 +82,8 @@ void paz::Window::MakeFullscreen()
 
 void paz::Window::MakeWindowed()
 {
+    initialize();
+
     if(IsFullscreen())
     {
         [[[APP_DELEGATE window] contentView] exitFullScreenModeWithOptions:nil];
@@ -87,31 +95,43 @@ void paz::Window::MakeWindowed()
 
 bool paz::Window::IsFullscreen()
 {
+    initialize();
+
     return [[APP_DELEGATE window] contentView].inFullScreenMode;
 }
 
 int paz::Window::ViewportWidth()
 {
+    initialize();
+
     return [RENDERER viewportSize].width;
 }
 
 int paz::Window::ViewportHeight()
 {
+    initialize();
+
     return [RENDERER viewportSize].height;
 }
 
 int paz::Window::Width()
 {
+    initialize();
+
     return [RENDERER size].width;
 }
 
 int paz::Window::Height()
 {
+    initialize();
+
     return [RENDERER size].height;
 }
 
 bool paz::Window::KeyDown(Key key)
 {
+    initialize();
+
     // The following ensures that very brief key presses are not missed when
     // checking `key_down()`.
     return [VIEW_CONTROLLER keyDown].at(static_cast<int>(key)) ||
@@ -120,16 +140,22 @@ bool paz::Window::KeyDown(Key key)
 
 bool paz::Window::KeyPressed(Key key)
 {
+    initialize();
+
     return [VIEW_CONTROLLER keyPressed].at(static_cast<int>(key));
 }
 
 bool paz::Window::KeyReleased(Key key)
 {
+    initialize();
+
     return [VIEW_CONTROLLER keyReleased].at(static_cast<int>(key));
 }
 
 bool paz::Window::MouseDown(int button)
 {
+    initialize();
+
     // The following ensures that very brief mouse button presses are not missed
     // when checking `mouse_down()`.
     return [VIEW_CONTROLLER mouseDown].at(button) || [VIEW_CONTROLLER
@@ -138,16 +164,22 @@ bool paz::Window::MouseDown(int button)
 
 bool paz::Window::MousePressed(int button)
 {
+    initialize();
+
     return [VIEW_CONTROLLER mousePressed].at(button);
 }
 
 bool paz::Window::MouseReleased(int button)
 {
+    initialize();
+
     return [VIEW_CONTROLLER mouseReleased].at(button);
 }
 
 std::pair<double, double> paz::Window::MousePos()
 {
+    initialize();
+
     if(CursorDisabled)
     {
         return [VIEW_CONTROLLER cursorOffset];
@@ -162,30 +194,39 @@ std::pair<double, double> paz::Window::MousePos()
 
 std::pair<double, double> paz::Window::ScrollOffset()
 {
+    initialize();
+
     return [VIEW_CONTROLLER scrollOffset];
 }
 
 void paz::Window::SetCursorMode(CursorMode mode)
 {
+    initialize();
+
     [APP_DELEGATE setCursorMode:mode];
     CursorDisabled = (mode == CursorMode::Disable);
 }
 
 float paz::Window::AspectRatio()
 {
+    initialize();
+
     return [RENDERER aspectRatio];
 }
 
 void paz::resize_targets()
 {
-    for(auto& n : RenderTargets)
+    for(auto n : RenderTargets)
     {
-        n->resize(paz::Window::ViewportWidth(), paz::Window::ViewportHeight());
+        reinterpret_cast<Texture::Data*>(n)->resize(Window::ViewportWidth(),
+            Window::ViewportHeight());
     }
 }
 
 void paz::Window::Loop(const std::function<void(void)>& draw)
 {
+    initialize();
+
     Draw = draw;
     FrameStart = std::chrono::steady_clock::now();
     while(![APP_DELEGATE done])
@@ -200,6 +241,8 @@ void paz::Window::Loop(const std::function<void(void)>& draw)
 
 void paz::draw_in_renderer()
 {
+    initialize();
+
     Draw();
     [VIEW_CONTROLLER resetEvents];
     const auto now = std::chrono::steady_clock::now();
@@ -210,6 +253,8 @@ void paz::draw_in_renderer()
 
 void paz::Window::Quit()
 {
+    initialize();
+
     [NSApp terminate:nil];
 }
 
@@ -222,6 +267,8 @@ double paz::Window::FrameTime()
 
 void paz::Window::SetMinSize(int width, int height)
 {
+    initialize();
+
     const auto size = NSMakeSize(width, height);
     [[APP_DELEGATE window] setMinSize:size];
     auto frame = [[APP_DELEGATE window] frame];
@@ -229,7 +276,7 @@ void paz::Window::SetMinSize(int width, int height)
     [[APP_DELEGATE window] setFrame:frame display:YES];
 }
 
-void paz::register_target(RenderTarget* target)
+void paz::register_target(void* target)
 {
     if(RenderTargets.count(target))
     {
@@ -238,7 +285,7 @@ void paz::register_target(RenderTarget* target)
     RenderTargets.insert(target);
 }
 
-void paz::unregister_target(RenderTarget* target)
+void paz::unregister_target(void* target)
 {
     if(!RenderTargets.count(target))
     {

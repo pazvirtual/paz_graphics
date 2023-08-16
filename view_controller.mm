@@ -136,8 +136,8 @@
 {
     if(![event isARepeat])
     {
-        const paz::Window::Key k = paz::convert_keycode([event keyCode]);
-        if(k == paz::Window::Key::Unknown)
+        const paz::Key k = paz::convert_keycode([event keyCode]);
+        if(k == paz::Key::Unknown)
         {
             return;
         }
@@ -152,8 +152,8 @@
 {
     if(![event isARepeat])
     {
-        const paz::Window::Key k = paz::convert_keycode([event keyCode]);
-        if(k == paz::Window::Key::Unknown)
+        const paz::Key k = paz::convert_keycode([event keyCode]);
+        if(k == paz::Key::Unknown)
         {
             return;
         }
@@ -178,10 +178,10 @@
 
 - (void)flagsChanged:(NSEvent*)event
 {
-    static const int shiftIdx = static_cast<int>(paz::Window::Key::LeftShift);
-    static const int ctrlIdx = static_cast<int>(paz::Window::Key::LeftControl);
-    static const int optIdx = static_cast<int>(paz::Window::Key::LeftAlt);
-    static const int cmdIdx = static_cast<int>(paz::Window::Key::LeftSuper);
+    static const int shiftIdx = static_cast<int>(paz::Key::LeftShift);
+    static const int ctrlIdx = static_cast<int>(paz::Key::LeftControl);
+    static const int optIdx = static_cast<int>(paz::Key::LeftAlt);
+    static const int cmdIdx = static_cast<int>(paz::Key::LeftSuper);
 
     const bool shiftFlag = [event modifierFlags]&NSEventModifierFlagShift;
     const bool ctrlFlag = [event modifierFlags]&NSEventModifierFlagControl;

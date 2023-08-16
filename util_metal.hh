@@ -10,10 +10,10 @@
 
 namespace paz
 {
-    MTLPixelFormat pixel_format(Texture::Format format);
-    int bytes_per_pixel(Texture::Format format);
-    id<MTLSamplerState> create_sampler(paz::Texture::MinMagFilter minFilter,
-        paz::Texture::MinMagFilter magFilter);
+    MTLPixelFormat pixel_format(TextureFormat format);
+    int bytes_per_pixel(TextureFormat format);
+    id<MTLSamplerState> create_sampler(MinMagFilter minFilter, MinMagFilter
+        magFilter);
 }
 
 #endif
