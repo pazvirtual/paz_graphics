@@ -136,15 +136,21 @@ static void remove_callback(void* context, IOReturn result, void* sender, IOHIDD
             }
         }
 
-        // Get any connected gamepads.
-        _hidManager = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
+        // Set callbacks to detect when a gamepad is connected or removed.
+        _hidManager = IOHIDManagerCreate(kCFAllocatorDefault,
+            kIOHIDOptionsTypeNone);
 
-        CFMutableArrayRef matching = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+        CFMutableArrayRef matching = CFArrayCreateMutable(kCFAllocatorDefault,
+            0, &kCFTypeArrayCallBacks);
         long page = kHIDPage_GenericDesktop;
-        CFNumberRef pageRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberLongType, &page);
+        CFNumberRef pageRef = CFNumberCreate(kCFAllocatorDefault,
+            kCFNumberLongType, &page);
         long usage = kHIDUsage_GD_GamePad;
-        CFMutableDictionaryRef dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-        CFNumberRef usageRef = CFNumberCreate(kCFAllocatorDefault, kCFNumberLongType, &usage);
+        CFMutableDictionaryRef dict = CFDictionaryCreateMutable(
+            kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
+            &kCFTypeDictionaryValueCallBacks);
+        CFNumberRef usageRef = CFNumberCreate(kCFAllocatorDefault,
+            kCFNumberLongType, &usage);
         CFDictionarySetValue(dict, CFSTR(kIOHIDDeviceUsagePageKey), pageRef);
         CFDictionarySetValue(dict, CFSTR(kIOHIDDeviceUsageKey), usageRef);
         CFArrayAppendValue(matching, dict);
@@ -154,9 +160,12 @@ static void remove_callback(void* context, IOReturn result, void* sender, IOHIDD
         IOHIDManagerSetDeviceMatchingMultiple(_hidManager, matching);
         CFRelease(matching);
 
-        IOHIDManagerRegisterDeviceMatchingCallback(_hidManager, &match_callback, &_gamepads);
-        IOHIDManagerRegisterDeviceRemovalCallback(_hidManager, &remove_callback, &_gamepads);
-        IOHIDManagerScheduleWithRunLoop(_hidManager, CFRunLoopGetMain(), kCFRunLoopDefaultMode);
+        IOHIDManagerRegisterDeviceMatchingCallback(_hidManager, &match_callback,
+            &_gamepads);
+        IOHIDManagerRegisterDeviceRemovalCallback(_hidManager, &remove_callback,
+            &_gamepads);
+        IOHIDManagerScheduleWithRunLoop(_hidManager, CFRunLoopGetMain(),
+            kCFRunLoopDefaultMode);
         IOHIDManagerOpen(_hidManager, kIOHIDOptionsTypeNone);
 
         // Get any initially-attached gamepads.
