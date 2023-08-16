@@ -55,6 +55,9 @@ struct paz::IndexBuffer::Data
     void* _data = nullptr;
 #else
     unsigned int _id = 0;
+    unsigned int _lineStripId = 0;
+    unsigned int _lineLoopId = 0;
+    unsigned int _thickLinesId = 0;
 #endif
     std::size_t _numIndices = 0;
     ~Data();
