@@ -92,6 +92,11 @@ namespace paz
         BGRA8UNorm
     };
 
+    enum class DataType
+    {
+        SInt, UInt, Float
+    };
+
     enum class MinMagFilter
     {
         Linear, Nearest
@@ -243,16 +248,29 @@ namespace paz
 
     public:
         InstanceBuffer();
-        void attribute(int dim, const float* data, std::size_t size);
-        void attribute(int dim, const unsigned int* data, std::size_t size);
-        void attribute(int dim, const int* data, std::size_t size);
+        InstanceBuffer(std::size_t size);
+        void addAttribute(int dim, DataType type);
+        void addAttribute(int dim, const float* data, std::size_t size);
+        void addAttribute(int dim, const unsigned int* data, std::size_t size);
+        void addAttribute(int dim, const int* data, std::size_t size);
         template<typename T, require_iterable<T>* = nullptr>
-        void attribute(int dim, const T& data)
+        void addAttribute(int dim, const T& data)
         {
-            attribute(dim, &*std::begin(data), std::distance(&*std::begin(data),
-                &*std::end(data)));
+            addAttribute(dim, &*std::begin(data), std::distance(&*std::begin(
+                data), &*std::end(data)));
+        }
+        void subAttribute(std::size_t idx, const float* data, std::size_t size);
+        void subAttribute(std::size_t idx, const unsigned int* data, std::size_t
+            size);
+        void subAttribute(std::size_t idx, const int* data, std::size_t size);
+        template<typename T, require_iterable<T>* = nullptr>
+        void subAttribute(int idx, const T& data)
+        {
+            subAttribute(idx, &*std::begin(data), std::distance(&*std::begin(
+                data), &*std::end(data)));
         }
         bool empty() const;
+        std::size_t size() const;
     };
 
     class IndexBuffer
