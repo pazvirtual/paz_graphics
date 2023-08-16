@@ -1,5 +1,5 @@
-#ifndef POINTER_C_GENERATED_HEADER_OPENGL_H
-#define POINTER_C_GENERATED_HEADER_OPENGL_H
+#ifndef PAZ_GRAPHICS_GL_CORE_4_1_H
+#define PAZ_GRAPHICS_GL_CORE_4_1_H
 
 #if defined(__glew_h__) || defined(__GLEW_H__)
 #error Attempt to include auto-generated header after including glew.h
@@ -2082,4 +2082,4 @@ int ogl_IsVersionGEQ(int majorVersion, int minorVersion);
 }
 #endif /*__cplusplus*/
 
-#endif /*POINTER_C_GENERATED_HEADER_OPENGL_H*/
+#endif
