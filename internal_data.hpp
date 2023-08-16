@@ -2,8 +2,8 @@
 #define PAZ_GRAPHICS_INTERNAL_DATA_HPP
 
 #include "detect_os.hpp"
-#ifndef PAZ_MACOS
-#include "shader.hpp"
+#ifdef PAZ_LINUX
+#include "shader_opengl.hpp"
 #endif
 #include "PAZ_Graphics"
 #include <unordered_map>

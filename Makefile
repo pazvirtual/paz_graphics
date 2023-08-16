@@ -32,9 +32,15 @@ ARFLAGS := -rcs
 
 CSRC := $(wildcard *.c) $(wildcard *.cpp)
 ifeq ($(OSPRETTY), macOS)
-    MACOSEXCL := gl_core_4_1.c $(patsubst %_metal.mm, %.cpp, $(wildcard *_metal.mm)) $(wildcard *_opengl.cpp)
-    CSRC := $(filter-out $(MACOSEXCL), $(CSRC))
+    EXCL := gl_core_4_1.c $(patsubst %_metal.mm, %.cpp, $(wildcard *_metal.mm)) $(wildcard *_opengl.cpp)
+else
+    ifeq ($(OSPRETTY), Windows)
+        EXCL := gl_core_4_1.c $(wildcard *_opengl.cpp)
+    else
+        EXCL := $(wildcard *_d3d11.cpp)
+    endif
 endif
+CSRC := $(filter-out $(EXCL), $(CSRC))
 OBJCSRC := $(wildcard *.mm)
 OBJ := $(patsubst %.c, %.o, $(patsubst %.cpp, %.c, $(CSRC)))
 ifeq ($(OSPRETTY), macOS)
