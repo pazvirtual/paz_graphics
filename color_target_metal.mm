@@ -23,6 +23,7 @@ static id<MTLTexture> init(int width, int height, int numChannels, int numBits,
     [textureDescriptor setHeight:height];
     [textureDescriptor setUsage:MTLTextureUsageRenderTarget|
         MTLTextureUsageShaderRead];
+    [textureDescriptor setStorageMode:MTLStorageModePrivate];
     id<MTLTexture> texture = [DEVICE newTextureWithDescriptor:
         textureDescriptor];
     [textureDescriptor release];
@@ -53,7 +54,14 @@ paz::ColorTarget::ColorTarget(double scale, int numChannels, int numBits,
 
 void paz::ColorTarget::resize(int width, int height)
 {
-    Texture::resize(_scale*width, _scale*height);
+    if(_data->_texture)
+    {
+        [(id<MTLTexture>)_data->_texture release];
+    }
+    _width = _scale*width;
+    _height = _scale*height;
+    _data->_texture = ::init(_width, _height, _data->_numChannels, _data->
+        _numBits, _data->_type);
 }
 
 #endif

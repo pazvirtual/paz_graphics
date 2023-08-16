@@ -79,9 +79,8 @@ void paz::DepthStencilTarget::resize(int width, int height)
         [(id<MTLTexture>)_data->_texture release];
     }
     _width = _scale*width;
-    _height = _scale*_height;
-    _data->_texture = ::init(_scale*width, _scale*height, _data->_numBits,
-        _data->_type);
+    _height = _scale*height;
+    _data->_texture = ::init(_width, _height, _data->_numBits, _data->_type);
 }
 
 #endif
