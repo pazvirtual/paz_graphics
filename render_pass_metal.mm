@@ -526,18 +526,18 @@ void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
     uniform(name, v.data(), v.size());
 }
 
-void paz::RenderPass::uniform(const std::string& name, const int* x, int n)
-    const
+void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
+    size) const
 {
     if(_data->_vertexArgs.count(name))
     {
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setVertexBytes:x
-            length:n*sizeof(int) atIndex:_data->_vertexArgs.at(name)];
+            length:sizeof(int)*size atIndex:_data->_vertexArgs.at(name)];
     }
     if(_data->_fragmentArgs.count(name))
     {
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setFragmentBytes:x
-            length:n*sizeof(int) atIndex:_data->_fragmentArgs.at(name)];
+            length:sizeof(int)*size atIndex:_data->_fragmentArgs.at(name)];
     }
 }
 
@@ -568,17 +568,18 @@ void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
 }
 
 void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
-    int n) const
+    std::size_t size) const
 {
     if(_data->_vertexArgs.count(name))
     {
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setVertexBytes:x
-            length:n*sizeof(unsigned int) atIndex:_data->_vertexArgs.at(name)];
+            length:sizeof(unsigned int)*size atIndex:_data->_vertexArgs.at(
+            name)];
     }
     if(_data->_fragmentArgs.count(name))
     {
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setFragmentBytes:x
-            length:n*sizeof(unsigned int) atIndex:_data->_fragmentArgs.at(
+            length:sizeof(unsigned int)*size atIndex:_data->_fragmentArgs.at(
             name)];
     }
 }
@@ -608,18 +609,18 @@ void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     uniform(name, v.data(), v.size());
 }
 
-void paz::RenderPass::uniform(const std::string& name, const float* x, int n)
-    const
+void paz::RenderPass::uniform(const std::string& name, const float* x, std::
+    size_t size) const
 {
     if(_data->_vertexArgs.count(name))
     {
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setVertexBytes:x
-            length:n*sizeof(float) atIndex:_data->_vertexArgs.at(name)];
+            length:sizeof(float)*size atIndex:_data->_vertexArgs.at(name)];
     }
     if(_data->_fragmentArgs.count(name))
     {
         [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setFragmentBytes:x
-            length:n*sizeof(float) atIndex:_data->_fragmentArgs.at(name)];
+            length:sizeof(float)*size atIndex:_data->_fragmentArgs.at(name)];
     }
 }
 
