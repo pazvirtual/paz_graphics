@@ -40,7 +40,7 @@ static constexpr std::array<float, 8> points =
 
 int main()
 {
-    paz::Window::SetCursorMode(paz::Window::CursorMode::Disable);
+    paz::Window::SetCursorMode(paz::Window::CursorMode::Normal); //TEMP
 
     paz::VertexBuffer vertices;
     vertices.attribute(2, points);
