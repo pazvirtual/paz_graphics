@@ -3,11 +3,10 @@ pipelines:
         build:
             - step:
                 name: Build
-                image: gcc:10.2
+                #image: gcc:10.2
+                image: thewtex/opengl
                 script:
                     - make
-                    - cd examples
-                    - ./main
                 artifacts:
                     - examples/main
         run:
