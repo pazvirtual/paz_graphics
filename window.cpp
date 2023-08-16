@@ -1115,7 +1115,7 @@ paz::Image paz::Window::ReadPixels()
             error) + ".");
     }
 #else
-    // ...
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 #endif
     Image srgb(ImageFormat::RGBA8UNorm_sRGB, ViewportWidth(), ViewportHeight());
     for(int i = 0; i < ViewportHeight(); ++i)

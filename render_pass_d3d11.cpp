@@ -82,11 +82,15 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     {
         colorTargets[i] = _data->_fbo->_colorAttachments[i]->_rtView;
     }
-    d3d_context()->OMSetRenderTargets(numColor, colorTargets.data(), _data->
-        _fbo->_depthStencilAttachment->_dsView);
+    d3d_context()->OMSetRenderTargets(numColor, numColor ? colorTargets.data() :
+        nullptr, _data->_fbo->_depthStencilAttachment ? _data->_fbo->
+        _depthStencilAttachment->_dsView : nullptr);
 
+if(numColor)
+{
     static constexpr std::array<float, 4> black = {0, 0, 0, 1};
     d3d_context()->ClearRenderTargetView(colorTargets[0], black.data()); //TEMP
+}
 
     D3D11_VIEWPORT viewport = {};
     if(_data->_fbo->_width)
@@ -119,95 +123,129 @@ void paz::RenderPass::end()
 void paz::RenderPass::cull(CullMode mode)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::read(const std::string& name, const Texture& tex)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
     w)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
     size)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z, unsigned int w)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
     std::size_t size)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z, float w)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::uniform(const std::string& name, const float* x, std::
     size_t size)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
@@ -238,18 +276,24 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     const IndexBuffer& indices)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     const InstanceBuffer& instances)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     const InstanceBuffer& instances, const IndexBuffer& indices)
 {
     CHECK_PASS
+
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 paz::Framebuffer paz::RenderPass::framebuffer() const

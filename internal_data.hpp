@@ -68,15 +68,20 @@ struct paz::InstanceBuffer::Data
 {
 #ifdef PAZ_MACOS
     std::vector<void*> _buffers;
+    std::vector<int> _dims;
 #elif defined(PAZ_LINUX)
     unsigned int _id = 0;
     std::vector<unsigned int> _ids;
     std::vector<unsigned int> _types;
+    std::vector<int> _dims;
     Data();
     void addAttribute(int dim, DataType type);
+#else
+    std::vector<ID3D11Buffer*> _buffers;
+    std::vector<D3D11_INPUT_ELEMENT_DESC> _inputElemDescriptors;
+    std::vector<unsigned int> _strides;
 #endif
     std::size_t _numInstances = 0;
-    std::vector<int> _dims;
     ~Data();
     void checkSize(int dim, std::size_t size);
 };

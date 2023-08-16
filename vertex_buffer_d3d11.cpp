@@ -7,28 +7,15 @@
 #include "internal_data.hpp"
 #include "window.hpp"
 
-static DXGI_FORMAT dxgi_format(int dim, paz::DataType type)
-{
-    if(type == paz::DataType::Float)
-    {
-        if(dim == 1)
-        {
-            return DXGI_FORMAT_R32_FLOAT;
-        }
-        if(dim == 2)
-        {
-            return DXGI_FORMAT_R32G32_FLOAT;
-        }
-        if(dim == 4)
-        {
-            return DXGI_FORMAT_R32G32B32A32_FLOAT;
-        }
-    }
-    throw std::runtime_error("INCOMPLETE");
-}
-
 paz::VertexBuffer::Data::~Data()
 {
+    for(auto& n : _buffers)
+    {
+        if(n)
+        {
+            n->Release();
+        }
+    }
 }
 
 paz::VertexBuffer::VertexBuffer()
@@ -64,6 +51,7 @@ void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)
 
 void paz::VertexBuffer::addAttribute(int dim, DataType type)
 {
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::VertexBuffer::addAttribute(int dim, const float* data, std::size_t
@@ -100,25 +88,30 @@ void paz::VertexBuffer::addAttribute(int dim, const float* data, std::size_t
 void paz::VertexBuffer::addAttribute(int dim, const unsigned int* data, std::
     size_t size)
 {
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::VertexBuffer::addAttribute(int dim, const int* data, std::size_t size)
 {
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::VertexBuffer::subAttribute(std::size_t idx, const float* data, std::
     size_t size)
 {
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::VertexBuffer::subAttribute(std::size_t idx, const unsigned int* data,
     std::size_t size)
 {
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::VertexBuffer::subAttribute(std::size_t idx, const int* data, std::
     size_t size)
 {
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 bool paz::VertexBuffer::empty() const
