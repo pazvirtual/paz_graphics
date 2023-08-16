@@ -12,6 +12,9 @@ struct paz::Texture::Data
 #else
     unsigned int _id = 0;
 #endif
+    int _width = 0;
+    int _height = 0;
+    bool _mipmap = false;
     Format _format;
     MinMagFilter _minFilter;
     MinMagFilter _magFilter;
@@ -28,6 +31,7 @@ struct paz::VertexBuffer::Data
     std::vector<unsigned int> _ids;
     std::vector<unsigned int> _types;
 #endif
+    std::size_t _numVertices = 0;
 };
 
 struct paz::IndexBuffer::Data
@@ -37,6 +41,7 @@ struct paz::IndexBuffer::Data
 #else
     unsigned int _id = 0;
 #endif
+    std::size_t _numIndices = 0;
 };
 
 struct paz::Framebuffer::Data
@@ -91,6 +96,7 @@ struct paz::RenderPass::Data
     const Shader* _shader = nullptr;
     BlendMode _blendMode = BlendMode::Disable;
 #endif
+    const Framebuffer* _fbo = nullptr;
 };
 
 #endif

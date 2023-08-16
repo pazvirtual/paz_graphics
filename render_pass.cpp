@@ -61,7 +61,7 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
 {
     _data = std::make_unique<Data>();
 
-    _fbo = &fbo;
+    _data->_fbo = &fbo;
     _data->_shader = &shader;
     _data->_blendMode = mode;
 }
@@ -79,12 +79,13 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
 {
     glGetError();
     NextSlot = 0;
-    if(_fbo)
+    if(_data->_fbo)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, _fbo->_data->_id);
-        if(_fbo->_data->_width)
+        glBindFramebuffer(GL_FRAMEBUFFER, _data->_fbo->_data->_id);
+        if(_data->_fbo->_data->_width)
         {
-            glViewport(0, 0, _fbo->_data->_width, _fbo->_data->_height);
+            glViewport(0, 0, _data->_fbo->_data->_width, _data->_fbo->_data->
+                _height);
         }
         else
         {
@@ -103,7 +104,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
                     ".");
             }
         }
-        if(_fbo->_data->_hasDepthAttachment)
+        if(_data->_fbo->_data->_hasDepthAttachment)
         {
             if(depthLoadAction == LoadAction::Clear)
             {
@@ -487,7 +488,7 @@ void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
         _attribTypes);
 
     glBindVertexArray(vertices._data->_id);
-    glDrawArrays(primitive_type(type), offset, vertices._numVertices);
+    glDrawArrays(primitive_type(type), offset, vertices._data->_numVertices);
 }
 
 void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
@@ -498,8 +499,9 @@ void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
 
     glBindVertexArray(vertices._data->_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);
-    glDrawElements(primitive_type(type), indices._numIndices, GL_UNSIGNED_INT,
-        reinterpret_cast<void*>(static_cast<std::intptr_t>(offset)));
+    glDrawElements(primitive_type(type), indices._data->_numIndices,
+        GL_UNSIGNED_INT, reinterpret_cast<void*>(static_cast<std::intptr_t>(
+        offset)));
 }
 
 #endif
