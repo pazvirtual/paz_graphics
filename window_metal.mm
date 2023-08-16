@@ -270,7 +270,7 @@ void paz::unregister_target(DepthStencilTarget* target)
     DepthStencilTargets.erase(target);
 }
 
-std::vector<float> paz::Window::PrintScreen()
+paz::Image<float, 3> paz::Window::PrintScreen()
 {
     throw std::logic_error("NOT IMPLEMENTED");
 }
