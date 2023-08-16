@@ -42,6 +42,10 @@ std::string paz::vert2metal(const std::string& src)
         "thread const float2& uv)" << std::endl << "{" << std::endl << "    ret"
         "urn tex.sample(sampler, float2(uv.x, 1. - uv.y));" << std::endl << "}"
         << std::endl;
+    out << "float4 texture(thread const depth2d<float>& tex, thread const sampl"
+        "er& sampler," << std::endl << "    thread const float2& uv)" << std::
+        endl << "{" << std::endl << "    return float4(tex.sample(sampler, floa"
+        "t2(uv.x, 1. - uv.y)), 0., 0., 1.);" << std::endl << "}" << std::endl;
 
     std::string line;
     std::size_t l = 0;
@@ -355,7 +359,9 @@ std::string paz::vert2metal(const std::string& src)
         ++b;
     }
     out << ")" << std::endl << "{" << std::endl << "    OutputData out;" <<
-        std::endl << mainBuffer.str() << "    return out;" << std::endl << "}"
+        std::endl << mainBuffer.str() << "    out.glPosition = float4x4(1, 0, 0"
+        ", 0, 0, 1, 0, 0, 0, 0, 0.5, 0, 0, 0, 0.5," << std::endl << "        1)"
+        "*out.glPosition;" << std::endl << "    return out;" << std::endl << "}"
         << std::endl;
 
     return out.str();
