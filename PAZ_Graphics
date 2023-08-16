@@ -119,7 +119,7 @@ namespace paz
 
     enum class LoadAction
     {
-        Clear, Load, DontCare
+        Clear, FillOnes, FillZeros, Load, DontCare
     };
 
     enum class CullMode

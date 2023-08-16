@@ -12,7 +12,9 @@
 #define CASE(a, b) case paz::PrimitiveType::a: return GL_##b;
 #define CHECK_UNIFORM if(!_data->_shader._uniformIds.count(name)) return;
 
+static constexpr float Clear[] = {0.f, 0.f, 0.f, 0.f};
 static constexpr float Black[] = {0.f, 0.f, 0.f, 1.f};
+static constexpr float White[] = {1.f, 1.f, 1.f, 1.f};
 static int NextSlot = 0;
 
 static bool DepthTestEnabled = false;
@@ -203,6 +205,14 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             {
                 glClearBufferfv(GL_COLOR, i, Black);
             }
+            else if(colorLoadActions[i] == LoadAction::FillZeros)
+            {
+                glClearBufferfv(GL_COLOR, i, Clear);
+            }
+            else if(colorLoadActions[i] == LoadAction::FillOnes)
+            {
+                glClearBufferfv(GL_COLOR, i, White);
+            }
             else if(colorLoadActions[i] != LoadAction::DontCare &&
                 colorLoadActions[i] != LoadAction::Load)
             {
@@ -212,7 +222,8 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         }
         if(_data->_fbo->_depthStencilAttachment)
         {
-            if(depthLoadAction == LoadAction::Clear)
+            if(depthLoadAction == LoadAction::Clear || depthLoadAction ==
+                LoadAction::FillOnes)
             {
                 if(!DepthMaskEnabled)
                 {
@@ -220,6 +231,15 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
                     glDepthMask(GL_TRUE);
                 }
                 glClear(GL_DEPTH_BUFFER_BIT);
+            }
+            else if(depthLoadAction == LoadAction::FillZeros)
+            {
+                if(!DepthMaskEnabled)
+                {
+                    DepthMaskEnabled = true;
+                    glDepthMask(GL_TRUE);
+                }
+                glClearBufferfv(GL_DEPTH, 0, White);
             }
             else if(depthLoadAction != LoadAction::DontCare && depthLoadAction
                 != LoadAction::Load)
@@ -233,12 +253,23 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, Window::ViewportWidth(), Window::ViewportHeight());
-        if(!colorLoadActions.empty() && colorLoadActions[0] == LoadAction::
-            Clear)
+        if(!colorLoadActions.empty())
         {
-            glClearBufferfv(GL_COLOR, 0, Black);
+            if(colorLoadActions[0] == LoadAction::Clear)
+            {
+                glClearBufferfv(GL_COLOR, 0, Black);
+            }
+            else if(colorLoadActions[0] == LoadAction::FillZeros)
+            {
+                glClearBufferfv(GL_COLOR, 0, Clear);
+            }
+            else if(colorLoadActions[0] == LoadAction::FillOnes)
+            {
+                glClearBufferfv(GL_COLOR, 0, White);
+            }
         }
-        if(depthLoadAction == LoadAction::Clear)
+        if(depthLoadAction == LoadAction::Clear || depthLoadAction ==
+            LoadAction::FillOnes)
         {
             if(!DepthMaskEnabled)
             {
@@ -246,6 +277,20 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
                 glDepthMask(GL_TRUE);
             }
             glClear(GL_DEPTH_BUFFER_BIT);
+        }
+        else if(depthLoadAction == LoadAction::FillZeros)
+        {
+            if(!DepthMaskEnabled)
+            {
+                DepthMaskEnabled = true;
+                glDepthMask(GL_TRUE);
+            }
+            glClearBufferfv(GL_DEPTH, 0, White);
+        }
+        else if(depthLoadAction != LoadAction::DontCare && depthLoadAction !=
+            LoadAction::Load)
+        {
+            throw std::runtime_error("Invalid depth attachment load action.");
         }
     }
 
