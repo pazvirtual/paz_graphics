@@ -226,7 +226,7 @@ int main(int, char** argv)
 
     const paz::Texture shadowMap = compute_shadow_map(groundVerts, cubeVerts,
         instanceAttrs);
-    paz::Image<std::uint8_t, 1> img(Scale*Size, Scale*Size);
+    paz::Image img(paz::ImageFormat::R8UNorm, Scale*Size, Scale*Size);
     for(std::size_t i = 0; i < Size; ++i)
     {
         for(std::size_t j = 0; j < Size; ++j)
@@ -236,7 +236,7 @@ int main(int, char** argv)
             {
                 for(std::size_t b = 0; b < Scale; ++b)
                 {
-                    img[img.width()*(Scale*i + a) + (Scale*j + b)] = c;
+                    img.bytes()[img.width()*(Scale*i + a) + (Scale*j + b)] = c;
                 }
             }
         }

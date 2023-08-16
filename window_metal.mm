@@ -432,7 +432,7 @@ void paz::Window::Resize(int width, int height, bool viewportCoords)
     resize_targets();
 }
 
-paz::Image<std::uint8_t, 4> paz::Window::ReadPixels()
+paz::Image paz::Window::ReadPixels()
 {
     initialize();
 
@@ -444,12 +444,13 @@ paz::Image<std::uint8_t, 4> paz::Window::ReadPixels()
     const int width = ViewportWidth();
     const int height = ViewportHeight();
 
-    Image<std::uint8_t, 4> bgraFlipped(width, height);
+    std::vector<unsigned char> bgraFlipped(width*height);
     [static_cast<id<MTLTexture>>(final_framebuffer().colorAttachment(0)._data->
         _texture) getBytes:bgraFlipped.data() bytesPerRow:4*width fromRegion:
         MTLRegionMake2D(0, 0, width, height) mipmapLevel:0];
 
-    Image<std::uint8_t, 4> rgba(width, height);
+    //TEMP - should convert from final render gamma (window gamma?) to sRGB
+    Image rgba(ImageFormat::RGBA8UNorm_sRGB, ViewportWidth(), ViewportHeight());
     for(int y = 0; y < height; ++y)
     {
         for(int x = 0; x < width; ++x)
@@ -457,10 +458,11 @@ paz::Image<std::uint8_t, 4> paz::Window::ReadPixels()
             const int yFlipped = height - 1 - y;
             for(int i = 0; i < 3; ++i)
             {
-                rgba[4*(width*y + x) + i] = bgraFlipped[4*(width*yFlipped + x) +
-                    2 - i];
+                rgba.bytes()[4*(width*y + x) + i] = bgraFlipped[4*(width*
+                    yFlipped + x) + 2 - i];
             }
-            rgba[4*(width*y + x) + 3] = bgraFlipped[4*(width*yFlipped + x) + 3];
+            rgba.bytes()[4*(width*y + x) + 3] = bgraFlipped[4*(width*yFlipped +
+                x) + 3];
         }
     }
 
