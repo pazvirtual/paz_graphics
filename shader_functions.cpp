@@ -123,15 +123,13 @@ void main()
     float paz_angleNext = acos(clamp(dot(paz_para, paz_paraNext), -1., 1.));
     float paz_a = sin(0.5*(M_PI - paz_anglePrev));
     float paz_b = sin(0.5*(M_PI - paz_angleNext));
-    if(paz_anglePrev > 0.99*M_PI || gl_in[1].gl_Position == gl_in[0].
-        gl_Position)
+    if(paz_anglePrev > 0.9*M_PI || gl_in[1].gl_Position == gl_in[0].gl_Position)
     {
         paz_paraPrev = paz_para;
         paz_anglePrev = 0;
         paz_a = 1.;
     }
-    if(paz_angleNext > 0.99*M_PI || gl_in[3].gl_Position == gl_in[2].
-        gl_Position)
+    if(paz_angleNext > 0.9*M_PI || gl_in[3].gl_Position == gl_in[2].gl_Position)
     {
         paz_paraNext = paz_para;
         paz_angleNext = 0;
