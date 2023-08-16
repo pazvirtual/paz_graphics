@@ -387,8 +387,7 @@ paz::Image<std::uint8_t, 3> paz::Window::ReadPixels()
 
     if([RENDERER commandBuffer])
     {
-        throw std::logic_error("Failed to read window pixels: Called before `pa"
-            "z::Window::EndFrame`.");
+        throw std::logic_error("Cannot read pixels before ending frame.");
     }
 
     const int width = ViewportWidth();
