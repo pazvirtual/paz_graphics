@@ -59,17 +59,17 @@ static void init(paz::RenderPass& scenePass, paz::RenderPass& textPass, paz::
     paz::Framebuffer renderFramebuffer;
     renderFramebuffer.attach(render);
 
-    const paz::VertexFunction sceneVert(paz::load_bytes(appDir +
+    const paz::VertexFunction sceneVert(paz::read_bytes(appDir +
         "/shader.vert").str());
-    const paz::VertexFunction fontVert(paz::load_bytes(appDir + "/font.vert").
+    const paz::VertexFunction fontVert(paz::read_bytes(appDir + "/font.vert").
         str());
-    const paz::VertexFunction quadVert(paz::load_bytes(appDir + "/quad.vert").
+    const paz::VertexFunction quadVert(paz::read_bytes(appDir + "/quad.vert").
         str());
-    const paz::FragmentFunction sceneFrag(paz::load_bytes(appDir +
+    const paz::FragmentFunction sceneFrag(paz::read_bytes(appDir +
         "/shader.frag").str());
-    const paz::FragmentFunction fontFrag(paz::load_bytes(appDir + "/font.frag").
+    const paz::FragmentFunction fontFrag(paz::read_bytes(appDir + "/font.frag").
         str());
-    const paz::FragmentFunction postFrag(paz::load_bytes(appDir + "/post.frag").
+    const paz::FragmentFunction postFrag(paz::read_bytes(appDir + "/post.frag").
         str());
 
     scenePass = paz::RenderPass(renderFramebuffer, sceneVert, sceneFrag);
@@ -82,14 +82,14 @@ int main(int, char** argv)
 {
     const std::string appDir = paz::split_path(argv[0])[0];
 
-    const std::array<std::string, 2> msg = {paz::load_bytes(appDir +
-        "/msg.txt").str(), paz::load_bytes(appDir + "/msg-gp.txt").str()};
+    const std::array<std::string, 2> msg = {paz::read_bytes(appDir +
+        "/msg.txt").str(), paz::read_bytes(appDir + "/msg-gp.txt").str()};
 
     paz::Window::SetTitle("PAZ_Graphics: example2d");
     paz::Window::SetMinSize(640, 480);
     paz::Window::SetMaxSize(800, 800);
 
-    const paz::Texture font(paz::parse_pbm(paz::load_bytes(appDir + "/font.pbm"
+    const paz::Texture font(paz::parse_pbm(paz::read_bytes(appDir + "/font.pbm"
         )));
 
     paz::RenderPass scenePass, textPass, postPass;

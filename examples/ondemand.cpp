@@ -22,12 +22,12 @@ int main(int, char** argv)
     paz::VertexBuffer quadVertices;
     quadVertices.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
-    const paz::Texture font(paz::parse_pbm(paz::load_bytes(appDir + "/font.pbm"
+    const paz::Texture font(paz::parse_pbm(paz::read_bytes(appDir + "/font.pbm"
         )));
 
-    const paz::VertexFunction fontVert(paz::load_bytes(appDir + "/font.vert").
+    const paz::VertexFunction fontVert(paz::read_bytes(appDir + "/font.vert").
         str());
-    const paz::FragmentFunction fontFrag(paz::load_bytes(appDir + "/font.frag").
+    const paz::FragmentFunction fontFrag(paz::read_bytes(appDir + "/font.frag").
         str());
 
     paz::RenderPass textPass(fontVert, fontFrag);

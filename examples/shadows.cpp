@@ -210,10 +210,10 @@ int main(int, char** argv)
     quadVerts.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
     const paz::VertexFunction sceneVert(SceneVertSrc);
-    const paz::VertexFunction quadVert(paz::load_bytes(appDir + "/quad.vert").
+    const paz::VertexFunction quadVert(paz::read_bytes(appDir + "/quad.vert").
         str());
     const paz::FragmentFunction sceneFrag(SceneFragSrc);
-    const paz::FragmentFunction aaFrag(paz::load_bytes(appDir + "/fxaa.frag").
+    const paz::FragmentFunction aaFrag(paz::read_bytes(appDir + "/fxaa.frag").
         str());
 
     paz::Framebuffer buff;
