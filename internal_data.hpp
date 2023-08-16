@@ -168,6 +168,7 @@ struct paz::RenderPass::Data
     std::vector<unsigned char> _vertUniformData;
     std::vector<unsigned char> _fragUniformData;
     std::unordered_map<std::string, int> _texAndSamplerSlots;
+    ID3D11BlendState* _blendState = nullptr;
     ~Data();
 #endif
     std::shared_ptr<Framebuffer::Data> _fbo;
