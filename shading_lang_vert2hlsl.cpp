@@ -487,7 +487,7 @@ float4 uintBitsToFloat(in uint4 v)
     }
     out << "};" << std::endl;
     out << "struct OutputData" << std::endl << "{" << std::endl << "    float4 "
-        "glPosition : SV_POSITION;" << std::endl;
+        "glPosition : SV_Position;" << std::endl;
     for(std::size_t i = 0; i < outputs.size(); ++i)
     {
         out << "    " << (outputs[i].second.second ? "nointerpolation " : "") <<
