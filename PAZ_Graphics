@@ -259,10 +259,10 @@ namespace paz
         RenderPass(const Framebuffer& fbo, const Shader& shader);
         RenderPass(const Shader& shader);
         void begin(const std::vector<LoadAction>& colorLoadActions = {},
-            LoadAction depthLoadAction = LoadAction::DontCare);
+            LoadAction depthLoadAction = LoadAction::DontCare, BlendMode mode =
+            BlendMode::Disable);
         void end();
         void depth(DepthTestMode depthMode);
-        void blend(BlendMode mode);
         void cull(CullMode mode) const;
         void read(const std::string& name, const Texture& tex) const;
         void uniform(const std::string& name, int x) const;

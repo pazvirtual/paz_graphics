@@ -71,7 +71,7 @@ paz::RenderPass::RenderPass(const Shader& shader)
 }
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
-    LoadAction depthLoadAction)
+    LoadAction depthLoadAction, BlendMode mode)
 {
     glGetError();
     NextSlot = 0;
@@ -119,6 +119,32 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         if(depthLoadAction == LoadAction::Clear)
         {
             glClear(GL_DEPTH_BUFFER_BIT);
+        }
+    }
+
+    if(mode == BlendMode::Disable)
+    {
+        if(BlendEnabled)
+        {
+            BlendEnabled = false;
+            glDisable(GL_BLEND);
+        }
+    }
+    else
+    {
+        if(!BlendEnabled)
+        {
+            BlendEnabled = true;
+            glEnable(GL_BLEND);
+        }
+        if(mode == BlendMode::Additive)
+        {
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        }
+        // ...
+        else
+        {
+            throw std::runtime_error("Invalid blending function.");
         }
     }
 
@@ -181,35 +207,6 @@ void paz::RenderPass::depth(DepthTestMode mode)
         else
         {
             throw std::runtime_error("Invalid depth testing function.");
-        }
-    }
-}
-
-void paz::RenderPass::blend(BlendMode mode)
-{
-    if(mode == BlendMode::Disable)
-    {
-        if(BlendEnabled)
-        {
-            BlendEnabled = false;
-            glDisable(GL_BLEND);
-        }
-    }
-    else
-    {
-        if(!BlendEnabled)
-        {
-            BlendEnabled = true;
-            glEnable(GL_BLEND);
-        }
-        if(mode == BlendMode::Additive)
-        {
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-        }
-        // ...
-        else
-        {
-            throw std::runtime_error("Invalid blending function.");
         }
     }
 }
