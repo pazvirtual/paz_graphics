@@ -1,7 +1,3 @@
-#include "detect_os.hpp"
-
-#ifndef PAZ_MACOS
-
 #include "PAZ_Graphics"
 #include "util.hpp"
 #include "internal_data.hpp"
@@ -17,9 +13,7 @@ paz::RenderTarget::~RenderTarget()
     paz::Window::UnregisterTarget(this);
 }
 
-void paz::RenderTarget::resize(GLsizei width, GLsizei height)
+void paz::RenderTarget::resize(int width, int height)
 {
     Texture::resize(_scale*width, _scale*height);
 }
-
-#endif

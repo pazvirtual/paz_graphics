@@ -9,20 +9,16 @@ struct paz::Texture::Data
 #ifdef PAZ_MACOS
     void* _sampler = nullptr;
     void* _texture = nullptr;
+    int _numChannels;
+    int _numBits;
+    DataType _type;
+    MinMagFilter _minFilter;
+    MinMagFilter _magFilter;
 #else
     unsigned int _id = 0;
     int _internalFormat;
     unsigned int _format;
     unsigned int _type;
-#endif
-};
-
-struct paz::RenderTarget::Data
-{
-#ifdef PAZ_MACOS
-    int _numChannels;
-    int _numBits;
-    DataType _type;
 #endif
 };
 

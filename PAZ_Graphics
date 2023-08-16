@@ -72,9 +72,6 @@ namespace paz
     class RenderTarget : public Texture
     {
     protected:
-        struct Data;
-        std::unique_ptr<Data> _data;
-
         double _scale;
 
         RenderTarget(const RenderTarget&) = delete;
