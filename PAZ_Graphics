@@ -62,6 +62,10 @@ namespace paz
             vector<float>& data, MinMagFilter minFilter, MinMagFilter
             magFilter);
         // ...
+        Texture(int width, int height, int numChannels, int numBits, const std::
+            vector<unsigned int>& data, MinMagFilter minFilter, MinMagFilter
+            magFilter); // WHAT ABOUT NORMALIZATION ?
+        // ...
         virtual void resize(int width, int height);
     };
 
@@ -76,7 +80,7 @@ namespace paz
         RenderTarget(const RenderTarget&) = delete;
         RenderTarget& operator=(const RenderTarget&) = delete;
 
-        RenderTarget(); // For `DepthStencilTarget` to inherit.
+        RenderTarget();
 
     public:
         virtual ~RenderTarget();

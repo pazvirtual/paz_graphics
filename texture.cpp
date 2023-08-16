@@ -41,6 +41,16 @@ paz::Texture::Texture(int width, int height, int numChannels, int numBits, const
 
 // ...
 
+paz::Texture::Texture(int width, int height, int numChannels, int numBits, const
+    std::vector<unsigned int>& data, MinMagFilter minFilter, MinMagFilter
+    magFilter) : Texture()
+{
+    init(width, height, numChannels, numBits, DataType::UInt, minFilter,
+        magFilter, data.data());
+}
+
+// ...
+
 void paz::Texture::init(int width, int height, int numChannels, int numBits,
     DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
     data)
