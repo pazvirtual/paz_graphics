@@ -32,7 +32,7 @@ paz::VertexBuffer::VertexBuffer()
 {
     initialize();
 
-    _data = std::make_unique<Data>();
+    _data = std::make_shared<Data>();
 }
 
 void paz::VertexBuffer::attribute(int dim, const float* data, std::size_t size)

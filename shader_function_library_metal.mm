@@ -58,7 +58,7 @@ paz::ShaderFunctionLibrary::ShaderFunctionLibrary()
 {
     initialize();
 
-    _data = std::make_unique<Data>();
+    _data = std::make_shared<Data>();
 }
 
 void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::

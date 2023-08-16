@@ -54,7 +54,7 @@ paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
 {
     initialize();
 
-    _data = std::make_unique<Data>();
+    _data = std::make_shared<Data>();
     _data->_width = image.width();
     _data->_height = image.height();
     _data->_format = normalized ? TextureFormat::R8UNorm : TextureFormat::
@@ -69,7 +69,7 @@ paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
 {
     initialize();
 
-    _data = std::make_unique<Data>();
+    _data = std::make_shared<Data>();
     _data->_width = width;
     _data->_height = height;
     _data->_format = format;
