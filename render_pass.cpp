@@ -311,27 +311,27 @@ void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
         z, w);
 }
 
-void paz::RenderPass::uniform(const std::string& name, const int* x, int n)
-    const
+void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
+    size) const
 {
     CHECK_UNIFORM
     switch(std::get<1>(_data->_shader->_data->_uniformIds.at(name)))
     {
         case GL_INT:
             glUniform1iv(std::get<0>(_data->_shader->_data->_uniformIds.at(
-                name)), n, x);
+                name)), size, x);
             break;
         case GL_INT_VEC2:
             glUniform2iv(std::get<0>(_data->_shader->_data->_uniformIds.at(
-                name)), n/2, x);
+                name)), size/2, x);
             break;
         case GL_INT_VEC3:
             glUniform3iv(std::get<0>(_data->_shader->_data->_uniformIds.at(
-                name)), n/3, x);
+                name)), size/3, x);
             break;
         case GL_INT_VEC4:
             glUniform4iv(std::get<0>(_data->_shader->_data->_uniformIds.at(
-                name)), n/4, x);
+                name)), size/4, x);
             break;
         default:
             throw std::invalid_argument("Unsupported type " + std::to_string(
@@ -372,26 +372,26 @@ void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
 }
 
 void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
-    int n) const
+    std::size_t size) const
 {
     CHECK_UNIFORM
     switch(std::get<1>(_data->_shader->_data->_uniformIds.at(name)))
     {
         case GL_UNSIGNED_INT:
             glUniform1uiv(std::get<0>(_data->_shader->_data->_uniformIds.at(
-                name)), n, x);
+                name)), size, x);
             break;
         case GL_UNSIGNED_INT_VEC2:
             glUniform2uiv(std::get<0>(_data->_shader->_data->_uniformIds.at(
-                name)), n/2, x);
+                name)), size/2, x);
             break;
         case GL_UNSIGNED_INT_VEC3:
             glUniform3uiv(std::get<0>(_data->_shader->_data->_uniformIds.at(
-                name)), n/3, x);
+                name)), size/3, x);
             break;
         case GL_UNSIGNED_INT_VEC4:
             glUniform4uiv(std::get<0>(_data->_shader->_data->_uniformIds.at(
-                name)), n/4, x);
+                name)), size/4, x);
             break;
         default:
             throw std::invalid_argument("Unsupported type " + std::to_string(
@@ -429,39 +429,39 @@ void paz::RenderPass::uniform(const std::string& name, float x, float y, float
         z, w);
 }
 
-void paz::RenderPass::uniform(const std::string& name, const float* x, int n)
-    const
+void paz::RenderPass::uniform(const std::string& name, const float* x, std::
+    size_t size) const
 {
     CHECK_UNIFORM
     switch(std::get<1>(_data->_shader->_data->_uniformIds.at(name)))
     {
         case GL_FLOAT:
             glUniform1fv(std::get<0>(_data->_shader->_data->_uniformIds.at(
-                name)), n, x);
+                name)), size, x);
             break;
         case GL_FLOAT_VEC2:
             glUniform2fv(std::get<0>(_data->_shader->_data->_uniformIds.at(
-                name)), n/2, x);
+                name)), size/2, x);
             break;
         case GL_FLOAT_VEC3:
             glUniform3fv(std::get<0>(_data->_shader->_data->_uniformIds.at(
-                name)), n/3, x);
+                name)), size/3, x);
             break;
         case GL_FLOAT_VEC4:
             glUniform4fv(std::get<0>(_data->_shader->_data->_uniformIds.at(
-                name)), n/4, x);
+                name)), size/4, x);
             break;
         case GL_FLOAT_MAT2:
             glUniformMatrix2fv(std::get<0>(_data->_shader->_data->_uniformIds.
-                at(name)), n/4, GL_FALSE, x);
+                at(name)), size/4, GL_FALSE, x);
             break;
         case GL_FLOAT_MAT3:
             glUniformMatrix3fv(std::get<0>(_data->_shader->_data->_uniformIds.
-                at(name)), n/9, GL_FALSE, x);
+                at(name)), size/9, GL_FALSE, x);
             break;
         case GL_FLOAT_MAT4:
             glUniformMatrix4fv(std::get<0>(_data->_shader->_data->_uniformIds.
-                at(name)), n/16, GL_FALSE, x);
+                at(name)), size/16, GL_FALSE, x);
             break;
         default:
             throw std::invalid_argument("Unsupported type " + std::to_string(
