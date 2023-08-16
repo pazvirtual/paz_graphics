@@ -28,7 +28,7 @@ else
     ifeq ($(OSPRETTY), Linux)
         LDLIBS += -lGL -lX11 -ldl
     else
-        LDLIBS += -ld3d11 -ldxgi -ld3dcompiler
+        LDLIBS += -ld3d11 -ldxgi -ld3dcompiler -ldxguid
     endif
 endif
 
