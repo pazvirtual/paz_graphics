@@ -53,7 +53,7 @@ paz::RenderTarget::RenderTarget(double scale, int numChannels, int numBits,
     paz::Window::RegisterTarget(this);
 }
 
-void paz::RenderTarget::resize(GLsizei width, GLsizei height)
+void paz::RenderTarget::resize(int width, int height)
 {
     if(Texture::_data->_texture)
     {
