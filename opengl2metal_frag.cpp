@@ -32,58 +32,124 @@ std::string paz::frag2metal(const std::string& src)
     out << "#include <metal_stdlib>" << std::endl << "#include <simd/simd.h>" <<
         std::endl << "using namespace metal;" << std::endl;
 
+    // Make it easier to pass around textures and their samplers.
+    out << 1 + R"===(
+template<typename T>
+struct wrap_texture1d
+{
+    texture1d<T> t;
+    sampler s;
+};
+template<typename T>
+struct wrap_texture2d
+{
+    texture2d<T> t;
+    sampler s;
+};
+template<typename T>
+struct wrap_depth2d
+{
+    depth2d<T> t;
+    sampler s;
+};
+#define sampler1D const wrap_texture1d<float>&
+#define sampler2D const wrap_texture2d<float>&
+#define isampler1D const wrap_texture1d<int>&
+#define isampler2D const wrap_texture2d<int>&
+#define usampler1D const wrap_texture1d<uint>&
+#define usampler2D const wrap_texture2d<uint>&
+#define depthSampler2D const wrap_depth2d<float>&
+)===";
+
     // Define our Y-reversed sample functions.
-    out << "template<typename T>" << std::endl << "auto texture(thread const te"
-        "xture1d<T>& tex, thread const sampler&" << std::endl << "    sampler, "
-        "thread float u)" << std::endl << "{" << std::endl << "    return tex.s"
-        "ample(sampler, u);" << std::endl << "}" << std::endl << "template<type"
-        "name T>" << std::endl << "auto textureLod(thread const texture1d<T>& t"
-        "ex, thread const sampler&" << std::endl << "    sampler, thread float "
-        "u, thread float lod)" << std::endl << "{" << std::endl << "    return "
-        "tex.sample(sampler, u, level(lod));" << std::endl << "}" << std::endl
-        << "template<typename T>" << std::endl << "auto texture(thread const te"
-        "xture2d<T>& tex, thread const sampler&" << std::endl << "    sampler, "
-        "thread const float2& uv)" << std::endl << "{" << std::endl << "    ret"
-        "urn tex.sample(sampler, float2(uv.x, 1. - uv.y));" << std::endl << "}"
-        << std::endl << "template<typename T>" << std::endl << "auto textureLod"
-        "(thread const texture2d<T>& tex, thread const sampler&" << std::endl <<
-        "    sampler, thread const float2& uv, thread float lod)" << std::endl
-        << "{" << std::endl << "    return tex.sample(sampler, float2(uv.x, 1. "
-        "- uv.y), level(lod));" << std::endl << "}" << std::endl << "float4 tex"
-        "ture(thread const depth2d<float>& tex, thread const sampler& sampler,"
-        << std::endl << "    thread const float2& uv)" << std::endl << "{" <<
-        std::endl << "    return float4(tex.sample(sampler, float2(uv.x, 1. - u"
-        "v.y)), 0, 0, 1);" << std::endl << "}" << std::endl << "float4 textureL"
-        "od(thread const depth2d<float>& tex, thread const sampler&" << std::
-        endl << "    sampler, thread const float2& uv, thread float lod)" <<
-        std::endl << "{" << std::endl << "    return float4(tex.sample(sampler,"
-        " float2(uv.x, 1. - uv.y), level(lod)), 0," << std::endl << "        0,"
-        " 1);" << std::endl << "}" << std::endl;
+    out << 1 + R"===(
+template<typename T>
+auto texture(thread const wrap_texture1d<T>& tex, thread float u)
+{
+    return tex.t.sample(tex.s, u);
+}
+template<typename T>
+auto textureLod(thread const wrap_texture1d<T>& tex, thread float u, thread
+    float lod)
+{
+    return tex.t.sample(tex.s, u, level(lod));
+}
+template<typename T>
+auto texture(thread const wrap_texture2d<T>& tex, thread const float2& uv)
+{
+    return tex.t.sample(tex.s, float2(uv.x, 1. - uv.y));
+}
+template<typename T>
+auto textureLod(thread const wrap_texture2d<T>& tex, thread const float2& uv,
+    thread float lod)
+{
+    return tex.t.sample(tex.s, float2(uv.x, 1. - uv.y), level(lod));
+}
+float4 texture(thread const wrap_depth2d<float>& tex, thread const float2& uv)
+{
+    return float4(tex.t.sample(tex.s, float2(uv.x, 1. - uv.y)), 0, 0, 1);
+}
+float4 textureLod(thread const wrap_depth2d<float>& tex, thread const float2&
+    uv, thread float lod)
+{
+    return float4(tex.t.sample(tex.s, float2(uv.x, 1. - uv.y), level(lod)), 0,
+        0, 1);
+}
+)===";
 
     // Define `textureQueryLod()`. Note that this is not the right formula for
     // lines and that Metal does not support mipmaps for 1D textures.
-    out << "template<typename T>" << std::endl << "float2 textureQueryLod(threa"
-        "d const texture1d<T>& /* tex */, thread const" << std::endl << "    fl"
-        "oat2& /* uv */)" << std::endl << "{" << std::endl << "    return float"
-        "2(0);" << std::endl << "}" << std::endl << "template<typename T>" <<
-        std::endl << "float2 textureQueryLod(thread const texture2d<T>& tex, th"
-        "read const float2& uv)" << std::endl << "{" << std::endl << "    const"
-        " float2 size(tex.get_width(), tex.get_height());" << std::endl << "   "
-        " const float2 duvdx = dfdx(uv);" << std::endl << "    const float2 duv"
-        "dy = dfdy(uv);" << std::endl << "    const float rho = max(length(size"
-        "*duvdx), length(size*duvdy));" << std::endl << "    const float lambda"
-        "Prime = log2(rho);" << std::endl << "    return float2(clamp(lambdaPri"
-        "me, 0., float(tex.get_num_mip_levels()))," << std::endl << "        la"
-        "mbdaPrime);" << std::endl << "}" << std::endl << "template<typename T>"
-        << std::endl << "float2 textureQueryLod(thread const depth2d<T>& tex, t"
-        "hread const float2& uv)" << std::endl << "{" << std::endl << "    cons"
-        "t float2 size(tex.get_width(), tex.get_height());" << std::endl << "  "
-        "  const float2 duvdx = dfdx(uv);" << std::endl << "    const float2 du"
-        "vdy = dfdy(uv);" << std::endl << "    const float rho = max(length(siz"
-        "e*duvdx), length(size*duvdy));" << std::endl << "    const float lambd"
-        "aPrime = log2(rho);" << std::endl << "    return float2(clamp(lambdaPr"
-        "ime, 0., float(tex.get_num_mip_levels()))," << std::endl << "        l"
-        "ambdaPrime);" << std::endl << "}" << std::endl;
+out << 1 + R"===(
+template<typename T>
+float2 textureQueryLod(thread const wrap_texture1d<T>& /* tex */, thread const
+    float2& /* uv */)
+{
+    return float2(0);
+}
+template<typename T>
+float2 textureQueryLod(thread const wrap_texture2d<T>& tex, thread const float2&
+    uv)
+{
+    const float2 size(tex.t.get_width(), tex.t.get_height());
+    const float2 duvdx = dfdx(uv);
+    const float2 duvdy = dfdy(uv);
+    const float rho = max(length(size*duvdx), length(size*duvdy));
+    const float lambdaPrime = log2(rho);
+    return float2(clamp(lambdaPrime, 0., float(tex.t.get_num_mip_levels())),
+        lambdaPrime);
+}
+template<typename T>
+float2 textureQueryLod(thread const wrap_depth2d<T>& tex, thread const float2&
+    uv)
+{
+    const float2 size(tex.t.get_width(), tex.t.get_height());
+    const float2 duvdx = dfdx(uv);
+    const float2 duvdy = dfdy(uv);
+    const float rho = max(length(size*duvdx), length(size*duvdy));
+    const float lambdaPrime = log2(rho);
+    return float2(clamp(lambdaPrime, 0., float(tex.t.get_num_mip_levels())),
+        lambdaPrime);
+}
+)===";
+
+    // Define `textureSize()`.
+out << 1 + R"===(
+template<typename T>
+int textureSize(thread const wrap_texture1d<T>& tex, thread int lod)
+{
+    return tex.t.get_width(lod);
+}
+template<typename T>
+int2 textureSize(thread const wrap_texture2d<T>& tex, thread int lod)
+{
+    return int2(tex.t.get_width(lod), tex.t.get_height(lod));
+}
+template<typename T>
+int2 textureSize(thread const wrap_depth2d<T>& tex, thread int lod)
+{
+    return int2(tex.t.get_width(lod), tex.t.get_height(lod));
+}
+)===";
 
     std::string line;
     std::size_t l = 0;
@@ -181,18 +247,6 @@ std::string paz::frag2metal(const std::string& src)
         line = std::regex_replace(line, std::regex("\\bvec([2-4])"), "float$1");
         line = std::regex_replace(line, std::regex("\\bivec([2-4])"), "int$1");
         line = std::regex_replace(line, std::regex("\\buvec([2-4])"), "uint$1");
-        line = std::regex_replace(line, std::regex("\\bsampler([12])D\\b"),
-            "texture$1d<float>");
-        line = std::regex_replace(line, std::regex("\\bisampler([12])D\\b"),
-            "texture$1d<int>");
-        line = std::regex_replace(line, std::regex("\\busampler([12])D\\b"),
-            "texture$1d<uint>");
-        line = std::regex_replace(line, std::regex("\\bdepthSampler2D\\b"),
-            "depth2d<float>");
-        line = std::regex_replace(line, std::regex("\\btexture\\(([^,]*),"),
-            "texture($1, $1Sampler,");
-        line = std::regex_replace(line, std::regex("\\btextureLod\\(([^,]*),"),
-            "textureLod($1, $1Sampler,");
         line = std::regex_replace(line, std::regex("\\bdiscard\\b"),
             "discard_fragment()");
 
@@ -293,10 +347,43 @@ std::string paz::frag2metal(const std::string& src)
         {
             const std::string dec = line.substr(8, line.size() - 9);
             const std::size_t pos = dec.find_last_of(' ');
-            const std::string type = dec.substr(0, pos);
+            std::string type = dec.substr(0, pos);
             std::string name = dec.substr(pos + 1);
-            if(type.substr(0, 7) == "texture" || type.substr(0, 5) == "depth")
+            if(type.back() == 'D')
             {
+                if(type == "sampler1D")
+                {
+                    type = "texture1d<float>";
+                }
+                else if(type == "sampler2D")
+                {
+                    type = "texture2d<float>";
+                }
+                else if(type == "isampler1D")
+                {
+                    type = "texture1d<int>";
+                }
+                else if(type == "isampler2D")
+                {
+                    type = "texture2d<int>";
+                }
+                else if(type == "usampler1D")
+                {
+                    type = "texture1d<uint>";
+                }
+                else if(type == "usampler2D")
+                {
+                    type = "texture2d<uint>";
+                }
+                else if(type == "depthSampler2D")
+                {
+                    type = "depth2d<float>";
+                }
+                else
+                {
+                    throw std::runtime_error("Line " + std::to_string(l) + ": U"
+                        "nsupported texture type \"" + type + "\".");
+                }
                 textures[name] = type;
             }
             else
@@ -401,13 +488,19 @@ std::string paz::frag2metal(const std::string& src)
     int t = 0;
     for(const auto& n : textures)
     {
-        out << ", " << n.second << " " << n.first << " [[texture(" << t << ")]]"
-            << ", sampler " << n.first << "Sampler [[sampler(" << t << ")]]";
+        out << ", " << n.second << " " << n.first << "Texture [[texture(" << t
+            << ")]]" << ", sampler " << n.first << "Sampler [[sampler(" << t <<
+            ")]]";
         ++t;
     }
-    out << ")" << std::endl << "{" << std::endl << "    OutputData out;" <<
-        std::endl << mainBuffer.str() << "    return out;" << std::endl << "}"
-        << std::endl;
+    out << ")" << std::endl << "{" << std::endl;
+    for(const auto& n : textures)
+    {
+        out << "    const wrap_" << n.second << " " << n.first << " = {" << n.
+            first << "Texture, " << n.first << "Sampler};" << std::endl;
+    }
+    out << "    OutputData out;" << std::endl << mainBuffer.str() << "    retur"
+        "n out;" << std::endl << "}" << std::endl;
 
     return out.str();
 }

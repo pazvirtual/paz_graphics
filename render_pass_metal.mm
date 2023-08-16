@@ -452,11 +452,12 @@ void paz::RenderPass::cull(CullMode mode)
 
 void paz::RenderPass::read(const std::string& name, const Texture& tex)
 {
-    if(_data->_vertexArgs.count(name))
+    const std::string textureName = name + "Texture";
+    if(_data->_vertexArgs.count(textureName))
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
             setVertexTexture:static_cast<id<MTLTexture>>(tex._data->_texture)
-            atIndex:_data->_vertexArgs.at(name)];
+            atIndex:_data->_vertexArgs.at(textureName)];
         const std::string samplerName = name + "Sampler";
         if(!_data->_vertexArgs.count(samplerName))
         {
@@ -467,11 +468,11 @@ void paz::RenderPass::read(const std::string& name, const Texture& tex)
             setVertexSamplerState:static_cast<id<MTLSamplerState>>(tex._data->
             _sampler) atIndex:_data->_vertexArgs.at(samplerName)];
     }
-    if(_data->_fragmentArgs.count(name))
+    if(_data->_fragmentArgs.count(textureName))
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
             setFragmentTexture:static_cast<id<MTLTexture>>(tex._data->_texture)
-            atIndex:_data->_fragmentArgs.at(name)];
+            atIndex:_data->_fragmentArgs.at(textureName)];
         const std::string samplerName = name + "Sampler";
         if(!_data->_fragmentArgs.count(samplerName))
         {
