@@ -81,8 +81,8 @@ std::string prep_for_geom(const std::string& vertSrc, std::string& block, std::
         block += std::string(n.second.second ? "flat " : "") + "in " + n.
             second.first + " inout_" + n.first + "[];\n" + (n.second.second ?
             "flat " : "") + "out " + n.second.first + " " + n.first + ";\n";
-        block0 += n.first + " = inout_" + n.first + "[0];\n";
-        block1 += n.first + " = inout_" + n.first + "[1];\n";
+        block0 += n.first + " = inout_" + n.first + "[1];\n";
+        block1 += n.first + " = inout_" + n.first + "[2];\n";
     }
     regexStr = "\\b(" + regexStr.substr(1) + ")\\b";
 
@@ -99,7 +99,7 @@ std::string prep_for_geom(const std::string& vertSrc, std::string& block, std::
 }
 
 static const std::string Src0 = 1 + R"===(
-layout(lines) in;
+layout(lines_adjacency) in;
 uniform int paz_Width;
 uniform int paz_Height;
 layout(triangle_strip, max_vertices = 4) out;
@@ -107,34 +107,61 @@ in float glLineWidth[];
 )===";
 
 static const std::string Src1 = 1 + R"===(
+#ifndef M_PI
+#define M_PI 3.14159265358979323846264338328
+#endif
 void main()
 {
-    vec2 size = vec2(paz_Width, paz_Height);
-    vec2 para = normalize((gl_in[1].gl_Position.xy/gl_in[1].gl_Position.w -
-        gl_in[0].gl_Position.xy/gl_in[0].gl_Position.w)*size);
-    vec2 perp = vec2(-para.y, para.x)/size;
-    float s0 = glLineWidth[0]*gl_in[0].gl_Position.w;
-    float s1 = glLineWidth[1]*gl_in[1].gl_Position.w;
-    gl_Position = vec4(gl_in[0].gl_Position.xy - s0*perp, gl_in[0].
-        gl_Position.zw);
+    vec2 paz_size = vec2(paz_Width, paz_Height);
+    vec2 paz_paraPrev = normalize((gl_in[1].gl_Position.xy/gl_in[1].gl_Position.
+        w - gl_in[0].gl_Position.xy/gl_in[0].gl_Position.w)*paz_size);
+    vec2 paz_para = normalize((gl_in[2].gl_Position.xy/gl_in[2].gl_Position.w -
+        gl_in[1].gl_Position.xy/gl_in[1].gl_Position.w)*paz_size);
+    vec2 paz_paraNext = normalize((gl_in[3].gl_Position.xy/gl_in[3].gl_Position.
+        w - gl_in[2].gl_Position.xy/gl_in[2].gl_Position.w)*paz_size);
+    float paz_anglePrev = acos(dot(paz_para, paz_paraPrev));
+    float paz_angleNext = acos(dot(paz_para, paz_paraNext));
+    float paz_a = sin(0.5*(M_PI - paz_anglePrev));
+    float paz_b = sin(0.5*(M_PI - paz_angleNext));
+    if(gl_in[1].gl_Position == gl_in[0].gl_Position)
+    {
+        paz_paraPrev = paz_para;
+        paz_anglePrev = 0;
+        paz_a = 1.;
+    }
+    if(gl_in[3].gl_Position == gl_in[2].gl_Position)
+    {
+        paz_paraNext = paz_para;
+        paz_angleNext = 0;
+        paz_b = 1.;
+    }
+    vec2 paz_perpPrev = vec2(-paz_paraPrev.y, paz_paraPrev.x);
+    vec2 paz_perp = vec2(-paz_para.y, paz_para.x);
+    vec2 paz_perpNext = vec2(-paz_paraNext.y, paz_paraNext.x);
+    vec2 paz_v1 = glLineWidth[1]/paz_a*gl_in[1].gl_Position.w*normalize(paz_perp
+        + paz_perpPrev)/paz_size;
+    vec2 paz_v2 = glLineWidth[2]/paz_b*gl_in[2].gl_Position.w*normalize(paz_perp
+        + paz_perpNext)/paz_size;
+    gl_Position = vec4(gl_in[1].gl_Position.xy - paz_v1, gl_in[1].gl_Position.
+        zw);
 )===";
 
 static const std::string Src2 = 1 + R"===(
     EmitVertex();
-    gl_Position = vec4(gl_in[1].gl_Position.xy - s1*perp, gl_in[1].
-        gl_Position.zw);
+    gl_Position = vec4(gl_in[2].gl_Position.xy - paz_v2, gl_in[2].gl_Position.
+        zw);
 )===";
 
 static const std::string Src3 = 1 + R"===(
     EmitVertex();
-    gl_Position = vec4(gl_in[0].gl_Position.xy + s0*perp, gl_in[0].
-        gl_Position.zw);
+    gl_Position = vec4(gl_in[1].gl_Position.xy + paz_v1, gl_in[1].gl_Position.
+        zw);
 )===";
 
 static const std::string Src4 = 1 + R"===(
     EmitVertex();
-    gl_Position = vec4(gl_in[1].gl_Position.xy + s1*perp, gl_in[1].
-        gl_Position.zw);
+    gl_Position = vec4(gl_in[2].gl_Position.xy + paz_v2, gl_in[2].gl_Position.
+        zw);
 )===";
 
 static const std::string Src5 = 1 + R"===(

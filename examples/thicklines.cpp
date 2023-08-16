@@ -20,7 +20,7 @@ void main()
 }
 )===";
 
-static constexpr std::array<float, 4*5> points =
+static constexpr std::array<float, 6*2> strip =
 {
         0,     0,
      0.5f,     0,
@@ -30,10 +30,37 @@ static constexpr std::array<float, 4*5> points =
      0.5f, -0.5f
 };
 
-int main()
+static constexpr std::array<float, 5*4> sep =
 {
+        0,     0,
+     0.5f,     0,
+     0.5f,     0,
+        0,  0.5f,
+        0,  0.5f,
+    -0.5f,  0.5f,
+    -0.5f,  0.5f,
+    -0.5f, -0.5f,
+    -0.5f, -0.5f,
+     0.5f, -0.5f
+};
+
+int main(int argc, char** argv)
+{
+    int mode = 0;
+    if(argc >= 2)
+    {
+        mode = std::stoi(argv[1]);
+    }
+
     paz::VertexBuffer vertices;
-    vertices.attribute(2, points);
+    if(mode)
+    {
+        vertices.attribute(2, strip);
+    }
+    else
+    {
+        vertices.attribute(2, sep);
+    }
 
     const paz::VertexFunction vert(VertSrc);
     const paz::FragmentFunction frag(FragSrc);
@@ -48,7 +75,18 @@ int main()
         }
 
         render.begin({paz::LoadAction::Clear});
-        render.primitives(paz::PrimitiveType::LineStrip, vertices);
+        if(mode == 0)
+        {
+            render.primitives(paz::PrimitiveType::Lines, vertices);
+        }
+        else if(mode == 1)
+        {
+            render.primitives(paz::PrimitiveType::LineStrip, vertices);
+        }
+        else
+        {
+            render.primitives(paz::PrimitiveType::LineLoop, vertices);
+        }
         render.end();
 
         paz::Window::EndFrame();

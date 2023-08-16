@@ -10,6 +10,7 @@
 #include "gl_core_4_1.h"
 #endif
 #include <GLFW/glfw3.h>
+#include <numeric>
 
 #define CASE(a, b) case paz::PrimitiveType::a: return GL_##b;
 #define CHECK_UNIFORM if(!_data->_shader._uniformIds.count(name)) return;
@@ -30,8 +31,10 @@ static GLenum primitive_type(paz::PrimitiveType t)
         CASE(Points, POINTS)
         CASE(Lines, LINES)
         CASE(LineStrip, LINE_STRIP)
+        CASE(LineLoop, LINE_LOOP)
         CASE(Triangles, TRIANGLES)
-        CASE(TriangleStrip, TRIANGLE_STRIP);
+        CASE(TriangleStrip, TRIANGLE_STRIP)
+        CASE(TriangleFan, TRIANGLE_FAN)
         default: throw std::runtime_error("Invalid primitive type.");
     }
 }
@@ -516,8 +519,56 @@ void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
         cull(CullMode::Disable);
     }
 
-    glBindVertexArray(vertices._data->_id);
-    glDrawArrays(primitive_type(type), 0, vertices._data->_numVertices);
+    if(_data->_shader._thickLines)
+    {
+        IndexBuffer indices;
+        glBindVertexArray(vertices._data->_id);
+        if(type == PrimitiveType::LineStrip)
+        {
+            std::vector<unsigned int> idx(vertices._data->_numVertices + 2);
+            std::iota(idx.begin(), idx.end(), -1);
+            idx[0] = 0;
+            idx.back() = vertices._data->_numVertices - 1;
+            indices = IndexBuffer(idx);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);
+            glDrawElements(GL_LINE_STRIP_ADJACENCY, indices._data->_numIndices,
+                GL_UNSIGNED_INT, 0);
+        }
+        else if(type == PrimitiveType::LineLoop)
+        {
+            std::vector<unsigned int> idx(vertices._data->_numVertices + 3);
+            std::iota(idx.begin(), idx.end(), -1);
+            idx[0] = vertices._data->_numVertices - 1;
+            idx[idx.size() - 2] = 0;
+            idx[idx.size() - 1] = 1;
+            indices = IndexBuffer(idx);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);
+            glDrawElements(GL_LINE_STRIP_ADJACENCY, indices._data->_numIndices,
+                GL_UNSIGNED_INT, 0);
+        }
+        else if(type == PrimitiveType::Lines)
+        {
+            for(unsigned int i = 0; i < vertices._data->_numVertices/2; ++i)
+            {
+                const std::array<unsigned int, 4> idx = {2*i, 2*i, 2*i + 1, 2*i
+                    + 1};
+                indices = IndexBuffer(idx);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);
+                glDrawElements(GL_LINE_STRIP_ADJACENCY, indices._data->
+                    _numIndices, GL_UNSIGNED_INT, 0);
+            }
+        }
+        else
+        {
+            throw std::runtime_error("Shader that sets `gl_LineWidth` cannot be"
+                " used with non-line primitive type.");
+        }
+    }
+    else
+    {
+        glBindVertexArray(vertices._data->_id);
+        glDrawArrays(primitive_type(type), 0, vertices._data->_numVertices);
+    }
 }
 
 void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
@@ -535,10 +586,17 @@ void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
         cull(CullMode::Disable);
     }
 
-    glBindVertexArray(vertices._data->_id);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);
-    glDrawElements(primitive_type(type), indices._data->_numIndices,
-        GL_UNSIGNED_INT, 0);
+    if(_data->_shader._thickLines)
+    {
+        throw std::logic_error("NOT IMPLEMENTED");
+    }
+    else
+    {
+        glBindVertexArray(vertices._data->_id);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);
+        glDrawElements(primitive_type(type), indices._data->_numIndices,
+            GL_UNSIGNED_INT, 0);
+    }
 }
 
 paz::Framebuffer paz::RenderPass::framebuffer() const
