@@ -8,7 +8,6 @@
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
-#include <GLFW/glfw3.h>
 
 static GLint depth_internal_format(int b, paz::Texture::DataType t)
 {
@@ -59,11 +58,6 @@ paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-}
-
-void paz::DepthStencilTarget::resize(GLsizei width, GLsizei height)
-{
-    RenderTarget::resize(width, height);
 }
 
 #endif
