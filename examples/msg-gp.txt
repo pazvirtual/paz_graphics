@@ -2,3 +2,4 @@
 #:           fullscreen
 right thumb: change
 a:           screenshot
+b:           toggle hidpi

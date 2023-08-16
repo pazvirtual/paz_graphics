@@ -116,6 +116,8 @@ int main(int, char** argv)
 
     std::pair<double, double> cursorPos = {};
 
+    bool hidpiEnabled = true;
+
     while(!paz::Window::Done())
     {
         // Handle events.
@@ -136,6 +138,13 @@ int main(int, char** argv)
             GamepadButton::RightThumb))
         {
             mode = !mode;
+        }
+        if(paz::Window::KeyPressed(paz::Key::D) || paz::Window::GamepadPressed(
+            paz::GamepadButton::B))
+        {
+            hidpiEnabled ? paz::Window::DisableHidpi() : paz::Window::
+                EnableHidpi();
+            hidpiEnabled = !hidpiEnabled;
         }
         if(paz::Window::GamepadActive())
         {

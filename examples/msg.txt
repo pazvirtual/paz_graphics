@@ -2,3 +2,4 @@ q:           quit
 f:           fullscreen
 left click:  change
 s:           screenshot
+d:           toggle hidpi

@@ -95,8 +95,12 @@ static bool parse_mapping(const std::string& str, paz::GamepadMapping& m)
                 const int idx = axisIndices.at(key);
                 m.axes[idx].type = paz::GamepadElementType::Axis;
                 m.axes[idx].idx = std::stoi(val.substr(startPos + 1, endPos));
+                if(max == min || max == -min)
+                {
+                    return false;
+                }
                 m.axes[idx].axisScale = 2/(max - min);
-                m.axes[idx].axisOffset = -min - max;
+                m.axes[idx].axisOffset = -(max + min);
                 if(endPos != std::string::npos)
                 {
                     m.axes[idx].axisScale = -m.axes[idx].axisScale;
@@ -486,9 +490,18 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
 
 - (void)dealloc
 {
-    CFRelease(_hidManager);
-    [_window release];
-    [_appName release];
+    if(_hidManager)
+    {
+        CFRelease(_hidManager);
+    }
+    if(_window)
+    {
+        [_window release];
+    }
+    if(_appName)
+    {
+        [_appName release];
+    }
     [super dealloc];
 }
 
