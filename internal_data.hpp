@@ -33,6 +33,7 @@ struct paz::VertexBuffer::Data
 #else
     unsigned int _id = 0;
     std::vector<unsigned int> _ids;
+    std::vector<unsigned int> _types;
 #endif
 };
 
@@ -78,6 +79,8 @@ struct paz::Shader::Data
     // uniformIDs[name] = (id, type, size)
     std::unordered_map<std::string, std::tuple<unsigned int, unsigned int, int>>
         _uniformIds;
+    // attribTypes[location] = type (array attributes are not supported)
+    std::unordered_map<unsigned int, unsigned int> _attribTypes;
 #endif
 };
 

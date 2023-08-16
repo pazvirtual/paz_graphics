@@ -39,6 +39,14 @@ void paz::VertexBuffer::attribute(int dim, const std::vector<GLfloat>& data)
     glEnableVertexAttribArray(i);
     glBindBuffer(GL_ARRAY_BUFFER, _data->_ids.back());
     glVertexAttribPointer(i, dim, GL_FLOAT, GL_FALSE, 0, nullptr);
+    switch(dim)
+    {
+        case 1: _data->_types.push_back(GL_FLOAT); break;
+        case 2: _data->_types.push_back(GL_FLOAT_VEC2); break;
+        case 4: _data->_types.push_back(GL_FLOAT_VEC4); break;
+        default: throw std::logic_error("Vertex attribute dimensions must be 1,"
+            " 2, or 4.");
+    }
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*dim*_numVertices, data.data(),
         GL_STATIC_DRAW);
 }
@@ -55,6 +63,14 @@ void paz::VertexBuffer::attribute(int dim, const std::vector<GLuint>& data)
     glEnableVertexAttribArray(i);
     glBindBuffer(GL_ARRAY_BUFFER, _data->_ids.back());
     glVertexAttribIPointer(i, dim, GL_UNSIGNED_INT, 0, nullptr);
+    switch(dim)
+    {
+        case 1: _data->_types.push_back(GL_UNSIGNED_INT); break;
+        case 2: _data->_types.push_back(GL_UNSIGNED_INT_VEC2); break;
+        case 4: _data->_types.push_back(GL_UNSIGNED_INT_VEC4); break;
+        default: throw std::logic_error("Vertex attribute dimensions must be 1,"
+            " 2, or 4.");
+    }
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLuint)*dim*_numVertices, data.data(),
         GL_STATIC_DRAW);
 }
@@ -71,6 +87,14 @@ void paz::VertexBuffer::attribute(int dim, const std::vector<GLint>& data)
     glEnableVertexAttribArray(i);
     glBindBuffer(GL_ARRAY_BUFFER, _data->_ids.back());
     glVertexAttribIPointer(i, dim, GL_INT, 0, nullptr);
+    switch(dim)
+    {
+        case 1: _data->_types.push_back(GL_INT); break;
+        case 2: _data->_types.push_back(GL_INT_VEC2); break;
+        case 4: _data->_types.push_back(GL_INT_VEC4); break;
+        default: throw std::logic_error("Vertex attribute dimensions must be 1,"
+            " 2, or 4.");
+    }
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLint)*dim*_numVertices, data.data(),
         GL_STATIC_DRAW);
 }

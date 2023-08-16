@@ -53,6 +53,26 @@ static std::string gl_error(GLenum error)
     }
 }
 
+static void check_attributes(const std::vector<unsigned int>& a, const std::
+    unordered_map<unsigned int, unsigned int>& b)
+{
+    if(a.size() < b.size())
+    {
+        throw std::invalid_argument("Vertex buffer has too few of attributes fo"
+            "r shader (got " + std::to_string(a.size()) + ", expected at least "
+            + std::to_string(b.size()) + ").");
+    }
+    for(std::size_t i = 0; i < a.size(); ++i)
+    {
+        if(b.count(i) && a[i] != b.at(i))
+        {
+            throw std::invalid_argument("Vertex buffer attribute " + std::
+                to_string(i) + " type mismatch (got " + std::to_string(a[i]) +
+                ", expected " + std::to_string(b.at(i)) + ").");
+        }
+    }
+}
+
 paz::RenderPass::~RenderPass() {}
 
 paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader)
@@ -416,6 +436,9 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, int n)
 void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
     vertices, int offset) const
 {
+    check_attributes(vertices._data->_types, _data->_shader->_data->
+        _attribTypes);
+
     glBindVertexArray(vertices._data->_id);
     glDrawArrays(primitive_type(type), offset, vertices._numVertices);
 }
@@ -423,6 +446,9 @@ void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
 void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
     const IndexBuffer& indices, int offset) const
 {
+    check_attributes(vertices._data->_types, _data->_shader->_data->
+        _attribTypes);
+
     glBindVertexArray(vertices._data->_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);
     glDrawElements(primitive_type(type), indices._numIndices, GL_UNSIGNED_INT,
