@@ -46,6 +46,7 @@ static double GamepadRightTrigger = -1.;
 static bool GamepadActive;
 static bool CursorDisabled;
 static bool FrameInProgress;
+static bool HidpiEnabled = true;
 
 paz::Initializer& paz::initialize()
 {
@@ -367,14 +368,14 @@ int paz::Window::ViewportWidth()
 {
     initialize();
 
-    return FboWidth;
+    return HidpiEnabled ? FboWidth : WindowWidth;
 }
 
 int paz::Window::ViewportHeight()
 {
     initialize();
 
-    return FboHeight;
+    return HidpiEnabled ? FboHeight : WindowHeight;
 }
 
 int paz::Window::Width()
@@ -716,7 +717,7 @@ float paz::Window::DpiScale()
 {
     initialize();
 
-    return static_cast<float>(FboWidth)/WindowWidth;
+    return HidpiEnabled ? static_cast<float>(FboWidth)/WindowWidth : 1.f;
 }
 
 float paz::Window::UiScale()
@@ -725,7 +726,27 @@ float paz::Window::UiScale()
 
     float xScale, yScale;
     glfwGetWindowContentScale(WindowPtr, &xScale, &yScale);
+    if(!HidpiEnabled)
+    {
+        xScale *= static_cast<float>(WindowWidth)/FboWidth;
+    }
     return xScale;
+}
+
+void paz::Window::DisableHidpi()
+{
+    initialize();
+
+    HidpiEnabled = false;
+    resize_targets();
+}
+
+void paz::Window::EnableHidpi()
+{
+    initialize();
+
+    HidpiEnabled = true;
+    resize_targets();
 }
 
 #endif
