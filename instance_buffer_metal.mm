@@ -31,8 +31,8 @@ void paz::InstanceBuffer::Data::checkSize(int dim, std::size_t size)
 {
     if(dim != 1 && dim != 2 && dim != 4)
     {
-        throw std::runtime_error("Vertex attribute dimensions must be 1, 2, or "
-            "4.");
+        throw std::runtime_error("Instance attribute dimensions must be 1, 2, o"
+            "r 4.");
     }
     const std::size_t m = size/dim;
     if(!_numInstances)
@@ -41,8 +41,8 @@ void paz::InstanceBuffer::Data::checkSize(int dim, std::size_t size)
     }
     else if(m != _numInstances)
     {
-        throw std::runtime_error("Number of vertices for each attribute must ma"
-            "tch.");
+        throw std::runtime_error("Number of instances for each attribute must m"
+            "atch.");
     }
 }
 
@@ -145,12 +145,12 @@ void paz::InstanceBuffer::subAttribute(std::size_t idx, const int* data, std::
 
 bool paz::InstanceBuffer::empty() const
 {
-    return !_data->_numInstances;
+    return !_data || !_data->_numInstances;
 }
 
 std::size_t paz::InstanceBuffer::size() const
 {
-    return _data->_numInstances;
+    return _data ? _data->_numInstances : 0;
 }
 
 #endif

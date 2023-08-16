@@ -96,15 +96,15 @@ int main(int, char** argv)
     init(scenePass, textPass, postPass, appDir);
 
     paz::VertexBuffer triVertices0;
-    triVertices0.attribute(2, TriPosData0);
-    triVertices0.attribute(4, TriColorData0);
+    triVertices0.addAttribute(2, TriPosData0);
+    triVertices0.addAttribute(4, TriColorData0);
 
     paz::VertexBuffer triVertices1;
-    triVertices1.attribute(2, TriPosData1);
-    triVertices1.attribute(4, TriColorData1);
+    triVertices1.addAttribute(2, TriPosData1);
+    triVertices1.addAttribute(4, TriColorData1);
 
     paz::VertexBuffer quadVertices;
-    quadVertices.attribute(2, QuadPosData);
+    quadVertices.addAttribute(2, QuadPosData);
 
     double x = 0.;
     double y = 0.;

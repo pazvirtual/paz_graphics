@@ -55,11 +55,11 @@ static void set_mode(int m)
     vertices = paz::VertexBuffer();
     if(mode)
     {
-        vertices.attribute(2, strip);
+        vertices.addAttribute(2, strip);
     }
     else
     {
-        vertices.attribute(2, sep);
+        vertices.addAttribute(2, sep);
     }
 
 }
@@ -71,7 +71,7 @@ int main(int, char** argv)
     set_mode(0);
 
     paz::VertexBuffer quadVerts;
-    quadVerts.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
+    quadVerts.addAttribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
     const paz::VertexFunction lineVert0(LineVertSrc);
     const paz::VertexFunction lineVert1(paz::read_bytes(appDir + "/lines-x.vert"

@@ -214,7 +214,7 @@ paz::Texture compute_shadow_map(const paz::VertexBuffer& groundVerts, const
     paz::RenderPass calcShadows(framebuffer, shadowVert, shadowFrag);
 
     paz::VertexBuffer quadVerts;
-    quadVerts.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
+    quadVerts.addAttribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
     calcShadows.begin({}, paz::LoadAction::Clear);
     calcShadows.depth(paz::DepthTestMode::Less);
@@ -253,13 +253,13 @@ int main()
     paz::VertexBuffer cubeVerts;
     try
     {
-        groundVerts.attribute(4, GroundPos);
-        groundVerts.attribute(4, GroundNor);
-        groundVerts.attribute(2, GroundUv);
+        groundVerts.addAttribute(4, GroundPos);
+        groundVerts.addAttribute(4, GroundNor);
+        groundVerts.addAttribute(2, GroundUv);
 
-        cubeVerts.attribute(4, CubePos);
-        cubeVerts.attribute(4, CubeNor);
-        cubeVerts.attribute(2, CubeUv);
+        cubeVerts.addAttribute(4, CubePos);
+        cubeVerts.addAttribute(4, CubeNor);
+        cubeVerts.addAttribute(2, CubeUv);
     }
     CATCH
 

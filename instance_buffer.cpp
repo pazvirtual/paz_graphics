@@ -50,17 +50,6 @@ void paz::InstanceBuffer::Data::checkSize(int dim, std::size_t size)
     }
 }
 
-static GLenum gl_type(paz::DataType type)
-{
-    switch(type)
-    {
-        case paz::DataType::SInt: return GL_INT;
-        case paz::DataType::UInt: return GL_UNSIGNED_INT;
-        case paz::DataType::Float: return GL_FLOAT;
-        default: throw std::logic_error("Invalid data type.");
-    }
-}
-
 void paz::InstanceBuffer::Data::addAttribute(int dim, DataType type)
 {
     const std::size_t i = _ids.size();
@@ -70,7 +59,7 @@ void paz::InstanceBuffer::Data::addAttribute(int dim, DataType type)
     glGenBuffers(1, &_ids.back());
     glEnableVertexAttribArray(i);
     glBindBuffer(GL_ARRAY_BUFFER, _ids.back());
-    glVertexAttribPointer(i, dim, ::gl_type(type), GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(i, dim, gl_type(type), GL_FALSE, 0, nullptr);
     switch(dim)
     {
         case 1:
@@ -205,12 +194,12 @@ void paz::InstanceBuffer::subAttribute(std::size_t idx, const GLint* data, std::
 
 bool paz::InstanceBuffer::empty() const
 {
-    return !_data->_numInstances;
+    return !_data || !_data->_numInstances;
 }
 
 std::size_t paz::InstanceBuffer::size() const
 {
-    return _data->_numInstances;
+    return _data ? _data->_numInstances : 0;
 }
 
 #endif

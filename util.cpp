@@ -292,4 +292,15 @@ std::string paz::gl_error(GLenum error) noexcept
     }
 }
 
+GLenum paz::gl_type(DataType type)
+{
+    switch(type)
+    {
+        case paz::DataType::SInt: return GL_INT;
+        case paz::DataType::UInt: return GL_UNSIGNED_INT;
+        case paz::DataType::Float: return GL_FLOAT;
+        default: throw std::logic_error("Invalid data type.");
+    }
+}
+
 #endif

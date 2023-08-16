@@ -193,21 +193,21 @@ int main(int, char** argv)
     const std::string appDir = paz::split_path(argv[0])[0];
 
     paz::VertexBuffer groundVerts;
-    groundVerts.attribute(4, GroundPos);
-    groundVerts.attribute(4, GroundNor);
-    groundVerts.attribute(2, GroundUv);
+    groundVerts.addAttribute(4, GroundPos);
+    groundVerts.addAttribute(4, GroundNor);
+    groundVerts.addAttribute(2, GroundUv);
 
     paz::VertexBuffer cubeVerts;
-    cubeVerts.attribute(4, CubePos);
-    cubeVerts.attribute(4, CubeNor);
-    cubeVerts.attribute(2, CubeUv);
+    cubeVerts.addAttribute(4, CubePos);
+    cubeVerts.addAttribute(4, CubeNor);
+    cubeVerts.addAttribute(2, CubeUv);
 
     paz::InstanceBuffer instanceAttrs(InstanceOffsets.size());
     instanceAttrs.addAttribute(1, paz::DataType::Float);
     instanceAttrs.subAttribute(0, InstanceOffsets);
 
     paz::VertexBuffer quadVerts;
-    quadVerts.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
+    quadVerts.addAttribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
     const paz::VertexFunction sceneVert(SceneVertSrc);
     const paz::VertexFunction quadVert(paz::read_bytes(appDir + "/quad.vert").
