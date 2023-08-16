@@ -169,6 +169,7 @@ namespace paz
         ShaderFunctionLibrary();
         ~ShaderFunctionLibrary();
         void vertex(const std::string& name, const std::string& src);
+        void geometry(const std::string& name, const std::string& src);
         void fragment(const std::string& name, const std::string& src);
     };
 
@@ -187,6 +188,10 @@ namespace paz
         Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
             vertName, const ShaderFunctionLibrary& fragLibrary, const std::
             string& fragName);
+        Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
+            vertName, const ShaderFunctionLibrary& geomLibrary, const std::
+            string& geomName, const ShaderFunctionLibrary& fragLibrary, const
+            std::string& fragName);
     };
 
     class RenderPass
