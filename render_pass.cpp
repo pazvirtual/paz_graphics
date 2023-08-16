@@ -57,6 +57,8 @@ static void check_attributes(const std::vector<unsigned int>& a, const std::
 paz::RenderPass::RenderPass()
 {
     initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
