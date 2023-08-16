@@ -83,8 +83,7 @@ paz::Initializer::Initializer()
 
 void paz::resize_targets()
 {
-    static int width;
-    static int height;
+    static int width, height;
     if(width != Window::ViewportWidth() || height != Window::ViewportHeight())
     {
         width = Window::ViewportWidth();
@@ -314,10 +313,14 @@ void paz::Window::SetMinSize(int width, int height)
 
     const NSSize size = NSMakeSize(width, height);
     [[APP_DELEGATE window] setMinSize:size];
-    auto frame = [[APP_DELEGATE window] frame];
-    frame.size.width = std::max(size.width, frame.size.width);
-    frame.size.height = std::max(size.height, frame.size.height);
-    [[APP_DELEGATE window] setFrame:frame display:YES];
+    NSRect contentRect = [[APP_DELEGATE window] contentRectForFrameRect:
+        [[APP_DELEGATE window] frame]];
+    contentRect.size.width = std::max(size.width, contentRect.size.width);
+    contentRect.size.height = std::max(size.height, contentRect.size.height);
+    [[APP_DELEGATE window] setFrame:[[APP_DELEGATE window]
+        frameRectForContentRect:contentRect] display:YES];
+
+    resize_targets();
 }
 
 void paz::Window::SetMaxSize(int width, int height)
@@ -326,10 +329,14 @@ void paz::Window::SetMaxSize(int width, int height)
 
     const NSSize size = NSMakeSize(width, height);
     [[APP_DELEGATE window] setMaxSize:size];
-    auto frame = [[APP_DELEGATE window] frame];
-    frame.size.width = std::min(size.width, frame.size.width);
-    frame.size.height = std::min(size.height, frame.size.height);
-    [[APP_DELEGATE window] setFrame:frame display:YES];
+    NSRect contentRect = [[APP_DELEGATE window] contentRectForFrameRect:
+        [[APP_DELEGATE window] frame]];
+    contentRect.size.width = std::min(size.width, contentRect.size.width);
+    contentRect.size.height = std::min(size.height, contentRect.size.height);
+    [[APP_DELEGATE window] setFrame:[[APP_DELEGATE window]
+        frameRectForContentRect:contentRect] display:YES];
+
+    resize_targets();
 }
 
 void paz::Window::MakeResizable()
@@ -348,13 +355,24 @@ void paz::Window::MakeNotResizable()
         ~NSWindowStyleMaskResizable];
 }
 
-void paz::Window::Resize(int width, int height)
+void paz::Window::Resize(int width, int height, bool viewportCoords)
 {
     initialize();
 
-    auto frame = [[APP_DELEGATE window] frame];
-    frame.size = NSMakeSize(width, height);
-    [[APP_DELEGATE window] setFrame:frame display:YES];
+    if(viewportCoords)
+    {
+        const auto scale = [[APP_DELEGATE window] backingScaleFactor];
+        width = std::round(width/scale);
+        height = std::round(height/scale);
+    }
+
+    NSRect contentRect = [[APP_DELEGATE window] contentRectForFrameRect:
+        [[APP_DELEGATE window] frame]];
+    contentRect.size = NSMakeSize(width, height);
+    [[APP_DELEGATE window] setFrame:[[APP_DELEGATE window]
+        frameRectForContentRect:contentRect] display:YES];
+
+    resize_targets();
 }
 
 paz::Image<std::uint8_t, 3> paz::Window::PrintScreen()

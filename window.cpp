@@ -449,9 +449,17 @@ void paz::Window::MakeNotResizable()
     glfwSetWindowAttrib(WindowPtr, GLFW_RESIZABLE, GLFW_FALSE);
 }
 
-void paz::Window::Resize(int width, int height)
+void paz::Window::Resize(int width, int height, bool viewportCoords)
 {
     initialize();
+
+    if(viewportCoords)
+    {
+        float xScale, yScale;
+        glfwGetWindowContentScale(xScale, yScale);
+        width = std::round(width/xScale);
+        height = std::round(height/yScale);
+    }
 
     if(MinWidth != GLFW_DONT_CARE)
     {
