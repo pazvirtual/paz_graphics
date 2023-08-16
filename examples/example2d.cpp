@@ -59,17 +59,17 @@ static void init(paz::RenderPass& scenePass, paz::RenderPass& textPass, paz::
     paz::Framebuffer renderFramebuffer;
     renderFramebuffer.attach(render);
 
-    const paz::VertexFunction sceneVert(paz::load_file(appDir + "/shader.vert").
+    const paz::VertexFunction sceneVert(paz::load_bytes(appDir +
+        "/shader.vert").str());
+    const paz::VertexFunction fontVert(paz::load_bytes(appDir + "/font.vert").
         str());
-    const paz::VertexFunction fontVert(paz::load_file(appDir + "/font.vert").
+    const paz::VertexFunction quadVert(paz::load_bytes(appDir + "/quad.vert").
         str());
-    const paz::VertexFunction quadVert(paz::load_file(appDir + "/quad.vert").
-        str());
-    const paz::FragmentFunction sceneFrag(paz::load_file(appDir +
+    const paz::FragmentFunction sceneFrag(paz::load_bytes(appDir +
         "/shader.frag").str());
-    const paz::FragmentFunction fontFrag(paz::load_file(appDir + "/font.frag").
+    const paz::FragmentFunction fontFrag(paz::load_bytes(appDir + "/font.frag").
         str());
-    const paz::FragmentFunction postFrag(paz::load_file(appDir + "/post.frag").
+    const paz::FragmentFunction postFrag(paz::load_bytes(appDir + "/post.frag").
         str());
 
     scenePass = paz::RenderPass(renderFramebuffer, sceneVert, sceneFrag);
@@ -82,13 +82,13 @@ int main(int, char** argv)
 {
     const std::string appDir = paz::split_path(argv[0])[0];
 
-    const std::string msg = paz::load_file(appDir + "/msg.txt").str();
+    const std::string msg = paz::load_bytes(appDir + "/msg.txt").str();
 
     paz::Window::SetTitle("PAZ_Graphics: example2d");
     paz::Window::SetMinSize(640, 480);
     paz::Window::SetMaxSize(800, 800);
 
-    const paz::Texture font(paz::parse_pbm(paz::load_file(appDir + "/font.pbm"
+    const paz::Texture font(paz::parse_pbm(paz::load_bytes(appDir + "/font.pbm"
         )));
 
     paz::RenderPass scenePass, textPass, postPass;
@@ -230,8 +230,8 @@ int main(int, char** argv)
 
         if(paz::Window::KeyPressed(paz::Key::S))
         {
-            paz::write_bmp(appDir + "/screenshot.bmp", paz::Window::
-                ReadPixels());
+            paz::write_bytes(appDir + "/screenshot.bmp", paz::to_bmp(paz::
+                Window::ReadPixels()));
         }
     }
 }

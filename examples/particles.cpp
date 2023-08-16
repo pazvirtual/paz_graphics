@@ -28,12 +28,13 @@ int main(int, char** argv)
     paz::Framebuffer renderFramebuffer;
     renderFramebuffer.attach(render);
 
-    const paz::VertexFunction particleVert(paz::load_file(appDir +
+    const paz::VertexFunction particleVert(paz::load_bytes(appDir +
         "/particle.vert").str());
-    const paz::FragmentFunction particleFrag(paz::load_file(appDir +
+    const paz::FragmentFunction particleFrag(paz::load_bytes(appDir +
         "/particle.frag").str());
-    const paz::VertexFunction quad(paz::load_file(appDir + "/quad.vert").str());
-    const paz::FragmentFunction tonemap(paz::load_file(appDir +
+    const paz::VertexFunction quad(paz::load_bytes(appDir + "/quad.vert").
+        str());
+    const paz::FragmentFunction tonemap(paz::load_bytes(appDir +
         "/tonemap.frag").str());
 
     paz::RenderPass r(renderFramebuffer, particleVert, particleFrag, paz::
