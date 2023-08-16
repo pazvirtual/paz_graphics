@@ -6,6 +6,7 @@
 #ifndef PAZ_MACOS
 
 #include "PAZ_Graphics"
+#include <unordered_map>
 
 namespace paz
 {

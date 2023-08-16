@@ -1,7 +1,6 @@
 #ifndef PAZ_GRAPHICS
 #define PAZ_GRAPHICS
 
-#include <PAZ_IO>
 #include <iostream>
 #include <vector>
 #include <array>
@@ -28,6 +27,58 @@ namespace paz
     using require_iterable = std::enable_if_t<std::is_same<decltype(std::begin(
         std::declval<const T&>())), decltype(std::end(std::declval<const
         T&>()))>::value>;
+
+#ifndef PAZ_IO
+    template<typename T, typename U>
+    using require_same = std::enable_if_t<std::is_same<T, U>::value>;
+
+    template<typename T, typename U>
+    using require_different = std::enable_if_t<!std::is_same<T, U>::value>;
+
+    template<typename T, int NumChannels>
+    class Image : public std::vector<T>
+    {
+        int _rows;
+
+    public:
+        Image(int width, int height) : std::vector<T>(width*height*NumChannels),
+            _rows(height) {}
+        Image(const T* data, int width, int height) : std::vector<T>(data, data
+            + width*height*NumChannels), _rows(height) {}
+        Image(const std::vector<T>& data, int width, int height) : std::vector<
+            T>(data), _rows(height)
+        {
+            if(data.size() != static_cast<std::size_t>(width*height*
+                NumChannels))
+            {
+                throw std::runtime_error("Image dimensions do not match.");
+            }
+        }
+        template<typename U, require_iterable<U>* = nullptr>
+        Image(const U& data, int width, int height) : std::vector<T>(std::begin(
+            data), std::end(data)), _rows(height)
+        {
+            if(data.size() != static_cast<std::size_t>(width*height*
+                NumChannels))
+            {
+                throw std::runtime_error("Image dimensions do not match.");
+            }
+        }
+        template<typename U, require_different<T, U>* = nullptr>
+        explicit Image(const Image<U, NumChannels>& img) : std::vector<T>(img.
+            begin(), img.end()), _rows(img.height()) {}
+
+        int width() const
+        {
+            return std::vector<T>::size()/NumChannels/_rows;
+        }
+
+        int height() const
+        {
+            return _rows;
+        }
+    };
+#endif
 
     enum class TextureFormat
     {

@@ -1,4 +1,5 @@
 #include "PAZ_Graphics"
+#include "PAZ_IO"
 
 static const std::string VertSrc = 1 + R"===(
 layout(location = 0) in vec2 pos;
