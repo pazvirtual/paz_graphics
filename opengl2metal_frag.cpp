@@ -29,20 +29,33 @@ std::string paz::frag2metal(const std::string& src)
     out << "#include <metal_stdlib>" << std::endl << "#include <simd/simd.h>" <<
         std::endl << "using namespace metal;" << std::endl;
 
-    // Define our Y-reversed sample function.
+    // Define our Y-reversed sample functions.
     out << "template<typename T>" << std::endl << "auto texture(thread const te"
         "xture1d<T>& tex, thread const sampler&" << std::endl << "    sampler, "
         "thread float u)" << std::endl << "{" << std::endl << "    return tex.s"
-        "ample(sampler, u);" << std::endl << "}" << std::endl;
-    out << "template<typename T>" << std::endl << "auto texture(thread const te"
+        "ample(sampler, u);" << std::endl << "}" << std::endl << "template<type"
+        "name T>" << std::endl << "auto textureLod(thread const texture1d<T>& t"
+        "ex, thread const sampler&" << std::endl << "    sampler, thread float "
+        "u, thread float lod)" << std::endl << "{" << std::endl << "    return "
+        "tex.sample(sampler, u, level(lod));" << std::endl << "}" << std::endl
+        << "template<typename T>" << std::endl << "auto texture(thread const te"
         "xture2d<T>& tex, thread const sampler&" << std::endl << "    sampler, "
         "thread const float2& uv)" << std::endl << "{" << std::endl << "    ret"
         "urn tex.sample(sampler, float2(uv.x, 1. - uv.y));" << std::endl << "}"
-        << std::endl;
-    out << "float4 texture(thread const depth2d<float>& tex, thread const sampl"
-        "er& sampler," << std::endl << "    thread const float2& uv)" << std::
-        endl << "{" << std::endl << "    return float4(tex.sample(sampler, floa"
-        "t2(uv.x, 1. - uv.y)), 0., 0., 1.);" << std::endl << "}" << std::endl;
+        << std::endl << "template<typename T>" << std::endl << "auto textureLod"
+        "(thread const texture2d<T>& tex, thread const sampler&" << std::endl <<
+        "    sampler, thread const float2& uv, thread float lod)" << std::endl
+        << "{" << std::endl << "    return tex.sample(sampler, float2(uv.x, 1. "
+        "- uv.y), level(lod));" << std::endl << "}" << std::endl << "float4 tex"
+        "ture(thread const depth2d<float>& tex, thread const sampler& sampler,"
+        << std::endl << "    thread const float2& uv)" << std::endl << "{" <<
+        std::endl << "    return float4(tex.sample(sampler, float2(uv.x, 1. - u"
+        "v.y)), 0, 0, 1);" << std::endl << "}" << std::endl << "float4 textureL"
+        "od(thread const depth2d<float>& tex, thread const sampler&" << std::
+        endl << "    sampler, thread const float2& uv, thread float lod)" <<
+        std::endl << "{" << std::endl << "    return float4(tex.sample(sampler,"
+        " float2(uv.x, 1. - uv.y), level(lod)), 0," << std::endl << "        0,"
+        " 1);" << std::endl << "}" << std::endl;
 
     std::string line;
     std::size_t l = 0;
@@ -148,6 +161,8 @@ std::string paz::frag2metal(const std::string& src)
             "depth2d<float>");
         line = std::regex_replace(line, std::regex("\\btexture\\(([^,]*),"),
             "texture($1, $1Sampler,");
+        line = std::regex_replace(line, std::regex("\\btextureLod\\(([^,]*),"),
+            "textureLod($1, $1Sampler,");
         line = std::regex_replace(line, std::regex("\\bdiscard\\b"),
             "discard_fragment()");
 
