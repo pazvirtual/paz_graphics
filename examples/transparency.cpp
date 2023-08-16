@@ -87,10 +87,18 @@ int main(int, char** argv)
 
     while(!paz::Window::Done())
     {
+        paz::Window::SetCursorMode(paz::Window::GamepadActive() ? paz::
+            CursorMode::Disable : paz::CursorMode::Normal);
         if(paz::Window::KeyPressed(paz::Key::Q) || paz::Window::GamepadPressed(
             paz::GamepadButton::Back))
         {
             paz::Window::Quit();
+        }
+        if(paz::Window::KeyPressed(paz::Key::F) || paz::Window::GamepadPressed(
+            paz::GamepadButton::Start))
+        {
+            paz::Window::IsFullscreen() ? paz::Window::MakeWindowed() : paz::
+                Window::MakeFullscreen();
         }
 
         const auto proj = paz::perspective(YFov, paz::Window::AspectRatio(),
