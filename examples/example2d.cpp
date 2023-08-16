@@ -11,11 +11,12 @@ static constexpr std::array<float, 6> TriPosData0 =
     BaseLength,     0,
              0, -0.05
 };
-static constexpr std::array<float, 6> TriPosData1 =
+static constexpr std::array<float, 8> TriPosData1 =
 {
              0,  0.1,
     BaseLength,    0,
-             0, -0.1
+             0, -0.1,
+             0,  0.1
 };
 static constexpr std::array<float, 12> TriColorData0 =
 {
@@ -23,8 +24,9 @@ static constexpr std::array<float, 12> TriColorData0 =
     0,   1, 1, 1,
     1, 0.5, 0, 1
 };
-static constexpr std::array<float, 12> TriColorData1 =
+static constexpr std::array<float, 16> TriColorData1 =
 {
+    1, 0, 0, 1,
     1, 0, 0, 1,
     1, 0, 0, 1,
     1, 0, 0, 1
@@ -196,7 +198,7 @@ int main(int, char** argv)
         scenePass.uniform("length", static_cast<float>(length));
         if(mode)
         {
-            scenePass.draw(paz::PrimitiveType::LineLoop, triVertices1);
+            scenePass.draw(paz::PrimitiveType::LineStrip, triVertices1);
         }
         else
         {

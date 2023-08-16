@@ -586,14 +586,6 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
             drawPrimitives:MTLPrimitiveTypeLineStrip vertexStart:0 vertexCount:
             vertices._data->_numVertices];
     }
-    else if(type == PrimitiveType::LineLoop)
-    {
-        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            drawIndexedPrimitives:MTLPrimitiveTypeLineStrip indexCount:vertices.
-            _data->_numVertices + 1 indexType:IndexType indexBuffer:static_cast<
-            id<MTLBuffer>>(vertices._data->_lineLoopIndices) indexBufferOffset:
-            0];
-    }
     else if(type == PrimitiveType::Triangles)
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
@@ -605,15 +597,6 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
             drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0
             vertexCount:vertices._data->_numVertices];
-    }
-    else if(type == PrimitiveType::TriangleFan)
-    {
-        const std::size_t n = vertices._data->_numVertices < 3 ? 0 : 3*vertices.
-            _data->_numVertices - 6;
-        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            drawIndexedPrimitives:MTLPrimitiveTypeTriangle indexCount:n
-            indexType:IndexType indexBuffer:static_cast<id<MTLBuffer>>(vertices.
-            _data->_triangleFanIndices) indexBufferOffset:0];
     }
     else
     {
@@ -656,14 +639,6 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
             _data->_numIndices indexType:IndexType indexBuffer:static_cast<id<
             MTLBuffer>>(indices._data->_data) indexBufferOffset:0];
     }
-    else if(type == PrimitiveType::LineLoop)
-    {
-        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            drawIndexedPrimitives:MTLPrimitiveTypeLineStrip indexCount:indices.
-            _data->_numIndices + 1 indexType:IndexType indexBuffer:static_cast<
-            id<MTLBuffer>>(indices._data->_lineLoopIndices) indexBufferOffset:
-            0];
-    }
     else if(type == PrimitiveType::Triangles)
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
@@ -678,15 +653,6 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
             indices._data->_numIndices indexType:IndexType indexBuffer:
             static_cast<id<MTLBuffer>>(indices._data->_data) indexBufferOffset:
             0];
-    }
-    else if(type == PrimitiveType::TriangleFan)
-    {
-        const std::size_t n = indices._data->_numIndices < 3 ? 0 : 3*indices.
-            _data->_numIndices - 6;
-        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            drawIndexedPrimitives:MTLPrimitiveTypeTriangle indexCount:n
-            indexType:IndexType indexBuffer:static_cast<id<MTLBuffer>>(indices.
-            _data->_triangleFanIndices) indexBufferOffset:0];
     }
     else
     {
@@ -737,14 +703,6 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
             vertices._data->_numVertices instanceCount:instances._data->
             _numInstances];
     }
-    else if(type == PrimitiveType::LineLoop)
-    {
-        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            drawIndexedPrimitives:MTLPrimitiveTypeLineStrip indexCount:vertices.
-            _data->_numVertices + 1 indexType:IndexType indexBuffer:static_cast<
-            id<MTLBuffer>>(vertices._data->_lineLoopIndices) indexBufferOffset:
-            0 instanceCount:instances._data->_numInstances];
-    }
     else if(type == PrimitiveType::Triangles)
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
@@ -758,16 +716,6 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
             drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0
             vertexCount:vertices._data->_numVertices instanceCount:instances.
             _data->_numInstances];
-    }
-    else if(type == PrimitiveType::TriangleFan)
-    {
-        const std::size_t n = vertices._data->_numVertices < 3 ? 0 : 3*vertices.
-            _data->_numVertices - 6;
-        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            drawIndexedPrimitives:MTLPrimitiveTypeTriangle indexCount:n
-            indexType:IndexType indexBuffer:static_cast<id<MTLBuffer>>(vertices.
-            _data->_triangleFanIndices) indexBufferOffset:0 instanceCount:
-            instances._data->_numInstances];
     }
     else
     {
@@ -821,14 +769,6 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
             MTLBuffer>>(indices._data->_data) indexBufferOffset:0 instanceCount:
             instances._data->_numInstances];
     }
-    else if(type == PrimitiveType::LineLoop)
-    {
-        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            drawIndexedPrimitives:MTLPrimitiveTypeLineStrip indexCount:indices.
-            _data->_numIndices + 1 indexType:IndexType indexBuffer:static_cast<
-            id<MTLBuffer>>(indices._data->_lineLoopIndices) indexBufferOffset:
-            0 instanceCount:instances._data->_numInstances];
-    }
     else if(type == PrimitiveType::Triangles)
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
@@ -844,16 +784,6 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
             indices._data->_numIndices indexType:IndexType indexBuffer:
             static_cast<id<MTLBuffer>>(indices._data->_data) indexBufferOffset:
             0 instanceCount:instances._data->_numInstances];
-    }
-    else if(type == PrimitiveType::TriangleFan)
-    {
-        const std::size_t n = indices._data->_numIndices < 3 ? 0 : 3*indices.
-            _data->_numIndices - 6;
-        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            drawIndexedPrimitives:MTLPrimitiveTypeTriangle indexCount:n
-            indexType:IndexType indexBuffer:static_cast<id<MTLBuffer>>(indices.
-            _data->_triangleFanIndices) indexBufferOffset:0 instanceCount:
-            instances._data->_numInstances];
     }
     else
     {

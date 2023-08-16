@@ -39,10 +39,8 @@ static GLenum primitive_type(paz::PrimitiveType t)
         CASE(Points, POINTS)
         CASE(Lines, LINES)
         CASE(LineStrip, LINE_STRIP)
-        CASE(LineLoop, LINE_LOOP)
         CASE(Triangles, TRIANGLES)
         CASE(TriangleStrip, TRIANGLE_STRIP)
-        CASE(TriangleFan, TRIANGLE_FAN)
         default: throw std::runtime_error("Invalid primitive type.");
     }
 }

@@ -31,16 +31,6 @@ void main()
 }
 )===";
 
-static constexpr std::array<float, 6*2> strip =
-{
-        0,     0,
-     0.5f,     0,
-        0,  0.5f,
-    -0.5f,  0.5f,
-    -0.5f, -0.5f,
-     0.5f, -0.5f
-};
-
 static constexpr std::array<float, 5*4> sep =
 {
         0,     0,
@@ -55,19 +45,38 @@ static constexpr std::array<float, 5*4> sep =
      0.5f, -0.5f
 };
 
+static constexpr std::array<float, 6*2> strip =
+{
+        0,     0,
+     0.5f,     0,
+        0,  0.5f,
+    -0.5f,  0.5f,
+    -0.5f, -0.5f,
+     0.5f, -0.5f
+};
+
+static constexpr std::array<float, 7*2> loop =
+{
+        0,     0,
+     0.5f,     0,
+        0,  0.5f,
+    -0.5f,  0.5f,
+    -0.5f, -0.5f,
+     0.5f, -0.5f,
+        0,     0
+};
+
 static int mode;
 static paz::VertexBuffer vertices;
 static void set_mode(int m)
 {
     mode = m;
     vertices = paz::VertexBuffer();
-    if(mode)
+    switch(mode)
     {
-        vertices.addAttribute(2, strip);
-    }
-    else
-    {
-        vertices.addAttribute(2, sep);
+        case 0: vertices.addAttribute(2, sep); break;
+        case 1: vertices.addAttribute(2, strip); break;
+        default: vertices.addAttribute(2, loop); break;
     }
 
 }
@@ -168,7 +177,7 @@ int main(int, char** argv)
         }
         else
         {
-            basePass.draw(paz::PrimitiveType::LineLoop, vertices, samples);
+            basePass.draw(paz::PrimitiveType::LineStrip, vertices, samples);
         }
         basePass.end();
 
