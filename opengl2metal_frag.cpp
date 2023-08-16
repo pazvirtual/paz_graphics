@@ -41,9 +41,8 @@ std::string paz::frag2metal(const std::string& src)
         << std::endl;
     out << "float4 texture(thread const depth2d<float>& tex, thread const sampl"
         "er& sampler," << std::endl << "    thread const float2& uv)" << std::
-        endl << "{" << std::endl << "    return float4(2.*tex.sample(sampler, f"
-        "loat2(uv.x, 1. - uv.y)) - 1., 0., 0.," << std::endl << "        1.);"
-        << std::endl << "}" << std::endl;
+        endl << "{" << std::endl << "    return float4(tex.sample(sampler, floa"
+        "t2(uv.x, 1. - uv.y)), 0., 0., 1.);" << std::endl << "}" << std::endl;
 
     std::string line;
     std::size_t l = 0;
