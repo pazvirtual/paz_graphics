@@ -5,6 +5,7 @@
 #include "PAZ_Graphics"
 #include "util.hpp"
 #include "internal_data.hpp"
+#include "window.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
@@ -31,7 +32,7 @@ static GLint depth_internal_format(int b, paz::Texture::DataType t)
 
 paz::DepthStencilTarget::~DepthStencilTarget()
 {
-    paz::Window::UnregisterTarget(this);
+    unregister_target(this);
 }
 
 paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
@@ -64,7 +65,7 @@ paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    paz::Window::RegisterTarget(this);
+    register_target(this);
 }
 
 void paz::DepthStencilTarget::resize(int width, int height)

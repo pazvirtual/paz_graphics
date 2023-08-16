@@ -330,18 +330,6 @@ namespace paz
 
     class Window
     {
-        friend class ColorTarget;
-        friend class DepthStencilTarget;
-
-        static bool KeyDown(int key);
-        static bool KeyPressed(int key);
-        static bool KeyReleased(int key);
-        static void ResetEvents();
-        static void RegisterTarget(ColorTarget* target);
-        static void RegisterTarget(DepthStencilTarget* target);
-        static void UnregisterTarget(ColorTarget* target);
-        static void UnregisterTarget(DepthStencilTarget* target);
-
     public:
         enum class CursorMode
         {
@@ -395,8 +383,6 @@ namespace paz
         static void SetMinSize(int width, int height);
         static void SetMaxSize(int width, int height);
         static void Resize(int width, int height);
-        static void DrawInRenderer();//TEMP (for internal use on macOS builds)
-        static void ResizeTargets();//TEMP (for internal use)
         static std::vector<float> PrintScreen();
     };
 }
