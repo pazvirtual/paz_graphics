@@ -1,0 +1,50 @@
+ifeq ($(OS), Windows_NT)
+    LIBPATH := /mingw64/lib
+    OSPRETTY := Windows
+else
+    ifeq ($(shell uname -s), Darwin)
+        LIBPATH := /usr/local/lib
+        OSPRETTY := macOS
+    else
+        LIBPATH := /usr/local/lib64
+        OSPRETTY := Linux
+    endif
+endif
+CXXVER := 14
+CXXFLAGS := -std=c++$(CXXVER) -Ofast -Wall -Wextra -Wno-missing-braces
+ifeq ($(OSPRETTY), macOS)
+    CXXFLAGS += -mmacosx-version-min=10.10
+else
+    ifeq ($(OSPRETTY), Windows)
+        CXXFLAGS += -Wno-deprecated-copy -static -mwindows
+    endif
+    CXXFLAGS += -pthread
+endif
+INCL := -I..
+LIBS := ../libpazgraphics.a
+ifeq ($(OSPRETTY), macOS)
+#TEMP
+    LIBS += /Users/ben/opengl2metal/vert.o /Users/ben/opengl2metal/frag.o
+#TEMP
+    LIBS += -framework MetalKit -framework Metal -framework Cocoa
+else
+    LIBS += $(LIBPATH)/libglfw3.a -lstdc++fs
+    ifeq ($(OSPRETTY), Linux)
+        LIBS += -lGL -lX11 -ldl
+    else
+        LIBS += -lgdi32 -lopengl32
+    endif
+endif
+
+.PHONY:main
+
+main: main.o
+	$(CXX) $(CXXFLAGS) -o $@ $< $(INCL) $(LIBS)
+
+main.o: main.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCL)
+
+clean:
+	$(RM) main main.o
+
+print-% : ; @echo $* = $($*)

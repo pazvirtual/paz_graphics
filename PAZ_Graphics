@@ -1,0 +1,530 @@
+#ifndef PAZ_GRAPHICS
+#define PAZ_GRAPHICS
+
+#include <iostream>
+#include <vector>
+#include <array>
+#include <functional>
+#include <unordered_map>
+#include <chrono>
+#include <unordered_set>
+
+// Detect OS.
+#if defined(__APPLE__) && defined(__MACH__)
+#if TARGET_OS_IPHONE == 0
+#define PAZ_MACOS
+#else
+static_assert(false, "Failed to detect an acceptable OS (iOS is not supported)."
+    "\n");
+#endif
+#elif defined(_WIN32) || defined(_WIN64)
+#define PAZ_WINDOWS
+#elif defined(__linux__)
+#define PAZ_LINUX
+#else
+static_assert(false, "Failed to detect an acceptable OS (no valid macros define"
+    "d).\n");
+#endif
+#if defined(PAZ_MACOS) || defined(PAZ_LINUX)
+#define PAZ_UNIX
+#endif
+
+// Declare graphics types.
+namespace paz
+{
+    class TextureBase
+    {
+        friend class Framebuffer;
+        friend class RenderPass;
+
+        TextureBase(const TextureBase&) = delete;
+        TextureBase& operator=(const TextureBase&) = delete;
+
+        void activate(std::size_t slot) const;
+
+    protected:
+        bool _mipmap = false;
+#ifdef PAZ_MACOS
+        void* _sampler = nullptr;
+        void* _texture = nullptr;
+#else
+        unsigned int _id = 0;
+        int _internalFormat;
+        unsigned int _format;
+        unsigned int _type;
+#endif
+
+    public:
+        enum class MinMagFilter
+        {
+            Linear,
+            Nearest
+        };
+
+        enum class MipmapFilter
+        {
+            Linear,
+            Nearest,
+            None
+        };
+
+        enum class DataType
+        {
+            Float,
+            SInt,
+            UInt,
+            SNorm,
+            UNorm
+        };
+
+        TextureBase();
+        ~TextureBase();
+    };
+
+    class Texture : public TextureBase
+    {
+        Texture(const Texture&) = delete;
+        Texture& operator=(const Texture&) = delete;
+
+#ifdef PAZ_MACOS
+    protected:
+        void createSampler(MinMagFilter minFilter, MinMagFilter magFilter,
+            bool repeat);
+#endif
+
+    public:
+        Texture();
+        Texture(int width, int height, int numChannels, int numBits, DataType
+            type, MinMagFilter minFilter, MinMagFilter magFilter, bool repeat =
+            false, const void* data = nullptr);
+        Texture(int width, int height, int numChannels, int numBits, DataType
+            type, MinMagFilter minFilter, MinMagFilter magFilter, const std::
+            array<float, 4>& border, const void* data = nullptr);
+        void init(int width, int height, int numChannels, int numBits, DataType
+            type, MinMagFilter minFilter, MinMagFilter magFilter, bool repeat =
+            false, const void* data = nullptr);
+        void init(int width, int height, int numChannels, int numBits, DataType
+            type, MinMagFilter minFilter, MinMagFilter magFilter, const std::
+            array<float, 4>& border, const void* data = nullptr);
+        virtual void resize(int width, int height);
+    };
+
+    class RenderTarget : public Texture
+    {
+    protected:
+        double _scale;
+#ifdef PAZ_MACOS
+        int _numChannels;
+        int _numBits;
+        DataType _type;
+        std::array<float, 4> _border;
+        bool _hasBorder;
+
+        void clean();
+        void init(int width, int height);
+#endif
+        RenderTarget(); // For `DepthStencilTarget` to inherit.
+
+    public:
+        ~RenderTarget();
+        RenderTarget(double scale, int numChannels, int numBits, DataType type,
+            MinMagFilter minFilter, MinMagFilter magFilter, bool repeat =
+            false);
+        RenderTarget(double scale, int numChannels, int numBits, DataType type,
+            MinMagFilter minFilter, MinMagFilter magFilter, const std::array<
+            float, 4>& border);
+        void resize(int width, int height) override;
+    };
+
+    class DepthStencilTarget : public RenderTarget
+    {
+    public:
+        DepthStencilTarget(double scale, int numBits, DataType type,
+            MinMagFilter minFilter, MinMagFilter magFilter, bool repeat =
+            false);
+        DepthStencilTarget(double scale, int numBits, DataType type,
+            MinMagFilter minFilter, MinMagFilter magFilter, const std::array<
+            float, 4>& border);
+    };
+
+    class VertexBuffer
+    {
+        friend class RenderPass;
+
+    public:
+        enum class DataType
+        {
+            Float,
+            SInt,
+            UInt,
+            SNorm,
+            UNorm
+        };
+
+    private:
+        struct InputData
+        {
+            const DataType _type;
+            const int _dim;
+            const void* _data;
+            const std::size_t _numVertices;
+
+            InputData(int dim, const std::vector<float>& data) : _type(
+                DataType::Float), _dim(dim), _data(data.data()), _numVertices(
+                data.size()/dim) {}
+            InputData(int dim, const std::vector<unsigned int>& data) : _type(
+                DataType::UInt), _dim(dim), _data(data.data()), _numVertices(
+                data.size()/dim) {}
+            InputData(int dim, const std::vector<int>& data) : _type(DataType::
+                SInt), _dim(dim), _data(data.data()), _numVertices(data.size()/
+                dim) {}
+        };
+
+#ifdef PAZ_MACOS
+        std::vector<void*> _buffers;
+#else
+        unsigned int _id = 0;
+        std::vector<unsigned int> _ids;
+#endif
+        std::size_t _numVertices;
+
+        VertexBuffer(const VertexBuffer&) = delete;
+        VertexBuffer& operator=(const VertexBuffer&) = delete;
+
+    public:
+        ~VertexBuffer();
+        VertexBuffer(const std::vector<InputData>& data);
+    };
+
+    class IndexBuffer
+    {
+        friend class RenderPass;
+
+#ifdef PAZ_MACOS
+        void* _data = nullptr;
+#else
+        unsigned int _id = 0;
+#endif
+        std::size_t _numIndices;
+
+        IndexBuffer(const IndexBuffer&) = delete;
+        IndexBuffer& operator=(const IndexBuffer&) = delete;
+
+    public:
+        ~IndexBuffer();
+        IndexBuffer(const std::vector<unsigned int>& indices);
+    };
+
+    class Framebuffer
+    {
+        friend class RenderPass;
+
+#ifdef PAZ_MACOS
+        std::vector<const RenderTarget*> colorAttachments;
+        const DepthStencilTarget* depthAttachment = nullptr;
+#else
+        unsigned int _id = 0;
+        int _numTextures = 0;
+        bool _hasDepthAttachment = false;
+#endif
+
+        Framebuffer(const Framebuffer&) = delete;
+        Framebuffer& operator=(const Framebuffer&) = delete;
+
+    public:
+        ~Framebuffer() { clean(); }
+        void clean();
+        void attach(const RenderTarget& target);
+        void attach(const DepthStencilTarget& target);
+        Framebuffer();
+    };
+
+    class ShaderFunctionLibrary
+    {
+        friend class Shader;
+
+#ifdef PAZ_MACOS
+        std::unordered_map<std::string, void*> _verts;
+        std::unordered_map<std::string, void*> _frags;
+#else
+        std::unordered_map<std::string, unsigned int> _vertexIds;
+        std::unordered_map<std::string, unsigned int> _fragmentIds;
+#endif
+
+        ShaderFunctionLibrary(const ShaderFunctionLibrary&) = delete;
+        ShaderFunctionLibrary& operator=(const ShaderFunctionLibrary&) = delete;
+
+    public:
+        ShaderFunctionLibrary(const std::vector<std::pair<std::string, std::
+            string>>& vertSrcs, const std::vector<std::pair<std::string, std::
+            string>>& fragSrcs);
+        ~ShaderFunctionLibrary();
+    };
+
+    class Shader
+    {
+        friend class RenderPass;
+
+#ifdef PAZ_MACOS
+        void* _vert = nullptr;
+        void* _frag = nullptr;
+#else
+        unsigned int _id = 0;
+        // uniformIDs[name] = (id, type, size)
+        std::unordered_map<std::string, std::tuple<unsigned int, unsigned int,
+            int>> _uniformIds;
+#endif
+
+        Shader(const Shader&) = delete;
+        Shader& operator=(const Shader&) = delete;
+
+#ifndef PAZ_MACOS
+        void use() const;
+        void uniform(const std::string& name, int x) const;
+        void uniform(const std::string& name, int x, int y) const;
+        void uniform(const std::string& name, int x, int y, int z) const;
+        void uniform(const std::string& name, int x, int y, int z, int w) const;
+        void uniform(const std::string& name, float x) const;
+        void uniform(const std::string& name, float x, float y) const;
+        void uniform(const std::string& name, float x, float y, float z) const;
+        void uniform(const std::string& name, float x, float y, float z, float
+            w) const;
+        void uniform(const std::string& name, const float* x, int numFloats = 1)
+            const;
+#endif
+
+    public:
+        ~Shader();
+        Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
+            vertName, const ShaderFunctionLibrary& fragLibrary, const std::
+            string& fragName);
+    };
+
+    class RenderPass
+    {
+    public:
+        enum class DepthTestMode
+        {
+            Never,
+            Less,
+            Equal,
+            LessEqual,
+            Greater,
+            NotEqual,
+            GreaterEqual,
+            Always,
+            Disable
+        };
+
+        enum class LoadAction
+        {
+            Clear,
+            Load,
+            DontCare
+        };
+
+        enum class CullMode
+        {
+            Front,
+            Back,
+            Disable
+        };
+
+        enum class DataType
+        {
+            Float,
+            Int,
+            UInt
+        };
+
+    private:
+#ifdef PAZ_MACOS
+        void* _pipelineState = nullptr;
+        void* _renderEncoder = nullptr;
+        std::unordered_map<std::string, int> _vertexArgs;
+        std::unordered_map<std::string, int> _fragmentArgs;
+#else
+        const Shader* _shader = nullptr;
+#endif
+        const Framebuffer* _fbo = nullptr;
+        DepthTestMode _depthTestMode;
+
+        RenderPass(const RenderPass&) = delete;
+        RenderPass& operator=(const RenderPass&) = delete;
+
+#ifdef PAZ_MACOS
+        void create(const void* descriptor);
+        void bind(const VertexBuffer& vertices) const;
+#endif
+
+    public:
+        enum class PrimitiveType
+        {
+            Triangles,
+            // ...
+        };
+
+        ~RenderPass();
+        RenderPass(const Framebuffer& fbo, const Shader& shader, DepthTestMode
+            depthMode = DepthTestMode::Disable);
+        RenderPass(const Shader& shader);
+        void begin(const std::vector<LoadAction>& colorLoadActions = {},
+            LoadAction depthLoadAction = LoadAction::DontCare);
+        void end();
+        void cull(CullMode mode) const;
+        void read(const std::string& name, const TextureBase& tex) const;
+        void uniform(const std::string& name, int x) const;
+        void uniform(const std::string& name, int x, int y) const;
+        void uniform(const std::string& name, int x, int y, int z) const;
+        void uniform(const std::string& name, int x, int y, int z, int w) const;
+        void uniform(const std::string& name, float x) const;
+        void uniform(const std::string& name, float x, float y) const;
+        void uniform(const std::string& name, float x, float y, float z) const;
+        void uniform(const std::string& name, float x, float y, float z, float
+            w) const;
+        void uniform(const std::string& name, const float* x, int numFloats = 1)
+            const;
+        void primitives(PrimitiveType type, const VertexBuffer& vertices, int
+            offset = 0) const;
+        void indexed(PrimitiveType type, const VertexBuffer& vertices, const
+            IndexBuffer& indices, int offset = 0) const;
+    };
+
+    std::array<float, 16> perspective(float yFov, float ratio, float zNear,
+        float zFar);
+    std::array<float, 16> ortho(const float left, const float right, const float
+        bottom, const float top, const float zNear, const float zFar);
+
+    class Window
+    {
+         friend class RenderTarget;
+         friend class DepthStencilTarget;
+
+    public:
+        enum class CursorMode
+        {
+            Normal,
+            Hidden,
+            Disable
+        };
+
+        enum class Key : int
+        {
+            Space, Apostrophe, Comma, Minus, Period, Slash, Zero, One, Two,
+            Three, Four, Five, Six, Seven, Eight, Nine, Semicolon, Equal, A, B,
+            C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X,
+            Y, Z, LeftBracket, Backslash, RightBracket, Grave, Escape, Enter,
+            Tab, Backspace, Insert, Delete, Right, Left, Down, Up, PageUp,
+            PageDown, Home, End, CapsLock, F1, F2, F3, F4, F5, F6, F7, F8, F9,
+            F10, F11, F12, F13, F14, F15, F16, F17, F18, F19, F20, F21, F22,
+            F23, F24, F25, Keypad0, Keypad1, Keypad2, Keypad3, Keypad4, Keypad5,
+            Keypad6, Keypad7, Keypad8, Keypad9, KeypadDecimal, KeypadDivide,
+            KeypadMultiply, KeypadMinus, KeypadPlus, KeypadEnter, KeypadEqual,
+            LeftShift, LeftControl, LeftAlt, LeftSuper, RightShift,
+            RightControl, RightAlt, RightSuper,
+#ifdef PAZ_MACOS
+            KeypadClear, Function, VolumeUp, VolumeDown, Mute, Section, Yen,
+            Underscore, KeypadComma, Eisu, Kana,
+#else
+            World1, World2, ScrollLock, NumLock, PrintScreen, Pause, Menu,
+#endif
+            Unknown
+        };
+
+        static constexpr int NumKeys = static_cast<int>(Key::Unknown);
+#ifdef PAZ_MACOS
+        static constexpr int NumMouseButtons = 3;
+#else
+        static constexpr int NumMouseButtons = 8;
+#endif
+
+    private:
+#ifndef PAZ_MACOS
+        static void* _window;
+        static int _width;
+        static int _height;
+        static int _widthCoords;
+        static int _heightCoords;
+        static float _aspectRatio;
+        static float _backingScaleFactor;
+        static bool _isKeyWindow;
+        static bool _isFullscreen;
+
+        static int _windowX;
+        static int _windowY;
+        static int _windowWidth;
+        static int _windowHeight;
+
+        static std::array<bool, NumKeys> _keyDown;
+        static std::array<bool, NumKeys> _keyPressed;
+        static std::array<bool, NumKeys> _keyReleased;
+        static std::array<bool, NumMouseButtons> _mouseDown;
+        static std::array<bool, NumMouseButtons> _mousePressed;
+        static std::array<bool, NumMouseButtons> _mouseReleased;
+
+        static std::pair<double, double> _mousePos;
+        static std::pair<double, double> _mouseOffset;
+        static std::pair<double, double> _scrollOffset;
+#endif
+
+        static std::function<void(void)> _draw;
+
+        static std::chrono::time_point<std::chrono::steady_clock> _frameStart;
+        static double _frameTime;
+
+        static std::unordered_set<RenderTarget*> _targets;
+
+        static bool KeyDown(int key);
+        static bool KeyPressed(int key);
+        static bool KeyReleased(int key);
+#ifndef PAZ_MACOS
+        static void KeyCallback(int key, int action);
+        static void MouseButtonCallback(int button, int action);
+        static void CursorPositionCallback(double xPos, double yPos);
+        static void ScrollCallback(double xOffset, double yOffset);
+        static void FocusCallback(int focused);
+        static void ResizeCallback(int width, int height);
+#endif
+        static void LoopInternal();
+
+        static void RegisterTarget(RenderTarget* target);
+        static void UnregisterTarget(RenderTarget* target);
+
+    public:
+        Window() = delete;
+        ~Window();
+        static void Init();//TEMP
+        static void MakeFullscreen();
+        static void MakeWindowed();
+        static void SetTitle(const std::string& title);
+        static bool IsKeyWindow();
+        static bool IsFullscreen();
+        static int Width();
+        static int Height();
+        static bool KeyDown(Key key);
+        static bool KeyPressed(Key key);
+        static bool KeyReleased(Key key);
+        static bool MouseDown(unsigned int button);
+        static bool MousePressed(unsigned int button);
+        static bool MouseReleased(unsigned int button);
+        static std::pair<double, double> MousePos();
+        static std::pair<double, double> MouseOffset();
+        static std::pair<double, double> ScrollOffset();
+        static void ResetEvents();
+        static void SetCursorMode(CursorMode mode);
+        static float AspectRatio();
+        static void Quit();
+        template<typename T>
+        static void Loop(const T& draw)
+        {
+            _draw = draw;
+            LoopInternal();
+        }
+        static double FrameTime();
+        static void SetMinSize(int width, int height);
+static void DrawInRenderer();//TEMP
+        static void ResizeTargets();
+    };
+}
+
+#endif
