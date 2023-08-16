@@ -40,17 +40,33 @@ paz::FragmentFunction::FragmentFunction()
 }
 
 static std::size_t process_uniforms(const std::vector<std::tuple<std::string,
-    paz::DataType, int>>& in, std::unordered_map<std::string, std::tuple<std::
-    size_t, paz::DataType, int>>& out)
+    paz::DataType, int, int>>& in, std::unordered_map<std::string, std::tuple<
+    std::size_t, paz::DataType, int>>& out)
 {
+    // Note that all basic data types are 32 b.
+    if(in.empty())
+    {
+        return 0;
+    }
     std::size_t offset = 0;
     for(const auto& n : in)
     {
-        const auto size = std::get<2>(n) < 0 ? 1 : std::get<2>(n);
-        out[std::get<0>(n)] = {offset, std::get<1>(n), size};
-        offset += 4*size; // All basic data types are 32 bits.
+        // Array elements are not packed.
+        if(std::get<3>(n) > 1)
+        {
+            throw std::logic_error("NOT IMPLEMENTED");
+        }
+
+        // Constants must be 16 B-aligned.
+        const auto size = std::get<2>(n);
+        if(offset%16 && (offset + 4*size - 1)/16 != offset/16)
+        {
+            offset += 16 - offset%16;
+        }
+        out[std::get<0>(n)] = {offset, std::get<1>(n), std::get<2>(n)};
+        offset += 4*size;
     }
-    return ((offset + 15)/16)*16; // Required for Direct3D constant buffers.
+    return ((offset + 15)/16)*16;
 }
 
 paz::VertexFunction::VertexFunction(const std::string& src)
@@ -58,7 +74,7 @@ paz::VertexFunction::VertexFunction(const std::string& src)
     initialize();
 
     _data = std::make_shared<Data>();
-    std::vector<std::tuple<std::string, DataType, int>> uniforms;
+    std::vector<std::tuple<std::string, DataType, int, int>> uniforms;
     const std::string hlsl = vert2hlsl(src, uniforms);
     ID3DBlob* error;
     auto hr = D3DCompile(hlsl.c_str(), hlsl.size(), nullptr, nullptr, nullptr,
@@ -85,7 +101,7 @@ paz::FragmentFunction::FragmentFunction(const std::string& src)
     initialize();
 
     _data = std::make_shared<Data>();
-    std::vector<std::tuple<std::string, DataType, int>> uniforms;
+    std::vector<std::tuple<std::string, DataType, int, int>> uniforms;
     const std::string hlsl = frag2hlsl(src, uniforms);
     ID3DBlob* error;
     auto hr = D3DCompile(hlsl.c_str(), hlsl.size(), nullptr, nullptr, nullptr,
