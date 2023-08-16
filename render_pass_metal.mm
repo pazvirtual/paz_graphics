@@ -523,7 +523,7 @@ void paz::RenderPass::cull(CullMode mode)
     }
 }
 
-void paz::RenderPass::read(const std::string& name, Texture tex)
+void paz::RenderPass::read(const std::string& name, const Texture& tex)
 {
     if(_data->_vertexArgs.count(name))
     {
