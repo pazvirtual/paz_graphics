@@ -85,7 +85,7 @@ int main(int, char** argv)
                                          0, 0,  0, 1};
 
         // Drawing.
-        r.begin({paz::LoadAction::Clear}, paz::LoadAction::DontCare);
+        r.begin({paz::LoadAction::Clear});
         r.uniform("projection", p);
         r.uniform("view", v);
         for(auto it = particles.rbegin(); it != particles.rend(); ++it)
