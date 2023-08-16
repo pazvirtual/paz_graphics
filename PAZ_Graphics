@@ -149,7 +149,9 @@ namespace paz
 
     public:
         ~IndexBuffer();
-        IndexBuffer(const std::vector<unsigned int>& indices);
+        IndexBuffer(const unsigned int* data, std::size_t size);
+        IndexBuffer(const std::vector<unsigned int>& data) : IndexBuffer(data.
+            data(), data.size()) {}
     };
 
     class Framebuffer

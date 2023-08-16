@@ -20,13 +20,13 @@ paz::IndexBuffer::~IndexBuffer()
     }
 }
 
-paz::IndexBuffer::IndexBuffer(const std::vector<unsigned int>& indices)
+paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
 {
     _data = std::make_unique<Data>();
 
-    _numIndices = indices.size();
-    _data->_data = [DEVICE newBufferWithBytes:indices.data() length:sizeof(
-        unsigned int)*_numIndices options:MTLStorageModeShared];
+    _numIndices = size;
+    _data->_data = [DEVICE newBufferWithBytes:data length:sizeof(unsigned int)*
+        size options:MTLStorageModeShared];
 }
 
 #endif
