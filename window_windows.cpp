@@ -230,6 +230,7 @@ static double GamepadRightTrigger = -1.;
 static bool GamepadActive;
 static bool MouseActive;
 static bool CursorDisabled;
+POINT PriorCursorPos;
 static bool FrameInProgress;
 static bool HidpiEnabled = true;
 static float Gamma = 2.2;
@@ -456,8 +457,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
     {
         case WM_MOUSEACTIVATE:
         {
-            // HACK: Postpone cursor disabling when the window was activated by
-            //       clicking a caption button
+            // Postpone disabling cursor when the window was activated by
+            // clicking a caption button.
             if(HIWORD(lParam) == WM_LBUTTONDOWN)
             {
                 if(LOWORD(lParam) != HTCLIENT)
@@ -469,13 +470,18 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         }
         case WM_CAPTURECHANGED:
         {
-            // HACK: Disable the cursor once the caption button action has been
-            //       completed or cancelled
+            // Disable the cursor once the caption button action has been
+            // completed or canceled.
             if(!lParam && FrameAction)
             {
                 if(CurCursorMode == paz::CursorMode::Disable)
                 {
-//                    disableCursor(window);
+                    GetCursorPos(&PriorCursorPos);
+                    ScreenToClient(WindowHandle, &PriorCursorPos);
+                    POINT pos = {WindowWidth/2, WindowHeight/2};
+                    ClientToScreen(WindowHandle, &pos);
+                    SetCursorPos(pos.x, pos.y);
+                    SetCursor(nullptr);
                 }
                 FrameAction = false;
             }
@@ -484,15 +490,20 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         case WM_SETFOCUS:
         {
             WindowIsKey = true;
-            // HACK: Do not disable cursor while the user is interacting with
-            //       a caption button
+            // Do not disable cursor while the user is interacting with a
+            // caption button.
             if(FrameAction)
             {
                 break;
             }
             if(CurCursorMode == paz::CursorMode::Disable)
             {
-//                disableCursor(window);
+                GetCursorPos(&PriorCursorPos);
+                ScreenToClient(WindowHandle, &PriorCursorPos);
+                POINT pos = {WindowWidth/2, WindowHeight/2};
+                ClientToScreen(WindowHandle, &pos);
+                SetCursorPos(pos.x, pos.y);
+                SetCursor(nullptr);
             }
             return 0;
         }
@@ -501,10 +512,11 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             WindowIsKey = false;
             if(CurCursorMode == paz::CursorMode::Disable)
             {
-//                enableCursor(window);
+                POINT pos = {WindowWidth/2, WindowHeight/2};
+                ClientToScreen(WindowHandle, &pos);
+                SetCursorPos(pos.x, pos.y);
+                SetCursor(LoadCursorW(nullptr, IDC_ARROW));
             }
-//            if(WindowIsFullscreen && window->autoIconify)
-//                _glfwIconifyWindowWin32(window);
             return 0;
         }
         case WM_SYSCOMMAND:
@@ -534,11 +546,6 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         {
             ::Done = true;
             return 0;
-        }
-        case WM_INPUTLANGCHANGE:
-        {
-//            _glfwUpdateKeyNamesWin32();
-            break;
         }
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
@@ -831,11 +838,14 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             {
                 break;
             }
-            // HACK: Enable the cursor while the user is moving or
-            //       resizing the window or using the window menu
+            // Enable the cursor while the user is moving or resizing the window
+            // or using the window menu.
             if(CurCursorMode == paz::CursorMode::Disable)
             {
-//                enableCursor(window);
+                POINT pos = {WindowWidth/2, WindowHeight/2};
+                ClientToScreen(WindowHandle, &pos);
+                SetCursorPos(pos.x, pos.y);
+                SetCursor(LoadCursorW(nullptr, IDC_ARROW));
             }
             break;
         }
@@ -846,11 +856,16 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             {
                 break;
             }
-            // HACK: Disable the cursor once the user is done moving or
-            //       resizing the window or using the menu
+            // Disable the cursor once the user is done moving or resizing the
+            // window or using the menu.
             if(CurCursorMode == paz::CursorMode::Disable)
             {
-//                disableCursor(window);
+                GetCursorPos(&PriorCursorPos);
+                ScreenToClient(WindowHandle, &PriorCursorPos);
+                POINT pos = {WindowWidth/2, WindowHeight/2};
+                ClientToScreen(WindowHandle, &pos);
+                SetCursorPos(pos.x, pos.y);
+                SetCursor(nullptr);
             }
             break;
         }
@@ -972,8 +987,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             // Adjust the window size to keep the content area size constant
             if (IsWindows10Version1703OrGreater)
             {
-                RECT source = {0}, target = {0};
-                SIZE* size = (SIZE*) lParam;
+                RECT source = {}, target = {};
+                SIZE& size = *reinterpret_cast<SIZE*>(lParam);
 
                 AdjustWindowRectExForDpi(&source, window_style(),
                                          FALSE, window_ex_style(),
@@ -982,10 +997,10 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                                          FALSE, window_ex_style(),
                                          LOWORD(wParam));
 
-                size->cx += (target.right - target.left) -
-                            (source.right - source.left);
-                size->cy += (target.bottom - target.top) -
-                            (source.bottom - source.top);
+                size.cx += (target.right - target.left) -
+                           (source.right - source.left);
+                size.cy += (target.bottom - target.top) -
+                           (source.bottom - source.top);
                 return TRUE;
             }
 
@@ -993,8 +1008,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         }
         case WM_DPICHANGED:
         {
-            const float xscale = HIWORD(wParam) / (float) USER_DEFAULT_SCREEN_DPI;
-            const float yscale = LOWORD(wParam) / (float) USER_DEFAULT_SCREEN_DPI;
+            const float xscale = HIWORD(wParam)/static_cast<float>(USER_DEFAULT_SCREEN_DPI);
+            const float yscale = LOWORD(wParam)/static_cast<float>(USER_DEFAULT_SCREEN_DPI);
 
             // Resize windowed mode windows that either permit rescaling or that
             // need it to compensate for non-client area scaling
@@ -1377,10 +1392,10 @@ bool paz::Window::MouseActive()
 
 void paz::Window::SetCursorMode(CursorMode mode)
 {
-#if 0
     initialize();
 
-    if(mode == CursorMode::Normal)
+    CurCursorMode = mode;
+/*    if(mode == CursorMode::Normal)
     {
         glfwSetInputMode(WindowPtr, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
@@ -1395,9 +1410,8 @@ void paz::Window::SetCursorMode(CursorMode mode)
     else
     {
         throw std::runtime_error("Unknown cursor mode.");
-    }
+    }*/
     CursorDisabled = (mode == CursorMode::Disable);
-#endif
 }
 
 float paz::Window::AspectRatio()
@@ -1569,7 +1583,7 @@ void paz::Window::PollEvents()
 
     if(CursorDisabled)
     {
-        POINT pos = {0, WindowHeight};
+        POINT pos = {WindowWidth/2, WindowHeight/2};
         ClientToScreen(WindowHandle, &pos);
         SetCursorPos(pos.x, pos.y);
     }
