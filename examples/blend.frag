@@ -9,5 +9,6 @@ layout(location = 0) out vec4 color;
 
 void main()
 {
-    color = vec4(texture(render, uv).rgb + texture(overlay, uv).r, 1.);
+    float x = texture(overlay, uv).r;
+    color = vec4(x + (1. - x)*texture(render, uv).rgb, 1.);
 }
