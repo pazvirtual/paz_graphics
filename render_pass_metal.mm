@@ -280,8 +280,20 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
                 [[renderPassDescriptor colorAttachments][i] setLoadAction:
                     MTLLoadActionDontCare];
             }
-            else if(colorLoadActions[i] == LoadAction::Clear)
+            else if(colorLoadActions[i] == LoadAction::Clear ||
+                colorLoadActions[i] == LoadAction::FillOnes || colorLoadActions[
+                i] == LoadAction::FillZeros)
             {
+                if(colorLoadActions[i] == LoadAction::FillOnes)
+                {
+                    [[renderPassDescriptor colorAttachments][i] setClearColor:
+                        MTLClearColorMake(1., 1., 1., 1.)];
+                }
+                else if(colorLoadActions[i] == LoadAction::FillZeros)
+                {
+                    [[renderPassDescriptor colorAttachments][i] setClearColor:
+                        MTLClearColorMake(0., 0., 0., 0.)];
+                }
                 [[renderPassDescriptor colorAttachments][i] setLoadAction:
                     MTLLoadActionClear];
             }
@@ -308,9 +320,14 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
                 [[renderPassDescriptor depthAttachment] setLoadAction:
                     MTLLoadActionDontCare];
             }
-            else if(depthLoadAction == LoadAction::Clear)
+            else if(depthLoadAction == LoadAction::Clear || depthLoadAction ==
+                LoadAction::FillOnes || depthLoadAction == LoadAction::
+                FillZeros)
             {
-                [[renderPassDescriptor depthAttachment] setClearDepth:1.0];
+                if(depthLoadAction == LoadAction::FillZeros)
+                {
+                    [[renderPassDescriptor depthAttachment] setClearDepth:0.];
+                }
                 [[renderPassDescriptor depthAttachment] setLoadAction:
                     MTLLoadActionClear];
             }
@@ -343,8 +360,20 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             [[renderPassDescriptor colorAttachments][0] setLoadAction:
                 MTLLoadActionDontCare];
         }
-        else if(colorLoadActions[0] == LoadAction::Clear)
+        else if(colorLoadActions[0] == LoadAction::Clear || colorLoadActions[0]
+            == LoadAction::FillOnes || colorLoadActions[0] == LoadAction::
+            FillZeros)
         {
+            if(colorLoadActions[0] == LoadAction::FillOnes)
+            {
+                [[renderPassDescriptor colorAttachments][0] setClearColor:
+                    MTLClearColorMake(1., 1., 1., 1.)];
+            }
+            else if(colorLoadActions[0] == LoadAction::FillZeros)
+            {
+                [[renderPassDescriptor colorAttachments][0] setClearColor:
+                    MTLClearColorMake(0., 0., 0., 0.)];
+            }
             [[renderPassDescriptor colorAttachments][0] setLoadAction:
                 MTLLoadActionClear];
         }
@@ -363,8 +392,13 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             [[renderPassDescriptor depthAttachment] setLoadAction:
                 MTLLoadActionDontCare];
         }
-        else if(depthLoadAction == LoadAction::Clear)
+        else if(depthLoadAction == LoadAction::Clear || depthLoadAction ==
+            LoadAction::FillOnes || depthLoadAction == LoadAction::FillZeros)
         {
+            if(depthLoadAction == LoadAction::FillZeros)
+            {
+                [[renderPassDescriptor depthAttachment] setClearDepth:0.];
+            }
             [[renderPassDescriptor depthAttachment] setLoadAction:
                 MTLLoadActionClear];
         }
