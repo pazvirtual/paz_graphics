@@ -490,16 +490,16 @@ void paz::unregister_target(void* target)
     RenderTargets.erase(target);
 }
 
-paz::Image<float, 3> paz::Window::PrintScreen()
+paz::Image<std::uint8_t, 3> paz::Window::PrintScreen()
 {
     initialize();
 
-    Image<float, 3> image(ViewportWidth(), ViewportHeight());
+    Image<std::uint8_t, 3> image(ViewportWidth(), ViewportHeight());
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, ViewportWidth(), ViewportHeight());
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glReadPixels(0, 0, ViewportWidth(), ViewportHeight(), GL_RGB, GL_FLOAT,
-        image.data());
+    glReadPixels(0, 0, ViewportWidth(), ViewportHeight(), GL_RGB,
+        GL_UNSIGNED_BYTE, image.data());
     const GLenum error = glGetError();
     if(error != GL_NO_ERROR)
     {

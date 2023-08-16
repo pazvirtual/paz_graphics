@@ -350,7 +350,7 @@ void paz::Window::Resize(int width, int height)
     [[APP_DELEGATE window] setFrame:frame display:YES];
 }
 
-paz::Image<float, 3> paz::Window::PrintScreen()
+paz::Image<std::uint8_t, 3> paz::Window::PrintScreen()
 {
     initialize();
 
@@ -362,7 +362,7 @@ paz::Image<float, 3> paz::Window::PrintScreen()
         data() bytesPerRow:4*width fromRegion:MTLRegionMake2D(0, 0, width,
         height) mipmapLevel:0];
 
-    Image<float, 3> rgb(ViewportWidth(), ViewportHeight());
+    Image<std::uint8_t, 3> rgb(ViewportWidth(), ViewportHeight());
     for(int y = 0; y < ViewportHeight(); ++y)
     {
         for(int x = 0; x < ViewportWidth(); ++x)
@@ -370,7 +370,7 @@ paz::Image<float, 3> paz::Window::PrintScreen()
             for(int i = 0; i < 3; ++i)
             {
                 rgb[3*(width*y + x) + 2 - i] = bgraFlipped[4*(width*(height -
-                    1 - y) + x) + i]/255.f;
+                    1 - y) + x) + i];
             }
         }
     }
