@@ -1,5 +1,4 @@
 #include "PAZ_Graphics"
-#include "PAZ_IO"
 #include <sstream>
 #include <fstream>
 #include <cmath>
@@ -18,20 +17,6 @@ static double uniform()
     return dis(RandomEngine);
 }
 
-//TEMP
-static std::string read_file(const std::string& path)
-{
-    std::ifstream in(path);
-    if(!in)
-    {
-        throw std::runtime_error("Unable to open input file \"" + path + "\".");
-    }
-    std::stringstream ss;
-    ss << in.rdbuf();
-    return ss.str();
-}
-//TEMP
-
 int main(int, char** argv)
 {
     const std::string appDir = paz::split_path(argv[0])[0];
@@ -44,10 +29,10 @@ int main(int, char** argv)
     renderFramebuffer.attach(render);
 
     paz::ShaderFunctionLibrary l;
-    l.vertex("particle", read_file(appDir + "/particle.vert")),
-    l.fragment("particle", read_file(appDir + "/particle.frag"));
-    l.vertex("quad", read_file(appDir + "/quad.vert")),
-    l.fragment("tonemap", read_file(appDir + "/tonemap.frag"));
+    l.vertex("particle", paz::load_file(appDir + "/particle.vert").str()),
+    l.fragment("particle", paz::load_file(appDir + "/particle.frag").str());
+    l.vertex("quad", paz::load_file(appDir + "/quad.vert").str()),
+    l.fragment("tonemap", paz::load_file(appDir + "/tonemap.frag").str());
 
     const paz::Shader s(l, "particle", l, "particle");
     const paz::Shader t(l, "quad", l, "tonemap");

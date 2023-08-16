@@ -1,5 +1,4 @@
 #include "PAZ_Graphics"
-#include "PAZ_IO"
 #include <sstream>
 #include <fstream>
 #include <cmath>
@@ -52,63 +51,16 @@ static double normalize_angle(const double n)
     return fract(n/(2.*M_PI))*2.*M_PI;
 }
 
-//TEMP
-static std::string read_file(const std::string& path)
-{
-    std::ifstream in(path);
-    if(!in)
-    {
-        throw std::runtime_error("Unable to open input file \"" + path + "\".");
-    }
-    std::stringstream ss;
-    ss << in.rdbuf();
-    return ss.str();
-}
-
-static unsigned int load_font(const std::string& path, std::vector<float>& data)
-{
-    std::ifstream in(path);
-    if(!in)
-    {
-        throw std::runtime_error("Unable to open input file \"" + path + "\".");
-    }
-    unsigned int height = 0;
-    std::vector<float> v;
-    std::string line;
-    while(std::getline(in, line))
-    {
-        ++height;
-        for(const auto& n : line)
-        {
-            v.push_back(n != ' ');
-        }
-    }
-    const std::size_t width = v.size()/height;
-    data.resize(v.size());
-    for(unsigned int i = 0; i < height; ++i)
-    {
-        for(std::size_t j = 0; j < width; ++j)
-        {
-            data[width*(height - i - 1) + j] = v[width*i + j];
-        }
-    }
-    return height;
-}
-//TEMP
-
 int main(int, char** argv)
 {
     const std::string appDir = paz::split_path(argv[0])[0];
 
-    const std::string msg = read_file(appDir + "/msg.txt");
+    const std::string msg = paz::load_file(appDir + "/msg.txt").str();
 
     paz::Window::SetMinSize(640, 480);
 
-    std::vector<float> fontData;
-    const unsigned int fontRows = load_font(appDir + "/font.txt", fontData);
-    const paz::Texture font(fontData.size()/fontRows, fontRows, 1, 8*sizeof(
-        float), fontData, paz::Texture::MinMagFilter::Nearest, paz::Texture::
-        MinMagFilter::Nearest);
+    const paz::Texture font(paz::load_pbm(appDir + "/font.pbm"), paz::Texture::
+        MinMagFilter::Nearest, paz::Texture::MinMagFilter::Nearest);
 
     paz::ColorTarget render(1., 4, 16, paz::Texture::DataType::Float, paz::
         Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
@@ -116,12 +68,12 @@ int main(int, char** argv)
     renderFramebuffer.attach(render);
 
     paz::ShaderFunctionLibrary shaders;
-    shaders.vertex("shader", read_file(appDir + "/shader.vert"));
-    shaders.vertex("font", read_file(appDir + "/font.vert"));
-    shaders.vertex("quad", read_file(appDir + "/quad.vert")),
-    shaders.fragment("shader", read_file(appDir + "/shader.frag"));
-    shaders.fragment("font", read_file(appDir + "/font.frag"));
-    shaders.fragment("post", read_file(appDir + "/post.frag"));
+    shaders.vertex("shader", paz::load_file(appDir + "/shader.vert").str());
+    shaders.vertex("font", paz::load_file(appDir + "/font.vert").str());
+    shaders.vertex("quad", paz::load_file(appDir + "/quad.vert").str()),
+    shaders.fragment("shader", paz::load_file(appDir + "/shader.frag").str());
+    shaders.fragment("font", paz::load_file(appDir + "/font.frag").str());
+    shaders.fragment("post", paz::load_file(appDir + "/post.frag").str());
 
     const paz::Shader sceneShader(shaders, "shader", shaders, "shader");
     const paz::Shader textShader(shaders, "font", shaders, "font");
@@ -216,7 +168,7 @@ int main(int, char** argv)
         textPass.begin({paz::RenderPass::LoadAction::Load}, paz::RenderPass::
             LoadAction::DontCare);
         textPass.read("font", font);
-        textPass.uniform("baseSize", fontRows);
+        textPass.uniform("baseSize", font.height());
         textPass.uniform("aspectRatio", paz::Window::AspectRatio());
         int row = 0;
         int col = 0;
@@ -270,7 +222,7 @@ int main(int, char** argv)
         if(paz::Window::KeyPressed(paz::Window::Key::S))
         {
             paz::write_bmp(appDir + "/screenshot.bmp", paz::Window::
-                ViewportWidth(), paz::Window::PrintScreen());
+                PrintScreen());
         }
     });
 }

@@ -302,17 +302,17 @@ bool paz::Window::KeyReleased(Key key)
     return ::KeyReleased.at(static_cast<int>(key));
 }
 
-bool paz::Window::MouseDown(unsigned int button)
+bool paz::Window::MouseDown(int button)
 {
     return ::MouseDown.at(button);
 }
 
-bool paz::Window::MousePressed(unsigned int button)
+bool paz::Window::MousePressed(int button)
 {
     return ::MousePressed.at(button);
 }
 
-bool paz::Window::MouseReleased(unsigned int button)
+bool paz::Window::MouseReleased(int button)
 {
     return ::MouseReleased.at(button);
 }
@@ -469,21 +469,21 @@ void paz::unregister_target(DepthStencilTarget* target)
     DepthStencilTargets.erase(target);
 }
 
-std::vector<float> paz::Window::PrintScreen()
+paz::Image<float, 3> paz::Window::PrintScreen()
 {
-    std::vector<float> pixels(3*ViewportWidth()*ViewportHeight());
+    Image<float, 3> image(ViewportWidth(), ViewportHeight());
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, ViewportWidth(), ViewportHeight());
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glReadPixels(0, 0, ViewportWidth(), ViewportHeight(), GL_RGB, GL_FLOAT,
-        pixels.data());
+        image.data());
     const GLenum error = glGetError();
     if(error != GL_NO_ERROR)
     {
         throw std::runtime_error("Error reading default framebuffer: " +
             gl_error(error) + ".");
     }
-    return pixels;
+    return image;
 }
 
 #endif
