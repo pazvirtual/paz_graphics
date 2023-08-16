@@ -106,10 +106,6 @@ paz::Texture::Texture()
     WrapMode wrapS, WrapMode wrapT)\
 {\
     initialize();\
-    if(image.width()%4)\
-    {\
-        throw std::runtime_error("Image width must be a multiple of four.");\
-    }\
     _data = std::make_shared<Data>();\
     _data->_width = image.width();\
     _data->_height = image.height();\
@@ -127,10 +123,6 @@ paz::Texture::Texture()
     WrapMode wrapS, WrapMode wrapT, bool normalized)\
 {\
     initialize();\
-    if(image.width()%4)\
-    {\
-        throw std::runtime_error("Image width must be a multiple of four.");\
-    }\
     _data = std::make_shared<Data>();\
     _data->_width = image.width();\
     _data->_height = image.height();\

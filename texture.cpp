@@ -47,10 +47,6 @@ paz::Texture::Texture()
     WrapMode wrapS, WrapMode wrapT)\
 {\
     initialize();\
-    if(image.width()%4)\
-    {\
-        throw std::runtime_error("Image width must be a multiple of four.");\
-    }\
     _data = std::make_shared<Data>();\
     _data->_width = image.width();\
     _data->_height = image.height();\
@@ -68,10 +64,6 @@ paz::Texture::Texture()
     WrapMode wrapS, WrapMode wrapT, bool normalized)\
 {\
     initialize();\
-    if(image.width()%4)\
-    {\
-        throw std::runtime_error("Image width must be a multiple of four.");\
-    }\
     _data = std::make_shared<Data>();\
     _data->_width = image.width();\
     _data->_height = image.height();\
@@ -139,6 +131,7 @@ void paz::Texture::Data::init(const void* data)
     const auto filters = min_mag_filter(_minFilter, _magFilter, _mipFilter);
     glGenTextures(1, &_id);
     glBindTexture(GL_TEXTURE_2D, _id);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(_format), _width, _height,
         0, gl_format(_format), gl_type(_format), data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filters.first);
