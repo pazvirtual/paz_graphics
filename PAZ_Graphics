@@ -197,6 +197,14 @@ namespace paz
     public:
         enum class DepthTestMode
         {
+            NeverNoMask,
+            LessNoMask,
+            EqualNoMask,
+            LessEqualNoMask,
+            GreaterNoMask,
+            NotEqualNoMask,
+            GreaterEqualNoMask,
+            AlwaysNoMask,
             Never,
             Less,
             Equal,
