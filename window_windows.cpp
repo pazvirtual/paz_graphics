@@ -13,6 +13,93 @@
 #define UNICODE
 #endif
 
+#define WINVER _WIN32_WINNT_WIN10 //TEMP
+
+#if 0 //MACROS
+
+////
+// This is a workaround for the fact that glfw3.h needs to export APIENTRY (for
+// example to allow applications to correctly declare a GL_KHR_debug callback)
+// but windows.h assumes no one will define APIENTRY before it does
+#undef APIENTRY
+
+// GLFW on Windows is Unicode only and does not work in MBCS mode
+#ifndef UNICODE
+ #define UNICODE
+#endif
+
+// GLFW requires Windows XP or later
+//#if WINVER < 0x0501
+// #undef WINVER
+// #define WINVER 0x0501
+//#endif
+//#if _WIN32_WINNT < 0x0501
+// #undef _WIN32_WINNT
+// #define _WIN32_WINNT 0x0501
+//#endif
+
+// GLFW uses DirectInput8 interfaces
+#define DIRECTINPUT_VERSION 0x0800
+
+// GLFW uses OEM cursor resources
+#define OEMRESOURCE
+
+#include <wctype.h>
+#include <windows.h>
+#include <dinput.h>
+#include <xinput.h>
+#include <dbt.h>
+
+// HACK: Define macros that some windows.h variants don't
+#ifndef WM_MOUSEHWHEEL
+ #define WM_MOUSEHWHEEL 0x020E
+#endif
+#ifndef WM_DWMCOMPOSITIONCHANGED
+ #define WM_DWMCOMPOSITIONCHANGED 0x031E
+#endif
+#ifndef WM_DWMCOLORIZATIONCOLORCHANGED
+ #define WM_DWMCOLORIZATIONCOLORCHANGED 0x0320
+#endif
+#ifndef WM_COPYGLOBALDATA
+ #define WM_COPYGLOBALDATA 0x0049
+#endif
+#ifndef WM_UNICHAR
+ #define WM_UNICHAR 0x0109
+#endif
+#ifndef UNICODE_NOCHAR
+ #define UNICODE_NOCHAR 0xFFFF
+#endif
+#ifndef WM_DPICHANGED
+ #define WM_DPICHANGED 0x02E0
+#endif
+#ifndef GET_XBUTTON_WPARAM
+ #define GET_XBUTTON_WPARAM(w) (HIWORD(w))
+#endif
+#ifndef EDS_ROTATEDMODE
+ #define EDS_ROTATEDMODE 0x00000004
+#endif
+#ifndef DISPLAY_DEVICE_ACTIVE
+ #define DISPLAY_DEVICE_ACTIVE 0x00000001
+#endif
+#ifndef _WIN32_WINNT_WINBLUE
+ #define _WIN32_WINNT_WINBLUE 0x0603
+#endif
+#ifndef _WIN32_WINNT_WIN8
+ #define _WIN32_WINNT_WIN8 0x0602
+#endif
+#ifndef WM_GETDPISCALEDSIZE
+ #define WM_GETDPISCALEDSIZE 0x02e4
+#endif
+#ifndef USER_DEFAULT_SCREEN_DPI
+ #define USER_DEFAULT_SCREEN_DPI 96
+#endif
+#ifndef OCR_HAND
+ #define OCR_HAND 32649
+#endif
+////
+
+#endif //MACROS
+
 #include "PAZ_Graphics"
 #include "render_pass.hpp"
 #include "keycodes.hpp"
@@ -21,9 +108,15 @@
 #include "util_windows.hpp"
 #include <d3dcompiler.h>
 #include <windowsx.h>
+#include <shellscalingapi.h>
 #include <cmath>
 #include <chrono>
 #include <algorithm>
+
+static const bool IsWindows10Version1703OrGreater = true; //TEMP
+static const bool IsWindows10Version1607OrGreater = true; //TEMP
+static const bool IsWindows8Point1OrGreater = true; //TEMP
+static const bool IsWindowsVistaOrGreater = true; //TEMP
 
 static const std::string QuadVertSrc = 1 + R"===(
 struct InputData
@@ -339,6 +432,31 @@ static double PrevFrameTime = 1./60.;
 static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
     lParam)
 {
+    if(!WindowHandle)
+    {
+        if(uMsg == WM_NCCREATE)
+        {
+#if 0
+            if(IsWindows10Version1607OrGreater)
+            {
+                const CREATESTRUCTW& cs = *reinterpret_cast<const CREATESTRUCTW*>(lParam);
+                const auto wndconfig = cs.lpCreateParams;
+
+                // On per-monitor DPI aware V1 systems, only enable
+                // non-client scaling for windows that scale the client area
+                // We need WM_GETDPISCALEDSIZE from V2 to keep the client
+                // area static when the non-client area is scaled
+                if(wndconfig && wndconfig->scaleToMonitor)
+                {
+                    EnableNonClientDpiScaling(hWnd);
+                }
+            }
+#endif
+        }
+
+        return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+    }
+
     switch(uMsg)
     {
         case WM_MOUSEACTIVATE:
@@ -811,25 +929,33 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         case WM_GETMINMAXINFO:
         {
             RECT frame = {};
-            MINMAXINFO* mmi = reinterpret_cast<MINMAXINFO*>(lParam);
+            MINMAXINFO& mmi = *reinterpret_cast<MINMAXINFO*>(lParam);
             if(WindowIsFullscreen)
             {
                 break;
             }
 
-            AdjustWindowRectEx(&frame, window_style(), FALSE,
-                window_ex_style());
+            if(IsWindows10Version1607OrGreater)
+            {
+                AdjustWindowRectExForDpi(&frame, window_style(), FALSE,
+                    window_ex_style(), GetDpiForWindow(WindowHandle));
+            }
+            else
+            {
+                AdjustWindowRectEx(&frame, window_style(), FALSE,
+                    window_ex_style());
+            }
 
             if(MinWidth && MinHeight)
             {
-                mmi->ptMinTrackSize.x = MinWidth + frame.right - frame.left;
-                mmi->ptMinTrackSize.y = MinHeight + frame.bottom - frame.top;
+                mmi.ptMinTrackSize.x = MinWidth + frame.right - frame.left;
+                mmi.ptMinTrackSize.y = MinHeight + frame.bottom - frame.top;
             }
 
             if(MaxWidth && MaxHeight)
             {
-                mmi->ptMaxTrackSize.x = MaxWidth + frame.right - frame.left;
-                mmi->ptMaxTrackSize.y = MaxHeight + frame.bottom - frame.top;
+                mmi.ptMaxTrackSize.x = MaxWidth + frame.right - frame.left;
+                mmi.ptMaxTrackSize.y = MaxHeight + frame.bottom - frame.top;
             }
 
             return 0;
@@ -843,23 +969,22 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         {
             return 0; //TEMP - verify
         }
-#if 0
         case WM_GETDPISCALEDSIZE:
         {
-            if (window->win32.scaleToMonitor)
-                break;
+//            if (window->win32.scaleToMonitor)
+//                break;
 
             // Adjust the window size to keep the content area size constant
-            if (_glfwIsWindows10Version1703OrGreaterWin32())
+            if (IsWindows10Version1703OrGreater)
             {
                 RECT source = {0}, target = {0};
                 SIZE* size = (SIZE*) lParam;
 
-                AdjustWindowRectExForDpi(&source, getWindowStyle(window),
-                                         FALSE, getwindow_ex_style()(window),
-                                         GetDpiForWindow(window->win32.handle));
-                AdjustWindowRectExForDpi(&target, getWindowStyle(window),
-                                         FALSE, getwindow_ex_style()(window),
+                AdjustWindowRectExForDpi(&source, window_style(),
+                                         FALSE, window_ex_style(),
+                                         GetDpiForWindow(WindowHandle));
+                AdjustWindowRectExForDpi(&target, window_style(),
+                                         FALSE, window_ex_style(),
                                          LOWORD(wParam));
 
                 size->cx += (target.right - target.left) -
@@ -878,23 +1003,24 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
             // Resize windowed mode windows that either permit rescaling or that
             // need it to compensate for non-client area scaling
-            if (!window->monitor &&
-                (window->win32.scaleToMonitor ||
-                 _glfwIsWindows10Version1703OrGreaterWin32()))
-            {
-                RECT* suggested = (RECT*) lParam;
-                SetWindowPos(window->win32.handle, HWND_TOP,
-                             suggested->left,
-                             suggested->top,
-                             suggested->right - suggested->left,
-                             suggested->bottom - suggested->top,
-                             SWP_NOACTIVATE | SWP_NOZORDER);
-            }
+//            if (!WindowIsFullscreen && (window->win32.scaleToMonitor || IsWindows10Version1703OrGreater))
+//            {
+//                RECT* suggested = (RECT*) lParam;
+//                SetWindowPos(window->win32.handle, HWND_TOP,
+//                             suggested->left,
+//                             suggested->top,
+//                             suggested->right - suggested->left,
+//                             suggested->bottom - suggested->top,
+//                             SWP_NOACTIVATE | SWP_NOZORDER);
+//            }
 
-            _glfwInputWindowContentScale(window, xscale, yscale);
+//            _glfwInputWindowContentScale(window, xscale, yscale);
+if(Device)
+{
+paz::resize_targets();
+}
             break;
         }
-#endif
         case WM_SETCURSOR:
         {
             if(LOWORD(lParam) == HTCLIENT)
@@ -939,6 +1065,21 @@ paz::Initializer::~Initializer() {}
 
 paz::Initializer::Initializer()
 {
+    // Set up DPI awareness.
+    if(IsWindows10Version1703OrGreater)
+    {
+        SetProcessDpiAwarenessContext(
+            DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    }
+//    else if(IsWindows8Point1OrGreater)
+//    {
+//        SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+//    }
+    else if(IsWindowsVistaOrGreater)
+    {
+        SetProcessDPIAware();
+    }
+
     // Get display size. (Primary monitor starts at `(0, 0)`.)
     HMONITOR monitorHandle = MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY);
     if(!monitorHandle)
@@ -967,7 +1108,6 @@ paz::Initializer::Initializer()
     WindowHandle = CreateWindowExW(window_ex_style(), MAKEINTATOM(atom),
         L"PAZ_Graphics Window", window_style(), CW_USEDEFAULT, CW_USEDEFAULT,
         WindowWidth, WindowHeight, nullptr, nullptr, nullptr, nullptr);
-    WindowIsFullscreen = false;
     if(!WindowHandle)
     {
         std::array<wchar_t, 256> buf;
