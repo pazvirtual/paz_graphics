@@ -135,7 +135,7 @@ auto uintBitsToFloat(thread const uint4& v)
             "\\b.*")))
         {
             throw std::runtime_error("Texture sampling in vertex shaders is not"
-                "supported.");
+                " supported.");
         }
         if(std::regex_match(line, std::regex(".*\\b(float|u?int|[iu]?vec[2-4])"
             "\\s*\\[\\s*[a-zA-Z_0-9]*\\s*\\]\\s*\\(.*")))
