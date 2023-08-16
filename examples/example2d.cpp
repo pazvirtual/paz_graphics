@@ -187,7 +187,8 @@ int main()
     const paz::Shader postShader(shaders, "quad", shaders, "post");
 
     paz::RenderPass scenePass(renderFramebuffer, sceneShader);
-    paz::RenderPass textPass(renderFramebuffer, textShader);
+    paz::RenderPass textPass(renderFramebuffer, textShader, paz::RenderPass::
+        BlendMode::Additive);
     paz::RenderPass postPass(postShader);
 
     paz::VertexBuffer triVertices0;
@@ -272,7 +273,7 @@ int main()
         scenePass.end();
 
         textPass.begin({paz::RenderPass::LoadAction::Load}, paz::RenderPass::
-            LoadAction::DontCare, paz::RenderPass::BlendMode::Additive);
+            LoadAction::DontCare);
         textPass.read("font", font);
         textPass.uniform("aspectRatio", paz::Window::AspectRatio());
         int row = 0;

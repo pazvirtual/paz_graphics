@@ -49,7 +49,8 @@ int main()
     const paz::Shader s(l, "particle", l, "particle");
     const paz::Shader t(l, "quad", l, "tonemap");
 
-    paz::RenderPass r(renderFramebuffer, s);
+    paz::RenderPass r(renderFramebuffer, s, paz::RenderPass::BlendMode::
+        Additive);
     paz::RenderPass u(t);
 
     paz::VertexBuffer q;
@@ -93,7 +94,7 @@ int main()
 
         // Drawing.
         r.begin({paz::RenderPass::LoadAction::Clear}, paz::RenderPass::
-            LoadAction::DontCare, paz::RenderPass::BlendMode::Additive);
+            LoadAction::DontCare);
         r.uniform("projection", p.data(), 16);
         r.uniform("view", v.data(), 16);
         for(auto it = particles.rbegin(); it != particles.rend(); ++it)
