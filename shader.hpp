@@ -13,16 +13,12 @@ namespace paz
     struct ShaderData
     {
         unsigned int _id = 0;
-        unsigned int _thickLinesId = 0;
         // uniformIDs[name] = (id, type, size)
         std::unordered_map<std::string, std::tuple<unsigned int, unsigned int,
             int>> _uniformIds;
-        std::unordered_map<std::string, std::tuple<unsigned int, unsigned int,
-            int>> _thickLinesUniformIds;
         // attribTypes[location] = type (array attributes are not supported)
         std::unordered_map<unsigned int, unsigned int> _attribTypes;
-        void init(unsigned int vertId, unsigned int thickLinesVertId, unsigned
-            int thickLinesGeomId, unsigned int fragId);
+        void init(unsigned int vertId, unsigned int fragId);
         ShaderData();
         ~ShaderData();
     };

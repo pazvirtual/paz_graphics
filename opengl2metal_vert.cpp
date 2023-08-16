@@ -25,7 +25,6 @@ std::string paz::vert2metal(const std::string& src)
 
     bool usesGlPosition = false;
     bool usesGlVertexId = false;
-    bool usesGlLineWidth = false;
     bool usesGlPointSize = false;
 
     std::unordered_map<std::string, std::pair<std::string, bool>> buffers;
@@ -287,13 +286,6 @@ std::string paz::vert2metal(const std::string& src)
             }
             line = std::regex_replace(line, std::regex("\\bgl_VertexID\\b"),
                 "glVertexId");
-            if(!usesGlLineWidth && std::regex_match(line, std::regex(".*\\bgl_L"
-                "ineWidth\\b.*")))
-            {
-                usesGlLineWidth = true;
-            }
-            line = std::regex_replace(line, std::regex("\\bgl_LineWidth\\b"),
-                "glLineWidth");
             if(!usesGlPointSize && std::regex_match(line, std::regex(".*\\bgl_P"
                 "ointSize\\b.*")))
             {
@@ -426,10 +418,6 @@ std::string paz::vert2metal(const std::string& src)
     }
     out << ")" << std::endl << "{" << std::endl << "    OutputData out;" <<
         std::endl;
-    if(usesGlLineWidth)
-    {
-        out << "    float glLineWidth;" << std::endl;
-    }
     out << mainBuffer.str() << "    out.glPosition = float4x4(1, 0, 0, 0, 0, 1,"
         " 0, 0, 0, 0, 0.5, 0, 0, 0, 0.5," << std::endl << "        1)*out.glPos"
         "ition;" << std::endl << "    return out;" << std::endl << "}" << std::

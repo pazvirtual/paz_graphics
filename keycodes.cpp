@@ -124,9 +124,7 @@ paz::Key paz::convert_keycode(int key)
 
 #else
 
-#ifndef __gl_h_
 #include "gl_core_4_1.h"
-#endif
 #include <GLFW/glfw3.h>
 
 #define CASE(a, b) case GLFW_KEY_##a: return Key::b;

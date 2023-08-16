@@ -43,9 +43,6 @@ struct paz::VertexBuffer::Data
     unsigned int _id = 0;
     std::vector<unsigned int> _ids;
     std::vector<unsigned int> _types;
-    unsigned int _lineStripId = 0;
-    unsigned int _lineLoopId = 0;
-    unsigned int _thickLinesId = 0;
     Data();
 #endif
     std::size_t _numVertices = 0;
@@ -61,9 +58,6 @@ struct paz::IndexBuffer::Data
     void* _triangleFanIndices = nullptr;
 #else
     unsigned int _id = 0;
-    unsigned int _lineStripId = 0;
-    unsigned int _lineLoopId = 0;
-    unsigned int _thickLinesId = 0;
 #endif
     std::size_t _numIndices = 0;
     ~Data();
@@ -90,8 +84,6 @@ struct paz::VertexFunction::Data
     void* _function = nullptr;
 #else
     unsigned int _id = 0;
-    unsigned int _thickLinesVertId = 0;
-    unsigned int _thickLinesGeomId = 0;
 #endif
     ~Data();
 };
@@ -99,7 +91,7 @@ struct paz::VertexFunction::Data
 struct paz::FragmentFunction::Data
 {
 #ifdef PAZ_MACOS
-    void* _function;
+    void* _function = nullptr;
 #else
     unsigned int _id = 0;
 #endif

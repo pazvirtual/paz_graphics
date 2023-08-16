@@ -6,9 +6,7 @@
 #include "internal_data.hpp"
 #include "util.hpp"
 #include "window.hpp"
-#ifndef __gl_h_
 #include "gl_core_4_1.h"
-#endif
 #include <GLFW/glfw3.h>
 
 #define CASE(a, b) case paz::PrimitiveType::a: return GL_##b;
@@ -61,16 +59,9 @@ static void check_attributes(const std::vector<unsigned int>& a, const std::
 paz::RenderPass::RenderPass() {}
 
 paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
-    const FragmentFunction& frag, BlendMode mode)
+    const FragmentFunction& frag, BlendMode mode) : RenderPass(vert, frag, mode)
 {
-    initialize();
-
-    _data = std::make_shared<Data>();
-
     _data->_fbo = fbo._data;
-    _data->_shader.init(vert._data->_id, vert._data->_thickLinesVertId, vert.
-        _data->_thickLinesGeomId, frag._data->_id);
-    _data->_blendMode = mode;
 }
 
 paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
@@ -80,14 +71,18 @@ paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
 
     _data = std::make_shared<Data>();
 
-    _data->_shader.init(vert._data->_id, vert._data->_thickLinesVertId, vert.
-        _data->_thickLinesGeomId, frag._data->_id);
+    _data->_shader.init(vert._data->_id, frag._data->_id);
     _data->_blendMode = mode;
 }
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
 {
+    if(!_data)
+    {
+        throw std::runtime_error("Render pass has not been initialized.");
+    }
+
     glGetError();
     DepthCalledThisPass = false;
     CullCalledThisPass = false;
@@ -190,14 +185,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     {
         throw std::runtime_error("Shader is not initialized.");
     }
-    if(_data->_shader._thickLinesId)
-    {
-        glUseProgram(_data->_shader._thickLinesId);
-        glUniform1i(std::get<0>(_data->_shader._thickLinesUniformIds.at(
-            "paz_Width")), Window::ViewportWidth());
-        glUniform1i(std::get<0>(_data->_shader._thickLinesUniformIds.at(
-            "paz_Height")), Window::ViewportHeight());
-    }
+    glUseProgram(_data->_shader._id);
 }
 
 void paz::RenderPass::depth(DepthTestMode mode)
@@ -329,54 +317,26 @@ void paz::RenderPass::read(const std::string& name, const Texture& tex)
 void paz::RenderPass::uniform(const std::string& name, int x)
 {
     CHECK_UNIFORM
-    glUseProgram(_data->_shader._id);
     glUniform1i(std::get<0>(_data->_shader._uniformIds.at(name)), x);
-    if(_data->_shader._thickLinesId)
-    {
-        glUseProgram(_data->_shader._thickLinesId);
-        glUniform1i(std::get<0>(_data->_shader._thickLinesUniformIds.at(name)),
-            x);
-    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y)
 {
     CHECK_UNIFORM
-    glUseProgram(_data->_shader._id);
     glUniform2i(std::get<0>(_data->_shader._uniformIds.at(name)), x, y);
-    if(_data->_shader._thickLinesId)
-    {
-        glUseProgram(_data->_shader._thickLinesId);
-        glUniform2i(std::get<0>(_data->_shader._thickLinesUniformIds.at(name)),
-            x, y);
-    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z)
 {
     CHECK_UNIFORM
-    glUseProgram(_data->_shader._id);
     glUniform3i(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z);
-    if(_data->_shader._thickLinesId)
-    {
-        glUseProgram(_data->_shader._thickLinesId);
-        glUniform3i(std::get<0>(_data->_shader._thickLinesUniformIds.at(name)),
-            x, y, z);
-    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
     w)
 {
     CHECK_UNIFORM
-    glUseProgram(_data->_shader._id);
     glUniform4i(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z, w);
-    if(_data->_shader._thickLinesId)
-    {
-        glUseProgram(_data->_shader._thickLinesId);
-        glUniform4i(std::get<0>(_data->_shader._thickLinesUniformIds.at(name)),
-            x, y, z, w);
-    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
@@ -386,48 +346,20 @@ void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
     switch(std::get<1>(_data->_shader._uniformIds.at(name)))
     {
         case GL_INT:
-            glUseProgram(_data->_shader._id);
             glUniform1iv(std::get<0>(_data->_shader._uniformIds.at(name)), size,
                 x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniform1iv(std::get<0>(_data->_shader._thickLinesUniformIds.
-                    at(name)), size, x);
-            }
             break;
         case GL_INT_VEC2:
-            glUseProgram(_data->_shader._id);
             glUniform2iv(std::get<0>(_data->_shader._uniformIds.at(name)), size/
                 2, x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniform2iv(std::get<0>(_data->_shader._thickLinesUniformIds.
-                    at(name)), size/2, x);
-            }
             break;
         case GL_INT_VEC3:
-            glUseProgram(_data->_shader._id);
             glUniform3iv(std::get<0>(_data->_shader._uniformIds.at(name)), size/
                 3, x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniform3iv(std::get<0>(_data->_shader._thickLinesUniformIds.
-                    at(name)), size/3, x);
-            }
             break;
         case GL_INT_VEC4:
-            glUseProgram(_data->_shader._id);
             glUniform4iv(std::get<0>(_data->_shader._uniformIds.at(name)), size/
                 4, x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniform4iv(std::get<0>(_data->_shader._thickLinesUniformIds.
-                    at(name)), size/4, x);
-            }
             break;
         default:
             throw std::invalid_argument("Unsupported type " + std::to_string(
@@ -440,56 +372,28 @@ void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
 void paz::RenderPass::uniform(const std::string& name, unsigned int x)
 {
     CHECK_UNIFORM
-    glUseProgram(_data->_shader._id);
     glUniform1ui(std::get<0>(_data->_shader._uniformIds.at(name)), x);
-    if(_data->_shader._thickLinesId)
-    {
-        glUseProgram(_data->_shader._thickLinesId);
-        glUniform1ui(std::get<0>(_data->_shader._thickLinesUniformIds.at(name)),
-            x);
-    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y)
 {
     CHECK_UNIFORM
-    glUseProgram(_data->_shader._id);
     glUniform2ui(std::get<0>(_data->_shader._uniformIds.at(name)), x, y);
-    if(_data->_shader._thickLinesId)
-    {
-        glUseProgram(_data->_shader._thickLinesId);
-        glUniform2ui(std::get<0>(_data->_shader._thickLinesUniformIds.at(name)),
-            x, y);
-    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z)
 {
     CHECK_UNIFORM
-    glUseProgram(_data->_shader._id);
     glUniform3ui(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z);
-    if(_data->_shader._thickLinesId)
-    {
-        glUseProgram(_data->_shader._thickLinesId);
-        glUniform3ui(std::get<0>(_data->_shader._thickLinesUniformIds.at(name)),
-            x, y, z);
-    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z, unsigned int w)
 {
     CHECK_UNIFORM
-    glUseProgram(_data->_shader._id);
     glUniform4ui(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z, w);
-    if(_data->_shader._thickLinesId)
-    {
-        glUseProgram(_data->_shader._thickLinesId);
-        glUniform4ui(std::get<0>(_data->_shader._thickLinesUniformIds.at(name)),
-            x, y, z, w);
-    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
@@ -499,48 +403,20 @@ void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
     switch(std::get<1>(_data->_shader._uniformIds.at(name)))
     {
         case GL_UNSIGNED_INT:
-            glUseProgram(_data->_shader._id);
             glUniform1uiv(std::get<0>(_data->_shader._uniformIds.at(name)),
                 size, x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniform1uiv(std::get<0>(_data->_shader._thickLinesUniformIds.
-                    at(name)), size, x);
-            }
             break;
         case GL_UNSIGNED_INT_VEC2:
-            glUseProgram(_data->_shader._id);
             glUniform2uiv(std::get<0>(_data->_shader._uniformIds.at(name)),
                 size/2, x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniform2uiv(std::get<0>(_data->_shader._thickLinesUniformIds.
-                    at(name)), size/2, x);
-            }
             break;
         case GL_UNSIGNED_INT_VEC3:
-            glUseProgram(_data->_shader._id);
             glUniform3uiv(std::get<0>(_data->_shader._uniformIds.at(name)),
                 size/3, x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniform3uiv(std::get<0>(_data->_shader._thickLinesUniformIds.
-                    at(name)), size/3, x);
-            }
             break;
         case GL_UNSIGNED_INT_VEC4:
-            glUseProgram(_data->_shader._id);
             glUniform4uiv(std::get<0>(_data->_shader._uniformIds.at(name)),
                 size/4, x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniform4uiv(std::get<0>(_data->_shader._thickLinesUniformIds.
-                    at(name)), size/4, x);
-            }
             break;
         default:
             throw std::invalid_argument("Unsupported type " + std::to_string(
@@ -553,55 +429,27 @@ void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
 void paz::RenderPass::uniform(const std::string& name, float x)
 {
     CHECK_UNIFORM
-    glUseProgram(_data->_shader._id);
     glUniform1f(std::get<0>(_data->_shader._uniformIds.at(name)), x);
-    if(_data->_shader._thickLinesId)
-    {
-        glUseProgram(_data->_shader._thickLinesId);
-        glUniform1f(std::get<0>(_data->_shader._thickLinesUniformIds.at(name)),
-            x);
-    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y)
 {
     CHECK_UNIFORM
-    glUseProgram(_data->_shader._id);
     glUniform2f(std::get<0>(_data->_shader._uniformIds.at(name)), x, y);
-    if(_data->_shader._thickLinesId)
-    {
-        glUseProgram(_data->_shader._thickLinesId);
-        glUniform2f(std::get<0>(_data->_shader._thickLinesUniformIds.at(name)),
-            x, y);
-    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z)
 {
     CHECK_UNIFORM
-    glUseProgram(_data->_shader._id);
     glUniform3f(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z);
-    if(_data->_shader._thickLinesId)
-    {
-        glUseProgram(_data->_shader._thickLinesId);
-        glUniform3f(std::get<0>(_data->_shader._thickLinesUniformIds.at(name)),
-            x, y, z);
-    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z, float w)
 {
     CHECK_UNIFORM
-    glUseProgram(_data->_shader._id);
     glUniform4f(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z, w);
-    if(_data->_shader._thickLinesId)
-    {
-        glUseProgram(_data->_shader._thickLinesId);
-        glUniform4f(std::get<0>(_data->_shader._thickLinesUniformIds.at(name)),
-            x, y, z, w);
-    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, const float* x, std::
@@ -611,81 +459,32 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
     switch(std::get<1>(_data->_shader._uniformIds.at(name)))
     {
         case GL_FLOAT:
-            glUseProgram(_data->_shader._id);
             glUniform1fv(std::get<0>(_data->_shader._uniformIds.at(name)), size,
                 x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniform1fv(std::get<0>(_data->_shader._thickLinesUniformIds.
-                    at(name)), size, x);
-            }
             break;
         case GL_FLOAT_VEC2:
-            glUseProgram(_data->_shader._id);
             glUniform2fv(std::get<0>(_data->_shader._uniformIds.at(name)), size/
                 2, x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniform2fv(std::get<0>(_data->_shader._thickLinesUniformIds.
-                    at(name)), size/2, x);
-            }
             break;
         case GL_FLOAT_VEC3:
-            glUseProgram(_data->_shader._id);
             glUniform3fv(std::get<0>(_data->_shader._uniformIds.at(name)), size/
                 3, x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniform3fv(std::get<0>(_data->_shader._thickLinesUniformIds.
-                    at(name)), size/3, x);
-            }
             break;
         case GL_FLOAT_VEC4:
-            glUseProgram(_data->_shader._id);
             glUniform4fv(std::get<0>(_data->_shader._uniformIds.at(name)), size/
                 4, x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniform4fv(std::get<0>(_data->_shader._thickLinesUniformIds.
-                    at(name)), size/4, x);
-            }
             break;
         case GL_FLOAT_MAT2:
-            glUseProgram(_data->_shader._id);
             glUniformMatrix2fv(std::get<0>(_data->_shader._uniformIds.at(name)),
                 size/4, GL_FALSE, x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniformMatrix2fv(std::get<0>(_data->_shader.
-                    _thickLinesUniformIds.at(name)), size/4, GL_FALSE, x);
-            }
             break;
         case GL_FLOAT_MAT3:
-            glUseProgram(_data->_shader._id);
             glUniformMatrix3fv(std::get<0>(_data->_shader._uniformIds.at(name)),
                 size/9, GL_FALSE, x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniformMatrix3fv(std::get<0>(_data->_shader.
-                    _thickLinesUniformIds.at(name)), size/9, GL_FALSE, x);
-            }
             break;
         case GL_FLOAT_MAT4:
-            glUseProgram(_data->_shader._id);
             glUniformMatrix4fv(std::get<0>(_data->_shader._uniformIds.at(name)),
                 size/16, GL_FALSE, x);
-            if(_data->_shader._thickLinesId)
-            {
-                glUseProgram(_data->_shader._thickLinesId);
-                glUniformMatrix4fv(std::get<0>(_data->_shader.
-                    _thickLinesUniformIds.at(name)), size/16, GL_FALSE, x);
-            }
             break;
         default:
             throw std::invalid_argument("Unsupported type " + std::to_string(
@@ -710,39 +509,7 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
     }
 
     glBindVertexArray(vertices._data->_id);
-    if(type == PrimitiveType::LineStrip)
-    {
-        glUseProgram(_data->_shader._thickLinesId ? _data->_shader._thickLinesId
-            : _data->_shader._id);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices._data->_lineStripId);
-        glDrawElements(GL_LINE_STRIP_ADJACENCY, vertices._data->_numVertices +
-            2, GL_UNSIGNED_INT, 0);
-    }
-    else if(type == PrimitiveType::LineLoop)
-    {
-        glUseProgram(_data->_shader._thickLinesId ? _data->_shader._thickLinesId
-            : _data->_shader._id);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices._data->_lineLoopId);
-        glDrawElements(GL_LINE_STRIP_ADJACENCY, vertices._data->_numVertices +
-            3, GL_UNSIGNED_INT, 0);
-    }
-    else if(type == PrimitiveType::Lines)
-    {
-        glUseProgram(_data->_shader._thickLinesId ? _data->_shader._thickLinesId
-            : _data->_shader._id);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices._data->_thickLinesId);
-        for(unsigned int i = 0; i < vertices._data->_numVertices/2; ++i)
-        {
-            glDrawElements(GL_LINE_STRIP_ADJACENCY, 4, GL_UNSIGNED_INT,
-                reinterpret_cast<void*>(4*sizeof(unsigned int)*static_cast<std::
-                uintptr_t>(i)));
-        }
-    }
-    else
-    {
-        glUseProgram(_data->_shader._id);
-        glDrawArrays(primitive_type(type), 0, vertices._data->_numVertices);
-    }
+    glDrawArrays(primitive_type(type), 0, vertices._data->_numVertices);
 }
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
@@ -761,41 +528,9 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     }
 
     glBindVertexArray(vertices._data->_id);
-    if(type == PrimitiveType::LineStrip)
-    {
-        glUseProgram(_data->_shader._thickLinesId ? _data->_shader._thickLinesId
-            : _data->_shader._id);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_lineStripId);
-        glDrawElements(GL_LINE_STRIP_ADJACENCY, indices._data->_numIndices + 2,
-            GL_UNSIGNED_INT, 0);
-    }
-    else if(type == PrimitiveType::LineLoop)
-    {
-        glUseProgram(_data->_shader._thickLinesId ? _data->_shader._thickLinesId
-            : _data->_shader._id);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_lineLoopId);
-        glDrawElements(GL_LINE_STRIP_ADJACENCY, indices._data->_numIndices + 3,
-            GL_UNSIGNED_INT, 0);
-    }
-    else if(type == PrimitiveType::Lines)
-    {
-        glUseProgram(_data->_shader._thickLinesId ? _data->_shader._thickLinesId
-            : _data->_shader._id);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_thickLinesId);
-        for(unsigned int i = 0; i < indices._data->_numIndices/2; ++i)
-        {
-            glDrawElements(GL_LINE_STRIP_ADJACENCY, 4, GL_UNSIGNED_INT,
-                reinterpret_cast<void*>(4*sizeof(unsigned int)*static_cast<std::
-                uintptr_t>(i)));
-        }
-    }
-    else
-    {
-        glUseProgram(_data->_shader._id);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);
-        glDrawElements(primitive_type(type), indices._data->_numIndices,
-            GL_UNSIGNED_INT, 0);
-    }
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);
+    glDrawElements(primitive_type(type), indices._data->_numIndices,
+        GL_UNSIGNED_INT, 0);
 }
 
 paz::Framebuffer paz::RenderPass::framebuffer() const

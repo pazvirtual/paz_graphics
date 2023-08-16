@@ -6,9 +6,7 @@
 #include "util.hpp"
 #include "internal_data.hpp"
 #include "window.hpp"
-#ifndef __gl_h_
 #include "gl_core_4_1.h"
-#endif
 #include <GLFW/glfw3.h>
 
 #define CASE(a, b) case paz::WrapMode::a: return GL_##b;
