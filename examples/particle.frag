@@ -1,5 +1,5 @@
 in vec2 uv;
-in vec3 c;
+flat in vec3 c;
 
 layout(location = 0) out vec4 color;
 

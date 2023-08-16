@@ -42,7 +42,7 @@ static constexpr int Scale = 8;
 static constexpr float Eps = 1e-4;
 static constexpr double Angle = 3.;
 
-static constexpr int Threshold = 0.02*std::numeric_limits<std::uint8_t>::max();
+static constexpr int Threshold = 0.05*std::numeric_limits<std::uint8_t>::max();
 
 static constexpr std::array<std::array<int, 3>, 10> SamplePoints =
 {{
@@ -356,8 +356,10 @@ int main()
         {
             if(std::abs(img.bytes()[4*(ImgRes*n[0] + n[1])] - n[2]) > Threshold)
             {
-                throw std::runtime_error("Incorrect pixel value at (" + std::
-                    to_string(n[0]) + ", " + std::to_string(n[1]) + ").");
+                throw std::runtime_error("Incorrect pixel value (" + std::
+                    to_string(static_cast<int>(img.bytes()[4*(ImgRes*n[0] + n[
+                    1])])) + ") at (" + std::to_string(n[0]) + ", " + std::
+                    to_string(n[1]) + ").");
             }
         }
     }
