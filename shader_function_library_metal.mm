@@ -15,8 +15,7 @@
 
 static id<MTLLibrary> create_library(std::string src, bool isVert)
 {
-    bool temp;
-    src = (isVert ? paz::vert2metal(src, temp) : paz::frag2metal(src));
+    src = (isVert ? paz::vert2metal(src) : paz::frag2metal(src));
 
     NSError* error = nil;
     id<MTLLibrary> lib = [DEVICE newLibraryWithSource:[NSString
