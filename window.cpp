@@ -578,7 +578,7 @@ paz::Initializer::Initializer()
     hr = Device->CreateRenderTargetView(framebuffer, 0, &RenderTargetView);
     if(hr)
     {
-        throw std::runtime_error("Failed to create ?? view ??."); //TEMP
+        throw std::runtime_error("Failed to create default framebuffer view.");
     }
     framebuffer->Release();
 #endif
@@ -669,6 +669,17 @@ void paz::Window::MakeWindowed()
 #endif
     }
 }
+
+#ifdef PAZ_WINDOWS
+ID3D11Device* paz::d3d_device()
+{
+    return Device;
+}
+ID3D11DeviceContext* paz::d3d_context()
+{
+    return DeviceContext;
+}
+#endif
 
 void paz::Window::SetTitle(const std::string& title)
 {

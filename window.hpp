@@ -3,6 +3,7 @@
 
 #include "PAZ_Graphics"
 #include "detect_os.hpp"
+#include <d3d11.h>
 #include <unordered_set>
 
 namespace paz
@@ -14,6 +15,10 @@ namespace paz
     unsigned char to_srgb(double x);
 #ifndef PAZ_MACOS
     void begin_frame();
+#endif
+#ifdef PAZ_WINDOWS
+    ID3D11Device* d3d_device();
+    ID3D11DeviceContext* d3d_context();
 #endif
     struct Initializer
     {
