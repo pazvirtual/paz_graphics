@@ -2,7 +2,7 @@
 #include "PAZ_IO"
 
 static constexpr double MinWidth = 1.;
-static constexpr double MaxWidth = 6.;
+static constexpr double MaxWidth = 9.;
 
 static const std::string LineVertSrc = 1 + R"===(
 layout(location = 0) in vec2 pos;
@@ -17,10 +17,9 @@ void main()
 static const std::string LineFragSrc = 1 + R"===(
 layout(location = 0) out vec4 color;
 in float a;
-const float lum = pow(0.5, 2.2);
 void main()
 {
-    color = vec4(lum*vec3(a, 1. - a, 1.), 1.);
+    color = vec4(pow(0.5, 2.2)*vec3(a, 1. - a, 1.), 1.);
 }
 )===";
 
@@ -103,7 +102,7 @@ int main(int, char** argv)
     paz::RenderPass yPass(buff2, lineVert2, lineFrag1);
     paz::RenderPass postPass(quadVert, lineFrag2);
 
-    double width = MinWidth;
+    double width = 0.5*(MaxWidth - MinWidth);
     while(!paz::Window::Done())
     {
         paz::Window::SetCursorMode(paz::Window::GamepadActive() ? paz::
@@ -127,12 +126,12 @@ int main(int, char** argv)
         if(paz::Window::KeyDown(paz::Key::Up) || paz::Window::GamepadDown(paz::
             GamepadButton::Up))
         {
-            width = std::min(width + 4.*paz::Window::FrameTime(), MaxWidth);
+            width = std::min(width + 5.*paz::Window::FrameTime(), MaxWidth);
         }
         if(paz::Window::KeyDown(paz::Key::Down) || paz::Window::
             GamepadDown(paz::GamepadButton::Down))
         {
-            width = std::max(width - 4.*paz::Window::FrameTime(), MinWidth);
+            width = std::max(width - 5.*paz::Window::FrameTime(), MinWidth);
         }
         if(paz::Window::KeyPressed(paz::Key::Q) || paz::Window::GamepadPressed(
             paz::GamepadButton::Back))
@@ -159,8 +158,7 @@ int main(int, char** argv)
         xPass.read("base", buff0.colorAttachment(0));
         xPass.uniform("texOffset", std::array<float, 2>{1.f/buff0.
             colorAttachment(0).width(), 1.f/buff0.colorAttachment(0).height()});
-        xPass.uniform("width", static_cast<float>(paz::Window::DpiScale()*
-            width));
+        xPass.uniform("width", static_cast<float>(width));
         xPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
         xPass.end();
 
@@ -168,8 +166,7 @@ int main(int, char** argv)
         yPass.read("base", buff1.colorAttachment(0));
         yPass.uniform("texOffset", std::array<float, 2>{1.f/buff1.
             colorAttachment(0).width(), 1.f/buff1.colorAttachment(0).height()});
-        yPass.uniform("width", static_cast<float>(paz::Window::DpiScale()*
-            width));
+        yPass.uniform("width", static_cast<float>(width));
         yPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
         yPass.end();
 
