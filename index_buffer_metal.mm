@@ -35,8 +35,11 @@ paz::IndexBuffer::IndexBuffer(std::size_t size)
     _data = std::make_shared<Data>();
 
     _data->_numIndices = size;
-    _data->_data = [DEVICE newBufferWithLength:sizeof(unsigned int)*size
-        options:MTLStorageModeShared];
+    if(size)
+    {
+        _data->_data = [DEVICE newBufferWithLength:sizeof(unsigned int)*size
+            options:MTLStorageModeShared];
+    }
 }
 
 paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
@@ -46,8 +49,11 @@ paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
     _data = std::make_shared<Data>();
 
     _data->_numIndices = size;
-    _data->_data = [DEVICE newBufferWithBytes:data length:sizeof(unsigned int)*
-        size options:MTLStorageModeShared];
+    if(size)
+    {
+        _data->_data = [DEVICE newBufferWithBytes:data length:sizeof(unsigned
+        int)*size options:MTLStorageModeShared];
+    }
 }
 
 void paz::IndexBuffer::sub(const unsigned int* data, std::size_t size)

@@ -352,7 +352,8 @@ void paz::RenderPass::depth(DepthTestMode mode)
     {
         depthStencilDescriptor.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
     }
-    else if(mode == DepthTestMode::AlwaysNoMask || mode == DepthTestMode::Always)
+    else if(mode == DepthTestMode::AlwaysNoMask || mode == DepthTestMode::
+        Always)
     {
         depthStencilDescriptor.DepthFunc = D3D11_COMPARISON_ALWAYS;
     }
