@@ -74,7 +74,7 @@ paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
 
 bool paz::IndexBuffer::empty() const
 {
-    return !_data->_numIndices;
+    return !_data || !_data->_numIndices;
 }
 
 #endif
