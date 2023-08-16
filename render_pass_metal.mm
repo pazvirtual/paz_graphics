@@ -233,6 +233,47 @@ assert(blendMode == BlendMode::Disable);//TEMP
             throw std::runtime_error("Failed to grab current render pass descri"
                 "ptor.");
         }
+
+        if(colorLoadActions.empty() || colorLoadActions[0] == LoadAction::
+            DontCare)
+        {
+            [[renderPassDescriptor colorAttachments][0] setLoadAction:
+                MTLLoadActionDontCare];
+        }
+        else if(colorLoadActions[0] == LoadAction::Clear)
+        {
+            [[renderPassDescriptor colorAttachments][0] setLoadAction:
+                MTLLoadActionClear];
+        }
+        else if(colorLoadActions[0] == LoadAction::Load)
+        {
+            [[renderPassDescriptor colorAttachments][0] setLoadAction:
+                MTLLoadActionLoad];
+        }
+        else
+        {
+            throw std::runtime_error("Invalid color attachment load action.");
+        }
+
+        if(depthLoadAction == LoadAction::DontCare)
+        {
+            [[renderPassDescriptor depthAttachment] setLoadAction:
+                MTLLoadActionDontCare];
+        }
+        else if(depthLoadAction == LoadAction::Clear)
+        {
+            [[renderPassDescriptor depthAttachment] setLoadAction:
+                MTLLoadActionClear];
+        }
+        else if(depthLoadAction == LoadAction::Load)
+        {
+            [[renderPassDescriptor depthAttachment] setLoadAction:
+                MTLLoadActionLoad];
+        }
+        else
+        {
+            throw std::runtime_error("Invalid depth attachment load action.");
+        }
     }
 
     _data->_renderEncoder = [[RENDERER commandBuffer]
