@@ -7,7 +7,7 @@ void main()
     ivec2 texSize = textureSize(base, 0);
     vec2 texOffset = vec2(1./texSize.x, 1./texSize.y);
     float maxDist = 0.5*width + 0.5;
-    int halfRange = int(maxDist);
+    int halfRange = int(maxDist) + 1;
     color = vec4(0.);
     for(int i = -halfRange - 1; i <= halfRange; ++i)
     {

@@ -81,7 +81,8 @@ int main(int, char** argv)
         ).str());
 
     paz::Framebuffer buff;
-    buff.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA16Float));
+    buff.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA16Float, paz::
+        MinMagFilter::Linear, paz::MinMagFilter::Linear));
 
     paz::RenderPass basePass(buff, lineVert, lineFrag0);
     paz::RenderPass sdfPass(quadVert, lineFrag1);
