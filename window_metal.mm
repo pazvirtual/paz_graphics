@@ -444,13 +444,13 @@ paz::Image paz::Window::ReadPixels()
     const int width = ViewportWidth();
     const int height = ViewportHeight();
 
-    std::vector<unsigned char> bgraFlipped(width*height);
+    std::vector<unsigned char> bgraFlipped(4*width*height);
     [static_cast<id<MTLTexture>>(final_framebuffer().colorAttachment(0)._data->
         _texture) getBytes:bgraFlipped.data() bytesPerRow:4*width fromRegion:
         MTLRegionMake2D(0, 0, width, height) mipmapLevel:0];
 
     //TEMP - should convert from final render gamma (window gamma?) to sRGB
-    Image rgba(ImageFormat::RGBA8UNorm_sRGB, ViewportWidth(), ViewportHeight());
+    Image rgba(ImageFormat::RGBA8UNorm_sRGB, width, height);
     for(int y = 0; y < height; ++y)
     {
         for(int x = 0; x < width; ++x)

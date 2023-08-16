@@ -29,7 +29,7 @@ std::string paz::vert2metal(const std::string& src)
     bool usesGlInstanceId = false;
 
     std::unordered_map<std::string, std::pair<std::string, bool>> buffers;
-    std::map<unsigned int, std::tuple<std::string, std::string, bool>> inputs;
+    std::map<int, std::tuple<std::string, std::string, bool>> inputs;
     std::map<std::string, std::pair<std::string, bool>> outputs;
     std::unordered_set<std::string> structs;
 
@@ -487,14 +487,12 @@ auto uintBitsToFloat(thread const uint4& v)
 
     // Append main function.
     out << "struct InputData" << std::endl << "{" << std::endl;
-    int numAttrs = 0;
     for(const auto& n : inputs)
     {
         if(!std::get<2>(n.second))
         {
             out << "    " << std::get<1>(n.second) << " " << std::get<0>(n.
                 second) << " [[attribute(" << n.first << ")]];" << std::endl;
-            ++numAttrs;
         }
     }
     out << "};" << std::endl;
@@ -519,20 +517,24 @@ auto uintBitsToFloat(thread const uint4& v)
     {
         out << ", uint glInstanceId [[instance_id]]";
     }
-    unsigned int b = 0;
     for(const auto& n : inputs)
     {
         if(std::get<2>(n.second))
         {
             out << ", constant " << std::get<1>(n.second) << "* " << std::get<0
                 >(n.second) << " [[buffer(" << n.first << ")]]";
-            b = std::max(b, n.first);
         }
     }
+    int b = -1;
+    for(const auto& n : inputs)
+    {
+        b = std::max(b, n.first);
+    }
+    ++b;
     for(const auto& n : buffers)
     {
         out << ", constant " << n.second.first << (n.second.second ? "* " :
-            "& ") << n.first << " [[buffer(" << b + 1 << ")]]";
+            "& ") << n.first << " [[buffer(" << b << ")]]";
         ++b;
     }
     out << ")" << std::endl << "{" << std::endl << "    OutputData out;" <<

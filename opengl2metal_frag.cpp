@@ -26,7 +26,7 @@ std::string paz::frag2metal(const std::string& src)
     std::unordered_map<std::string, std::pair<std::string, bool>> buffers;
     std::unordered_map<std::string, std::string> textures;
     std::map<std::string, std::pair<std::string, bool>> inputs;
-    std::map<unsigned int, std::pair<std::string, std::string>> outputs;
+    std::map<int, std::pair<std::string, std::string>> outputs;
     std::unordered_set<std::string> structs;
 
     // Include headers.
