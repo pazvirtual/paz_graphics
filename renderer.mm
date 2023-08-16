@@ -12,25 +12,29 @@
 {
     id<MTLDevice> _device;
     id<MTLCommandQueue> _commandQueue;
-    bool _drewOnce;
-    MTKView* _curView;
+    MTKView* _view;
 }
 
 - (instancetype)initWithMetalKitView:(MTKView*)view
 {
     if(self = [super init])
     {
-        _drewOnce = false;
-
         _device = view.device;
 
         _commandQueue = [_device newCommandQueue];
 
-        // Create the first command buffer.
-        _commandBuffer = [_commandQueue commandBuffer];
+        _view = view;
     }
 
     return self;
+}
+
+- (void)ensureCommandBuffer
+{
+    if(!_commandBuffer)
+    {
+        _commandBuffer = [_commandQueue commandBuffer];
+    }
 }
 
 - (void)mtkView:(MTKView*)__unused view drawableSizeWillChange:(CGSize)size
@@ -46,28 +50,17 @@
     paz::resize_targets();
 }
 
-- (void)drawInMTKView:(MTKView*)view
+- (void)drawInMTKView:(MTKView*)__unused view
 {
-    _curView = view;
     @try
     {
-        // Create a new command buffer.
-        if(_drewOnce)
-        {
-            _commandBuffer = [_commandQueue commandBuffer];
-        }
-
-        // Encode drawing commands.
-        paz::draw_in_renderer();
-
-        // Render.
         [_commandBuffer presentDrawable:[view currentDrawable]];
 
         [_commandBuffer commit];
 
         [_commandBuffer waitUntilCompleted];
 
-        _drewOnce = true;
+        _commandBuffer = nil;
     }
     @catch(NSException* e)
     {
@@ -78,7 +71,7 @@
 
 - (MTLRenderPassDescriptor*)currentRenderPassDescriptor
 {
-    return [_curView currentRenderPassDescriptor];
+    return [_view currentRenderPassDescriptor];
 }
 @end
 

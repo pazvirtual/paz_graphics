@@ -33,8 +33,6 @@ void paz::initialize()
     static paz::Initializer initializer;
 }
 
-static std::function<void(void)> Draw = [](){};
-
 static std::chrono::time_point<std::chrono::steady_clock> FrameStart = std::
     chrono::steady_clock::now();
 static double PrevFrameTime = 1./60.;
@@ -42,6 +40,21 @@ static double PrevFrameTime = 1./60.;
 static std::unordered_set<void*> RenderTargets;
 
 static CGPoint PrevOrigin;
+
+static void poll_events()
+{
+    while(true)
+    {
+        NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:
+            [NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES];
+        if(!event)
+        {
+            break;
+        }
+        [NSApp sendEvent:event];
+        [NSApp updateWindows];
+    }
+}
 
 paz::Initializer::~Initializer()
 {
@@ -59,6 +72,7 @@ paz::Initializer::Initializer()
         [NSApp setDelegate:delegate];
         [delegate release];
         [NSApp finishLaunching];
+        poll_events();
     }
     @catch(NSException* e)
     {
@@ -74,16 +88,6 @@ void paz::resize_targets()
         reinterpret_cast<Texture::Data*>(n)->resize(Window::ViewportWidth(),
             Window::ViewportHeight());
     }
-}
-
-void paz::draw_in_renderer()
-{
-    Draw();
-    [VIEW_CONTROLLER resetEvents];
-    const auto now = std::chrono::steady_clock::now();
-    PrevFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
-        FrameStart).count()*1e-6;
-    FrameStart = now;
 }
 
 void paz::register_target(void* target)
@@ -272,24 +276,24 @@ void paz::Window::Quit()
     [NSApp terminate:nil];
 }
 
-void paz::Window::Loop(const std::function<void(void)>& draw)
+bool paz::Window::Done()
 {
     initialize();
 
-    Draw = draw;
-    while(![APP_DELEGATE done])
-    {
-
-        NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:
-            [NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:YES];
-        [NSApp sendEvent:event];
-        [NSApp updateWindows];
-    }
+    return [APP_DELEGATE done];
 }
 
-void paz::Window::Commit()
+void paz::Window::EndFrame()
 {
-    throw std::logic_error("NOT IMPLEMENTED");
+    initialize();
+
+    [[VIEW_CONTROLLER mtkView] draw];
+    [VIEW_CONTROLLER resetEvents];
+    const auto now = std::chrono::steady_clock::now();
+    PrevFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
+        FrameStart).count()*1e-6;
+    FrameStart = now;
+    poll_events();
 }
 
 double paz::Window::FrameTime()

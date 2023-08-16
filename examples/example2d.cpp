@@ -112,7 +112,7 @@ int main(int, char** argv)
 
     unsigned int mode = 0;
 
-    paz::Window::Loop([&]()
+    while(!paz::Window::Done())
     {
         // Handle events.
         if(paz::Window::KeyPressed(paz::Key::Q))
@@ -227,10 +227,12 @@ int main(int, char** argv)
         postPass.primitives(paz::PrimitiveType::TriangleStrip, quadVertices);
         postPass.end();
 
+        paz::Window::EndFrame();
+
         if(paz::Window::KeyPressed(paz::Key::S))
         {
             paz::write_bmp(appDir + "/screenshot.bmp", paz::Window::
                 PrintScreen());
         }
-    });
+    }
 }

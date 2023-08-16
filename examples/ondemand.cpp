@@ -53,7 +53,7 @@ int main(int, char** argv)
             }
         }
         textPass.end();
-        paz::Window::Commit();
+        paz::Window::EndFrame();
         time += paz::Window::FrameTime();
     }
 }

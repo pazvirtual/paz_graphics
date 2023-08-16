@@ -64,13 +64,14 @@ int main()
 
     paz::RenderPass render(shader);
 
-    paz::Window::Loop([&]()
+    while(!paz::Window::Done())
     {
         render.begin({paz::LoadAction::Clear});
         render.uniform("width", paz::Window::ViewportWidth());
         render.uniform("height", paz::Window::ViewportHeight());
         render.primitives(paz::PrimitiveType::Lines, vertices);
         render.end();
+
+        paz::Window::EndFrame();
     }
-    );
 }
