@@ -42,6 +42,71 @@ double paz::Window::_frameTime = 1./60.;
 
 std::unordered_set<paz::RenderTarget*> paz::Window::_targets;
 
+static void key_callback(int key, int action)
+{
+    const paz::Window::Key k = paz::convert_keycode(key);
+    if(k == paz::Window::Key::Unknown)
+    {
+        return;
+    }
+
+    const int i = static_cast<int>(k);
+    if(action == GLFW_PRESS)
+    {
+        KeyDown[i] = true;
+        KeyPressed[i] = true;
+    }
+    else if(action == GLFW_RELEASE)
+    {
+        KeyDown[i] = false;
+        KeyReleased[i] = true;
+    }
+}
+
+static void mouse_button_callback(int button, int action)
+{
+    if(action == GLFW_PRESS)
+    {
+        MouseDown[button] = true;
+        MousePressed[button] = true;
+    }
+    else if(action == GLFW_RELEASE)
+    {
+        MouseDown[button] = false;
+        MouseReleased[button] = true;
+    }
+}
+
+static void cursor_position_callback(double xPos, double yPos)
+{
+    yPos = WindowHeight - yPos;
+    MouseOffset.first = xPos - MousePos.first;
+    MouseOffset.second = yPos - MousePos.second;
+    MousePos.first = xPos;
+    MousePos.second = yPos;
+}
+
+static void scroll_callback(double xOffset, double yOffset)
+{
+    ScrollOffset.first = xOffset;
+    ScrollOffset.second = yOffset;
+}
+
+static void focus_callback(int focused)
+{
+    WindowIsKey = focused;
+}
+
+static void resize_callback(int width, int height)
+{
+    WindowWidth = width;
+    WindowHeight = height;
+
+    glfwGetFramebufferSize(WindowPtr, &FboWidth, &FboHeight);
+    FboAspectRatio = (float)FboWidth/FboHeight;
+    paz::Window::ResizeTargets();
+}
+
 paz::Window::~Window()
 {
     glfwTerminate();
@@ -116,17 +181,17 @@ void paz::Window::Init()
 
     // Set key, mouse and scroll callbacks.
     glfwSetKeyCallback(WindowPtr, [](GLFWwindow*, int key, int, int action, int)
-        { Window::KeyCallback(key, action); });
+        { key_callback(key, action); });
     glfwSetMouseButtonCallback(WindowPtr, [](GLFWwindow*, int button, int
-        action, int){ Window::MouseButtonCallback(button, action); });
+        action, int){ mouse_button_callback(button, action); });
     glfwSetCursorPosCallback(WindowPtr, [](GLFWwindow*, double xPos, double
-        yPos){ Window::CursorPositionCallback(xPos, yPos); });
+        yPos){ cursor_position_callback(xPos, yPos); });
     glfwSetScrollCallback(WindowPtr, [](GLFWwindow*, double xOffset, double
-        yOffset){ Window::ScrollCallback(xOffset, yOffset); });
-    glfwSetWindowFocusCallback(WindowPtr, [](GLFWwindow*, int focused){ Window::
-        FocusCallback(focused); });
+        yOffset){ scroll_callback(xOffset, yOffset); });
+    glfwSetWindowFocusCallback(WindowPtr, [](GLFWwindow*, int focused){
+        focus_callback(focused); });
     glfwSetWindowSizeCallback(WindowPtr, [](GLFWwindow*, int width, int height){
-        Window::ResizeCallback(width, height); });
+        resize_callback(width, height); });
 }
 
 void paz::Window::MakeFullscreen()
@@ -280,71 +345,6 @@ void paz::Window::SetCursorMode(CursorMode mode)
 float paz::Window::AspectRatio()
 {
     return FboAspectRatio;
-}
-
-void paz::Window::KeyCallback(int key, int action)
-{
-    const Key k = convert_keycode(key);
-    if(k == Key::Unknown)
-    {
-        return;
-    }
-
-    const int i = static_cast<int>(k);
-    if(action == GLFW_PRESS)
-    {
-        ::KeyDown[i] = true;
-        ::KeyPressed[i] = true;
-    }
-    else if(action == GLFW_RELEASE)
-    {
-        ::KeyDown[i] = false;
-        ::KeyReleased[i] = true;
-    }
-}
-
-void paz::Window::MouseButtonCallback(int button, int action)
-{
-    if(action == GLFW_PRESS)
-    {
-        ::MouseDown[button] = true;
-        ::MousePressed[button] = true;
-    }
-    else if(action == GLFW_RELEASE)
-    {
-        ::MouseDown[button] = false;
-        ::MouseReleased[button] = true;
-    }
-}
-
-void paz::Window::CursorPositionCallback(double xPos, double yPos)
-{
-    yPos = WindowHeight - yPos;
-    ::MouseOffset.first = xPos - ::MousePos.first;
-    ::MouseOffset.second = yPos - ::MousePos.second;
-    ::MousePos.first = xPos;
-    ::MousePos.second = yPos;
-}
-
-void paz::Window::ScrollCallback(double xOffset, double yOffset)
-{
-    ::ScrollOffset.first = xOffset;
-    ::ScrollOffset.second = yOffset;
-}
-
-void paz::Window::FocusCallback(int focused)
-{
-    WindowIsKey = focused;
-}
-
-void paz::Window::ResizeCallback(int width, int height)
-{
-    WindowWidth = width;
-    WindowHeight = height;
-
-    glfwGetFramebufferSize(WindowPtr, &FboWidth, &FboHeight);
-    FboAspectRatio = (float)FboWidth/FboHeight;
-    ResizeTargets();
 }
 
 void paz::Window::ResizeTargets()

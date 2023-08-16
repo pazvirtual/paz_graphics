@@ -451,14 +451,6 @@ namespace paz
         static bool KeyDown(int key);
         static bool KeyPressed(int key);
         static bool KeyReleased(int key);
-#ifndef PAZ_MACOS
-        static void KeyCallback(int key, int action);
-        static void MouseButtonCallback(int button, int action);
-        static void CursorPositionCallback(double xPos, double yPos);
-        static void ScrollCallback(double xOffset, double yOffset);
-        static void FocusCallback(int focused);
-        static void ResizeCallback(int width, int height);
-#endif
         static void LoopInternal();
         static void ResetEvents();
         static void RegisterTarget(RenderTarget* target);
