@@ -8,7 +8,10 @@
 
 paz::IndexBuffer::Data::~Data()
 {
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    if(_buffer)
+    {
+        _buffer->Release();
+    }
 }
 
 paz::IndexBuffer::IndexBuffer()
@@ -23,11 +26,30 @@ paz::IndexBuffer::IndexBuffer(std::size_t size)
     _data = std::make_shared<Data>();
 
     _data->_numIndices = size;
+// createbuffer dynamic(?)
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
 {
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    initialize();
+
+    _data = std::make_shared<Data>();
+
+    _data->_numIndices = size;
+    D3D11_BUFFER_DESC bufDescriptor = {};
+    bufDescriptor.Usage = D3D11_USAGE_DEFAULT;
+    bufDescriptor.ByteWidth = sizeof(unsigned int)*size;
+    bufDescriptor.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    D3D11_SUBRESOURCE_DATA srData = {};
+    srData.pSysMem = data;
+    const auto hr = d3d_device()->CreateBuffer(&bufDescriptor, &srData, &_data->
+        _buffer);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create index buffer (HRESULT " +
+            std::to_string(hr) + ").");
+    }
 }
 
 void paz::IndexBuffer::sub(const unsigned int* data, std::size_t size)

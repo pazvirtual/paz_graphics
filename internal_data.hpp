@@ -92,6 +92,8 @@ struct paz::IndexBuffer::Data
     void* _data = nullptr;
 #elif defined(PAZ_LINUX)
     unsigned int _id = 0;
+#else
+    ID3D11Buffer* _buffer = nullptr;
 #endif
     std::size_t _numIndices = 0;
     ~Data();
@@ -170,6 +172,7 @@ struct paz::RenderPass::Data
     std::unordered_map<std::string, int> _texAndSamplerSlots;
     ID3D11BlendState* _blendState = nullptr;
     ~Data();
+    void mapUniforms();
 #endif
     std::shared_ptr<Framebuffer::Data> _fbo;
 };
