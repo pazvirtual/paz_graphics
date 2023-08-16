@@ -163,6 +163,7 @@ namespace paz
         friend class Framebuffer;
         friend class RenderPass;
         friend void resize_targets();
+        friend class Window;
 
     protected:
         struct Data;
@@ -244,6 +245,7 @@ namespace paz
     class Framebuffer
     {
         friend class RenderPass;
+        friend class Window;
 
         struct Data;
         std::shared_ptr<Data> _data;
@@ -366,7 +368,7 @@ namespace paz
         static void MakeResizable();
         static void MakeNotResizable();
         static void Resize(int width, int height, bool viewportCoords);
-        static Image<std::uint8_t, 3> PrintScreen();
+        static Image<std::uint8_t, 3> GetPixels();
     };
 }
 

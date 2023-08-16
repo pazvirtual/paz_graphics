@@ -7,6 +7,8 @@ namespace paz
     void register_target(void* t);
     void unregister_target(void* t);
     void resize_targets();
+    class Framebuffer;
+    Framebuffer final_framebuffer();
     struct Initializer
     {
         std::unordered_set<void*> _renderTargets;
