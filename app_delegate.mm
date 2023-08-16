@@ -418,6 +418,8 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
         [_window setTitle:[NSString stringWithUTF8String:title.c_str()]];
         [_window setStyleMask:NSWindowStyleMaskTitled|
             NSWindowStyleMaskMiniaturizable|NSWindowStyleMaskResizable];
+        [_window setCollectionBehavior:
+            NSWindowCollectionBehaviorFullScreenAuxiliary];
         [_window setDelegate:self];
 
         // Load gamepad mappings.

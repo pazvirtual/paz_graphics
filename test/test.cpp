@@ -241,6 +241,18 @@ int main()
 
     try
     {
+        paz::Window::MakeFullscreen();
+    }
+    CATCH
+
+    try
+    {
+        paz::Window::MakeWindowed();
+    }
+    CATCH
+
+    try
+    {
         paz::Window::Resize(ImgRes, ImgRes, true);
         if(paz::Window::ViewportWidth() != ImgRes || paz::Window::
             ViewportHeight() != ImgRes)

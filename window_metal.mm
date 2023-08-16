@@ -114,7 +114,8 @@ void paz::Window::MakeFullscreen()
     {
         [[[APP_DELEGATE window] contentView] enterFullScreenMode:[NSScreen
             mainScreen] withOptions:
-            @{NSFullScreenModeApplicationPresentationOptions:
+            @{NSFullScreenModeAllScreens:@NO,
+            NSFullScreenModeApplicationPresentationOptions:
             @(NSApplicationPresentationHideDock|
             NSApplicationPresentationHideMenuBar)}];
         PrevOrigin = [[APP_DELEGATE window] frame].origin;
@@ -129,10 +130,14 @@ void paz::Window::MakeWindowed()
 
     if(IsFullscreen())
     {
-        [[[APP_DELEGATE window] contentView] exitFullScreenModeWithOptions:
-            @{NSFullScreenModeApplicationPresentationOptions:
-            @(NSApplicationPresentationDefault)}];
+        [[[APP_DELEGATE window] contentView] exitFullScreenModeWithOptions:nil];
         [[APP_DELEGATE window] setFrameOrigin:PrevOrigin];
+
+        // Deallocate the temporary `_NSFullScreenWindow`.
+        [[[NSApp windows] objectAtIndex:1] dealloc];
+
+        // Shift focus back to the original window.
+        [[APP_DELEGATE window] makeKeyAndOrderFront:nil];
     }
 }
 
