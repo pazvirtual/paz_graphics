@@ -113,7 +113,10 @@ void paz::Window::MakeFullscreen()
     if(!IsFullscreen())
     {
         [[[APP_DELEGATE window] contentView] enterFullScreenMode:[NSScreen
-            mainScreen] withOptions:nil];
+            mainScreen] withOptions:
+            @{NSFullScreenModeApplicationPresentationOptions:
+            @(NSApplicationPresentationHideDock|
+            NSApplicationPresentationHideMenuBar)}];
         PrevOrigin = [[APP_DELEGATE window] frame].origin;
         [[APP_DELEGATE window] setFrameOrigin:[[NSScreen mainScreen] frame].
             origin];
@@ -126,7 +129,9 @@ void paz::Window::MakeWindowed()
 
     if(IsFullscreen())
     {
-        [[[APP_DELEGATE window] contentView] exitFullScreenModeWithOptions:nil];
+        [[[APP_DELEGATE window] contentView] exitFullScreenModeWithOptions:
+            @{NSFullScreenModeApplicationPresentationOptions:
+            @(NSApplicationPresentationDefault)}];
         [[APP_DELEGATE window] setFrameOrigin:PrevOrigin];
     }
 }
@@ -150,7 +155,7 @@ bool paz::Window::IsFullscreen()
 {
     initialize();
 
-    return [[APP_DELEGATE window] contentView].inFullScreenMode;
+    return [[[APP_DELEGATE window] contentView] isInFullScreenMode];
 }
 
 int paz::Window::ViewportWidth()
