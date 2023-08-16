@@ -34,11 +34,39 @@ static const char* QuadFragSrc = 1 + R"===(
 in vec2 uv;
 uniform sampler2D tex;
 uniform float gamma;
+uniform float dither;
 layout(location = 0) out vec4 color;
+uint hash(in uint x)
+{
+    x += (x << 10u);
+    x ^= (x >>  6u);
+    x += (x <<  3u);
+    x ^= (x >> 11u);
+    x += (x << 15u);
+    return x;
+}
+uint hash(in uvec2 v)
+{
+    return hash(v.x^hash(v.y));
+}
+float construct_float(in uint m)
+{
+    const uint ieeeMantissa = 0x007FFFFFu;
+    const uint ieeeOne = 0x3F800000u;
+    m &= ieeeMantissa;
+    m |= ieeeOne;
+    float f = uintBitsToFloat(m);
+    return f - 1.;
+}
+float unif_rand(in vec2 v)
+{
+    return construct_float(hash(floatBitsToUint(v)));
+}
 void main()
 {
     color = texture(tex, uv);
     color.rgb = pow(color.rgb, vec3(1./gamma));
+    color.rgb += dither*mix(-0.5/255., 0.5/255., unif_rand(uv));
 }
 )===";
 #else
@@ -63,7 +91,33 @@ OutputData main(InputData input)
 static const std::string QuadFragSrc = 1 + R"===(
 uniform Texture2D tex;
 uniform SamplerState texSampler;
-uniform float gamma;
+uniform float2 gammaDither;
+uint hash(in uint x)
+{
+    x += (x << 10u);
+    x ^= (x >>  6u);
+    x += (x <<  3u);
+    x ^= (x >> 11u);
+    x += (x << 15u);
+    return x;
+}
+uint hash(in uint2 v)
+{
+    return hash(v.x^hash(v.y));
+}
+float construct_float(in uint m)
+{
+    const uint ieeeMantissa = 0x007FFFFFu;
+    const uint ieeeOne = 0x3F800000u;
+    m &= ieeeMantissa;
+    m |= ieeeOne;
+    float f = asfloat(m);
+    return f - 1.;
+}
+float unif_rand(in float2 v)
+{
+    return construct_float(hash(asuint(v)));
+}
 struct InputData
 {
     float4 glPosition : SV_Position; //TEMP - bad if necessary !
@@ -77,7 +131,9 @@ OutputData main(InputData input)
 {
     OutputData output;
     output.color = tex.Sample(texSampler, float2(input.uv.x, 1. - input.uv.y));
-    output.color.rgb = pow(output.color.rgb, (float3)(1./gamma));
+    output.color.rgb = pow(output.color.rgb, (float3)(1./gammaDither.x));
+    output.color.rgb += gammaDither.y*lerp(-0.5/255., 0.5/255., unif_rand(input.
+        uv));
     return output;
 }
 )===";
@@ -134,6 +190,7 @@ static bool CursorDisabled;
 static bool FrameInProgress;
 static bool HidpiEnabled = true;
 static float Gamma = 2.2;
+static bool Dither = false;
 #ifdef PAZ_LINUX
 static const unsigned int QuadShaderId = []()
 {
@@ -316,7 +373,7 @@ static ID3D11RasterizerState* BlitState = []()
     }
     return res;
 }();
-static ID3D11Buffer* GammaBuf = []()
+static ID3D11Buffer* BlitBuf = []()
 {
     D3D11_BUFFER_DESC bufDescriptor = {};
     bufDescriptor.Usage = D3D11_USAGE_DYNAMIC;
@@ -968,6 +1025,7 @@ void paz::Window::EndFrame()
 #ifdef PAZ_LINUX
     static const auto texLoc = glGetUniformLocation(QuadShaderId, "tex");
     static const auto gammaLoc = glGetUniformLocation(QuadShaderId, "gamma");
+    static const auto ditherLoc = glGetUniformLocation(QuadShaderId, "dither");
 
     glGetError();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -978,6 +1036,7 @@ void paz::Window::EndFrame()
         _id);
     glUniform1i(texLoc, 0);
     glUniform1f(gammaLoc, Gamma);
+    glUniform1f(ditherLoc, Dither ? 1.f : 0.f);
     glBindVertexArray(QuadBufId);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, QuadPos.size()/2);
     const GLenum error = glGetError();
@@ -1008,7 +1067,7 @@ void paz::Window::EndFrame()
     DeviceContext->PSSetSamplers(0, 1, &final_framebuffer().colorAttachment(0).
         _data->_sampler);
     D3D11_MAPPED_SUBRESOURCE mappedSr;
-    const auto hr = DeviceContext->Map(GammaBuf, 0, D3D11_MAP_WRITE_DISCARD, 0,
+    const auto hr = DeviceContext->Map(BlitBuf, 0, D3D11_MAP_WRITE_DISCARD, 0,
         &mappedSr);
     if(hr)
     {
@@ -1016,8 +1075,10 @@ void paz::Window::EndFrame()
             "t buffer (HRESULT " + std::to_string(hr) + ").");
     }
     std::copy(&Gamma, &Gamma + 1, reinterpret_cast<float*>(mappedSr.pData));
-    DeviceContext->Unmap(GammaBuf, 0);
-    DeviceContext->PSSetConstantBuffers(0, 1, &GammaBuf);
+    const float f = Dither ? 1.f : 0.f;
+    std::copy(&f, &f + 1, reinterpret_cast<float*>(mappedSr.pData) + 1);
+    DeviceContext->Unmap(BlitBuf, 0);
+    DeviceContext->PSSetConstantBuffers(0, 1, &BlitBuf);
     DeviceContext->Draw(QuadPos.size()/2, 0);
 
     SwapChain->Present(1, 0);
@@ -1285,6 +1346,16 @@ bool paz::Window::HidpiSupported()
 void paz::Window::SetGamma(float gamma)
 {
     Gamma = gamma;
+}
+
+void paz::Window::DisableDithering()
+{
+    Dither = false;
+}
+
+void paz::Window::EnableDithering()
+{
+    Dither = true;
 }
 
 #endif
