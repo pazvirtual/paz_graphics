@@ -492,7 +492,13 @@ paz::Initializer::Initializer()
 {
     if(!glfwInit())
     {
-        throw std::runtime_error("Failed to initialize GLFW.");
+        throw std::runtime_error("Failed to initialize GLFW. You may be usi"
+            "ng a remote shell"
+#ifdef PAZ_LINUX
+            " and need to set the `DISPLAY` environment variable.");
+#else
+            ".");
+#endif
     }
 
     // Set context hints.
