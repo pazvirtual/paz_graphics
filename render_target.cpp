@@ -3,8 +3,8 @@
 #include "internal_data.hpp"
 
 paz::RenderTarget::RenderTarget(double scale, TextureFormat format, MinMagFilter
-    minFilter, MinMagFilter magFilter, WrapMode wrapS, WrapMode wrapT,
-    MipmapFilter mipFilter)
+    minFilter, MinMagFilter magFilter, MipmapFilter mipFilter, WrapMode wrapS,
+    WrapMode wrapT)
 {
     if(scale <= 0.)
     {
@@ -31,8 +31,8 @@ paz::RenderTarget::RenderTarget(double scale, TextureFormat format, MinMagFilter
 }
 
 paz::RenderTarget::RenderTarget(int width, int height, TextureFormat format,
-    MinMagFilter minFilter, MinMagFilter magFilter, WrapMode wrapS, WrapMode
-    wrapT, MipmapFilter mipFilter)
+    MinMagFilter minFilter, MinMagFilter magFilter, MipmapFilter mipFilter,
+    WrapMode wrapS, WrapMode wrapT)
 {
     _data = std::make_shared<Data>();
 

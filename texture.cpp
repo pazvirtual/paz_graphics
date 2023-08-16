@@ -126,6 +126,13 @@ paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
 
 void paz::Texture::Data::init(const void* data)
 {
+    // This is because of Metal restrictions.
+    if((_format == TextureFormat::Depth16UNorm || _format == TextureFormat::
+        Depth32Float) && _mipFilter != MipmapFilter::None)
+    {
+        throw std::runtime_error("Depth/stencil textures do not support mipmapp"
+            "ing.");
+    }
     const auto filters = min_mag_filter(_minFilter, _magFilter, _mipFilter);
     glGenTextures(1, &_id);
     glBindTexture(GL_TEXTURE_2D, _id);
