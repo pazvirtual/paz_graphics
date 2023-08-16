@@ -16,6 +16,9 @@ paz::Framebuffer::Data::Data()
 
 paz::Framebuffer::Framebuffer()
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 void paz::Framebuffer::attach(const RenderTarget& target)

@@ -3,7 +3,7 @@
 
 #include "detect_os.hpp"
 
-#ifndef PAZ_MACOS
+#ifdef PAZ_LINUX
 
 #include "PAZ_Graphics"
 

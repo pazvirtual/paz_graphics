@@ -15,10 +15,12 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
+#include <d3dcompiler.h>
 #endif
 #include <cmath>
 #include <chrono>
 
+#ifdef PAZ_LINUX
 static const char* QuadVertSrc = 1 + R"===(
 layout(location = 0) in vec2 pos;
 out vec2 uv;
@@ -28,7 +30,6 @@ void main()
     uv = 0.5*pos + 0.5;
 }
 )===";
-
 static const char* QuadFragSrc = 1 + R"===(
 in vec2 uv;
 uniform sampler2D tex;
@@ -40,8 +41,49 @@ void main()
     color.rgb = pow(color.rgb, vec3(1./gamma));
 }
 )===";
+#else
+static const std::string QuadVertSrc = 1 + R"===(
+struct InputData
+{
+    float2 pos : POS;
+};
+struct OutputData
+{
+    float4 glPosition : SV_Position;
+    float2 uv : TEXCOORD0;
+};
+OutputData main(InputData input)
+{
+    OutputData output;
+    output.glPosition = float4(input.pos, 0., 1.);
+    output.uv = 0.5*input.pos + 0.5;
+    return output;
+}
+)===";
+static const std::string QuadFragSrc = 1 + R"===(
+Texture2D tex;
+SamplerState texSampler;
+float gamma;
+struct InputData
+{
+    float2 uv : TEXCOORD0;
+};
+struct OutputData
+{
+    float4 color : SV_TARGET0;
+};
+OutputData main(InputData input)
+{
+    OutputData output;
+    output.color = tex.Sample(texSampler, input.uv);
+    output.color.rgb = pow(output.color.rgb, float3(1./gamma, 1./gamma, 1./
+        gamma));
+    return output;
+}
+)===";
+#endif
 
-static constexpr std::array<float, 16> QuadPos =
+static constexpr std::array<float, 8> QuadPos =
 {
      1, -1,
      1,  1,
@@ -148,6 +190,8 @@ static const unsigned int QuadShaderId = []()
 }();
 static const unsigned int QuadBufId = []()
 {
+    paz::initialize();
+
     unsigned int a, b;
     glGenVertexArrays(1, &a);
     glBindVertexArray(a);
@@ -160,7 +204,119 @@ static const unsigned int QuadBufId = []()
     return a;
 }();
 #else
-// ...
+static ID3DBlob* QuadVertBytecode = []()
+{
+    paz::initialize();
+
+    ID3DBlob* res;
+    ID3DBlob* error;
+    const auto hr = D3DCompile(QuadVertSrc.c_str(), QuadVertSrc.size(), nullptr,
+        nullptr, nullptr, "main", "vs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, 0,
+        &res, &error);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to compile final vertex shader: " +
+            std::string(error ? static_cast<char*>(error->GetBufferPointer()) :
+            "No error given."));
+    }
+    return res;
+}();
+static ID3D11VertexShader* QuadVertShader = []()
+{
+    paz::initialize();
+
+    ID3D11VertexShader* res;
+    const auto hr = Device->CreateVertexShader(QuadVertBytecode->
+        GetBufferPointer(), QuadVertBytecode->GetBufferSize(), nullptr, &res);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create final vertex shader (HRESULT"
+            " " + std::to_string(hr) + ").");
+    }
+    return res;
+}();
+static ID3D11PixelShader* QuadFragShader = []()
+{
+    paz::initialize();
+
+    ID3DBlob* fragBlob;
+    ID3DBlob* error;
+    auto hr = D3DCompile(QuadFragSrc.c_str(), QuadFragSrc.size(), nullptr,
+        nullptr, nullptr, "main", "ps_5_0", D3DCOMPILE_ENABLE_STRICTNESS, 0,
+        &fragBlob, &error);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to compile final fragment shader: " +
+            std::string(error ? static_cast<char*>(error->GetBufferPointer()) :
+            "No error given."));
+    }
+    ID3D11PixelShader* res;
+    hr = Device->CreatePixelShader(fragBlob->GetBufferPointer(), fragBlob->
+        GetBufferSize(), nullptr, &res);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create final fragment shader (HRESU"
+            "LT " + std::to_string(hr) + ").");
+    }
+    return res;
+}();
+static ID3D11Buffer* QuadBuf = []()
+{
+    paz::initialize();
+
+    D3D11_BUFFER_DESC bufDescriptor = {};
+    bufDescriptor.Usage = D3D11_USAGE_DEFAULT;
+    bufDescriptor.ByteWidth = sizeof(float)*QuadPos.size();
+    bufDescriptor.BindFlags  = D3D11_BIND_VERTEX_BUFFER;
+    D3D11_SUBRESOURCE_DATA data = {};
+    data.pSysMem = QuadPos.data();
+    ID3D11Buffer* res;
+    const auto hr = Device->CreateBuffer(&bufDescriptor, &data, &res);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create final vertex buffer (HRESULT"
+            " " + std::to_string(hr) + ").");
+    }
+    return res;
+}();
+static ID3D11InputLayout* QuadLayout = []()
+{
+    paz::initialize();
+
+    D3D11_INPUT_ELEMENT_DESC inputElemDescriptor[] =
+    {
+        {"POS", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA,
+            0}
+    };
+    ID3D11InputLayout* res;
+    const auto hr = Device->CreateInputLayout(inputElemDescriptor, 1,
+        QuadVertBytecode->GetBufferPointer(), QuadVertBytecode->GetBufferSize(),
+        &res);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create final input layout (HRESULT "
+            + std::to_string(hr) + ").");
+    }
+    return res;
+}();
+static ID3D11RasterizerState* BlitState = []()
+{
+    paz::initialize();
+
+    D3D11_RASTERIZER_DESC rasterDescriptor = {};
+    rasterDescriptor.FillMode = D3D11_FILL_SOLID;
+    rasterDescriptor.CullMode = D3D11_CULL_NONE;
+    rasterDescriptor.FrontCounterClockwise = true;
+    rasterDescriptor.DepthClipEnable = true;
+    ID3D11RasterizerState* res;
+    const auto hr = Device->CreateRasterizerState(&rasterDescriptor, &res);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create final rasterizer state (HRES"
+            "ULT " + std::to_string(hr) + ").");
+    }
+    return res;
+}();
 #endif
 
 paz::Initializer& paz::initialize()
@@ -367,7 +523,7 @@ paz::Initializer::Initializer()
 
     // Set window size in screen coordinates (not pixels).
     WindowWidth = 0.5*displayWidth;
-    WindowHeight = 0.5*displayHeight;//displayHeight - 200;
+    WindowHeight = 0.5*displayHeight;
 
     // Create window and set as current context.
     WindowPtr = glfwCreateWindow(WindowWidth, WindowHeight,
@@ -406,6 +562,19 @@ paz::Initializer::Initializer()
         throw std::runtime_error("Failed to intialize Direct3D (HRESULT " +
             std::to_string(hr) + ").");
     }
+    ID3D11Texture2D* framebuffer;
+    hr = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<
+        void**>(&framebuffer));
+    if(hr)
+    {
+        throw std::runtime_error("Failed to get default framebuffer.");
+    }
+    hr = Device->CreateRenderTargetView(framebuffer, 0, &RenderTargetView);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create ?? view ??."); //TEMP
+    }
+    framebuffer->Release();
 #endif
     glfwGetWindowPos(WindowPtr, &PrevX, &PrevY);
 
@@ -732,7 +901,24 @@ void paz::Window::EndFrame()
 
     glfwSwapBuffers(WindowPtr);
 #else
-    // ...
+    DeviceContext->RSSetState(BlitState);
+    D3D11_VIEWPORT viewport =
+    {
+        0.f, 0.f, static_cast<float>(ViewportWidth()), static_cast<float>(
+        ViewportHeight()), 0.f, 1.f
+    };
+    DeviceContext->RSSetViewports(1, &viewport);
+    DeviceContext->OMSetRenderTargets(1, &RenderTargetView, nullptr);
+    DeviceContext->IASetPrimitiveTopology(
+        D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    DeviceContext->IASetInputLayout(QuadLayout);
+    unsigned int stride = 2*sizeof(float);
+    unsigned int offset = 0;
+    DeviceContext->IASetVertexBuffers(0, 1, &QuadBuf, &stride, &offset);
+    DeviceContext->VSSetShader(QuadVertShader, nullptr, 0);
+    DeviceContext->PSSetShader(QuadFragShader, nullptr, 0);
+    //TEMP - set uniforms here !
+    DeviceContext->Draw(QuadPos.size()/2, 0);
 
     SwapChain->Present(1, 0);
 #endif
@@ -854,13 +1040,13 @@ paz::Image paz::Window::ReadPixels()
 {
     initialize();
 
-#ifdef PAZ_LINUX
     if(FrameInProgress)
     {
         throw std::logic_error("Cannot read pixels before ending frame.");
     }
 
     std::vector<float> linear(4*ViewportWidth()*ViewportHeight());
+#ifdef PAZ_LINUX
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, final_framebuffer().colorAttachment(0)._data->
         _id);
@@ -872,6 +1058,9 @@ paz::Image paz::Window::ReadPixels()
         throw std::runtime_error("Error reading window pixels: " + gl_error(
             error) + ".");
     }
+#else
+    // ...
+#endif
     Image srgb(ImageFormat::RGBA8UNorm_sRGB, ViewportWidth(), ViewportHeight());
     for(int i = 0; i < ViewportHeight(); ++i)
     {
@@ -888,9 +1077,6 @@ paz::Image paz::Window::ReadPixels()
         }
     }
     return srgb;
-#else
-    throw std::logic_error("NOT IMPLEMENTED");
-#endif
 }
 
 void paz::begin_frame()

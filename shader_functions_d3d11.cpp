@@ -18,18 +18,30 @@ paz::FragmentFunction::Data::~Data()
 
 paz::VertexFunction::VertexFunction()
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 paz::FragmentFunction::FragmentFunction()
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 paz::VertexFunction::VertexFunction(const std::string& src)
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 paz::FragmentFunction::FragmentFunction(const std::string& src)
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 #endif

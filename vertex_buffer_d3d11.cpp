@@ -13,10 +13,14 @@ paz::VertexBuffer::Data::~Data()
 
 paz::VertexBuffer::VertexBuffer()
 {
+    initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 paz::VertexBuffer::VertexBuffer(std::size_t size) : VertexBuffer()
 {
+    _data->_numVertices = size;
 }
 
 void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)

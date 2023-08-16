@@ -214,6 +214,11 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     }
     CurPass = this;
 
+    if(!_data)
+    {
+        throw std::runtime_error("Render pass has not been initialized.");
+    }
+
     [RENDERER ensureCommandBuffer];
 
     MTLRenderPassDescriptor* renderPassDescriptor = [[MTLRenderPassDescriptor
