@@ -575,11 +575,15 @@ void paz::begin_frame()
 
 float paz::Window::DpiScale()
 {
+    initialize();
+
     return static_cast<float>(FboWidth)/WindowWidth;
 }
 
 float paz::Window::UiScale()
 {
+    initialize();
+
     float xScale, yScale;
     glfwGetWindowContentScale(WindowPtr, &xScale, &yScale);
     return xScale;

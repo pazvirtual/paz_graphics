@@ -417,11 +417,15 @@ paz::Image<std::uint8_t, 4> paz::Window::ReadPixels()
 
 float paz::Window::DpiScale()
 {
+    initialize();
+
     return [[APP_DELEGATE window] backingScaleFactor];
 }
 
 float paz::Window::UiScale()
 {
+    initialize();
+
     return DpiScale();
 }
 
