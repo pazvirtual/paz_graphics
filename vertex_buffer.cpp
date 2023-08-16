@@ -65,8 +65,8 @@ void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)
             {
                 idx[2*i] = i;
                 idx[2*i + 1] = i;
-                _thickLinesIndices = IndexBuffer(idx);
             }
+            _thickLinesIndices = IndexBuffer(idx);
         }
     }
     else if(m != _numVertices)

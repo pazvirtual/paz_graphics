@@ -540,9 +540,11 @@ void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
         {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertices._data->
                 _thickLinesIndices._data->_id);
-            for(unsigned int i = 0; i < vertices._data->_numVertices; ++i)
+            for(unsigned int i = 0; i < vertices._data->_numVertices/2; ++i)
             {
-                glDrawElements(GL_LINE_STRIP_ADJACENCY, 4, GL_UNSIGNED_INT, reinterpret_cast<void*>(4*sizeof(unsigned int)*static_cast<std::uintptr_t>(i)));
+                glDrawElements(GL_LINE_STRIP_ADJACENCY, 4, GL_UNSIGNED_INT,
+                    reinterpret_cast<void*>(4*sizeof(unsigned int)*static_cast<
+                    std::uintptr_t>(i)));
             }
         }
         else
