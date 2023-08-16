@@ -14,6 +14,16 @@
 #define RENDERER (Renderer*)[(ViewController*)[[(AppDelegate*)[NSApp delegate] \
     window] contentViewController] renderer]
 
+static bool CursorDisabled = false;
+
+struct Initializer
+{
+    Initializer();
+    ~Initializer();
+};
+
+static Initializer Initializer;
+
 std::function<void(void)> paz::Window::_draw = [](){};
 
 std::chrono::time_point<std::chrono::steady_clock> paz::Window::_frameStart;
@@ -23,12 +33,12 @@ std::unordered_set<paz::RenderTarget*> paz::Window::_targets;
 
 static CGPoint PrevOrigin;
 
-paz::Window::~Window()
+Initializer::~Initializer()
 {
     [NSApp release];
 }
 
-void paz::Window::Init()
+Initializer::Initializer()
 {
     @try
     {
@@ -148,14 +158,16 @@ bool paz::Window::MouseReleased(unsigned int button)
 
 std::pair<double, double> paz::Window::MousePos()
 {
-    const NSPoint temp = [[APP_DELEGATE window]
-        mouseLocationOutsideOfEventStream];
-    return {temp.x, temp.y};
-}
-
-std::pair<double, double> paz::Window::MouseOffset()
-{
-    return [VIEW_CONTROLLER cursorOffset];
+    if(CursorDisabled)
+    {
+        return [VIEW_CONTROLLER cursorOffset];
+    }
+    else
+    {
+        const NSPoint temp = [[APP_DELEGATE window]
+            mouseLocationOutsideOfEventStream];
+        return {temp.x, temp.y};
+    }
 }
 
 std::pair<double, double> paz::Window::ScrollOffset()

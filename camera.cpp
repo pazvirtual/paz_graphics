@@ -29,7 +29,7 @@ std::array<float, 16> paz::ortho(const float left, const float right, const
 }
 
 #if 0
-std::array<float, 16> paz::translation(const paz::vec3 delta)
+std::array<float, 16> paz::translation(const std::array<float, 3>& delta)
 {
     std::array<float, 16> res = {};
     for(std::size_t i = 0; i < 4; ++i)
@@ -114,12 +114,11 @@ std::array<float, 16> paz::transform(const paz::vec3 delta, const paz::vec3
 }
 #endif
 
-#if 0
-paz::mat4f paz::transform(const paz::vec3f& delta, const paz::mat3f& rot)
+std::array<float, 16> paz::transform(const std::array<float, 3>& delta, const
+    std::array<float, 9>& rot)
 {
-    return make_mat4f(rot(0, 0), rot(0, 1), rot(0, 2), delta(0),
-                      rot(1, 0), rot(1, 1), rot(1, 2), delta(1),
-                      rot(2, 0), rot(2, 1), rot(2, 2), delta(2),
-                           0.0f,      0.0f,      0.0f,     1.0f);
+    return {  rot[0],   rot[1],   rot[2], 0.f,
+              rot[3],   rot[4],   rot[5], 0.f,
+              rot[6],   rot[7],   rot[8], 0.f,
+            delta[0], delta[1], delta[2], 1.f};
 }
-#endif

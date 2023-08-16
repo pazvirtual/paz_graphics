@@ -18,8 +18,6 @@ namespace paz
         = Texture::MipmapFilter::None);
     GLint internal_format(int c, int b, Texture::DataType t);
     GLenum gl_type(Texture::DataType t);
-    GLenum gl_type(VertexBuffer::DataType t);
-    GLsizeiptr gl_type_size(VertexBuffer::DataType t);
     std::string get_log(unsigned int id, bool isProgram);
 }
 

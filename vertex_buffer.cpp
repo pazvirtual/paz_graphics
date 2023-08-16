@@ -10,6 +10,26 @@
 #endif
 #include <GLFW/glfw3.h>
 
+template<typename T>
+static void check_size(int dim, std::size_t& n, const std::vector<T>& d)
+{
+    if(dim != 1 && dim != 2 && dim != 4)
+    {
+        throw std::runtime_error("Vertex attribute dimensions must be 1, 2, or "
+            "4.");
+    }
+    const std::size_t m = d.size()/dim;
+    if(!n)
+    {
+        n = m;
+    }
+    else if(m != n)
+    {
+        throw std::runtime_error("Number of vertices for each attribute must ma"
+            "tch.");
+    }
+}
+
 paz::VertexBuffer::~VertexBuffer()
 {
     for(auto& n : _data->_ids)
@@ -19,35 +39,60 @@ paz::VertexBuffer::~VertexBuffer()
     glDeleteVertexArrays(1, &_data->_id);
 }
 
-paz::VertexBuffer::VertexBuffer(const std::vector<InputData>& data)
+paz::VertexBuffer::VertexBuffer()
 {
     _data = std::make_unique<Data>();
 
-    _numVertices = (data.empty() ? 0 : data[0]._numVertices);
     glGenVertexArrays(1, &_data->_id);
+}
+
+void paz::VertexBuffer::attribute(int dim, const std::vector<float>& data)
+{
+    check_size(dim, _numVertices, data);
+
+    const std::size_t i = _data->_ids.size();
+
     glBindVertexArray(_data->_id);
-    const std::size_t numAttribs = data.size();
-    _data->_ids.resize(numAttribs);
-    glGenBuffers(numAttribs, _data->_ids.data());
-    for(std::size_t i = 0; i < numAttribs; ++i)
-    {
-        if(data[i]._numVertices != _numVertices)
-        {
-            throw std::runtime_error("Number of vertices for each attribute mus"
-                "t match.");
-        }
-        if(data[i]._dim != 1 && data[i]._dim != 2 && data[i]._dim != 4)
-        {
-            throw std::runtime_error("Vertex attribute dimensions must be 1, 2,"
-                " or 4.");
-        }
-        glEnableVertexAttribArray(i);
-        glBindBuffer(GL_ARRAY_BUFFER, _data->_ids[i]);
-        glVertexAttribPointer(i, data[i]._dim, gl_type(data[i]._type), GL_FALSE,
-            0, nullptr);
-        glBufferData(GL_ARRAY_BUFFER, gl_type_size(data[i]._type)*data[i]._dim*
-            _numVertices, data[i]._data, GL_STATIC_DRAW);
-    }
+    _data->_ids.emplace_back();
+    glGenBuffers(1, &_data->_ids.back());
+    glEnableVertexAttribArray(i);
+    glBindBuffer(GL_ARRAY_BUFFER, _data->_ids.back());
+    glVertexAttribPointer(i, dim, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*dim*_numVertices, data.data(),
+        GL_STATIC_DRAW);
+}
+
+void paz::VertexBuffer::attribute(int dim, const std::vector<unsigned int>&
+    data)
+{
+    check_size(dim, _numVertices, data);
+
+    const std::size_t i = _data->_ids.size();
+
+    glBindVertexArray(_data->_id);
+    _data->_ids.emplace_back();
+    glGenBuffers(1, &_data->_ids.back());
+    glEnableVertexAttribArray(i);
+    glBindBuffer(GL_ARRAY_BUFFER, _data->_ids.back());
+    glVertexAttribPointer(i, dim, GL_UNSIGNED_INT, GL_FALSE, 0, nullptr);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLuint)*dim*_numVertices, data.data(),
+        GL_STATIC_DRAW);
+}
+
+void paz::VertexBuffer::attribute(int dim, const std::vector<int>& data)
+{
+    check_size(dim, _numVertices, data);
+
+    const std::size_t i = _data->_ids.size();
+
+    glBindVertexArray(_data->_id);
+    _data->_ids.emplace_back();
+    glGenBuffers(1, &_data->_ids.back());
+    glEnableVertexAttribArray(i);
+    glBindBuffer(GL_ARRAY_BUFFER, _data->_ids.back());
+    glVertexAttribPointer(i, dim, GL_INT, GL_FALSE, 0, nullptr);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLint)*dim*_numVertices, data.data(),
+        GL_STATIC_DRAW);
 }
 
 #endif

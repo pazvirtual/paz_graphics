@@ -133,6 +133,7 @@ void paz::RenderPass::depth(DepthTestMode depthMode)
     {
         if(DepthTestEnabled)
         {
+            DepthTestEnabled = false;
             glDisable(GL_DEPTH_TEST);
         }
     }
@@ -140,6 +141,7 @@ void paz::RenderPass::depth(DepthTestMode depthMode)
     {
         if(!DepthTestEnabled)
         {
+            DepthTestEnabled = true;
             glEnable(GL_DEPTH_TEST);
         }
         if(depthMode == DepthTestMode::Never)

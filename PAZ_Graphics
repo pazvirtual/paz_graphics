@@ -99,46 +99,20 @@ namespace paz
     {
         friend class RenderPass;
 
-    public:
-        enum class DataType
-        {
-            Float,
-            SInt,
-            UInt,
-            SNorm,
-            UNorm
-        };
-
-    private:
-        struct InputData
-        {
-            const DataType _type;
-            const int _dim;
-            const void* _data;
-            const std::size_t _numVertices;
-
-            InputData(int dim, const std::vector<float>& data) : _type(
-                DataType::Float), _dim(dim), _data(data.data()), _numVertices(
-                data.size()/dim) {}
-            InputData(int dim, const std::vector<unsigned int>& data) : _type(
-                DataType::UInt), _dim(dim), _data(data.data()), _numVertices(
-                data.size()/dim) {}
-            InputData(int dim, const std::vector<int>& data) : _type(DataType::
-                SInt), _dim(dim), _data(data.data()), _numVertices(data.size()/
-                dim) {}
-        };
-
         struct Data;
         std::unique_ptr<Data> _data;
 
-        std::size_t _numVertices;
+        std::size_t _numVertices = 0;
 
         VertexBuffer(const VertexBuffer&) = delete;
         VertexBuffer& operator=(const VertexBuffer&) = delete;
 
     public:
         ~VertexBuffer();
-        VertexBuffer(const std::vector<InputData>& data);
+        VertexBuffer();
+        void attribute(int dim, const std::vector<float>& data);
+        void attribute(int dim, const std::vector<unsigned int>& data);
+        void attribute(int dim, const std::vector<int>& data);
     };
 
     class IndexBuffer
@@ -301,11 +275,28 @@ namespace paz
         float zFar);
     std::array<float, 16> ortho(const float left, const float right, const float
         bottom, const float top, const float zNear, const float zFar);
+    std::array<float, 16> transform(const std::array<float, 3>& delta, const
+        std::array<float, 9>& rot);
 
     class Window
     {
-         friend class RenderTarget;
-         friend class DepthStencilTarget;
+        friend class RenderTarget;
+        friend class DepthStencilTarget;
+
+        static std::function<void(void)> _draw;
+
+        static std::chrono::time_point<std::chrono::steady_clock> _frameStart;
+        static double _frameTime;
+
+        static std::unordered_set<RenderTarget*> _targets;
+
+        static bool KeyDown(int key);
+        static bool KeyPressed(int key);
+        static bool KeyReleased(int key);
+        static void LoopInternal();
+        static void ResetEvents();
+        static void RegisterTarget(RenderTarget* target);
+        static void UnregisterTarget(RenderTarget* target);
 
     public:
         enum class CursorMode
@@ -334,26 +325,7 @@ namespace paz
         static constexpr int NumKeys = static_cast<int>(Key::Unknown);
         static constexpr int NumMouseButtons = 8;
 
-    private:
-        static std::function<void(void)> _draw;
-
-        static std::chrono::time_point<std::chrono::steady_clock> _frameStart;
-        static double _frameTime;
-
-        static std::unordered_set<RenderTarget*> _targets;
-
-        static bool KeyDown(int key);
-        static bool KeyPressed(int key);
-        static bool KeyReleased(int key);
-        static void LoopInternal();
-        static void ResetEvents();
-        static void RegisterTarget(RenderTarget* target);
-        static void UnregisterTarget(RenderTarget* target);
-
-    public:
         Window() = delete;
-        ~Window();
-        static void Init();//TEMP
         static void MakeFullscreen();
         static void MakeWindowed();
         static void SetTitle(const std::string& title);
@@ -370,7 +342,6 @@ namespace paz
         static bool MousePressed(unsigned int button);
         static bool MouseReleased(unsigned int button);
         static std::pair<double, double> MousePos();
-        static std::pair<double, double> MouseOffset();
         static std::pair<double, double> ScrollOffset();
         static void SetCursorMode(CursorMode mode);
         static float AspectRatio();

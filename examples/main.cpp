@@ -101,8 +101,6 @@ int main()
 {
     const std::string msg = read_file("msg.txt");
 
-    paz::Window::Init();//TEMP
-
     paz::Window::SetMinSize(640, 480);
 
     std::vector<float> fontData;
@@ -145,11 +143,18 @@ int main()
     paz::RenderPass r2(blendedFramebuffer, blend);
     paz::RenderPass r3(post);
 
-    const paz::VertexBuffer vertices0({{2, a0}, {4, b0}});
-    const paz::VertexBuffer vertices1({{2, a1}, {4, b1}});
+    paz::VertexBuffer vertices0;
+    vertices0.attribute(2, a0);
+    vertices0.attribute(4, b0);
+
+    paz::VertexBuffer vertices1;
+    vertices1.attribute(2, a1);
+    vertices1.attribute(4, b1);
+
     const paz::IndexBuffer indices({0, 1, 2});
 
-    const paz::VertexBuffer quadVertices({{2, qv}});
+    paz::VertexBuffer quadVertices;
+    quadVertices.attribute(2, qv);
 
     double x = 0.;
     double y = 0.;

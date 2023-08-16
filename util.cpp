@@ -291,44 +291,6 @@ GLenum paz::gl_type(Texture::DataType t)
     throw std::runtime_error("Invalid type requested.");
 }
 
-GLenum paz::gl_type(VertexBuffer::DataType t)
-{
-    if(t == VertexBuffer::DataType::UInt || t == VertexBuffer::DataType::UNorm)
-    {
-        return GL_UNSIGNED_INT;
-    }
-    else if(t == VertexBuffer::DataType::SInt || t == VertexBuffer::DataType::
-        SNorm)
-    {
-        return GL_INT;
-    }
-    else if(t == VertexBuffer::DataType::Float)
-    {
-        return GL_FLOAT;
-    }
-
-    throw std::runtime_error("Invalid type requested.");
-}
-
-GLsizeiptr paz::gl_type_size(VertexBuffer::DataType t)
-{
-    if(t == VertexBuffer::DataType::UInt || t == VertexBuffer::DataType::UNorm)
-    {
-        return sizeof(GLuint);
-    }
-    else if(t == VertexBuffer::DataType::SInt || t == VertexBuffer::DataType::
-        SNorm)
-    {
-        return sizeof(GLint);
-    }
-    else if(t == VertexBuffer::DataType::Float)
-    {
-        return sizeof(GLfloat);
-    }
-
-    throw std::runtime_error("Invalid type requested.");
-}
-
 std::string paz::get_log(unsigned int id, bool isProgram)
 {
     int logLen = 0;

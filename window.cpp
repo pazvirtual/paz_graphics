@@ -4,6 +4,7 @@
 
 #include "PAZ_Graphics"
 #include "keycodes.hpp"
+#include "internal_data.hpp"//TEMP - shouldn't actually need `_initializer` as member of `Window`
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
@@ -32,8 +33,17 @@ static std::array<bool, paz::Window::NumMouseButtons> MouseDown = {};
 static std::array<bool, paz::Window::NumMouseButtons> MousePressed = {};
 static std::array<bool, paz::Window::NumMouseButtons> MouseReleased = {};
 static std::pair<double, double> MousePos = {};
-static std::pair<double, double> MouseOffset = {};
 static std::pair<double, double> ScrollOffset = {};
+
+static bool CursorDisabled = false;
+
+struct Initializer
+{
+    Initializer();
+    ~Initializer();
+};
+
+static Initializer Initializer;
 
 std::function<void(void)> paz::Window::_draw;
 
@@ -80,10 +90,12 @@ static void mouse_button_callback(int button, int action)
 static void cursor_position_callback(double xPos, double yPos)
 {
     yPos = WindowHeight - yPos;
-    MouseOffset.first = xPos - MousePos.first;
-    MouseOffset.second = yPos - MousePos.second;
     MousePos.first = xPos;
     MousePos.second = yPos;
+    if(CursorDisabled)
+    {
+        glfwSetCursorPos(WindowPtr, 0, WindowHeight);
+    }
 }
 
 static void scroll_callback(double xOffset, double yOffset)
@@ -107,12 +119,12 @@ static void resize_callback(int width, int height)
     paz::Window::ResizeTargets();
 }
 
-paz::Window::~Window()
+Initializer::~Initializer()
 {
     glfwTerminate();
 }
 
-void paz::Window::Init()
+Initializer::Initializer()
 {
     if(!glfwInit())
     {
@@ -173,6 +185,12 @@ void paz::Window::Init()
 
     // Activate depth clamping (for logarithmic depth).
     glEnable(GL_DEPTH_CLAMP);
+
+    // Use raw mouse input when cursor is disabled.
+    if(glfwRawMouseMotionSupported())
+    {
+        glfwSetInputMode(WindowPtr, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    }
 
     // Set key, mouse and scroll callbacks.
     glfwSetKeyCallback(WindowPtr, [](GLFWwindow*, int key, int, int action, int)
@@ -307,11 +325,6 @@ std::pair<double, double> paz::Window::MousePos()
     return ::MousePos;
 }
 
-std::pair<double, double> paz::Window::MouseOffset()
-{
-    return ::MouseOffset;
-}
-
 std::pair<double, double> paz::Window::ScrollOffset()
 {
     return ::ScrollOffset;
@@ -319,7 +332,10 @@ std::pair<double, double> paz::Window::ScrollOffset()
 
 void paz::Window::ResetEvents()
 {
-    ::MouseOffset = {};
+    if(CursorDisabled)
+    {
+        ::MousePos = {};
+    }
     ::ScrollOffset = {};
     ::KeyPressed = {};
     ::KeyReleased = {};
@@ -345,6 +361,7 @@ void paz::Window::SetCursorMode(CursorMode mode)
     {
         throw std::runtime_error("Unknown cursor mode.");
     }
+    CursorDisabled = (mode == CursorMode::Disable);
 }
 
 float paz::Window::AspectRatio()
