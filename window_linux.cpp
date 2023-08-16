@@ -234,18 +234,24 @@ static void mouse_button_callback(int button, int action)
 
 static void cursor_position_callback(double xPos, double yPos)
 {
-    GamepadActive = false;
-    MouseActive = true;
-
+    std::pair<double, double> newMousePos;
     if(CursorDisabled)
     {
-        MousePos.first = xPos - WindowWidth/2;
-        MousePos.second = WindowHeight/2 - yPos;
+        newMousePos.first = xPos - WindowWidth/2;
+        newMousePos.second = WindowHeight/2 - yPos;
     }
     else
     {
-        MousePos.first = xPos;
-        MousePos.second = WindowHeight - yPos;
+        newMousePos.first = xPos;
+        newMousePos.second = WindowHeight - yPos;
+    }
+
+    if(newMousePos != MousePos)
+    {
+        GamepadActive = false;
+        MouseActive = true;
+
+        MousePos = newMousePos;
     }
 }
 
@@ -378,6 +384,9 @@ paz::Initializer::Initializer()
         focus_callback(focused); });
     glfwSetWindowSizeCallback(WindowPtr, [](GLFWwindow*, int width, int height){
         resize_callback(width, height); });
+
+    // Get initial cursor position.
+    glfwGetCursorPos(WindowPtr, &MousePos.first, &MousePos.second);
 }
 
 void paz::Window::MakeFullscreen()
