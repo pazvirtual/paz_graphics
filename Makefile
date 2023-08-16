@@ -37,7 +37,7 @@ else
     ifeq ($(OSPRETTY), Windows)
         EXCL := gl_core_4_1.c $(wildcard *_linux.cpp)
     else
-        EXCL := $(wildcard *_windows.cpp)
+        EXCL := gamepad.cpp $(wildcard *_windows.cpp)
     endif
 endif
 CSRC := $(filter-out $(EXCL), $(CSRC))
