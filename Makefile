@@ -16,6 +16,7 @@ else
 endif
 CXXVER := 14
 OPTIM := fast
+ZIPNAME := $(PROJNAME)-$(OSPRETTY)
 CFLAGS := -O$(OPTIM) -Wall -Wextra -Wno-missing-braces
 ifeq ($(OSPRETTY), macOS)
     CFLAGS += -mmacosx-version-min=10.10
@@ -42,6 +43,8 @@ ifeq ($(OSPRETTY), macOS)
 endif
 
 REINSTALLHEADER := $(shell cmp -s $(PROJNAME) $(INCLPATH)/$(PROJNAME); echo $$?)
+
+print-% : ; @echo $* = $($*)
 
 default: lib$(LIBNAME).a
 	make -C examples
@@ -75,4 +78,5 @@ clean:
 	$(RM) $(OBJ) lib$(LIBNAME).a
 	make -C examples clean
 
-print-% : ; @echo $* = $($*)
+zip: default
+	zip -j $(ZIPNAME).zip $(PROJNAME) lib$(LIBNAME).a
