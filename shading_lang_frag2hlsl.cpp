@@ -24,7 +24,8 @@ std::string paz::frag2hlsl(const std::string& src)
     bool usesGlPointCoord = false;
 
     std::unordered_map<std::string, std::pair<std::string, int>> buffers;
-    std::unordered_map<std::string, std::string> textures;
+    std::unordered_map<std::string, std::pair<std::string, std::string>>
+        textures;
     std::vector<std::pair<std::string, std::pair<std::string, bool>>> inputs;
     std::map<int, std::pair<std::string, std::string>> outputs;
     std::unordered_set<std::string> structs;
@@ -67,10 +68,9 @@ struct wrap_utexture2d
 #define isampler2D wrap_itexture2d
 #define usampler1D wrap_utexture1d
 #define usampler2D wrap_utexture2d
-#define depthSampler2D sampler2D
 )===";
 
-    // Define our sample functions.
+    // Define our Y-reversed sample functions.
     out << 1 + R"===(
 float4 sample_texture(in wrap_texture1d tex, in float u)
 {
@@ -98,27 +98,27 @@ uint4 textureLod(in wrap_utexture1d tex, in float u, in float lod)
 }
 float4 sample_texture(in wrap_texture2d tex, in float2 uv)
 {
-    return tex.t.Sample(tex.s, uv);
+    return tex.t.Sample(tex.s, float2(uv.x, 1. - uv.y));
 }
 int4 sample_texture(in wrap_itexture2d tex, in float2 uv)
 {
-    return tex.t.Sample(tex.s, uv);
+    return tex.t.Sample(tex.s, float2(uv.x, 1. - uv.y));
 }
 uint4 sample_texture(in wrap_utexture2d tex, in float2 uv)
 {
-    return tex.t.Sample(tex.s, uv);
+    return tex.t.Sample(tex.s, float2(uv.x, 1. - uv.y));
 }
 float4 textureLod(in wrap_texture2d tex, in float2 uv, in float lod)
 {
-    return tex.t.SampleLevel(tex.s, uv, lod);
+    return tex.t.SampleLevel(tex.s, float2(uv.x, 1. - uv.y), lod);
 }
 int4 textureLod(in wrap_itexture2d tex, in float2 uv, in float lod)
 {
-    return tex.t.SampleLevel(tex.s, uv, lod);
+    return tex.t.SampleLevel(tex.s, float2(uv.x, 1. - uv.y), lod);
 }
 uint4 textureLod(in wrap_utexture2d tex, in float2 uv, in float lod)
 {
-    return tex.t.SampleLevel(tex.s, uv, lod);
+    return tex.t.SampleLevel(tex.s, float2(uv.x, 1. - uv.y), lod);
 }
 #define texture sample_texture
 )===";
@@ -430,8 +430,6 @@ float4 uintBitsToFloat(in uint4 v)
         if(mode == Mode::None && std::regex_match(line, std::regex("\\s*const\\"
             "s.*=.*")))
         {
-            line = std::regex_replace(line, std::regex("\\s*const\\b"),
-                "constant");
             out << line << std::endl;
             continue;
         }
@@ -459,6 +457,7 @@ float4 uintBitsToFloat(in uint4 v)
         {
             line = std::regex_replace(line, std::regex("^\\s+"), "");
             sigBuffer << " " << line;
+            out << "    " << line << std::endl;
 
             // Check if signature is complete.
             numOpen += std::count(line.begin(), line.end(), '(');
@@ -476,7 +475,6 @@ float4 uintBitsToFloat(in uint4 v)
                         "ailed to process private function signature: " + e.
                         what());
                 }
-                out << line << std::endl;
                 sigBuffer.clear();
                 numOpen = 0;
                 numClose = 0;
@@ -533,44 +531,41 @@ float4 uintBitsToFloat(in uint4 v)
         {
             const std::string dec = line.substr(8, line.size() - 9);
             const std::size_t pos = dec.find_last_of(' ');
-            std::string type = dec.substr(0, pos);
+            std::string wrapType = dec.substr(0, pos);
             std::string name = dec.substr(pos + 1);
-            if(type.back() == 'D')
+            std::string type;
+            if(wrapType.back() == 'D')
             {
-                if(type == "sampler1D")
+                if(wrapType == "sampler1D")
                 {
-                    type = "texture1d<float>";
+                    type = "Texture1D";
                 }
-                else if(type == "sampler2D")
+                else if(wrapType == "sampler2D" || wrapType == "depthSampler2D")
                 {
-                    type = "texture2d<float>";
+                    type = "Texture2D";
                 }
-                else if(type == "isampler1D")
+                else if(wrapType == "isampler1D")
                 {
-                    type = "texture1d<int>";
+                    type = "Texture1D<int>";
                 }
-                else if(type == "isampler2D")
+                else if(wrapType == "isampler2D")
                 {
-                    type = "texture2d<int>";
+                    type = "Texture2D<int>";
                 }
-                else if(type == "usampler1D")
+                else if(wrapType == "usampler1D")
                 {
-                    type = "texture1d<uint>";
+                    type = "Texture1D<uint>";
                 }
-                else if(type == "wrap_utexture2d")
+                else if(wrapType == "usampler2D")
                 {
-                    type = "texture2d<uint>";
-                }
-                else if(type == "depthSampler2D")
-                {
-                    type = "depth2d<float>";
+                    type = "Texture2D<uint>";
                 }
                 else
                 {
                     throw std::runtime_error("Line " + std::to_string(l) + ": U"
-                        "nsupported texture type \"" + type + "\".");
+                        "nsupported texture type \"" + wrapType + "\".");
                 }
-                textures[name] = type;
+                textures[name] = {type, wrapType};
             }
             else
             {
@@ -621,6 +616,8 @@ float4 uintBitsToFloat(in uint4 v)
         // Process private functions.
         if(isFun)
         {
+            out << line << std::endl;
+
             // Check if the signature is complete.
             numOpen = std::count(line.begin(), line.end(), '(');
             numClose = std::count(line.begin(), line.end(), ')');
@@ -637,7 +634,6 @@ float4 uintBitsToFloat(in uint4 v)
                         "ailed to process private function signature: " + e.
                         what());
                 }
-                out << line << std::endl;
             }
             else
             {
@@ -661,8 +657,9 @@ float4 uintBitsToFloat(in uint4 v)
     }
     for(const auto& n : textures)
     {
-        out << "uniform " << n.second << " " << n.first << "Texture;" << std::
-            endl << "uniform sampler " << n.first << "Sampler;" << std::endl;
+        out << "uniform " << n.second.first << " " << n.first << "Texture;" <<
+            std::endl << "uniform SamplerState " << n.first << "Sampler;" <<
+            std::endl;
     }
     out << "struct InputData" << std::endl << "{" << std::endl << "    float4 g"
         "lFragCoord : SV_Position;" << std::endl;
@@ -670,28 +667,29 @@ float4 uintBitsToFloat(in uint4 v)
     {
         out << "    float2 glPointCoord : SV_Position;" << std::endl;
     }
-    for(const auto& n : inputs)
+    for(std::size_t i = 0; i < inputs.size(); ++i)
     {
-        out << "    " << (n.second.second ? "nointerpolation " : "") << n.
-            second.first << " " << n.first << ";" << std::endl;
+        out << "    " << (inputs[i].second.second ? "nointerpolation " : "") <<
+            inputs[i].second.first << " " << inputs[i].first << " : TEXCOORD" <<
+            i << ";" << std::endl;
     }
     out << "};" << std::endl;
     out << "struct OutputData" << std::endl << "{" << std::endl;
     for(const auto& n : outputs)
     {
-        out << "    " << n.second.second << " " << n.second.first << " [[color("
-            << n.first << ")]];" << std::endl;
+        out << "    " << n.second.second << " " << n.second.first << " : SV_Tar"
+            "get" << n.first << ";" << std::endl;
     }
     if(usesGlFragDepth)
     {
-        out << "    float glFragDepth [[depth(any)]];" << std::endl;
+        out << "    float glFragDepth : SV_Depth;" << std::endl;
     }
     out << "};" << std::endl;
     out << "OutputData main(InputData input)" << std::endl << "{" << std::endl;
     for(const auto& n : textures)
     {
-        out << "    const wrap_" << n.second << " " << n.first << " = {" << n.
-            first << "Texture, " << n.first << "Sampler};" << std::endl;
+        out << "    const wrap_" << n.second.second << " " << n.first << " = {"
+            << n.first << "Texture, " << n.first << "Sampler};" << std::endl;
     }
     out << "    OutputData output;" << std::endl << mainBuffer.str() << "    re"
         "turn output;" << std::endl << "}" << std::endl;
