@@ -173,9 +173,9 @@ paz::Texture compute_shadow_map(const paz::VertexBuffer& groundVerts, const
     calcShadows.depth(paz::DepthTestMode::Less);
     calcShadows.uniform("lightView", lightView);
     calcShadows.uniform("lightProjection", lightProjection);
-    calcShadows.primitives(paz::PrimitiveType::TriangleStrip, groundVerts);
+    calcShadows.draw(paz::PrimitiveType::TriangleStrip, groundVerts);
     calcShadows.cull(paz::CullMode::Front);
-    calcShadows.primitives(paz::PrimitiveType::Triangles, cubeVerts);
+    calcShadows.draw(paz::PrimitiveType::Triangles, cubeVerts);
     calcShadows.end();
 
     return static_cast<paz::Texture>(shadowMap);
@@ -260,14 +260,14 @@ int main(int, char** argv)
         scenePass.uniform("projection", projection);
         scenePass.uniform("lightView", lightView);
         scenePass.uniform("lightProjection", lightProjection);
-        scenePass.primitives(paz::PrimitiveType::TriangleStrip, groundVerts);
-        scenePass.primitives(paz::PrimitiveType::Triangles, cubeVerts);
+        scenePass.draw(paz::PrimitiveType::TriangleStrip, groundVerts);
+        scenePass.draw(paz::PrimitiveType::Triangles, cubeVerts);
         scenePass.end();
 
         aaPass.begin();
         aaPass.read("img", buff.colorAttachment(0));
         aaPass.read("lum", buff.colorAttachment(0)); // works because grayscale
-        aaPass.primitives(paz::PrimitiveType::TriangleStrip, quadVerts);
+        aaPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
         aaPass.end();
 
         paz::Window::EndFrame();
