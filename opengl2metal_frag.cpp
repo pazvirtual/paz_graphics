@@ -195,6 +195,10 @@ int2 textureSize(thread const wrap_depth2d<T>& tex, thread int lod)
             throw std::runtime_error("Array dimensions must follow variable nam"
                 "e.");
         }
+        if(std::regex_match(line, std::regex(".*\\blength\\(\\s*\\).*")))
+        {
+            throw std::runtime_error("Array length method is not supported.");
+        }
 
         // Keep macro conditionals.
         if(std::regex_match(line, std::regex("\\s*#((end)?if|else|ifn?def).*")))
