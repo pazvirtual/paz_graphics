@@ -136,8 +136,8 @@ int main(int, char** argv)
             paz::Window::IsFullscreen() ? paz::Window::MakeWindowed() : paz::
                 Window::MakeFullscreen();
         }
-        if(paz::Window::MousePressed(0) || paz::Window::GamepadPressed(paz::
-            GamepadButton::RightThumb))
+        if(paz::Window::MousePressed(paz::MouseButton::Left) || paz::Window::
+            GamepadPressed(paz::GamepadButton::RightThumb))
         {
             mode = !mode;
         }
