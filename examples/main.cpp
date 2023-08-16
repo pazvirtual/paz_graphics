@@ -90,11 +90,7 @@ static int load_font(const std::string& path, std::vector<float>& v)
     {
         for(std::size_t j = 0; j < w; ++j)
         {
-#ifdef PAZ_MACOS
-            v[w*i + j] = u[w*i + j];
-#else
             v[w*(numRows - i - 1) + j] = u[w*i + j];
-#endif
         }
     }
     return numRows;

@@ -36,13 +36,28 @@ void paz::Texture::createSampler(MinMagFilter minFilter, MinMagFilter magFilter)
 
 paz::Texture::Texture() {}
 
+
 paz::Texture::Texture(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
-    data)
+    DataType type, MinMagFilter minFilter, MinMagFilter magFilter)
 {
     init(width, height, numChannels, numBits, type, minFilter, magFilter,
-        data);
+        nullptr);
 }
+
+paz::Texture::Texture(int width, int height, int numChannels, int numBits, const
+    std::vector<float>& data, MinMagFilter minFilter, MinMagFilter magFilter)
+{
+    std::vector<float> v(data.size());
+    for(int i = 0; i < height; ++i)
+    {
+        std::copy(data.begin() + width*i, data.begin() + width*i + width, v.
+            begin() + width*(height - i - 1));
+    }
+    init(width, height, numChannels, numBits, DataType::Float, minFilter,
+        magFilter, v.data());
+}
+
+// ...
 
 void paz::Texture::init(int width, int height, int numChannels, int numBits,
     DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
