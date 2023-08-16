@@ -335,7 +335,6 @@ namespace paz
         const Shader* _shader = nullptr;
 #endif
         const Framebuffer* _fbo = nullptr;
-        DepthTestMode _depthTestMode;
 
         RenderPass(const RenderPass&) = delete;
         RenderPass& operator=(const RenderPass&) = delete;
@@ -348,12 +347,12 @@ namespace paz
         };
 
         ~RenderPass();
-        RenderPass(const Framebuffer& fbo, const Shader& shader, DepthTestMode
-            depthMode = DepthTestMode::Disable);
+        RenderPass(const Framebuffer& fbo, const Shader& shader);
         RenderPass(const Shader& shader);
         void begin(const std::vector<LoadAction>& colorLoadActions = {},
             LoadAction depthLoadAction = LoadAction::DontCare);
         void end();
+        void depth(DepthTestMode depthMode);
         void cull(CullMode mode) const;
         void read(const std::string& name, const Texture& tex) const;
         void uniform(const std::string& name, int x) const;
@@ -469,9 +468,9 @@ namespace paz
         static double FrameTime();
         static void SetMinSize(int width, int height);
 #ifdef PAZ_MACOS
-        static void DrawInRenderer();
+        static void DrawInRenderer();//TEMP
 #endif
-        static void ResizeTargets();
+        static void ResizeTargets();//TEMP
     };
 }
 

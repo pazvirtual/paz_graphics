@@ -12,6 +12,8 @@
 static constexpr float Transparent[] = {0.f, 0.f, 0.f, 0.f};
 static int NextSlot = 0;
 
+static bool DepthTestEnabled = false;
+
 static GLenum primitive_type(paz::RenderPass::PrimitiveType t)
 {
     //
@@ -50,18 +52,15 @@ paz::RenderPass::~RenderPass()
     _shader = nullptr;
 }
 
-paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
-    DepthTestMode depthTest)
+paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader)
 {
     _fbo = &fbo;
     _shader = &shader;
-    _depthTestMode = depthTest;
 }
 
 paz::RenderPass::RenderPass(const Shader& shader)
 {
     _shader = &shader;
-    _depthTestMode = DepthTestMode::Disable;
 }
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
@@ -110,44 +109,58 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         {
             glClearBufferfv(GL_COLOR, 0, Transparent);
         }
+        if(depthLoadAction == LoadAction::Clear)
+        {
+            glClear(GL_DEPTH_BUFFER_BIT);
+        }
     }
     _shader->use();
-    if(_depthTestMode == DepthTestMode::Disable)
+}
+
+void paz::RenderPass::depth(DepthTestMode depthMode)
+{
+    if(depthMode == DepthTestMode::Disable)
     {
-        glDisable(GL_DEPTH_TEST);
+        if(DepthTestEnabled)
+        {
+            glDisable(GL_DEPTH_TEST);
+        }
     }
     else
     {
-        glEnable(GL_DEPTH_TEST);
-        if(_depthTestMode == DepthTestMode::Never)
+        if(!DepthTestEnabled)
+        {
+            glEnable(GL_DEPTH_TEST);
+        }
+        if(depthMode == DepthTestMode::Never)
         {
             glDepthFunc(GL_NEVER);
         }
-        else if(_depthTestMode == DepthTestMode::Less)
+        else if(depthMode == DepthTestMode::Less)
         {
             glDepthFunc(GL_LESS);
         }
-        else if(_depthTestMode == DepthTestMode::Equal)
+        else if(depthMode == DepthTestMode::Equal)
         {
             glDepthFunc(GL_EQUAL);
         }
-        else if(_depthTestMode == DepthTestMode::LessEqual)
+        else if(depthMode == DepthTestMode::LessEqual)
         {
             glDepthFunc(GL_LEQUAL);
         }
-        else if(_depthTestMode == DepthTestMode::Greater)
+        else if(depthMode == DepthTestMode::Greater)
         {
             glDepthFunc(GL_GREATER);
         }
-        else if(_depthTestMode == DepthTestMode::NotEqual)
+        else if(depthMode == DepthTestMode::NotEqual)
         {
             glDepthFunc(GL_NOTEQUAL);
         }
-        else if(_depthTestMode == DepthTestMode::GreaterEqual)
+        else if(depthMode == DepthTestMode::GreaterEqual)
         {
             glDepthFunc(GL_GEQUAL);
         }
-        else if(_depthTestMode == DepthTestMode::Always)
+        else if(depthMode == DepthTestMode::Always)
         {
             glDepthFunc(GL_ALWAYS);
         }
