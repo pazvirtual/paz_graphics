@@ -9,12 +9,32 @@
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
+template<typename T, int NumChannels>
+static std::vector<T> flip_image(const paz::Image<T, NumChannels>& image)
+{
+    std::vector<T> v(image.width()*image.height()*NumChannels);
+    for(int i = 0; i < image.height(); ++i)
+    {
+        std::copy(image.begin() + image.width()*i, image.begin() + image.
+            width()*i + image.width(), v.begin() + image.width()*(image.height()
+            - i - 1));
+    }
+    return v;
+}
+
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
     contentViewController] mtkView] device]
 
 paz::Texture::Texture()
 {
     _data = std::make_unique<Data>();
+}
+
+paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
+    minFilter, MinMagFilter magFilter, bool normalized) : Texture()
+{
+    init(image.width(), image.height(), 1, 8, normalized ? DataType::UNorm :
+        DataType::UInt, minFilter, magFilter, flip_image(image).data());
 }
 
 paz::Texture::~Texture()

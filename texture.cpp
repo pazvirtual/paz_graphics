@@ -23,6 +23,13 @@ paz::Texture::Texture()
     _data = std::make_unique<Data>();
 }
 
+paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
+    minFilter, MinMagFilter magFilter, bool normalized) : Texture()
+{
+    init(image.width(), image.height(), 1, 8, normalized ? DataType::UNorm :
+        DataType::UInt, minFilter, magFilter, image.data());
+}
+
 paz::Texture::Texture(int width, int height, int numChannels, int numBits,
     DataType type, MinMagFilter minFilter, MinMagFilter magFilter) :
     Texture()

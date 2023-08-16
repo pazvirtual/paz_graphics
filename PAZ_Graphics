@@ -67,15 +67,8 @@ namespace paz
         virtual ~Texture();
         Texture(int width, int height, int numChannels, int numBits, DataType
             type, MinMagFilter minFilter, MinMagFilter magFilter);
-        template<int NumChannels>
-        Texture(const Image<std::uint8_t, NumChannels>& image, MinMagFilter
-            minFilter, MinMagFilter magFilter, bool normalized = true) :
-            Texture()
-        {
-            init(image.width(), image.height(), NumChannels, 8*sizeof(std::
-                uint8_t), normalized ? DataType::UNorm : DataType::UInt,
-                minFilter, magFilter, image.data());
-        }
+        Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
+            minFilter, MinMagFilter magFilter, bool normalized = true);
         // ...
         void resize(int width, int height);
         int width() const
