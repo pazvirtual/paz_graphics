@@ -6,20 +6,26 @@ static constexpr double MaxWidth = 9.;
 
 static const std::string LineVertSrc = 1 + R"===(
 layout(location = 0) in vec2 pos;
+layout(location = 1) in int sampleIdx [[instance]];
+uniform int width;
+uniform int height;
 out float a;
 void main()
 {
-    gl_Position = vec4(pos.x, pos.y, 0., 1.);
+    float xOffset = (2*(sampleIdx/2) - 1)*0.5/width;
+    float yOffset = (2*(sampleIdx%2) - 1)*0.5/height;
+    gl_Position = vec4(pos.x + xOffset, pos.y + yOffset, 0., 1.);
     a = float(gl_VertexID%2);
 }
 )===";
 
 static const std::string LineFragSrc = 1 + R"===(
 layout(location = 0) out vec4 color;
+uniform int numSamples;
 in float a;
 void main()
 {
-    color = vec4(0.25*vec3(a, 1. - a, 1.), 1.);
+    color = 0.2176*vec4(vec3(a, 1. - a, 1.), 1.)/float(numSamples);
 }
 )===";
 
@@ -90,9 +96,13 @@ int main(int, char** argv)
     buff1.attach(paz::RenderTarget(paz::TextureFormat::RGBA16Float, paz::
         MinMagFilter::Linear, paz::MinMagFilter::Linear));
 
-    paz::RenderPass basePass(buff0, lineVert0, lineFrag0);
+    paz::RenderPass basePass(buff0, lineVert0, lineFrag0, paz::BlendMode::
+        Additive);
     paz::RenderPass xPass(buff1, lineVert1, lineFrag1);
     paz::RenderPass yPass(lineVert2, lineFrag1);
+
+    paz::InstanceBuffer samples;
+    samples.addAttribute(1, std::array<int, 4>{0, 1, 2, 3});
 
     double width = 0.5*(MaxWidth - MinWidth);
     while(!paz::Window::Done())
@@ -138,17 +148,20 @@ int main(int, char** argv)
         }
 
         basePass.begin({paz::LoadAction::Clear});
+        basePass.uniform("width", paz::Window::ViewportWidth());
+        basePass.uniform("height", paz::Window::ViewportHeight());
+        basePass.uniform("numSamples", static_cast<int>(samples.size()));
         if(mode == 0)
         {
-            basePass.draw(paz::PrimitiveType::Lines, vertices);
+            basePass.draw(paz::PrimitiveType::Lines, vertices, samples);
         }
         else if(mode == 1)
         {
-            basePass.draw(paz::PrimitiveType::LineStrip, vertices);
+            basePass.draw(paz::PrimitiveType::LineStrip, vertices, samples);
         }
         else
         {
-            basePass.draw(paz::PrimitiveType::LineLoop, vertices);
+            basePass.draw(paz::PrimitiveType::LineLoop, vertices, samples);
         }
         basePass.end();
 

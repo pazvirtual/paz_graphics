@@ -59,7 +59,14 @@ void paz::VertexBuffer::Data::addAttribute(int dim, DataType type)
     glGenBuffers(1, &_ids.back());
     glEnableVertexAttribArray(i);
     glBindBuffer(GL_ARRAY_BUFFER, _ids.back());
-    glVertexAttribPointer(i, dim, gl_type(type), GL_FALSE, 0, nullptr);
+    if(type == DataType::Float)
+    {
+        glVertexAttribPointer(i, dim, GL_FLOAT, GL_FALSE, 0, nullptr);
+    }
+    else
+    {
+        glVertexAttribIPointer(i, dim, gl_type(type), 0, nullptr);
+    }
     switch(dim)
     {
         case 1:
