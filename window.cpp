@@ -4,7 +4,6 @@
 
 #include "PAZ_Graphics"
 #include "keycodes.hpp"
-#include "internal_data.hpp"//TEMP - shouldn't actually need `_initializer` as member of `Window`
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
