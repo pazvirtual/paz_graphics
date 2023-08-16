@@ -7,6 +7,8 @@
 
 paz::Framebuffer::Framebuffer()
 {
+    initialize();
+
     _data = std::make_shared<Data>();
 }
 
