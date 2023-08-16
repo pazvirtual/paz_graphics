@@ -11,6 +11,21 @@
 #endif
 #include <GLFW/glfw3.h>
 
+#define CASE(a, b) case paz::WrapMode::a: return GL_##b;
+
+static GLint wrap_mode(paz::WrapMode m)
+{
+    switch(m)
+    {
+        CASE(Repeat, REPEAT)
+        CASE(MirrorRepeat, MIRRORED_REPEAT)
+        CASE(ClampToEdge, CLAMP_TO_EDGE)
+        CASE(ClampToZero, CLAMP_TO_BORDER)
+    }
+
+    throw std::logic_error("Invalid texture wrapping mode requested.");
+}
+
 paz::Texture::Data::~Data()
 {
     if(_isRenderTarget)
@@ -24,15 +39,11 @@ paz::Texture::Data::~Data()
     }
 }
 
-paz::Texture::Texture()
-{
-    initialize();
-
-    _data = std::make_shared<Data>();
-}
+paz::Texture::Texture() {}
 
 paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
-    minFilter, MinMagFilter magFilter, bool normalized)
+    minFilter, MinMagFilter magFilter, WrapMode wrapS, WrapMode wrapT,
+    MipmapFilter mipFilter, bool normalized)
 {
     initialize();
 
@@ -43,11 +54,15 @@ paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
         R8UInt;
     _data->_minFilter = minFilter;
     _data->_magFilter = magFilter;
+    _data->_mipFilter = mipFilter;
+    _data->_wrapS = wrapS;
+    _data->_wrapT = wrapT;
     _data->init(image.data());
 }
 
 paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
-    minFilter, MinMagFilter magFilter)
+    minFilter, MinMagFilter magFilter, WrapMode wrapS, WrapMode wrapT,
+    MipmapFilter mipFilter)
 {
     initialize();
 
@@ -57,6 +72,9 @@ paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
     _data->_format = format;
     _data->_minFilter = minFilter;
     _data->_magFilter = magFilter;
+    _data->_mipFilter = mipFilter;
+    _data->_wrapS = wrapS;
+    _data->_wrapT = wrapT;
     _data->init();
 }
 
@@ -70,14 +88,14 @@ void paz::Texture::Data::init(const void* data)
     glBindTexture(GL_TEXTURE_2D, _id);
     glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(_format), _width, _height,
         0, gl_format(_format), gl_type(_format), data);
-    if(_mipmap)
+    if(_mipFilter != MipmapFilter::None)
     {
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_mode(_wrapS));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_mode(_wrapT));
 }
 
 void paz::Texture::Data::resize(int width, int height)
@@ -89,7 +107,7 @@ void paz::Texture::Data::resize(int width, int height)
         glBindTexture(GL_TEXTURE_2D, _id);
         glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(_format), _width,
             _height, 0, gl_format(_format), gl_type(_format), nullptr);
-        if(_mipmap)
+        if(_mipFilter != MipmapFilter::None)
         {
             glGenerateMipmap(GL_TEXTURE_2D);
         }

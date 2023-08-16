@@ -44,16 +44,11 @@ paz::Texture::Data::~Data()
     }
 }
 
-paz::Texture::Texture()
-{
-    initialize();
-
-    _data = std::make_shared<Data>();
-}
+paz::Texture::Texture() {}
 
 paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
     minFilter, MinMagFilter magFilter, WrapMode wrapS, WrapMode wrapT,
-    MipmapFilter mipFilter, bool normalized) : Texture()
+    MipmapFilter mipFilter, bool normalized)
 {
     initialize();
 
@@ -72,7 +67,7 @@ paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
 
 paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
     minFilter, MinMagFilter magFilter, WrapMode wrapS, WrapMode wrapT,
-    MipmapFilter mipFilter) : Texture()
+    MipmapFilter mipFilter)
 {
     initialize();
 
