@@ -12,6 +12,7 @@ uniform int height;
 out float a;
 void main()
 {
+    // Note: Multiply offsets by `gl_Position.w` if 3D (perspective divide).
     float xOffset = (2*(sampleIdx/2) - 1)*0.5/width;
     float yOffset = (2*(sampleIdx%2) - 1)*0.5/height;
     gl_Position = vec4(pos.x + xOffset, pos.y + yOffset, 0., 1.);
@@ -21,11 +22,11 @@ void main()
 
 static const std::string LineFragSrc = 1 + R"===(
 layout(location = 0) out vec4 color;
-uniform int numSamples;
+uniform uint numSamples;
 in float a;
 void main()
 {
-    color = 0.2176*vec4(vec3(a, 1. - a, 1.), 1.)/float(numSamples);
+    color = 0.2176*vec4(vec3(a, 1. - a, 1.), 1.)/numSamples;
 }
 )===";
 
@@ -150,7 +151,8 @@ int main(int, char** argv)
         basePass.begin({paz::LoadAction::Clear});
         basePass.uniform("width", paz::Window::ViewportWidth());
         basePass.uniform("height", paz::Window::ViewportHeight());
-        basePass.uniform("numSamples", static_cast<int>(samples.size()));
+        basePass.uniform("numSamples", static_cast<unsigned int>(samples.
+            size()));
         if(mode == 0)
         {
             basePass.draw(paz::PrimitiveType::Lines, vertices, samples);
