@@ -140,6 +140,19 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
                 [[pipelineDescriptor colorAttachments][i]
                     setDestinationAlphaBlendFactor:MTLBlendFactorOne];
             }
+            else if(blendMode == paz::RenderPass::BlendMode::Blend)
+            {
+                [[pipelineDescriptor colorAttachments][i]
+                    setSourceRGBBlendFactor:MTLBlendFactorSourceAlpha];
+                [[pipelineDescriptor colorAttachments][i]
+                    setSourceAlphaBlendFactor:MTLBlendFactorSourceAlpha];
+                [[pipelineDescriptor colorAttachments][i]
+                    setDestinationRGBBlendFactor:
+                    MTLBlendFactorOneMinusSourceAlpha];
+                [[pipelineDescriptor colorAttachments][i]
+                    setDestinationAlphaBlendFactor:
+                    MTLBlendFactorOneMinusSourceAlpha];
+            }
             // ...
             else
             {
@@ -186,6 +199,18 @@ paz::RenderPass::RenderPass(const Shader& shader, BlendMode blendMode)
                     setDestinationRGBBlendFactor:MTLBlendFactorOne];
                 [[pipelineDescriptor colorAttachments][0]
                     setDestinationAlphaBlendFactor:MTLBlendFactorOne];
+        }
+        else if(blendMode == paz::RenderPass::BlendMode::Blend)
+        {
+            [[pipelineDescriptor colorAttachments][0] setSourceRGBBlendFactor:
+                MTLBlendFactorSourceAlpha];
+            [[pipelineDescriptor colorAttachments][0] setSourceAlphaBlendFactor:
+                MTLBlendFactorSourceAlpha];
+            [[pipelineDescriptor colorAttachments][0]
+                setDestinationRGBBlendFactor:MTLBlendFactorOneMinusSourceAlpha];
+            [[pipelineDescriptor colorAttachments][0]
+                setDestinationAlphaBlendFactor:
+                MTLBlendFactorOneMinusSourceAlpha];
         }
         // ...
         else
