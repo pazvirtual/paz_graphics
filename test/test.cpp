@@ -41,23 +41,24 @@ static constexpr int Scale = 8;
 static constexpr float Eps = 1e-4;
 static constexpr double Angle = 3.;
 
-static constexpr int Threshold = 0.05*255;
-
-// Metal: 0 110 0 48 191 55 0 183 132 156
-// D3D:   0 108 0 29 192 47 0 183 132 156
-// Avg.:  0 109 0 38 192 51 0 183 132 156
+// Metal:     0 110 0 48 191 55 0 183 132 156
+// D3D:       0 108 0 29 192 47 0 183 132 156
+// OGL:       0 112 0 64 192 57 0 182 130 158
+// Avg.:      0 110 0 47 192 53 0 183 131 157
+// Max diff.: 0   2 0 18   1  6 0   1   1   1
+static constexpr int Threshold = 18;
 static constexpr std::array<std::array<int, 3>, 10> SamplePoints =
 {{
     {171,  83, 0},
-    {115, 158, 109},
+    {115, 158, 110},
     {  3,  59, 0},
-    { 62,  69, 38},
+    { 62,  69, 47},
     {100, 162, 192},
-    { 97, 130, 51},
+    { 97, 130, 53},
     {189,  70, 0},
     {138,  37, 183},
-    { 75,  70, 132},
-    {134,  64, 156}
+    { 75,  70, 131},
+    {134,  64, 157}
 }};
 
 static constexpr std::array<float, 4*4> GroundPos =
