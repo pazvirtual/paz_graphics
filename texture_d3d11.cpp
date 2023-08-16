@@ -317,19 +317,22 @@ void paz::Texture::Data::init(const void* data)
     }
     if(_isRenderTarget)
     {
-        if((_format == TextureFormat::Depth16UNorm || _format == TextureFormat::
-            Depth32Float) && !_dsView)
+        if(_format == TextureFormat::Depth16UNorm || _format == TextureFormat::
+            Depth32Float)
         {
-            D3D11_DEPTH_STENCIL_VIEW_DESC dsDescriptor = {};
-            dsDescriptor.Format = _format == TextureFormat::Depth16UNorm ?
-                DXGI_FORMAT_D16_UNORM : DXGI_FORMAT_D32_FLOAT;
-            dsDescriptor.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-            const auto hr = d3d_device()->CreateDepthStencilView(_texture,
-                &dsDescriptor, &_dsView);
-            if(hr)
+            if(!_dsView)
             {
-                throw std::runtime_error("Failed to create depth/stencil view ("
-                    "HRESULT " + std::to_string(hr) + ").");
+                D3D11_DEPTH_STENCIL_VIEW_DESC dsDescriptor = {};
+                dsDescriptor.Format = _format == TextureFormat::Depth16UNorm ?
+                    DXGI_FORMAT_D16_UNORM : DXGI_FORMAT_D32_FLOAT;
+                dsDescriptor.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+                const auto hr = d3d_device()->CreateDepthStencilView(_texture,
+                    &dsDescriptor, &_dsView);
+                if(hr)
+                {
+                    throw std::runtime_error("Failed to create depth/stencil vi"
+                        "ew (HRESULT " + std::to_string(hr) + ").");
+                }
             }
         }
         else if(!_rtView)
