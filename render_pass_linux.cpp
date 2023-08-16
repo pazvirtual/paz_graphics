@@ -8,7 +8,6 @@
 #include "util_linux.hpp"
 #include "common.hpp"
 #include "gl_core_4_1.h"
-#include <GLFW/glfw3.h>
 
 #define CASE(a, b) case paz::PrimitiveType::a: return GL_##b;
 #define CHECK_UNIFORM if(!_data->_shader._uniformIds.count(name)) return;

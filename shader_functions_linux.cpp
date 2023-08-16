@@ -10,7 +10,6 @@
 #include <sstream>
 #include <regex>
 #include "gl_core_4_1.h"
-#include <GLFW/glfw3.h>
 
 static std::unordered_map<unsigned int, unsigned int> get_frag_outputs(const
     std::string& src)

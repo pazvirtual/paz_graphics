@@ -6,7 +6,6 @@
 #include "internal_data.hpp"
 #include "common.hpp"
 #include "gl_core_4_1.h"
-#include <GLFW/glfw3.h>
 
 #define CASE_STRING(x) case x: return #x;
 
