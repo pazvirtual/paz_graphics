@@ -61,14 +61,19 @@ paz::Shader::Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
             std::vector<GLchar> buf(bufSiz);
             glGetActiveAttrib(_data->_id, i, bufSiz, nullptr, &size, &type, buf.
                 data());
-            const std::string name(buf.data());
-            std::size_t end = name.find("[", 0);
-            const GLint location = glGetAttribLocation(_data->_id, name.substr(
-                0, end).c_str());
+            std::string name(buf.data());
+            name = name.substr(0, name.find("[", 0));
+            // `gl_VertexID` has no location because it is a built-in attribute.
+            if(name == "gl_VertexID")
+            {
+                continue;
+            }
+            const GLint location = glGetAttribLocation(_data->_id, name.
+                c_str());
             if(location < 0)
             {
-                throw std::logic_error("Vertex attribute \"" + name.substr(0,
-                    end) + "\" is not active.");
+                throw std::logic_error("Vertex attribute \"" + name + "\" is no"
+                    "t active.");
             }
             if(size >= 0)
             {
