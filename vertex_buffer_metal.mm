@@ -7,7 +7,6 @@
 #import "view_controller.hh"
 #include "window.hpp"
 #include "internal_data.hpp"
-#include "vertex_buffer.hpp"
 #import <MetalKit/MetalKit.h>
 
 #define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
@@ -23,6 +22,25 @@ paz::VertexBuffer::Data::~Data()
                 MTLPurgeableStateEmpty];
             [static_cast<id<MTLBuffer>>(n) release];
         }
+    }
+}
+
+void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)
+{
+    if(dim != 1 && dim != 2 && dim != 4)
+    {
+        throw std::runtime_error("Vertex attribute dimensions must be 1, 2, or "
+            "4.");
+    }
+    const std::size_t m = size/dim;
+    if(!_numVertices)
+    {
+        _numVertices = m;
+    }
+    else if(m != _numVertices)
+    {
+        throw std::runtime_error("Number of vertices for each attribute must ma"
+            "tch.");
     }
 }
 

@@ -39,10 +39,14 @@ struct paz::VertexBuffer::Data
     unsigned int _id = 0;
     std::vector<unsigned int> _ids;
     std::vector<unsigned int> _types;
+    IndexBuffer _lineStripIndices;
+    IndexBuffer _lineLoopIndices;
+    IndexBuffer _thickLinesIndices;
     Data();
 #endif
     std::size_t _numVertices = 0;
     ~Data();
+    void checkSize(int dim, std::size_t size);
 };
 
 struct paz::IndexBuffer::Data
