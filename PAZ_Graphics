@@ -360,6 +360,8 @@ namespace paz
         static void Loop(const std::function<void(void)>& draw);
         static double FrameTime();
         static void SetMinSize(int width, int height);
+        static void SetMaxSize(int width, int height);
+        static void Resize(int width, int height);
         static void DrawInRenderer();//TEMP (for internal use on macOS builds)
         static void ResizeTargets();//TEMP (for internal use)
         static std::vector<float> PrintScreen();
