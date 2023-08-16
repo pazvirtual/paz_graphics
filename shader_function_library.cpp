@@ -11,11 +11,10 @@
 #endif
 #include <GLFW/glfw3.h>
 
-static unsigned int compile_shader(const std::string& src, bool isVertexShader)
+static unsigned int compile_shader(const std::string& src, GLenum type)
 {
     // Compile shader.
-    unsigned int shader = glCreateShader(isVertexShader ? GL_VERTEX_SHADER :
-        GL_FRAGMENT_SHADER);
+    unsigned int shader = glCreateShader(type);
     const std::string headerStr = "#version " + std::to_string(paz::
         GlMajorVersion) + std::to_string(paz::GlMinorVersion) + "0 core\n#defin"
         "e depthSampler2D sampler2D\n";
@@ -29,8 +28,7 @@ static unsigned int compile_shader(const std::string& src, bool isVertexShader)
     if(!success)
     {
         std::string errorLog = paz::get_log(shader, false);
-        throw std::runtime_error("Failed to compile " + std::string(
-            isVertexShader ? "vertex" : "fragment") + " shader:\n" + errorLog);
+        throw std::runtime_error("\n" + errorLog);
     }
 
     return shader;
@@ -64,13 +62,34 @@ void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
 
     try
     {
-        paz::vert2metal(src);
-        _data->_vertexIds[name] = compile_shader(src, true);
+        vert2metal(src);
+        _data->_vertexIds[name] = compile_shader(src, GL_VERTEX_SHADER);
     }
     catch(const std::exception& e)
     {
         throw std::runtime_error("Failed to compile vertex function \"" + name +
             "\": " + e.what());
+    }
+}
+
+void paz::ShaderFunctionLibrary::geometry(const std::string& name, const std::
+    string& src)
+{
+    if(_data->_geometryIds.count(name))
+    {
+        throw std::runtime_error("Geometry function \"" + name + "\" has alread"
+            "y been defined.");
+    }
+
+    try
+    {
+//        geom2metal(src);
+        _data->_geometryIds[name] = compile_shader(src, GL_GEOMETRY_SHADER);
+    }
+    catch(const std::exception& e)
+    {
+        throw std::runtime_error("Failed to compile geometry function \"" + name
+            + "\": " + e.what());
     }
 }
 
@@ -85,8 +104,8 @@ void paz::ShaderFunctionLibrary::fragment(const std::string& name, const std::
 
     try
     {
-        paz::frag2metal(src);
-        _data->_fragmentIds[name] = compile_shader(src, false);
+        frag2metal(src);
+        _data->_fragmentIds[name] = compile_shader(src, GL_FRAGMENT_SHADER);
     }
     catch(const std::exception& e)
     {

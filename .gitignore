@@ -3,5 +3,6 @@
 examples/example2d
 examples/particles
 examples/shadows
+examples/thicklines
 *.exe
 *.zip
