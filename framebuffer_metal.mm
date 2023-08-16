@@ -37,6 +37,11 @@ void paz::Framebuffer::attach(const RenderTarget& target)
     {
         _data->_colorAttachments.push_back(&target);
     }
+    if(!target._data->_scale) //TEMP
+    {
+        _data->_width = target.width();
+        _data->_height = target.height();
+    }
 }
 
 #endif

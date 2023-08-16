@@ -87,6 +87,8 @@ namespace paz
         ~RenderTarget();
         RenderTarget(double scale, Format format, MinMagFilter minFilter,
             MinMagFilter magFilter);
+        RenderTarget(int width, int height, Format format, MinMagFilter
+            minFilter, MinMagFilter magFilter);
     };
 
     class VertexBuffer

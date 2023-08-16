@@ -98,13 +98,16 @@ void paz::Texture::init(const void* data)
 
 void paz::Texture::resize(int width, int height)
 {
-    if(_data->_texture)
+    if(_data->_scale)
     {
-        [static_cast<id<MTLTexture>>(_data->_texture) release];
+        if(_data->_texture)
+        {
+            [static_cast<id<MTLTexture>>(_data->_texture) release];
+        }
+        _width = _data->_scale*width;
+        _height = _data->_scale*height;
+        init();
     }
-    _width = _data->_scale*width;
-    _height = _data->_scale*height;
-    init();
 }
 
 #endif
