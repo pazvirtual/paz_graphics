@@ -58,8 +58,17 @@ void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
         throw std::runtime_error("Vertex function \"" + name + "\" has already "
             "been defined.");
     }
-    paz::vert2metal(src);
-    _data->_vertexIds[name] = compile_shader(src, true);
+
+    try
+    {
+        paz::vert2metal(src);
+        _data->_vertexIds[name] = compile_shader(src, true);
+    }
+    catch(const std::exception& e)
+    {
+        throw std::runtime_error("Failed to compile vertex function \"" + name +
+            "\": " + e.what());
+    }
 }
 
 void paz::ShaderFunctionLibrary::fragment(const std::string& name, const std::
@@ -70,8 +79,17 @@ void paz::ShaderFunctionLibrary::fragment(const std::string& name, const std::
         throw std::runtime_error("Fragment function \"" + name + "\" has alread"
             "y been defined.");
     }
-    paz::frag2metal(src);
-    _data->_fragmentIds[name] = compile_shader(src, false);
+
+    try
+    {
+        paz::frag2metal(src);
+        _data->_fragmentIds[name] = compile_shader(src, false);
+    }
+    catch(const std::exception& e)
+    {
+        throw std::runtime_error("Failed to compile fragment function \"" + name
+            + "\": " + e.what());
+    }
 }
 
 #endif

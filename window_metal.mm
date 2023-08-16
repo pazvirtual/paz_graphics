@@ -24,12 +24,12 @@ struct Initializer
 
 static Initializer Initializer;
 
-std::function<void(void)> paz::Window::_draw = [](){};
+static std::function<void(void)> Draw = [](){};
 
-std::chrono::time_point<std::chrono::steady_clock> paz::Window::_frameStart;
-double paz::Window::_frameTime = 1./60.;
+static std::chrono::time_point<std::chrono::steady_clock> FrameStart;
+static double CurFrameTime = 1./60.;
 
-std::unordered_set<paz::RenderTarget*> paz::Window::_targets;
+static std::unordered_set<paz::RenderTarget*> Targets;
 
 static CGPoint PrevOrigin;
 
@@ -193,15 +193,16 @@ float paz::Window::AspectRatio()
 
 void paz::Window::ResizeTargets()
 {
-    for(auto& n : _targets)
+    for(auto& n : Targets)
     {
         n->resize(ViewportWidth(), ViewportHeight());
     }
 }
 
-void paz::Window::LoopInternal()
+void paz::Window::Loop(const std::function<void(void)>& draw)
 {
-    _frameStart = std::chrono::steady_clock::now();
+    Draw = draw;
+    FrameStart = std::chrono::steady_clock::now();
     while(![APP_DELEGATE done])
     {
 
@@ -211,14 +212,15 @@ void paz::Window::LoopInternal()
         [NSApp updateWindows];
     }
 }
+
 void paz::Window::DrawInRenderer()//TEMP
 {
-    _draw();
+    Draw();
     ResetEvents();
     const auto now = std::chrono::steady_clock::now();
-    _frameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
-        _frameStart).count()*1e-6;
-    _frameStart = now;
+    CurFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
+        FrameStart).count()*1e-6;
+    FrameStart = now;
 }
 
 void paz::Window::Quit()
@@ -228,7 +230,7 @@ void paz::Window::Quit()
 
 double paz::Window::FrameTime()
 {
-    return _frameTime;
+    return CurFrameTime;
 }
 
 // ...
@@ -244,20 +246,20 @@ void paz::Window::SetMinSize(int width, int height)
 
 void paz::Window::RegisterTarget(RenderTarget* target)
 {
-    if(_targets.count(target))
+    if(Targets.count(target))
     {
         throw std::logic_error("Rendering target has already been registered.");
     }
-    _targets.insert(target);
+    Targets.insert(target);
 }
 
 void paz::Window::UnregisterTarget(RenderTarget* target)
 {
-    if(!_targets.count(target))
+    if(!Targets.count(target))
     {
         throw std::logic_error("Rendering target was not registered.");
     }
-    _targets.erase(target);
+    Targets.erase(target);
 }
 
 #endif
