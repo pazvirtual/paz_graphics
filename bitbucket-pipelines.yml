@@ -1,8 +1,8 @@
 image: gcc:10.2
 
 pipelines:
-  default:
-    - parallel:
+  custom:
+    build-lib-build-main-run-main:
         - step:
             name: Build Lib Build Main Run Main
             script:
