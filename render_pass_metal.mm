@@ -21,11 +21,16 @@
 
 #define CASE(a, b, n) case MTLDataType##a: return {MTLVertexFormat##a, n* \
     sizeof(b)};
+#define CHECK_PASS if(!CurPass) throw std::logic_error("No current render pass"\
+    "."); else if(this != CurPass) throw std::logic_error("Render pass operati"\
+    "ons cannot be interleaved.");
 
 static_assert(sizeof(unsigned int) == 2 || sizeof(unsigned int) == 4, "Indices "
     "must be 16 or 32 bits.");
 static constexpr MTLIndexType IndexType = (sizeof(unsigned int) == 2 ?
     MTLIndexTypeUInt16 : MTLIndexTypeUInt32);
+
+static const paz::RenderPass* CurPass;
 
 static std::pair<MTLVertexFormat, NSUInteger> vertex_format_stride(NSUInteger t)
 {
@@ -203,6 +208,12 @@ paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
 {
+    if(CurPass)
+    {
+        throw std::logic_error("Previous render pass was not ended.");
+    }
+    CurPass = this;
+
     [RENDERER ensureCommandBuffer];
 
     MTLRenderPassDescriptor* renderPassDescriptor = [[MTLRenderPassDescriptor
@@ -307,12 +318,14 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
 
 void paz::RenderPass::depth(DepthTestMode mode)
 {
+    CHECK_PASS
     [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
         setDepthStencilState:depth_stencil_state(mode)];
 }
 
 void paz::RenderPass::end()
 {
+    CHECK_PASS
     [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
         endEncoding];
     _data->_renderEncoder = nullptr;
@@ -324,10 +337,12 @@ void paz::RenderPass::end()
     {
         _data->_fbo->_depthStencilAttachment->ensureMipmaps();
     }
+    CurPass = nullptr;
 }
 
 void paz::RenderPass::cull(CullMode mode)
 {
+    CHECK_PASS
     if(mode == CullMode::Disable)
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
@@ -351,6 +366,7 @@ void paz::RenderPass::cull(CullMode mode)
 
 void paz::RenderPass::read(const std::string& name, const Texture& tex)
 {
+    CHECK_PASS
     const std::string textureName = name + "Texture";
     if(_data->_vertexArgs.count(textureName))
     {
@@ -386,17 +402,20 @@ void paz::RenderPass::read(const std::string& name, const Texture& tex)
 
 void paz::RenderPass::uniform(const std::string& name, int x)
 {
+    CHECK_PASS
     uniform(name, &x, 1);
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y)
 {
+    CHECK_PASS
     std::array<int, 2> v = {x, y};
     uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z)
 {
+    CHECK_PASS
     std::array<int, 3> v = {x, y, z};
     uniform(name, v.data(), v.size());
 }
@@ -404,6 +423,7 @@ void paz::RenderPass::uniform(const std::string& name, int x, int y, int z)
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
     w)
 {
+    CHECK_PASS
     std::array<int, 4> v = {x, y, z, w};
     uniform(name, v.data(), v.size());
 }
@@ -411,6 +431,7 @@ void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
 void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
     size)
 {
+    CHECK_PASS
     if(_data->_vertexArgs.count(name))
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
@@ -427,12 +448,14 @@ void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x)
 {
+    CHECK_PASS
     uniform(name, &x, 1);
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y)
 {
+    CHECK_PASS
     std::array<unsigned int, 2> v = {x, y};
     uniform(name, v.data(), v.size());
 }
@@ -440,6 +463,7 @@ void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z)
 {
+    CHECK_PASS
     std::array<unsigned int, 3> v = {x, y, z};
     uniform(name, v.data(), v.size());
 }
@@ -447,6 +471,7 @@ void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z, unsigned int w)
 {
+    CHECK_PASS
     std::array<unsigned int, 4> v = {x, y, z, w};
     uniform(name, v.data(), v.size());
 }
@@ -454,6 +479,7 @@ void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
 void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
     std::size_t size)
 {
+    CHECK_PASS
     if(_data->_vertexArgs.count(name))
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
@@ -470,11 +496,13 @@ void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
 
 void paz::RenderPass::uniform(const std::string& name, float x)
 {
+    CHECK_PASS
     uniform(name, &x, 1);
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y)
 {
+    CHECK_PASS
     std::array<float, 2> v = {x, y};
     uniform(name, v.data(), v.size());
 }
@@ -482,6 +510,7 @@ void paz::RenderPass::uniform(const std::string& name, float x, float y)
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z)
 {
+    CHECK_PASS
     std::array<float, 3> v = {x, y, z};
     uniform(name, v.data(), v.size());
 }
@@ -489,6 +518,7 @@ void paz::RenderPass::uniform(const std::string& name, float x, float y, float
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z, float w)
 {
+    CHECK_PASS
     std::array<float, 4> v = {x, y, z, w};
     uniform(name, v.data(), v.size());
 }
@@ -496,6 +526,7 @@ void paz::RenderPass::uniform(const std::string& name, float x, float y, float
 void paz::RenderPass::uniform(const std::string& name, const float* x, std::
     size_t size)
 {
+    CHECK_PASS
     if(_data->_vertexArgs.count(name))
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
@@ -512,6 +543,7 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
 {
+    CHECK_PASS
     check_attributes(vertices._data->_buffers, _data->_vertexAttributeStrides,
         vertices._data->_numVertices);
 
@@ -578,6 +610,7 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     const IndexBuffer& indices)
 {
+    CHECK_PASS
     check_attributes(vertices._data->_buffers, _data->_vertexAttributeStrides,
         vertices._data->_numVertices);
 
