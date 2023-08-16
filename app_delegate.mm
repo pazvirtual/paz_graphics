@@ -679,28 +679,30 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
         switch(e.type)
         {
             case paz::GamepadElementType::Axis:
+            {
+                const float val = axes[e.idx]*e.axisScale + e.axisOffset;
+                if(e.axisOffset < 0. || (!e.axisOffset && e.axisScale > 0.))
                 {
-                    const float val = axes[e.idx]*e.axisScale + e.axisOffset;
-                    if(e.axisOffset < 0. || (!e.axisOffset && e.axisScale > 0.))
-                    {
-                        state->buttons[i] = val >= 0.;
-                    }
-                    else
-                    {
-                        state->buttons[i] = val <= 0.;
-                    }
+                    state->buttons[i] = val >= 0.;
+                }
+                else
+                {
+                    state->buttons[i] = val <= 0.;
                 }
                 break;
+            }
             case paz::GamepadElementType::HatBit:
-                {
-                    const unsigned int hat = e.idx >> 4;
-                    const unsigned int bit = e.idx&0xf;
-                    state->buttons[i] = hats[hat]&bit;
-                }
+            {
+                const unsigned int hat = e.idx >> 4;
+                const unsigned int bit = e.idx&0xf;
+                state->buttons[i] = hats[hat]&bit;
                 break;
+            }
             case paz::GamepadElementType::Button:
+            {
                 state->buttons[i] = buttons[e.idx];
                 break;
+            }
         }
     }
     for(int i = 0; i < 6; ++i)
@@ -709,21 +711,23 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
         switch(e.type)
         {
             case paz::GamepadElementType::Axis:
-                {
-                    const double val = axes[e.idx]*e.axisScale + e.axisOffset;
-                    state->axes[i] = std::max(-1., std::min(1., val));
-                }
+            {
+                const double val = axes[e.idx]*e.axisScale + e.axisOffset;
+                state->axes[i] = std::max(-1., std::min(1., val));
                 break;
+            }
             case paz::GamepadElementType::HatBit:
-                {
-                    const unsigned int hat = e.idx >> 4;
-                    const unsigned int bit = e.idx&0xf;
-                    state->axes[i] = hats[hat]&bit ? 1. : 1.;
-                }
+            {
+                const unsigned int hat = e.idx >> 4;
+                const unsigned int bit = e.idx&0xf;
+                state->axes[i] = hats[hat]&bit ? 1. : 1.;
                 break;
+            }
             case paz::GamepadElementType::Button:
+            {
                 state->axes[i] = 2.*buttons[e.idx] - 1.;
                 break;
+            }
         }
     }
 
