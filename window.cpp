@@ -41,8 +41,8 @@ static std::array<bool, paz::NumGamepadButtons> GamepadPressed;
 static std::array<bool, paz::NumGamepadButtons> GamepadReleased;
 static std::pair<double, double> GamepadLeftStick;
 static std::pair<double, double> GamepadRightStick;
-static double GamepadLeftTrigger;
-static double GamepadRightTrigger;
+static double GamepadLeftTrigger = -1.;
+static double GamepadRightTrigger = -1.;
 static bool GamepadActive;
 static bool CursorDisabled;
 static bool FrameInProgress;
@@ -206,8 +206,8 @@ static void reset_events()
     ::GamepadReleased = {};
     ::GamepadLeftStick = {};
     ::GamepadRightStick = {};
-    ::GamepadLeftTrigger = 0.;
-    ::GamepadRightTrigger = 0.;
+    ::GamepadLeftTrigger = -1.;
+    ::GamepadRightTrigger = -1.;
 }
 
 paz::Initializer::~Initializer()
@@ -448,41 +448,57 @@ std::pair<double, double> paz::Window::ScrollOffset()
 
 bool paz::Window::GamepadDown(GamepadButton button)
 {
+    initialize();
+
     return ::GamepadDown.at(static_cast<int>(button));
 }
 
 bool paz::Window::GamepadPressed(GamepadButton button)
 {
+    initialize();
+
     return ::GamepadPressed.at(static_cast<int>(button));
 }
 
 bool paz::Window::GamepadReleased(GamepadButton button)
 {
+    initialize();
+
     return ::GamepadReleased.at(static_cast<int>(button));
 }
 
 std::pair<double, double> paz::Window::GamepadLeftStick()
 {
+    initialize();
+
     return ::GamepadLeftStick;
 }
 
 std::pair<double, double> paz::Window::GamepadRightStick()
 {
+    initialize();
+
     return ::GamepadRightStick;
 }
 
 double paz::Window::GamepadLeftTrigger()
 {
+    initialize();
+
     return ::GamepadLeftTrigger;
 }
 
 double paz::Window::GamepadRightTrigger()
 {
+    initialize();
+
     return ::GamepadRightTrigger;
 }
 
 bool paz::Window::GamepadActive()
 {
+    initialize();
+
     return ::GamepadActive;
 }
 
