@@ -267,71 +267,99 @@ void paz::Window::SetTitle(const std::string& title)
 
 bool paz::Window::IsKeyWindow()
 {
+    initialize();
+
     return WindowIsKey;
 }
 
 bool paz::Window::IsFullscreen()
 {
+    initialize();
+
     return WindowIsFullscreen;
 }
 
 int paz::Window::ViewportWidth()
 {
+    initialize();
+
     return FboWidth;
 }
 
 int paz::Window::ViewportHeight()
 {
+    initialize();
+
     return FboHeight;
 }
 
 int paz::Window::Width()
 {
+    initialize();
+
     return WindowWidth;
 }
 
 int paz::Window::Height()
 {
+    initialize();
+
     return WindowHeight;
 }
 
 bool paz::Window::KeyDown(Key key)
 {
+    initialize();
+
     return ::KeyDown.at(static_cast<int>(key));
 }
 
 bool paz::Window::KeyPressed(Key key)
 {
+    initialize();
+
     return ::KeyPressed.at(static_cast<int>(key));
 }
 
 bool paz::Window::KeyReleased(Key key)
 {
+    initialize();
+
     return ::KeyReleased.at(static_cast<int>(key));
 }
 
 bool paz::Window::MouseDown(int button)
 {
+    initialize();
+
     return ::MouseDown.at(button);
 }
 
 bool paz::Window::MousePressed(int button)
 {
+    initialize();
+
     return ::MousePressed.at(button);
 }
 
 bool paz::Window::MouseReleased(int button)
 {
+    initialize();
+
     return ::MouseReleased.at(button);
 }
 
 std::pair<double, double> paz::Window::MousePos()
 {
+    initialize();
+
     return ::MousePos;
 }
 
 std::pair<double, double> paz::Window::ScrollOffset()
 {
+    initialize();
+
     return ::ScrollOffset;
 }
 
@@ -360,6 +388,8 @@ void paz::Window::SetCursorMode(CursorMode mode)
 
 float paz::Window::AspectRatio()
 {
+    initialize();
+
     return FboAspectRatio;
 }
 
@@ -405,6 +435,8 @@ void paz::Window::Quit()
 
 double paz::Window::FrameTime()
 {
+    initialize();
+
     return PrevFrameTime;
 }
 

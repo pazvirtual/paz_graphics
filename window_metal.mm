@@ -295,6 +295,8 @@ void paz::Window::EndFrame()
 
 double paz::Window::FrameTime()
 {
+    initialize();
+
     return PrevFrameTime;
 }
 
