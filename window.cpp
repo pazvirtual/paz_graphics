@@ -320,7 +320,7 @@ void paz::Window::MakeFullscreen()
         GLFWmonitor* monitor = glfwGetPrimaryMonitor();
         const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
         glfwSetWindowMonitor(WindowPtr, monitor, 0, 0, videoMode->width,
-            videoMode->height, GLFW_DONT_CARE);
+            videoMode->height, videoMode->refreshRate);
         WindowIsFullscreen = true;
 
         // Keep vsync.
