@@ -82,8 +82,11 @@ void paz::InstanceBuffer::addAttribute(int dim, const float* data, std::size_t
 {
     _data->_dims.push_back(dim);
     _data->checkSize(dim, size);
-    _data->_buffers.push_back([DEVICE newBufferWithBytes:data length:sizeof(
-        float)*size options:MTLStorageModeShared]);
+    if(size)
+    {
+        _data->_buffers.push_back([DEVICE newBufferWithBytes:data length:sizeof(
+            float)*size options:MTLStorageModeShared]);
+    }
 }
 
 void paz::InstanceBuffer::addAttribute(int dim, const unsigned int* data, std::
@@ -91,8 +94,11 @@ void paz::InstanceBuffer::addAttribute(int dim, const unsigned int* data, std::
 {
     _data->_dims.push_back(dim);
     _data->checkSize(dim, size);
-    _data->_buffers.push_back([DEVICE newBufferWithBytes:data length:sizeof(
-        unsigned int)*size options:MTLStorageModeShared]);
+    if(size)
+    {
+        _data->_buffers.push_back([DEVICE newBufferWithBytes:data length:sizeof(
+            unsigned int)*size options:MTLStorageModeShared]);
+    }
 }
 
 void paz::InstanceBuffer::addAttribute(int dim, const int* data, std::size_t
@@ -100,8 +106,11 @@ void paz::InstanceBuffer::addAttribute(int dim, const int* data, std::size_t
 {
     _data->_dims.push_back(dim);
     _data->checkSize(dim, size);
-    _data->_buffers.push_back([DEVICE newBufferWithBytes:data length:sizeof(
-        int)*size options:MTLStorageModeShared]);
+    if(size)
+    {
+        _data->_buffers.push_back([DEVICE newBufferWithBytes:data length:sizeof(
+            int)*size options:MTLStorageModeShared]);
+    }
 }
 
 void paz::InstanceBuffer::subAttribute(std::size_t idx, const float* data, std::
