@@ -364,52 +364,59 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         (id<MTLRenderPipelineState>)_data->_pipelineState];
 }
 
-void paz::RenderPass::depth(DepthTestMode depthMode)
+void paz::RenderPass::depth(DepthTestMode mode)
 {
     MTLDepthStencilDescriptor* depthStencilDescriptor =
         [[MTLDepthStencilDescriptor alloc] init];
-    if(depthMode == DepthTestMode::Disable)
+    if(mode == DepthTestMode::Disable)
     {
         [depthStencilDescriptor setDepthWriteEnabled:NO];
     }
     else
     {
-        if(depthMode == DepthTestMode::Never)
+        if(mode == DepthTestMode::Never || mode == DepthTestMode::NeverNoMask)
         {
             [depthStencilDescriptor setDepthCompareFunction:
                 MTLCompareFunctionNever];
         }
-        else if(depthMode == DepthTestMode::Less)
+        else if(mode == DepthTestMode::Less || mode == DepthTestMode::
+            LessNoMask)
         {
             [depthStencilDescriptor setDepthCompareFunction:
                 MTLCompareFunctionLess];
         }
-        else if(depthMode == DepthTestMode::Equal)
+        else if(mode == DepthTestMode::Equal || mode == DepthTestMode::
+            EqualNoMask)
         {
             [depthStencilDescriptor setDepthCompareFunction:
                 MTLCompareFunctionEqual];
         }
-        else if(depthMode == DepthTestMode::LessEqual)
+        else if(mode == DepthTestMode::LessEqual || mode == DepthTestMode::
+            LessEqualNoMask)
         {
             [depthStencilDescriptor setDepthCompareFunction:
                 MTLCompareFunctionLessEqual];
         }
-        else if(depthMode == DepthTestMode::Greater)
+        else if(mode == DepthTestMode::Greater || mode == DepthTestMode::
+            GreaterNoMask)
         {
             [depthStencilDescriptor setDepthCompareFunction:
                 MTLCompareFunctionGreater];
         }
-        else if(depthMode == DepthTestMode::NotEqual)
+        else if(mode == DepthTestMode::NotEqual || mode == DepthTestMode::
+            NotEqualNoMask)
         {
             [depthStencilDescriptor setDepthCompareFunction:
                 MTLCompareFunctionNotEqual];
         }
-        else if(depthMode == DepthTestMode::GreaterEqual)
+        else if(mode == DepthTestMode::GreaterEqual || mode == DepthTestMode::
+            GreaterEqualNoMask)
         {
             [depthStencilDescriptor setDepthCompareFunction:
                 MTLCompareFunctionGreaterEqual];
         }
-        else if(depthMode == DepthTestMode::Always)
+        else if(mode == DepthTestMode::Always || mode == DepthTestMode::
+            AlwaysNoMask)
         {
             [depthStencilDescriptor setDepthCompareFunction:
                 MTLCompareFunctionAlways];
@@ -418,7 +425,10 @@ void paz::RenderPass::depth(DepthTestMode depthMode)
         {
             throw std::runtime_error("Invalid depth testing function.");
         }
-        [depthStencilDescriptor setDepthWriteEnabled:YES];
+        if(mode >= DepthTestMode::Never)
+        {
+            [depthStencilDescriptor setDepthWriteEnabled:YES];
+        }
     }
     id<MTLDepthStencilState> depthStencilState = [DEVICE
         newDepthStencilStateWithDescriptor:depthStencilDescriptor];
