@@ -244,8 +244,8 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         {
             glClearBufferfv(GL_COLOR, i, White);
         }
-        else if(colorLoadActions[i] != LoadAction::DontCare &&
-            colorLoadActions[i] != LoadAction::Load)
+        else if(colorLoadActions[i] != LoadAction::DontCare && colorLoadActions[
+            i] != LoadAction::Load)
         {
             throw std::runtime_error("Invalid color attachment load action.");
         }
