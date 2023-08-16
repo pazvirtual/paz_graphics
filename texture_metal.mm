@@ -47,6 +47,8 @@ paz::Texture::Data::~Data()
 paz::Texture::Texture()
 {
     initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter

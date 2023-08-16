@@ -110,6 +110,8 @@ paz::RenderPass::Data::~Data()
 paz::RenderPass::RenderPass()
 {
     initialize();
+
+    _data = std::make_shared<Data>();
 }
 
 paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
@@ -242,6 +244,11 @@ paz::RenderPass::RenderPass(const Shader& shader, BlendMode blendMode)
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
 {
+    if(![RENDERER commandBuffer])
+    {
+        throw std::logic_error("Command buffer does not exist.");
+    }
+
     MTLRenderPassDescriptor* renderPassDescriptor;
     if(_data->_fbo)
     {
