@@ -86,6 +86,9 @@ int main(int, char** argv)
     int width = 1;
     while(!paz::Window::Done())
     {
+        const double displayScale = static_cast<double>(paz::Window::
+            ViewportWidth())/paz::Window::Width();
+
         if(paz::Window::KeyPressed(paz::Key::One))
         {
             set_mode(0);
@@ -128,7 +131,7 @@ int main(int, char** argv)
 
         sdfPass.begin({paz::LoadAction::Clear});
         sdfPass.read("base", buff.colorAttachment(0));
-        sdfPass.uniform("width", width);
+        sdfPass.uniform("width", static_cast<float>(displayScale*width));
         sdfPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
         sdfPass.end();
 
