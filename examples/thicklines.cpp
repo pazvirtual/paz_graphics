@@ -5,31 +5,7 @@ layout(location = 0) in vec2 pos;
 void main()
 {
     gl_Position = vec4(pos.x, pos.y, 0, 1);
-}
-)===";
-
-static const std::string GeomSrc = 1 + R"===(
-layout(lines) in;
-uniform int width;
-uniform int height;
-layout(triangle_strip, max_vertices = 4) out;
-const float s = 2;
-void main()
-{
-    vec2 para = (gl_in[1].gl_Position.xy - gl_in[0].gl_Position.xy);
-    para /= length(para);
-    vec2 perp = vec2(-para.y, para.x);
-    para /= vec2(width, height);
-    perp /= vec2(width, height);
-    gl_Position = vec4(gl_in[0].gl_Position.xy - s*perp, 0, 1);
-    EmitVertex();
-    gl_Position = vec4(gl_in[1].gl_Position.xy - s*perp, 0, 1);
-    EmitVertex();
-    gl_Position = vec4(gl_in[0].gl_Position.xy + s*perp, 0, 1);
-    EmitVertex();
-    gl_Position = vec4(gl_in[1].gl_Position.xy + s*perp, 0, 1);
-    EmitVertex();
-    EndPrimitive();
+    gl_LineWidth = 4.;
 }
 )===";
 
@@ -57,10 +33,9 @@ int main()
 
     paz::ShaderFunctionLibrary lib;
     lib.vertex("vert", VertSrc);
-    lib.geometry("geom", GeomSrc);
     lib.fragment("frag", FragSrc);
 
-    const paz::Shader shader(lib, "vert", lib, "geom", lib, "frag");
+    const paz::Shader shader(lib, "vert", lib, "frag");
 
     paz::RenderPass render(shader);
 

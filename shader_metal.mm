@@ -45,12 +45,4 @@ paz::Shader::Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
         fragName)) newFunctionWithName:@"fragMain"];
 }
 
-paz::Shader::Shader(const ShaderFunctionLibrary& /* vertLibrary */, const std::
-    string& /* vertName */, const ShaderFunctionLibrary& /* geomLibrary */,
-    const std::string& /* geomName */, const ShaderFunctionLibrary& /*
-    fragLibrary */, const std::string& /* fragName */)
-{
-    throw std::logic_error("NOT IMPLEMENTED");
-}
-
 #endif

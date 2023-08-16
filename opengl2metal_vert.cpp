@@ -9,7 +9,7 @@
 static const std::vector<std::string> unsupportedBuiltins = {"gl_PerVertex",
     "gl_PointSize", "gl_ClipDistance"};
 
-std::string paz::vert2metal(const std::string& src)
+std::string paz::vert2metal(const std::string& src, bool& usesGlLineWidth)
 {
     std::istringstream in(src);
     std::ostringstream out;
@@ -23,6 +23,7 @@ std::string paz::vert2metal(const std::string& src)
 
     bool usesGlPosition = false;
     bool usesGlVertexId = false;
+    usesGlLineWidth = false;
 
     std::unordered_map<std::string, std::pair<std::string, bool>> buffers;
     std::map<unsigned int, std::pair<std::string, std::string>> inputs;
@@ -227,6 +228,13 @@ std::string paz::vert2metal(const std::string& src)
             }
             line = std::regex_replace(line, std::regex("\\bgl_VertexID\\b"),
                 "glVertexId");
+            if(!usesGlLineWidth && std::regex_match(line, std::regex(".*\\bgl_L"
+                "ineWidth\\b.*")))
+            {
+                usesGlLineWidth = true;
+            }
+            line = std::regex_replace(line, std::regex("\\bgl_LineWidth\\b"),
+                "glLineWidth");
             mainBuffer << line << std::endl;
             continue;
         }
@@ -337,10 +345,15 @@ std::string paz::vert2metal(const std::string& src)
         ++b;
     }
     out << ")" << std::endl << "{" << std::endl << "    OutputData out;" <<
-        std::endl << mainBuffer.str() << "    out.glPosition = float4x4(1, 0, 0"
-        ", 0, 0, 1, 0, 0, 0, 0, 0.5, 0, 0, 0, 0.5," << std::endl << "        1)"
-        "*out.glPosition;" << std::endl << "    return out;" << std::endl << "}"
-        << std::endl;
+        std::endl;
+    if(usesGlLineWidth)
+    {
+        out << "    float glLineWidth;" << std::endl;
+    }
+    out << mainBuffer.str() << "    out.glPosition = float4x4(1, 0, 0, 0, 0, 1,"
+        " 0, 0, 0, 0, 0.5, 0, 0, 0, 0.5," << std::endl << "        1)*out.glPos"
+        "ition;" << std::endl << "    return out;" << std::endl << "}" << std::
+        endl;
 
     return out.str();
 }
