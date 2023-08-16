@@ -29,6 +29,11 @@ static GLint depth_internal_format(int b, paz::Texture::DataType t)
     throw std::runtime_error("Invalid depth texture format requested.");
 }
 
+paz::DepthStencilTarget::~DepthStencilTarget()
+{
+    paz::Window::UnregisterTarget(this);
+}
+
 paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     type, MinMagFilter minFilter, MinMagFilter magFilter)
 {
@@ -58,6 +63,13 @@ paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    paz::Window::RegisterTarget(this);
+}
+
+paz::DepthStencilTarget::resize(int width, int height)
+{
+    Texture::resize(_scale*width, _scale*height);
 }
 
 #endif

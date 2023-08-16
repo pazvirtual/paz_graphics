@@ -50,6 +50,11 @@ static id<MTLTexture> init(int width, int height, int numBits, paz::Texture::
     return texture;
 }
 
+paz::DepthStencilTarget::~DepthStencilTarget()
+{
+    paz::Window::UnregisterTarget(this);
+}
+
 paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     type, MinMagFilter minFilter, MinMagFilter magFilter)
 {
@@ -62,6 +67,17 @@ paz::DepthStencilTarget::DepthStencilTarget(double scale, int numBits, DataType
     _data->_texture = ::init(_scale*Window::ViewportWidth(), _scale*Window::
         ViewportHeight(), _data->_numBits, _data->_type);
     _data->_sampler = create_sampler(_data->_minFilter, _data->_magFilter);
+    paz::Window::RegisterTarget(this);
+}
+
+void paz::DepthStencilTarget::resize(int width, int height)
+{
+    if(_data->_texture)
+    {
+        [(id<MTLTexture>)_data->_texture release];
+    }
+    _data->_texture = ::init(_scale*width, _scale*height, _data->_numBits,
+        _data->_type);
 }
 
 #endif

@@ -29,7 +29,8 @@ static std::function<void(void)> Draw = [](){};
 static std::chrono::time_point<std::chrono::steady_clock> FrameStart;
 static double CurFrameTime = 1./60.;
 
-static std::unordered_set<paz::RenderTarget*> Targets;
+static std::unordered_set<paz::ColorTarget*> ColorTargets;
+static std::unordered_set<paz::DepthStencilTarget*> DepthStencilTargets;
 
 static CGPoint PrevOrigin;
 
@@ -193,7 +194,11 @@ float paz::Window::AspectRatio()
 
 void paz::Window::ResizeTargets()
 {
-    for(auto& n : Targets)
+    for(auto& n : ColorTargets)
+    {
+        n->resize(ViewportWidth(), ViewportHeight());
+    }
+    for(auto& n : DepthStencilTargets)
     {
         n->resize(ViewportWidth(), ViewportHeight());
     }
@@ -244,22 +249,46 @@ void paz::Window::SetMinSize(int width, int height)
     [[APP_DELEGATE window] setFrame:frame display:YES];
 }
 
-void paz::Window::RegisterTarget(RenderTarget* target)
+void paz::Window::RegisterTarget(ColorTarget* target)
 {
-    if(Targets.count(target))
+    if(ColorTargets.count(target))
     {
-        throw std::logic_error("Rendering target has already been registered.");
+        throw std::logic_error("Color target has already been registered.");
     }
-    Targets.insert(target);
+    ColorTargets.insert(target);
 }
 
-void paz::Window::UnregisterTarget(RenderTarget* target)
+void paz::Window::RegisterTarget(DepthStencilTarget* target)
 {
-    if(!Targets.count(target))
+    if(DepthStencilTargets.count(target))
     {
-        throw std::logic_error("Rendering target was not registered.");
+        throw std::logic_error("Depth/stencil target has already been registere"
+            "d.");
     }
-    Targets.erase(target);
+    DepthStencilTargets.insert(target);
+}
+
+void paz::Window::UnregisterTarget(ColorTarget* target)
+{
+    if(!ColorTargets.count(target))
+    {
+        throw std::logic_error("Color target was not registered.");
+    }
+    ColorTargets.erase(target);
+}
+
+void paz::Window::UnregisterTarget(DepthStencilTarget* target)
+{
+    if(!DepthStencilTargets.count(target))
+    {
+        throw std::logic_error("Depth/stencil target was not registered.");
+    }
+    DepthStencilTargets.erase(target);
+}
+
+std::vector<float> paz::Window::PrintScreen()
+{
+    throw std::logic_error("NOT IMPLEMENTED");
 }
 
 #endif

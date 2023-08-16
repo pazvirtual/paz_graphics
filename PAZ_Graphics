@@ -43,6 +43,11 @@ namespace paz
             UNorm
         };
 
+    private:
+        void init(int width, int height, int numChannels, int numBits, DataType
+            type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
+            data);
+
     protected:
         struct Data;
         std::unique_ptr<Data> _data;
@@ -50,9 +55,6 @@ namespace paz
         bool _mipmap = false;
 
         Texture();
-        void init(int width, int height, int numChannels, int numBits, DataType
-            type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
-            data);
 
     public:
         virtual ~Texture();
@@ -66,7 +68,7 @@ namespace paz
             vector<unsigned int>& data, MinMagFilter minFilter, MinMagFilter
             magFilter); // WHAT ABOUT NORMALIZATION ?
         // ...
-        virtual void resize(int width, int height);
+        void resize(int width, int height);
     };
 
     class RenderTarget : public Texture
@@ -78,10 +80,6 @@ namespace paz
         RenderTarget& operator=(const RenderTarget&) = delete;
 
         RenderTarget();
-
-    public:
-        virtual ~RenderTarget();
-        void resize(int width, int height) override;
     };
 
     class ColorTarget : public RenderTarget
@@ -90,8 +88,10 @@ namespace paz
         ColorTarget& operator=(const ColorTarget&) = delete;
 
     public:
+        virtual ~ColorTarget();
         ColorTarget(double scale, int numChannels, int numBits, DataType type,
             MinMagFilter minFilter, MinMagFilter magFilter);
+        void resize(int width, int height);
     };
 
     class DepthStencilTarget : public RenderTarget
@@ -100,8 +100,10 @@ namespace paz
         DepthStencilTarget& operator=(const DepthStencilTarget&) = delete;
 
     public:
+        virtual ~DepthStencilTarget();
         DepthStencilTarget(double scale, int numBits, DataType type,
             MinMagFilter minFilter, MinMagFilter magFilter);
+        void resize(int width, int height);
     };
 
     class VertexBuffer
@@ -256,11 +258,11 @@ namespace paz
         };
 
         ~RenderPass();
-        RenderPass(const Framebuffer& fbo, const Shader& shader);
-        RenderPass(const Shader& shader);
+        RenderPass(const Framebuffer& fbo, const Shader& shader, BlendMode mode
+            = BlendMode::Disable);
+        RenderPass(const Shader& shader, BlendMode mode = BlendMode::Disable);
         void begin(const std::vector<LoadAction>& colorLoadActions = {},
-            LoadAction depthLoadAction = LoadAction::DontCare, BlendMode mode =
-            BlendMode::Disable);
+            LoadAction depthLoadAction = LoadAction::DontCare);
         void end();
         void depth(DepthTestMode depthMode);
         void cull(CullMode mode) const;
@@ -300,14 +302,17 @@ namespace paz
 
     class Window
     {
-        friend class RenderTarget;
+        friend class ColorTarget;
+        friend class DepthStencilTarget;
 
         static bool KeyDown(int key);
         static bool KeyPressed(int key);
         static bool KeyReleased(int key);
         static void ResetEvents();
-        static void RegisterTarget(RenderTarget* target);
-        static void UnregisterTarget(RenderTarget* target);
+        static void RegisterTarget(ColorTarget* target);
+        static void RegisterTarget(DepthStencilTarget* target);
+        static void UnregisterTarget(ColorTarget* target);
+        static void UnregisterTarget(DepthStencilTarget* target);
 
     public:
         enum class CursorMode

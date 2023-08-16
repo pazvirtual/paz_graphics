@@ -74,7 +74,6 @@ static id<MTLRenderPipelineState> create(const void* descriptor, std::
     }
     [(MTLRenderPipelineDescriptor*)descriptor setVertexDescriptor:
         vertexDescriptor];
-    [vertexDescriptor release];
 
     // Get uniforms.
     MTLRenderPipelineReflection* reflection;
@@ -107,7 +106,8 @@ paz::RenderPass::~RenderPass()
     }
 }
 
-paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader)
+paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
+    BlendMode blendMode)
 {
     _data = std::make_unique<Data>();
 
@@ -122,6 +122,30 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader)
         [[pipelineDescriptor colorAttachments][i] setPixelFormat:
             [(id<MTLTexture>)_fbo->_data->_colorAttachments[i]->Texture::_data->
             _texture pixelFormat]];
+        if(blendMode != paz::RenderPass::BlendMode::Disable)
+        {
+            [[pipelineDescriptor colorAttachments][i] setBlendingEnabled:YES];
+            [[pipelineDescriptor colorAttachments][i] setRgbBlendOperation:
+                MTLBlendOperationAdd];
+            [[pipelineDescriptor colorAttachments][i] setAlphaBlendOperation:
+                MTLBlendOperationAdd];
+            if(blendMode == paz::RenderPass::BlendMode::Additive)
+            {
+                [[pipelineDescriptor colorAttachments][i]
+                    setSourceRGBBlendFactor:MTLBlendFactorSourceAlpha];
+                [[pipelineDescriptor colorAttachments][i]
+                    setSourceAlphaBlendFactor:MTLBlendFactorSourceAlpha];
+                [[pipelineDescriptor colorAttachments][i]
+                    setDestinationRGBBlendFactor:MTLBlendFactorOne];
+                [[pipelineDescriptor colorAttachments][i]
+                    setDestinationAlphaBlendFactor:MTLBlendFactorOne];
+            }
+            // ...
+            else
+            {
+                throw std::runtime_error("Invalid blending function.");
+            }
+        }
     }
     if(_fbo->_data->_depthAttachment)
     {
@@ -134,7 +158,7 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader)
     [pipelineDescriptor release];
 }
 
-paz::RenderPass::RenderPass(const Shader& shader)
+paz::RenderPass::RenderPass(const Shader& shader, BlendMode blendMode)
 {
     _data = std::make_unique<Data>();
 
@@ -145,6 +169,30 @@ paz::RenderPass::RenderPass(const Shader& shader)
         _frag];
     [[pipelineDescriptor colorAttachments][0] setPixelFormat:[[VIEW_CONTROLLER
         mtkView] colorPixelFormat]];
+    if(blendMode != paz::RenderPass::BlendMode::Disable)
+    {
+        [[pipelineDescriptor colorAttachments][0] setBlendingEnabled:YES];
+        [[pipelineDescriptor colorAttachments][0] setRgbBlendOperation:
+            MTLBlendOperationAdd];
+        [[pipelineDescriptor colorAttachments][0] setAlphaBlendOperation:
+            MTLBlendOperationAdd];
+        if(blendMode == paz::RenderPass::BlendMode::Additive)
+        {
+                [[pipelineDescriptor colorAttachments][0]
+                    setSourceRGBBlendFactor:MTLBlendFactorSourceAlpha];
+                [[pipelineDescriptor colorAttachments][0]
+                    setSourceAlphaBlendFactor:MTLBlendFactorSourceAlpha];
+                [[pipelineDescriptor colorAttachments][0]
+                    setDestinationRGBBlendFactor:MTLBlendFactorOne];
+                [[pipelineDescriptor colorAttachments][0]
+                    setDestinationAlphaBlendFactor:MTLBlendFactorOne];
+        }
+        // ...
+        else
+        {
+            throw std::runtime_error("Invalid blending function.");
+        }
+    }
     [pipelineDescriptor setDepthAttachmentPixelFormat:[[VIEW_CONTROLLER mtkView]
         depthStencilPixelFormat]];
     _data->_pipelineState = create(pipelineDescriptor, _data->_vertexArgs,
@@ -153,9 +201,8 @@ paz::RenderPass::RenderPass(const Shader& shader)
 }
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
-    LoadAction depthLoadAction, BlendMode blendMode)
+    LoadAction depthLoadAction)
 {
-assert(blendMode == BlendMode::Disable);//TEMP
     MTLRenderPassDescriptor* renderPassDescriptor;
     if(_fbo)
     {
