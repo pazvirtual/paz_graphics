@@ -16,6 +16,9 @@
         // Get application name.
         _appName = [[NSProcessInfo processInfo] processName];
 
+        // Make sure the main window takes focus after initialization.
+        [NSApp activateIgnoringOtherApps:YES];
+
         // Create main menu bar.
         NSMenu* mainMenu = [[NSMenu alloc] init];
         [NSApp setMainMenu:mainMenu];
