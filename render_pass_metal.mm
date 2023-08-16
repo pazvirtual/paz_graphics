@@ -432,17 +432,20 @@ void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
     size)
 {
     CHECK_PASS
+    const auto l = sizeof(int)*size;
+    if(l > 4*1024) //TEMP - `set*Bytes` limitation
+    {
+        throw std::runtime_error("Too many bytes to send without buffer.");
+    }
     if(_data->_vertexArgs.count(name))
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            setVertexBytes:x length:sizeof(int)*size atIndex:_data->_vertexArgs.
-            at(name)];
+            setVertexBytes:x length:l atIndex:_data->_vertexArgs.at(name)];
     }
     if(_data->_fragmentArgs.count(name))
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            setFragmentBytes:x length:sizeof(int)*size atIndex:_data->
-            _fragmentArgs.at(name)];
+            setFragmentBytes:x length:l atIndex:_data->_fragmentArgs.at(name)];
     }
 }
 
@@ -480,17 +483,20 @@ void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
     std::size_t size)
 {
     CHECK_PASS
+    const auto l = sizeof(unsigned int)*size;
+    if(l > 4*1024) //TEMP - `set*Bytes` limitation
+    {
+        throw std::runtime_error("Too many bytes to send without buffer.");
+    }
     if(_data->_vertexArgs.count(name))
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            setVertexBytes:x length:sizeof(unsigned int)*size atIndex:_data->
-            _vertexArgs.at(name)];
+            setVertexBytes:x length:l atIndex:_data->_vertexArgs.at(name)];
     }
     if(_data->_fragmentArgs.count(name))
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            setFragmentBytes:x length:sizeof(unsigned int)*size atIndex:_data->
-            _fragmentArgs.at(name)];
+            setFragmentBytes:x length:l atIndex:_data->_fragmentArgs.at(name)];
     }
 }
 
@@ -527,17 +533,20 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
     size_t size)
 {
     CHECK_PASS
+    const auto l = sizeof(float)*size;
+    if(l > 4*1024) //TEMP - `set*Bytes` limitation
+    {
+        throw std::runtime_error("Too many bytes to send without buffer.");
+    }
     if(_data->_vertexArgs.count(name))
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            setVertexBytes:x length:sizeof(float)*size atIndex:_data->
-            _vertexArgs.at(name)];
+            setVertexBytes:x length:l atIndex:_data->_vertexArgs.at(name)];
     }
     if(_data->_fragmentArgs.count(name))
     {
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            setFragmentBytes:x length:sizeof(float)*size atIndex:_data->
-            _fragmentArgs.at(name)];
+            setFragmentBytes:x length:l atIndex:_data->_fragmentArgs.at(name)];
     }
 }
 
@@ -697,10 +706,14 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
 
     for(std::size_t i = 0; i < instances._data->_buffers.size(); ++i)
     {
+        const auto l = instances._data->_buffers[i].size();
+        if(l > 4*1024) //TEMP - `set*Bytes` limitation
+        {
+            throw std::runtime_error("Too many bytes to send without buffer.");
+        }
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            setVertexBytes:instances._data->_buffers[i].data() length:instances.
-            _data->_buffers[i].size() atIndex:vertices._data->_buffers.size() +
-            i];
+            setVertexBytes:instances._data->_buffers[i].data() length:l atIndex:
+            vertices._data->_buffers.size() + i];
     }
 
     if(type == PrimitiveType::Points)
@@ -779,10 +792,14 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
 
     for(std::size_t i = 0; i < instances._data->_buffers.size(); ++i)
     {
+        const auto l = instances._data->_buffers[i].size();
+        if(l > 4*1024) //TEMP - `set*Bytes` limitation
+        {
+            throw std::runtime_error("Too many bytes to send without buffer.");
+        }
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            setVertexBytes:instances._data->_buffers[i].data() length:instances.
-            _data->_buffers[i].size() atIndex:vertices._data->_buffers.size() +
-            i];
+            setVertexBytes:instances._data->_buffers[i].data() length:l atIndex:
+            vertices._data->_buffers.size() + i];
     }
 
     if(type == PrimitiveType::Points)
