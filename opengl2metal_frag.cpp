@@ -41,8 +41,9 @@ std::string paz::frag2metal(const std::string& src)
         << std::endl;
     out << "float4 texture(thread const depth2d<float>& tex, thread const sampl"
         "er& sampler," << std::endl << "    thread const float2& uv)" << std::
-        endl << "{" << std::endl << "    return float4(tex.sample(sampler, floa"
-        "t2(uv.x, 1. - uv.y)), 0., 0., 1.);" << std::endl << "}" << std::endl;
+        endl << "{" << std::endl << "    return float4(2.*tex.sample(sampler, f"
+        "loat2(uv.x, 1. - uv.y)) - 1., 0., 0., 1.);" << std::endl << "}" <<
+        std::endl;
 
     std::string line;
     std::size_t l = 0;
@@ -70,7 +71,7 @@ std::string paz::frag2metal(const std::string& src)
             throw std::runtime_error("Line " + std::to_string(l) + ": User-defi"
                 "ned macros are not supported.");
         }
-        if(std::regex_match(line, std::regex(".*\\btexture[34]D\\b.*")))
+        if(std::regex_match(line, std::regex(".*\\b(depthS|s)ampler[34]D\\b.*")))
         {
             throw std::runtime_error("Higher-dimensional textures are not suppo"
                 "rted.");
@@ -143,6 +144,8 @@ std::string paz::frag2metal(const std::string& src)
             "texture$1d<int>");
         line = std::regex_replace(line, std::regex("\\busampler([12])D\\b"),
             "texture$1d<uint>");
+        line = std::regex_replace(line, std::regex("\\bdepthSampler2D\\b"),
+            "depth2d<float>");
         line = std::regex_replace(line, std::regex("\\btexture\\(([^,]*),"),
             "texture($1, $1Sampler,");
         line = std::regex_replace(line, std::regex("\\bdiscard\\b"),
@@ -240,7 +243,7 @@ std::string paz::frag2metal(const std::string& src)
             const std::size_t pos = dec.find_last_of(' ');
             const std::string type = dec.substr(0, pos);
             std::string name = dec.substr(pos + 1);
-            if(type.substr(0, 7) == "texture")
+            if(type.substr(0, 7) == "texture" || type.substr(0, 5) == "depth")
             {
                 textures[name] = type;
             }
