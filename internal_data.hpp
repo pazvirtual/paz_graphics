@@ -82,6 +82,8 @@ struct paz::InstanceBuffer::Data
     std::vector<ID3D11Buffer*> _buffers;
     std::vector<D3D11_INPUT_ELEMENT_DESC> _inputElemDescriptors;
     std::vector<unsigned int> _strides;
+    void addAttribute(int dim, DataType type, const void* data, std::size_t
+        size);
 #endif
     std::size_t _numInstances = 0;
     ~Data();
