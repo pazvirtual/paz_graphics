@@ -23,6 +23,14 @@ paz::Texture::Texture()
     _data = std::make_unique<Data>();
 }
 
+paz::Texture::Texture(int width, int height, int numChannels, int numBits,
+    DataType type, MinMagFilter minFilter, MinMagFilter magFilter) :
+    Texture()
+{
+    init(width, height, numChannels, numBits, type, minFilter, magFilter,
+        nullptr);
+}
+
 void paz::Texture::init(int width, int height, int numChannels, int numBits,
     DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
     data)
