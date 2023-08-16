@@ -34,8 +34,12 @@ paz::Texture::Texture()
 paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
     minFilter, MinMagFilter magFilter, bool normalized) : Texture()
 {
-    init(image.width(), image.height(), 1, 8, normalized ? DataType::UNorm :
-        DataType::UInt, minFilter, magFilter, flip_image(image).data());
+    _width = image.width();
+    _height = image.height();
+    _data->_format = normalized ? Format::R8UNorm : Format::R8UInt;
+    _data->_minFilter = minFilter;
+    _data->_magFilter = magFilter;
+    init(flip_image(image).data());
 }
 
 paz::Texture::~Texture()
@@ -50,42 +54,45 @@ paz::Texture::~Texture()
     }
 }
 
-paz::Texture::Texture(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter) :
-    Texture()
-{
-    _data->_numChannels = numChannels;
-    _data->_numBits = numBits;
-    _data->_type = type;
-    _data->_minFilter = minFilter;
-    _data->_magFilter = magFilter;
-    init(width, height, _data->_numChannels, _data->_numBits, _data->_type,
-        _data->_minFilter, _data->_magFilter, nullptr);
-}
-
-void paz::Texture::init(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
-    data)
+paz::Texture::Texture(int width, int height, Format format, MinMagFilter
+    minFilter, MinMagFilter magFilter) : Texture()
 {
     _width = width;
     _height = height;
+    _data->_format = format;
+    _data->_minFilter = minFilter;
+    _data->_magFilter = magFilter;
+    init();
+}
+
+void paz::Texture::init(const void* data)
+{
     MTLTextureDescriptor* textureDescriptor = [[MTLTextureDescriptor alloc]
         init];
-    [textureDescriptor setPixelFormat:pixel_format(numChannels, numBits, type)];
+    [textureDescriptor setPixelFormat:pixel_format(_data->_format)];
     [textureDescriptor setWidth:_width];
     [textureDescriptor setHeight:_height];
-    [textureDescriptor setUsage:MTLTextureUsageShaderRead];
+    if(_data->_isRenderTarget)
+    {
+        [textureDescriptor setUsage:MTLTextureUsageRenderTarget|
+            MTLTextureUsageShaderRead];
+        [textureDescriptor setStorageMode:MTLStorageModePrivate];
+    }
+    else
+    {
+        [textureDescriptor setUsage:MTLTextureUsageShaderRead];
+    }
     _data->_texture = [DEVICE newTextureWithDescriptor:textureDescriptor];
     [textureDescriptor release];
     if(data)
     {
         [static_cast<id<MTLTexture>>(_data->_texture) replaceRegion:
             MTLRegionMake2D(0, 0, _width, _height) mipmapLevel:0 withBytes:data
-            bytesPerRow:_width*numChannels*numBits/8];
+            bytesPerRow:_width*bytes_per_pixel(_data->_format)];
     }
     if(!_data->_sampler)
     {
-        _data->_sampler = create_sampler(minFilter, magFilter);
+        _data->_sampler = create_sampler(_data->_minFilter, _data->_magFilter);
     }
 }
 
@@ -95,8 +102,9 @@ void paz::Texture::resize(int width, int height)
     {
         [static_cast<id<MTLTexture>>(_data->_texture) release];
     }
-    init(width, height, _data->_numChannels, _data->_numBits, _data->_type,
-        _data->_minFilter, _data->_magFilter, nullptr);
+    _width = _data->_scale*width;
+    _height = _data->_scale*height;
+    init();
 }
 
 #endif

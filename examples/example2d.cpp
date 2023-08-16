@@ -62,7 +62,7 @@ int main(int, char** argv)
     const paz::Texture font(paz::load_pbm(appDir + "/font.pbm"), paz::Texture::
         MinMagFilter::Nearest, paz::Texture::MinMagFilter::Nearest);
 
-    paz::ColorTarget render(1., 4, 16, paz::Texture::DataType::Float, paz::
+    paz::RenderTarget render(1., paz::Texture::Format::RGBA16Float, paz::
         Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
     paz::Framebuffer renderFramebuffer;
     renderFramebuffer.attach(render);

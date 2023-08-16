@@ -27,26 +27,25 @@ namespace paz
         Texture& operator=(const Texture&) = delete;
 
     public:
+        enum class Format
+        {
+            R8UInt, R8SInt, R8UNorm, R8SNorm, R16UInt, R16SInt, R16UNorm,
+            R16SNorm, R16Float, R32UInt, R32SInt, R32Float, RG8UInt, RG8SInt,
+            RG8UNorm, RG8SNorm, RG16UInt, RG16SInt, RG16UNorm, RG16SNorm,
+            RG16Float, RG32UInt, RG32SInt, RG32Float, RGBA8UInt, RGBA8SInt,
+            RGBA8UNorm, RGBA8SNorm, RGBA16UInt, RGBA16SInt, RGBA16UNorm,
+            RGBA16SNorm, RGBA16Float, RGBA32UInt, RGBA32SInt, RGBA32Float,
+            Depth16UNorm, Depth32Float
+        };
+
         enum class MinMagFilter
         {
-            Linear,
-            Nearest
+            Linear, Nearest
         };
 
         enum class MipmapFilter
         {
-            Linear,
-            Nearest,
-            None
-        };
-
-        enum class DataType
-        {
-            Float,
-            SInt,
-            UInt,
-            SNorm,
-            UNorm
+            Linear, Nearest, None
         };
 
     protected:
@@ -59,14 +58,12 @@ namespace paz
         int _height = 0;
 
         Texture();
-        void init(int width, int height, int numChannels, int numBits, DataType
-            type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
-            data);
+        void init(const void* data = nullptr);
 
     public:
         virtual ~Texture();
-        Texture(int width, int height, int numChannels, int numBits, DataType
-            type, MinMagFilter minFilter, MinMagFilter magFilter);
+        Texture(int width, int height, Format format, MinMagFilter minFilter,
+            MinMagFilter magFilter);
         Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
             minFilter, MinMagFilter magFilter, bool normalized = true);
         // ...
@@ -83,43 +80,13 @@ namespace paz
 
     class RenderTarget : public Texture
     {
-    protected:
-        double _scale;
-
         RenderTarget(const RenderTarget&) = delete;
         RenderTarget& operator=(const RenderTarget&) = delete;
 
-        RenderTarget();
-    };
-
-    class ColorTarget : public RenderTarget
-    {
-        friend void resize_targets();
-
-        ColorTarget(const ColorTarget&) = delete;
-        ColorTarget& operator=(const ColorTarget&) = delete;
-
-        void resize(int width, int height);
-
     public:
-        virtual ~ColorTarget();
-        ColorTarget(double scale, int numChannels, int numBits, DataType type,
-            MinMagFilter minFilter, MinMagFilter magFilter);
-    };
-
-    class DepthStencilTarget : public RenderTarget
-    {
-        friend void resize_targets();
-
-        DepthStencilTarget(const DepthStencilTarget&) = delete;
-        DepthStencilTarget& operator=(const DepthStencilTarget&) = delete;
-
-        void resize(int width, int height);
-
-    public:
-        virtual ~DepthStencilTarget();
-        DepthStencilTarget(double scale, int numBits, DataType type,
-            MinMagFilter minFilter, MinMagFilter magFilter);
+        ~RenderTarget();
+        RenderTarget(double scale, Format format, MinMagFilter minFilter,
+            MinMagFilter magFilter);
     };
 
     class VertexBuffer
@@ -183,8 +150,7 @@ namespace paz
     public:
         ~Framebuffer();
         Framebuffer();
-        void attach(const ColorTarget& target);
-        void attach(const DepthStencilTarget& target);
+        void attach(const RenderTarget& target);
     };
 
     class ShaderFunctionLibrary
@@ -226,52 +192,25 @@ namespace paz
     public:
         enum class DepthTestMode
         {
-            NeverNoMask,
-            LessNoMask,
-            EqualNoMask,
-            LessEqualNoMask,
-            GreaterNoMask,
-            NotEqualNoMask,
-            GreaterEqualNoMask,
-            AlwaysNoMask,
-            Never,
-            Less,
-            Equal,
-            LessEqual,
-            Greater,
-            NotEqual,
-            GreaterEqual,
-            Always,
-            Disable
+            NeverNoMask, LessNoMask, EqualNoMask, LessEqualNoMask,
+            GreaterNoMask, NotEqualNoMask, GreaterEqualNoMask, AlwaysNoMask,
+            Never, Less, Equal, LessEqual, Greater, NotEqual, GreaterEqual,
+            Always, Disable
         };
 
         enum class BlendMode
         {
-            Additive,
-            Blend,
-            // ...
-            Disable
+            Additive, Blend, Disable
         };
 
         enum class LoadAction
         {
-            Clear,
-            Load,
-            DontCare
+            Clear, Load, DontCare
         };
 
         enum class CullMode
         {
-            Front,
-            Back,
-            Disable
-        };
-
-        enum class DataType
-        {
-            Float,
-            Int,
-            UInt
+            Front, Back, Disable
         };
 
     private:
@@ -286,11 +225,7 @@ namespace paz
     public:
         enum class PrimitiveType
         {
-            Points,
-            Lines,
-            LineStrip,
-            Triangles,
-            TriangleStrip
+            Points, Lines, LineStrip, Triangles, TriangleStrip
         };
 
         ~RenderPass();
@@ -349,9 +284,7 @@ namespace paz
     public:
         enum class CursorMode
         {
-            Normal,
-            Hidden,
-            Disable
+            Normal, Hidden, Disable
         };
 
         enum class Key : int

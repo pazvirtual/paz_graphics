@@ -16,23 +16,27 @@ paz::Framebuffer::~Framebuffer()
     _data->_colorAttachments.clear();
 }
 
-void paz::Framebuffer::attach(const ColorTarget& target)
-{
-    _data->_colorAttachments.push_back(&target);
-}
-
-void paz::Framebuffer::attach(const DepthStencilTarget& target)
-{
-    if(_data->_depthAttachment)
-    {
-        throw std::runtime_error("A depth/stencil target is already attached");
-    }
-    _data->_depthAttachment = &target;
-}
-
 paz::Framebuffer::Framebuffer()
 {
     _data = std::make_unique<Data>();
+}
+
+void paz::Framebuffer::attach(const RenderTarget& target)
+{
+    if(target._data->_format == Texture::Format::Depth16UNorm || target._data->
+        _format == Texture::Format::Depth32Float)
+    {
+        if(_data->_depthAttachment)
+        {
+            throw std::runtime_error("A depth/stencil target is already attache"
+                "d");
+        }
+        _data->_depthAttachment = &target;
+    }
+    else
+    {
+        _data->_colorAttachments.push_back(&target);
+    }
 }
 
 #endif
