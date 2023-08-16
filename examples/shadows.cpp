@@ -184,7 +184,10 @@ int main(int, char** argv)
             cubeVerts);
         renderScene.end();
 
-        time += paz::Window::FrameTime();
+        if(!paz::Window::KeyDown(paz::Window::Key::Space))
+        {
+            time += paz::Window::FrameTime();
+        }
     }
     );
 }

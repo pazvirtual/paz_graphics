@@ -10,11 +10,11 @@ paz::Shader::~Shader()
 {
     if(_data->_vert)
     {
-        [(id<MTLFunction>)_data->_vert release];
+        [static_cast<id<MTLFunction>>(_data->_vert) release];
     }
     if(_data->_frag)
     {
-        [(id<MTLFunction>)_data->_frag release];
+        [static_cast<id<MTLFunction>>(_data->_frag) release];
     }
 }
 
@@ -36,10 +36,10 @@ paz::Shader::Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
             "und in library.");
     }
 
-    _data->_vert = [(id<MTLLibrary>)vertLibrary._data->_verts.at(vertName)
-        newFunctionWithName:@"vertMain"];
-    _data->_frag = [(id<MTLLibrary>)fragLibrary._data->_frags.at(fragName)
-        newFunctionWithName:@"fragMain"];
+    _data->_vert = [static_cast<id<MTLLibrary>>(vertLibrary._data->_verts.at(
+        vertName)) newFunctionWithName:@"vertMain"];
+    _data->_frag = [static_cast<id<MTLLibrary>>(fragLibrary._data->_frags.at(
+        fragName)) newFunctionWithName:@"fragMain"];
 }
 
 #endif

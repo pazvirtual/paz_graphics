@@ -9,12 +9,13 @@
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
-#define VIEW_CONTROLLER (ViewController*)[[(AppDelegate*)[NSApp delegate] \
-    window] contentViewController]
-#define RENDERER (Renderer*)[(ViewController*)[[(AppDelegate*)[NSApp delegate] \
-    window] contentViewController] renderer]
-#define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
-    contentViewController] mtkView] device]
+#define VIEW_CONTROLLER static_cast<ViewController*>([[static_cast<\
+    AppDelegate*>([NSApp delegate]) window] contentViewController])
+#define RENDERER static_cast<Renderer*>([static_cast<ViewController*>( \
+    [[static_cast<AppDelegate*>([NSApp delegate]) window] \
+    contentViewController]) renderer])
+#define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
+    [NSApp delegate]) window] contentViewController]) mtkView] device]
 
 #define CASE0(a, b) case paz::RenderPass::PrimitiveType::a: return \
     MTLPrimitiveType##b;
@@ -62,8 +63,8 @@ static id<MTLRenderPipelineState> create(const void* descriptor, std::
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor
         vertexDescriptor];
     int idx = 0;
-    for(id n in [[(MTLRenderPipelineDescriptor*)descriptor vertexFunction]
-        stageInputAttributes])
+    for(id n in [[static_cast<MTLRenderPipelineDescriptor*>(descriptor)
+        vertexFunction] stageInputAttributes])
     {
         const auto formatStride = vertex_format_stride([n attributeType]);
         [vertexDescriptor attributes][idx].format = formatStride.first;
@@ -72,16 +73,16 @@ static id<MTLRenderPipelineState> create(const void* descriptor, std::
         [vertexDescriptor layouts][idx].stride = formatStride.second;
         ++idx;
     }
-    [(MTLRenderPipelineDescriptor*)descriptor setVertexDescriptor:
+    [static_cast<MTLRenderPipelineDescriptor*>(descriptor) setVertexDescriptor:
         vertexDescriptor];
 
     // Get uniforms.
     MTLRenderPipelineReflection* reflection;
     NSError* error = nil;
     id<MTLRenderPipelineState> pipelineState = [DEVICE
-        newRenderPipelineStateWithDescriptor:(MTLRenderPipelineDescriptor*)
-        descriptor options:MTLPipelineOptionArgumentInfo reflection:&reflection
-        error:&error];
+        newRenderPipelineStateWithDescriptor:static_cast<
+        MTLRenderPipelineDescriptor*>(descriptor) options:
+        MTLPipelineOptionArgumentInfo reflection:&reflection error:&error];
     if(!pipelineState)
     {
         throw std::runtime_error([[NSString stringWithFormat:@"Failed to create"
@@ -102,7 +103,8 @@ paz::RenderPass::~RenderPass()
 {
     if(_data->_pipelineState)
     {
-        [(id<MTLRenderPipelineState>)_data->_pipelineState release];
+        [static_cast<id<MTLRenderPipelineState>>(_data->_pipelineState)
+            release];
     }
 }
 
@@ -114,14 +116,15 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
     _fbo = &fbo;
     MTLRenderPipelineDescriptor* pipelineDescriptor =
         [[MTLRenderPipelineDescriptor alloc] init];
-    [pipelineDescriptor setVertexFunction:(id<MTLFunction>)shader._data->_vert];
-    [pipelineDescriptor setFragmentFunction:(id<MTLFunction>)shader._data->
-        _frag];
+    [pipelineDescriptor setVertexFunction:static_cast<id<MTLFunction>>(shader.
+        _data->_vert)];
+    [pipelineDescriptor setFragmentFunction:static_cast<id<MTLFunction>>(shader.
+        _data->_frag)];
     for(std::size_t i = 0; i < _fbo->_data->_colorAttachments.size(); ++i)
     {
         [[pipelineDescriptor colorAttachments][i] setPixelFormat:
-            [(id<MTLTexture>)_fbo->_data->_colorAttachments[i]->Texture::_data->
-            _texture pixelFormat]];
+            [static_cast<id<MTLTexture>>(_fbo->_data->_colorAttachments[i]->
+            Texture::_data->_texture) pixelFormat]];
         if(blendMode != paz::RenderPass::BlendMode::Disable)
         {
             [[pipelineDescriptor colorAttachments][i] setBlendingEnabled:YES];
@@ -162,9 +165,9 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
     }
     if(_fbo->_data->_depthAttachment)
     {
-        [pipelineDescriptor setDepthAttachmentPixelFormat:[(id<MTLTexture>)
-            _fbo->_data->_depthAttachment->Texture::_data->_texture
-            pixelFormat]];
+        [pipelineDescriptor setDepthAttachmentPixelFormat:[static_cast<id<
+            MTLTexture>>(_fbo->_data->_depthAttachment->Texture::_data->
+            _texture) pixelFormat]];
     }
     _data->_pipelineState = create(pipelineDescriptor, _data->_vertexArgs,
         _data->_fragmentArgs);
@@ -177,9 +180,10 @@ paz::RenderPass::RenderPass(const Shader& shader, BlendMode blendMode)
 
     MTLRenderPipelineDescriptor* pipelineDescriptor =
         [[MTLRenderPipelineDescriptor alloc] init];
-    [pipelineDescriptor setVertexFunction:(id<MTLFunction>)shader._data->_vert];
-    [pipelineDescriptor setFragmentFunction:(id<MTLFunction>)shader._data->
-        _frag];
+    [pipelineDescriptor setVertexFunction:static_cast<id<MTLFunction>>(shader.
+        _data->_vert)];
+    [pipelineDescriptor setFragmentFunction:static_cast<id<MTLFunction>>(shader.
+        _data->_frag)];
     [[pipelineDescriptor colorAttachments][0] setPixelFormat:[[VIEW_CONTROLLER
         mtkView] colorPixelFormat]];
     if(blendMode != paz::RenderPass::BlendMode::Disable)
@@ -241,8 +245,8 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         for(std::size_t i = 0; i < _fbo->_data->_colorAttachments.size(); ++i)
         {
             [[renderPassDescriptor colorAttachments][i] setTexture:
-                (id<MTLTexture>) _fbo->_data->_colorAttachments[i]->Texture::
-                _data->_texture];
+                static_cast<id<MTLTexture>>(_fbo->_data->_colorAttachments[i]->
+                Texture::_data->_texture)];
             if(colorLoadActions.empty() || colorLoadActions[i] == LoadAction::
                 DontCare)
             {
@@ -270,8 +274,9 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
 
         if(_fbo->_data->_depthAttachment)
         {
-            [[renderPassDescriptor depthAttachment] setTexture:(id<MTLTexture>)
-                _fbo->_data->_depthAttachment->Texture::_data->_texture];
+            [[renderPassDescriptor depthAttachment] setTexture:static_cast<id<
+                MTLTexture>>(_fbo->_data->_depthAttachment->Texture::_data->
+                _texture)];
             if(depthLoadAction == LoadAction::DontCare)
             {
                 [[renderPassDescriptor depthAttachment] setLoadAction:
@@ -357,11 +362,12 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     }
 
     // Flip winding order to CCW to match OpenGL standard.
-    [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setFrontFacingWinding:
-        MTLWindingCounterClockwise];
+    [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+        setFrontFacingWinding:MTLWindingCounterClockwise];
 
-    [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setRenderPipelineState:
-        (id<MTLRenderPipelineState>)_data->_pipelineState];
+    [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+        setRenderPipelineState:static_cast<id<MTLRenderPipelineState>>(_data->
+        _pipelineState)];
 }
 
 void paz::RenderPass::depth(DepthTestMode mode)
@@ -433,14 +439,15 @@ void paz::RenderPass::depth(DepthTestMode mode)
     id<MTLDepthStencilState> depthStencilState = [DEVICE
         newDepthStencilStateWithDescriptor:depthStencilDescriptor];
     [depthStencilDescriptor release];
-    [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setDepthStencilState:
-        depthStencilState];
+    [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+        setDepthStencilState:depthStencilState];
     [depthStencilState release];
 }
 
 void paz::RenderPass::end()
 {
-    [(id<MTLRenderCommandEncoder>)_data->_renderEncoder endEncoding];
+    [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+        endEncoding];
     _data->_renderEncoder = nullptr;
 }
 
@@ -448,18 +455,18 @@ void paz::RenderPass::cull(CullMode mode) const
 {
     if(mode == CullMode::Disable)
     {
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setCullMode:
-            MTLCullModeNone];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setCullMode:MTLCullModeNone];
     }
     else if(mode == CullMode::Front)
     {
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setCullMode:
-            MTLCullModeFront];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setCullMode:MTLCullModeFront];
     }
     else if(mode == CullMode::Back)
     {
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setCullMode:
-            MTLCullModeBack];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setCullMode:MTLCullModeBack];
     }
     else
     {
@@ -471,33 +478,33 @@ void paz::RenderPass::read(const std::string& name, const Texture& tex) const
 {
     if(_data->_vertexArgs.count(name))
     {
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setVertexTexture:
-            (id<MTLTexture>)tex._data->_texture atIndex:_data->_vertexArgs.at(
-            name)];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setVertexTexture:static_cast<id<MTLTexture>>(tex._data->_texture)
+            atIndex:_data->_vertexArgs.at(name)];
         const std::string samplerName = name + "Sampler";
         if(!_data->_vertexArgs.count(samplerName))
         {
             throw std::logic_error("Vertex function takes texture as argument b"
                 "ut not its sampler.");
         }
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder
-            setVertexSamplerState:(id<MTLSamplerState>)tex._data->_sampler
-            atIndex:_data->_vertexArgs.at(samplerName)];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setVertexSamplerState:static_cast<id<MTLSamplerState>>(tex._data->
+            _sampler) atIndex:_data->_vertexArgs.at(samplerName)];
     }
     if(_data->_fragmentArgs.count(name))
     {
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setFragmentTexture:
-            (id<MTLTexture>)tex._data->_texture atIndex:_data->_fragmentArgs.at(
-            name)];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setFragmentTexture:static_cast<id<MTLTexture>>(tex._data->_texture)
+            atIndex:_data->_fragmentArgs.at(name)];
         const std::string samplerName = name + "Sampler";
         if(!_data->_fragmentArgs.count(samplerName))
         {
             throw std::logic_error("Fragment function takes texture as argument"
                 " but not its sampler.");
         }
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder
-            setFragmentSamplerState:(id<MTLSamplerState>)tex._data->_sampler
-            atIndex:_data->_fragmentArgs.at(samplerName)];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setFragmentSamplerState:static_cast<id<MTLSamplerState>>(tex._data->
+            _sampler) atIndex:_data->_fragmentArgs.at(samplerName)];
     }
 }
 
@@ -531,13 +538,15 @@ void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
 {
     if(_data->_vertexArgs.count(name))
     {
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setVertexBytes:x
-            length:sizeof(int)*size atIndex:_data->_vertexArgs.at(name)];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setVertexBytes:x length:sizeof(int)*size atIndex:_data->_vertexArgs.
+            at(name)];
     }
     if(_data->_fragmentArgs.count(name))
     {
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setFragmentBytes:x
-            length:sizeof(int)*size atIndex:_data->_fragmentArgs.at(name)];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setFragmentBytes:x length:sizeof(int)*size atIndex:_data->
+            _fragmentArgs.at(name)];
     }
 }
 
@@ -572,15 +581,15 @@ void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
 {
     if(_data->_vertexArgs.count(name))
     {
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setVertexBytes:x
-            length:sizeof(unsigned int)*size atIndex:_data->_vertexArgs.at(
-            name)];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setVertexBytes:x length:sizeof(unsigned int)*size atIndex:_data->
+            _vertexArgs.at(name)];
     }
     if(_data->_fragmentArgs.count(name))
     {
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setFragmentBytes:x
-            length:sizeof(unsigned int)*size atIndex:_data->_fragmentArgs.at(
-            name)];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setFragmentBytes:x length:sizeof(unsigned int)*size atIndex:_data->
+            _fragmentArgs.at(name)];
     }
 }
 
@@ -614,13 +623,15 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
 {
     if(_data->_vertexArgs.count(name))
     {
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setVertexBytes:x
-            length:sizeof(float)*size atIndex:_data->_vertexArgs.at(name)];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setVertexBytes:x length:sizeof(float)*size atIndex:_data->
+            _vertexArgs.at(name)];
     }
     if(_data->_fragmentArgs.count(name))
     {
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setFragmentBytes:x
-            length:sizeof(float)*size atIndex:_data->_fragmentArgs.at(name)];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setFragmentBytes:x length:sizeof(float)*size atIndex:_data->
+            _fragmentArgs.at(name)];
     }
 }
 
@@ -629,12 +640,13 @@ void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
 {
     for(std::size_t i = 0; i < vertices._data->_buffers.size(); ++i)
     {
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setVertexBuffer:
-            (id<MTLBuffer>)vertices._data->_buffers[i] offset:0 atIndex:i];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setVertexBuffer:static_cast<id<MTLBuffer>>(vertices._data->_buffers[
+            i]) offset:0 atIndex:i];
     }
-    [(id<MTLRenderCommandEncoder>)_data->_renderEncoder drawPrimitives:
-        primitive_type(type) vertexStart:offset vertexCount:vertices.
-        _numVertices];
+    [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+        drawPrimitives:primitive_type(type) vertexStart:offset vertexCount:
+        vertices._numVertices];
 }
 
 void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
@@ -642,8 +654,9 @@ void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
 {
     for(std::size_t i = 0; i < vertices._data->_buffers.size(); ++i)
     {
-        [(id<MTLRenderCommandEncoder>)_data->_renderEncoder setVertexBuffer:
-            (id<MTLBuffer>)vertices._data->_buffers[i] offset:0 atIndex:i];
+        [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+            setVertexBuffer:static_cast<id<MTLBuffer>>(vertices._data->_buffers[
+            i]) offset:0 atIndex:i];
     }
     MTLIndexType t;
     switch(sizeof(unsigned int))
@@ -652,10 +665,10 @@ void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
         case 4: t = MTLIndexTypeUInt32; break;
         default: throw std::runtime_error("Indices must be 16 or 32 bits.");
     }
-    [(id<MTLRenderCommandEncoder>)_data->_renderEncoder drawIndexedPrimitives:
-        primitive_type(type) indexCount:indices._numIndices indexType:t
-        indexBuffer:(id<MTLBuffer>)indices._data->_data indexBufferOffset:
-        offset];
+    [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+        drawIndexedPrimitives:primitive_type(type) indexCount:indices.
+        _numIndices indexType:t indexBuffer:static_cast<id<MTLBuffer>>(indices.
+        _data->_data) indexBufferOffset:offset];
 }
 
 #endif

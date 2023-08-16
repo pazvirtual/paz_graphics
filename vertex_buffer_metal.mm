@@ -9,8 +9,8 @@
 #include "vertex_buffer.hpp"
 #import <MetalKit/MetalKit.h>
 
-#define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
-    contentViewController] mtkView] device]
+#define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
+    [NSApp delegate]) window] contentViewController]) mtkView] device]
 
 paz::VertexBuffer::~VertexBuffer()
 {
@@ -18,8 +18,9 @@ paz::VertexBuffer::~VertexBuffer()
     {
         if(n)
         {
-            [(id<MTLBuffer>)n setPurgeableState:MTLPurgeableStateEmpty];
-            [(id<MTLBuffer>)n release];
+            [static_cast<id<MTLBuffer>>(n) setPurgeableState:
+                MTLPurgeableStateEmpty];
+            [static_cast<id<MTLBuffer>>(n) release];
         }
     }
 }

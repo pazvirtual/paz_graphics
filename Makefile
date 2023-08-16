@@ -24,7 +24,7 @@ else
         CFLAGS += -Wno-cast-function-type
     endif
 endif
-CXXFLAGS := -std=c++$(CXXVER) $(CFLAGS)
+CXXFLAGS := -std=c++$(CXXVER) $(CFLAGS) -Wold-style-cast
 ifeq ($(OSPRETTY), Windows)
     CXXFLAGS += -Wno-deprecated-copy
 endif

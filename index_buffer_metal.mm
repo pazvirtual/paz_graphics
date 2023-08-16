@@ -8,15 +8,16 @@
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
-#define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
-    contentViewController] mtkView] device]
+#define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
+    [NSApp delegate]) window] contentViewController]) mtkView] device]
 
 paz::IndexBuffer::~IndexBuffer()
 {
     if(_data->_data)
     {
-        [(id<MTLBuffer>)_data->_data setPurgeableState:MTLPurgeableStateEmpty];
-        [(id<MTLBuffer>)_data->_data release];
+        [static_cast<id<MTLBuffer>>(_data->_data) setPurgeableState:
+            MTLPurgeableStateEmpty];
+        [static_cast<id<MTLBuffer>>(_data->_data) release];
     }
 }
 

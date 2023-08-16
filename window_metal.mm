@@ -9,11 +9,12 @@
 #include "window.hpp"
 #import <MetalKit/MetalKit.h>
 
-#define APP_DELEGATE (AppDelegate*)[NSApp delegate]
-#define VIEW_CONTROLLER (ViewController*)[[(AppDelegate*)[NSApp delegate] \
-    window] contentViewController]
-#define RENDERER (Renderer*)[(ViewController*)[[(AppDelegate*)[NSApp delegate] \
-    window] contentViewController] renderer]
+#define APP_DELEGATE static_cast<AppDelegate*>([NSApp delegate])
+#define VIEW_CONTROLLER static_cast<ViewController*>([[static_cast<\
+    AppDelegate*>([NSApp delegate]) window] contentViewController])
+#define RENDERER static_cast<Renderer*>([static_cast<ViewController*>( \
+    [[static_cast<AppDelegate*>([NSApp delegate]) window] \
+    contentViewController]) renderer])
 
 static bool CursorDisabled = false;
 
