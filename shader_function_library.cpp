@@ -186,6 +186,10 @@ paz::FragmentFunction::Data::~Data()
     }
 }
 
+paz::VertexFunction::VertexFunction() {}
+
+paz::FragmentFunction::FragmentFunction() {}
+
 paz::VertexFunction::VertexFunction(const std::string& src)
 {
     initialize();
