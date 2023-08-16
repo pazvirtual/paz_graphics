@@ -11,7 +11,7 @@ static constexpr float ZFar = 5.;
 static constexpr float YFov = 65.*M_PI/180.;
 static constexpr int Res = 2000;
 static constexpr int Size = 16;
-static constexpr int Scale = 8;
+static constexpr int Scale = 16;
 static constexpr float Eps = 1e-4;
 
 static constexpr std::array<float, 4*4> GroundPos =
@@ -230,7 +230,7 @@ int main(int, char** argv)
         }
     }
     const paz::Texture surface(img, paz::MinMagFilter::Linear, paz::
-        MinMagFilter::Nearest, paz::MipmapFilter::Linear, paz::WrapMode::Repeat,
+        MinMagFilter::Linear, paz::MipmapFilter::Linear, paz::WrapMode::Repeat,
         paz::WrapMode::Repeat);
 
     double time = 0.;
