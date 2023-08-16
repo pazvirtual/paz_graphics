@@ -3,11 +3,57 @@
 #include <fstream>
 #include <cmath>
 
-#include <iomanip>
+static constexpr double BaseLength = 0.25;
+static const std::vector<float> TriPosData0 =
+{
+             0,  0.05,
+    BaseLength,     0,
+             0, -0.05
+};
+static const std::vector<float> TriPosData1 =
+{
+             0,  0.1,
+    BaseLength,    0,
+             0, -0.1
+};
+static const std::vector<float> TriColorData0 =
+{
+    1,   0, 1, 1,
+    0,   1, 1, 1,
+    1, 0.5, 0, 1
+};
+static const std::vector<float> TriColorData1 =
+{
+    1, 0, 0, 1,
+    1, 0, 0, 1,
+    1, 0, 0, 1
+};
+
+static const std::vector<float> QuadPosData =
+{
+     1, -1,
+     1,  1,
+    -1, -1,
+    -1,  1
+};
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846264338328
+#endif
+
+static double fract(const double n)
+{
+    return n - std::floor(n);
+}
+
+static double normalize_angle(const double n)
+{
+    return fract(n/(2.*M_PI))*2.*M_PI;
+}
 
 //TEMP
-void write_image(const std::string& path, unsigned int width, unsigned int
-    height, const std::vector<float>& data)
+void write_bmp(const std::string& path, unsigned int width, const std::vector<
+    float>& data)
 {
     unsigned int extraBytes = 4 - ((3*width)%4);
     if(extraBytes == 4)
@@ -15,8 +61,8 @@ void write_image(const std::string& path, unsigned int width, unsigned int
         extraBytes = 0;
     }
 
+    const unsigned int height = data.size()/(3*width);
     const unsigned int paddedSize = (3*width + extraBytes)*height;
-
     const std::array<unsigned int, 13> headers =
     {
         paddedSize + 54, 0, 54, 40, width, height, 0, 0, paddedSize, 0, 0, 0, 0
@@ -67,57 +113,7 @@ void write_image(const std::string& path, unsigned int width, unsigned int
         }
     }
 }
-//TEMP
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846264338328
-#endif
-
-static double fract(const double n)
-{
-    return n - std::floor(n);
-}
-
-static double normalize_angle(const double n)
-{
-    return fract(n/(2.*M_PI))*2.*M_PI;
-}
-
-static constexpr double l = 0.25;
-static const std::vector<float> a0 =
-{
-    0.,  0.05,
-     l,    0.,
-    0., -0.05
-};
-static const std::vector<float> a1 =
-{
-    0.,  0.1,
-     l,   0.,
-    0., -0.1
-};
-static const std::vector<float> b0 =
-{
-    1.,  0., 1., 1.,
-    0.,  1., 1., 1.,
-    1., 0.5, 0., 1.
-};
-static const std::vector<float> b1 =
-{
-    1., 0., 0., 1.,
-    1., 0., 0., 1.,
-    1., 0., 0., 1.
-};
-
-static const std::vector<float> qv =
-{
-     1., -1.,
-     1.,  1.,
-    -1., -1.,
-    -1.,  1.
-};
-
-//TEMP
 static std::string read_file(const std::string& path)
 {
     std::ifstream in(path);
@@ -130,34 +126,34 @@ static std::string read_file(const std::string& path)
     return ss.str();
 }
 
-static int load_font(const std::string& path, std::vector<float>& v)
+static unsigned int load_font(const std::string& path, std::vector<float>& data)
 {
     std::ifstream in(path);
     if(!in)
     {
         throw std::runtime_error("Unable to open input file \"" + path + "\".");
     }
-    int numRows = 0;
-    std::vector<float> u;
+    unsigned int height = 0;
+    std::vector<float> v;
     std::string line;
     while(std::getline(in, line))
     {
-        ++numRows;
+        ++height;
         for(const auto& n : line)
         {
-            u.push_back(n != ' ');
+            v.push_back(n != ' ');
         }
     }
-    const std::size_t w = u.size()/numRows;
-    v.resize(u.size());
-    for(int i = 0; i < numRows; ++i)
+    const std::size_t width = v.size()/height;
+    data.resize(v.size());
+    for(unsigned int i = 0; i < height; ++i)
     {
-        for(std::size_t j = 0; j < w; ++j)
+        for(std::size_t j = 0; j < width; ++j)
         {
-            v[w*(numRows - i - 1) + j] = u[w*i + j];
+            data[width*(height - i - 1) + j] = v[width*i + j];
         }
     }
-    return numRows;
+    return height;
 }
 //TEMP
 
@@ -168,7 +164,7 @@ int main()
     paz::Window::SetMinSize(640, 480);
 
     std::vector<float> fontData;
-    const int fontRows = load_font("font.txt", fontData);
+    const unsigned int fontRows = load_font("font.txt", fontData);
     const paz::Texture font(fontData.size()/fontRows, fontRows, 1, 8*sizeof(
         float), fontData, paz::Texture::MinMagFilter::Nearest, paz::Texture::
         MinMagFilter::Nearest);
@@ -186,31 +182,31 @@ int main()
     shaders.fragment("font", read_file("font.frag"));
     shaders.fragment("post", read_file("post.frag"));
 
-    const paz::Shader s(shaders, "shader", shaders, "shader");
-    const paz::Shader f(shaders, "font", shaders, "font");
-    const paz::Shader post(shaders, "quad", shaders, "post");
+    const paz::Shader sceneShader(shaders, "shader", shaders, "shader");
+    const paz::Shader textShader(shaders, "font", shaders, "font");
+    const paz::Shader postShader(shaders, "quad", shaders, "post");
 
-    paz::RenderPass r0(renderFramebuffer, s);
-    paz::RenderPass r1(renderFramebuffer, f);
-    paz::RenderPass r2(post);
+    paz::RenderPass scenePass(renderFramebuffer, sceneShader);
+    paz::RenderPass textPass(renderFramebuffer, textShader);
+    paz::RenderPass postPass(postShader);
 
-    paz::VertexBuffer vertices0;
-    vertices0.attribute(2, a0);
-    vertices0.attribute(4, b0);
+    paz::VertexBuffer triVertices0;
+    triVertices0.attribute(2, TriPosData0);
+    triVertices0.attribute(4, TriColorData0);
 
-    paz::VertexBuffer vertices1;
-    vertices1.attribute(2, a1);
-    vertices1.attribute(4, b1);
+    paz::VertexBuffer triVertices1;
+    triVertices1.attribute(2, TriPosData1);
+    triVertices1.attribute(4, TriColorData1);
 
     const paz::IndexBuffer loopIndices({0, 1, 2, 0});
 
     paz::VertexBuffer quadVertices;
-    quadVertices.attribute(2, qv);
+    quadVertices.attribute(2, QuadPosData);
 
     double x = 0.;
     double y = 0.;
 
-    double g = 0.;
+    double angle = 0.;
     double length = 1.;
 
     unsigned int mode = 0;
@@ -240,44 +236,45 @@ int main()
         m.second = std::max(m.second*2./paz::Window::Height(), 0.);
         m.first -= paz::Window::AspectRatio();
         m.second -= 1.;
-        const double dX = m.first - x;
-        const double dY = m.second - y;
-        const double dNorm = std::sqrt(dX*dX + dY*dY);
-        length = std::max(1., dNorm/l);
+        const double deltaX = m.first - x;
+        const double deltaY = m.second - y;
+        const double dist = std::sqrt(deltaX*deltaX + deltaY*deltaY);
+        length = std::max(1., dist/BaseLength);
 
         // Drawing prep.
-        if(dNorm > 1e-2)
+        if(dist > 1e-2)
         {
-            const double h = std::atan2(dY, dX);
-            const double delta = normalize_angle(h - g + M_PI) - M_PI;
-            g = normalize_angle(g + 0.5*delta);
+            const double t = std::atan2(deltaY, deltaX);
+            const double delta = normalize_angle(t - angle + M_PI) - M_PI;
+            angle = normalize_angle(angle + 0.5*delta);
 
             const double k = std::min(10.*paz::Window::FrameTime(), 1.);
-            x += k*dX;
-            y += k*dY;
+            x += k*deltaX;
+            y += k*deltaY;
         }
 
         // Drawing.
-        r0.begin({paz::RenderPass::LoadAction::Clear});
-        r0.uniform("angle", (float)g);
-        r0.uniform("aspectRatio", (float)paz::Window::AspectRatio());
-        r0.uniform("p", (float)x, (float)y);
-        r0.uniform("length", (float)length);
+        scenePass.begin({paz::RenderPass::LoadAction::Clear});
+        scenePass.uniform("angle", (float)angle);
+        scenePass.uniform("aspectRatio", (float)paz::Window::AspectRatio());
+        scenePass.uniform("origin", (float)x, (float)y);
+        scenePass.uniform("length", (float)length);
         if(mode)
         {
-            r0.indexed(paz::RenderPass::PrimitiveType::LineStrip, vertices1,
-                loopIndices);
+            scenePass.indexed(paz::RenderPass::PrimitiveType::LineStrip,
+                triVertices1, loopIndices);
         }
         else
         {
-            r0.primitives(paz::RenderPass::PrimitiveType::Triangles, vertices0);
+            scenePass.primitives(paz::RenderPass::PrimitiveType::Triangles,
+                triVertices0);
         }
-        r0.end();
+        scenePass.end();
 
-        r1.begin();
-        r1.blend(paz::RenderPass::BlendMode::Additive);
-        r1.read("font", font);
-        r1.uniform("aspectRatio", paz::Window::AspectRatio());
+        textPass.begin();
+        textPass.blend(paz::RenderPass::BlendMode::Additive);
+        textPass.read("font", font);
+        textPass.uniform("aspectRatio", paz::Window::AspectRatio());
         int row = 0;
         int col = 0;
         std::stringstream fullMsg;
@@ -309,29 +306,29 @@ int main()
             }
             if(c >= 0)
             {
-                r1.uniform("row", row);
-                r1.uniform("col", col);
-                r1.uniform("character", c);
-                r1.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
-                    quadVertices);
+                textPass.uniform("row", row);
+                textPass.uniform("col", col);
+                textPass.uniform("character", c);
+                textPass.primitives(paz::RenderPass::PrimitiveType::
+                    TriangleStrip, quadVertices);
             }
             ++col;
         }
-        r1.blend(paz::RenderPass::BlendMode::Disable);//TEMP ?
-        r1.end();
+        textPass.blend(paz::RenderPass::BlendMode::Disable);//TEMP ?
+        textPass.end();
 
-        r2.begin();
-        r2.uniform("factor", (float)std::abs(y));
-        r2.read("source", render);
-        r2.uniform("aspectRatio", (float)paz::Window::AspectRatio());
-        r2.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
+        postPass.begin();
+        postPass.uniform("factor", (float)std::abs(y));
+        postPass.read("source", render);
+        postPass.uniform("aspectRatio", (float)paz::Window::AspectRatio());
+        postPass.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
             quadVertices);
-        r2.end();
+        postPass.end();
 
         if(paz::Window::KeyPressed(paz::Window::Key::S))
         {
-            write_image("screenshot.bmp", paz::Window::ViewportWidth(), paz::
-                Window::ViewportHeight(), paz::Window::PrintScreen());
+            write_bmp("screenshot.bmp", paz::Window::ViewportWidth(), paz::
+                Window::PrintScreen());
         }
     });
 }

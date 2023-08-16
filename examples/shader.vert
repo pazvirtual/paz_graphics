@@ -1,6 +1,6 @@
 uniform float angle;
 uniform float aspectRatio;
-uniform vec2 p;
+uniform vec2 origin;
 uniform float length;
 
 layout(location = 0) in vec2 position;
@@ -15,7 +15,7 @@ void main()
     mat2 rot = mat2( cos(angle), sin(angle),
                     -sin(angle), cos(angle));
     vec2 pos = rot*stretch*position;
-    pos += p;
+    pos += origin;
     pos.x /= aspectRatio;
     gl_Position = vec4(pos, 0., 1.);
     c = color;
