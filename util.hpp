@@ -18,7 +18,7 @@ namespace paz
     unsigned int gl_format(TextureFormat format);
     unsigned int gl_type(TextureFormat format);
     std::string get_log(unsigned int id, bool isProgram);
-    std::string gl_error(unsigned int error);
+    std::string gl_error(unsigned int error) noexcept;
 }
 
 #endif

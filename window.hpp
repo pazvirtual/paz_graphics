@@ -13,8 +13,9 @@ namespace paz
         Initializer();
         ~Initializer();
     };
-    // `paz::initialize` should be called at the beginning of every graphics
-    // wrapper class constructor declared in PAZ_Graphics that is non-trivial on
-    // all platforms and every method of `paz::Window`.
+    // `paz::initialize` should be called at the beginning of 1. every
+    // constructor of every graphics wrapper class declared in PAZ_Graphics that
+    // does not inherit from another wrapper class that does so and 2. every
+    // method of `paz::Window`.
     Initializer& initialize();
 }

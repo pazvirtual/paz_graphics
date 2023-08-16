@@ -129,7 +129,10 @@ static void check_output(const std::pair<unsigned int, unsigned int>& n, paz::
     }
 }
 
-paz::RenderPass::RenderPass() {}
+paz::RenderPass::RenderPass()
+{
+    initialize();
+}
 
 paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
     const FragmentFunction& frag, BlendMode mode)

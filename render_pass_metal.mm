@@ -122,7 +122,10 @@ paz::RenderPass::Data::~Data()
     }
 }
 
-paz::RenderPass::RenderPass() {}
+paz::RenderPass::RenderPass()
+{
+    initialize();
+}
 
 paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
     const FragmentFunction& frag, BlendMode blendMode)

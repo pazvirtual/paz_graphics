@@ -15,7 +15,7 @@ static constexpr GLenum Attachments[] = {GL_COLOR_ATTACHMENT0,
     GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5, GL_COLOR_ATTACHMENT6,
     GL_COLOR_ATTACHMENT7};
 
-static std::string framebuffer_status(GLenum status)
+static std::string framebuffer_status(GLenum status) noexcept
 {
     switch(status)
     {
@@ -28,8 +28,9 @@ static std::string framebuffer_status(GLenum status)
         CASE_STRING(GL_FRAMEBUFFER_UNSUPPORTED)
         CASE_STRING(GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE)
         CASE_STRING(GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS)
+        default: return "Status code " + std::to_string(status) + " not recogni"
+            "zed";
     }
-    return "Status code " + std::to_string(status) + " not recognized";
 }
 
 paz::Framebuffer::Data::~Data()

@@ -16,6 +16,28 @@
 #define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
     [NSApp delegate]) window] contentViewController]) mtkView] device]
 
+static id<MTLSamplerState> create_sampler(MinMagFilter minFilter, MinMagFilter
+    magFilter, MipmapFilter mipFilter, WrapMode wrapS, WrapMode wrapT)
+{
+    MTLSamplerDescriptor* descriptor = [[MTLSamplerDescriptor alloc] init];
+    [descriptor setMinFilter:min_mag_filter(minFilter)];
+    [descriptor setMagFilter:min_mag_filter(magFilter)];
+    if(mipFilter == MipmapFilter::Linear)
+    {
+        [descriptor setMipFilter:MTLSamplerMipFilterLinear];
+    }
+    else if(mipFilter == MipmapFilter::Nearest)
+    {
+        [descriptor setMipFilter:MTLSamplerMipFilterNearest];
+    }
+    [descriptor setSAddressMode:address_mode(wrapS)];
+    [descriptor setTAddressMode:address_mode(wrapT)];
+    id<MTLSamplerState> sampler = [DEVICE newSamplerStateWithDescriptor:
+        descriptor];
+    [descriptor release];
+    return sampler;
+}
+
 template<typename T, int NumChannels>
 static paz::Image<T, NumChannels> flip_image(const paz::Image<T, NumChannels>&
     image)
@@ -47,7 +69,10 @@ paz::Texture::Data::~Data()
     }
 }
 
-paz::Texture::Texture() {}
+paz::Texture::Texture()
+{
+    initialize();
+}
 
 #define TEX(t, n, f) paz::Texture::Texture(const Image<t, n>& image, \
     MinMagFilter minFilter, MinMagFilter magFilter, MipmapFilter mipFilter, \
