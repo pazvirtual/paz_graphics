@@ -317,23 +317,23 @@ void paz::RenderPass::uniform(const std::string& name, int x)
 void paz::RenderPass::uniform(const std::string& name, int x, int y)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    std::array<int, 2> v = {x, y};
+    uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    std::array<int, 3> v = {x, y, z};
+    uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
     w)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    std::array<int, 4> v = {x, y, z, w};
+    uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
@@ -361,40 +361,53 @@ void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
 void paz::RenderPass::uniform(const std::string& name, unsigned int x)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    uniform(name, &x, 1);
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    std::array<unsigned int, 2> v = {x, y};
+    uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    std::array<unsigned int, 3> v = {x, y, z};
+    uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z, unsigned int w)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    std::array<unsigned int, 4> v = {x, y, z, w};
+    uniform(name, v.data(), v.size());
 }
 
 void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
     std::size_t size)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    if(sizeof(unsigned int)*size > 4*1024) //TEMP - `set*Bytes` limitation
+    {
+        throw std::runtime_error("Too many bytes to send without buffer.");
+    }
+    if(_data->_vert->_uniforms.count(name))
+    {
+        std::copy(reinterpret_cast<const unsigned char*>(x), reinterpret_cast<
+            const unsigned char*>(x + size), _data->_vertUniformData.begin() +
+            std::get<0>(_data->_vert->_uniforms.at(name)));
+    }
+    if(_data->_frag->_uniforms.count(name))
+    {
+        std::copy(reinterpret_cast<const unsigned char*>(x), reinterpret_cast<
+            const unsigned char*>(x + size), _data->_fragUniformData.begin() +
+            std::get<0>(_data->_frag->_uniforms.at(name)));
+    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x)
