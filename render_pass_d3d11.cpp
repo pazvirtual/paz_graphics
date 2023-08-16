@@ -158,6 +158,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             std::to_string(hr) + ").");
     }
     d3d_context()->RSSetState(state);
+    state->Release();
 
     D3D11_DEPTH_STENCIL_DESC depthStencilDescriptor = {};
     ID3D11DepthStencilState* depthStencilState;
@@ -217,8 +218,28 @@ void paz::RenderPass::end()
 void paz::RenderPass::cull(CullMode mode)
 {
     CHECK_PASS
-
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    D3D11_CULL_MODE newMode;
+    switch(mode)
+    {
+        case CullMode::Disable: newMode = D3D11_CULL_NONE; break;
+        case CullMode::Front: newMode = D3D11_CULL_FRONT; break;
+        case CullMode::Back: newMode = D3D11_CULL_BACK; break;
+        default: throw std::logic_error("Invalid culling mode.");
+    }
+    if(_data->_rasterDescriptor.CullMode != newMode)
+    {
+        _data->_rasterDescriptor.CullMode = newMode;
+        ID3D11RasterizerState* state;
+        auto hr = d3d_device()->CreateRasterizerState(&_data->_rasterDescriptor,
+            &state);
+        if(hr)
+        {
+            throw std::runtime_error("Failed to create rasterizer state (HRESUL"
+                "T " + std::to_string(hr) + ").");
+        }
+        d3d_context()->RSSetState(state);
+        state->Release();
+    }
 }
 
 void paz::RenderPass::read(const std::string& name, const Texture& tex)

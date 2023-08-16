@@ -1125,8 +1125,12 @@ paz::Image paz::Window::ReadPixels()
         throw std::logic_error("Cannot read pixels before ending frame.");
     }
 
-    std::vector<float> linear(4*ViewportWidth()*ViewportHeight());
+    const auto width = ViewportWidth();
+    const auto height = ViewportHeight();
+
 #ifdef PAZ_LINUX
+    std::vector<float> linear(4*width*height);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, final_framebuffer().colorAttachment(0)._data->
         _id);
@@ -1138,24 +1142,75 @@ paz::Image paz::Window::ReadPixels()
         throw std::runtime_error("Error reading window pixels: " + gl_error(
             error) + ".");
     }
-#else
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
-#endif
-    Image srgb(ImageFormat::RGBA8UNorm_sRGB, ViewportWidth(), ViewportHeight());
-    for(int i = 0; i < ViewportHeight(); ++i)
+
+    Image srgb(ImageFormat::RGBA8UNorm_sRGB, width, height);
+    for(int i = 0; i < height(); ++i)
     {
-        for(int j = 0; j < ViewportWidth(); ++j)
+        for(int j = 0; j < width(); ++j)
         {
-            srgb.bytes()[4*(ViewportWidth()*i + j) + 0] = to_srgb(linear[4*
-                (ViewportWidth()*i + j) + 0]);
-            srgb.bytes()[4*(ViewportWidth()*i + j) + 1] = to_srgb(linear[4*
-                (ViewportWidth()*i + j) + 1]);
-            srgb.bytes()[4*(ViewportWidth()*i + j) + 2] = to_srgb(linear[4*
-                (ViewportWidth()*i + j) + 2]);
-            srgb.bytes()[4*(ViewportWidth()*i + j) + 3] = linear[4*
-                (ViewportWidth()*i + j) + 3];
+            srgb.bytes()[4*(width()*i + j) + 0] = to_srgb(linear[4*(width*i + j)
+                + 0]);
+            srgb.bytes()[4*(width()*i + j) + 1] = to_srgb(linear[4*(width*i + j)
+                + 1]);
+            srgb.bytes()[4*(width()*i + j) + 2] = to_srgb(linear[4*(width*i + j)
+                + 2]);
+            srgb.bytes()[4*(width()*i + j) + 3] = linear[4*(width*i + j) + 3];
         }
     }
+#else
+    D3D11_TEXTURE2D_DESC descriptor = {};
+    descriptor.Width = width;
+    descriptor.Height = height;
+    descriptor.MipLevels = 1;
+    descriptor.ArraySize = 1;
+    descriptor.Format = DXGI_FORMAT_R16G16B16A16_UNORM;
+    descriptor.SampleDesc.Count = 1;
+    descriptor.Usage = D3D11_USAGE_STAGING;
+    descriptor.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+    ID3D11Texture2D* staging;
+    auto hr = d3d_device()->CreateTexture2D(&descriptor, nullptr, &staging);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create staging texture (HRESULT " +
+            std::to_string(hr) + ").");
+    }
+
+
+    DeviceContext->CopySubresourceRegion(staging, 0, 0, 0, 0,
+        final_framebuffer().colorAttachment(0)._data->_texture, 0, nullptr);
+
+    std::vector<std::uint16_t> linearFlipped(4*width*height);
+
+    D3D11_MAPPED_SUBRESOURCE mappedSr;
+    hr = DeviceContext->Map(staging, 0, D3D11_MAP_READ, 0, &mappedSr);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to map staging texture (HRESULT " +
+            std::to_string(hr) + ").");
+    }
+    std::copy(reinterpret_cast<std::uint16_t*>(mappedSr.pData),
+        reinterpret_cast<std::uint16_t*>(mappedSr.pData) + 4*width*height,
+        linearFlipped.begin());
+    DeviceContext->Unmap(staging, 0);
+
+    Image srgb(ImageFormat::RGBA8UNorm_sRGB, width, height);
+    static constexpr double d = 1./std::numeric_limits<std::uint16_t>::max();
+    for(int y = 0; y < height; ++y)
+    {
+        for(int x = 0; x < width; ++x)
+        {
+            const int yFlipped = height - 1 - y;
+            for(int i = 0; i < 3; ++i)
+            {
+                srgb.bytes()[4*(width*y + x) + i] = to_srgb(linearFlipped[4*
+                    (width*yFlipped + x) + i]*d);
+            }
+            srgb.bytes()[4*(width*y + x) + 3] = linearFlipped[4*(width*yFlipped
+                + x) + 3]*d;
+        }
+    }
+#endif
+
     return srgb;
 }
 
