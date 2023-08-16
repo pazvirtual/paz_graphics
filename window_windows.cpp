@@ -676,23 +676,23 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             int button;
             if(uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONUP)
             {
-                button = 0;
+                button = static_cast<int>(paz::MouseButton::Left);
             }
             else if(uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONUP)
             {
-                button = 1;
+                button = static_cast<int>(paz::MouseButton::Right);
             }
             else if(uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP)
             {
-                button = 2;
+                button = static_cast<int>(paz::MouseButton::Middle);
             }
             else if(GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
             {
-                button = 3;
+                button = static_cast<int>(paz::MouseButton::Back);
             }
             else // XBUTTON2
             {
-                button = 4;
+                button = static_cast<int>(paz::MouseButton::Forward);
             }
 
             if(std::none_of(MouseDown.begin(), MouseDown.end(), [](bool x){
@@ -1277,25 +1277,25 @@ bool paz::Window::KeyReleased(Key key)
     return ::KeyReleased.at(static_cast<int>(key));
 }
 
-bool paz::Window::MouseDown(int button)
+bool paz::Window::MouseDown(MouseButton button)
 {
     initialize();
 
-    return ::MouseDown.at(button);
+    return ::MouseDown.at(static_cast<int>(button));
 }
 
-bool paz::Window::MousePressed(int button)
+bool paz::Window::MousePressed(MouseButton button)
 {
     initialize();
 
-    return ::MousePressed.at(button);
+    return ::MousePressed.at(static_cast<int>(button));
 }
 
-bool paz::Window::MouseReleased(int button)
+bool paz::Window::MouseReleased(MouseButton button)
 {
     initialize();
 
-    return ::MouseReleased.at(button);
+    return ::MouseReleased.at(static_cast<int>(button));
 }
 
 std::pair<double, double> paz::Window::MousePos()
