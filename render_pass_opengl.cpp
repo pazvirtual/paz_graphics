@@ -301,6 +301,10 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
+        else if(_data->_blendMode == BlendMode::BlendPremult)
+        {
+            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+        }
         // ...
         else
         {

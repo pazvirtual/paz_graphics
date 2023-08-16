@@ -198,6 +198,19 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
                     setDestinationAlphaBlendFactor:
                     MTLBlendFactorOneMinusSourceAlpha];
             }
+            else if(blendMode == paz::BlendMode::BlendPremult)
+            {
+                [[pipelineDescriptor colorAttachments][i]
+                    setSourceRGBBlendFactor:MTLBlendFactorOne];
+                [[pipelineDescriptor colorAttachments][i]
+                    setSourceAlphaBlendFactor:MTLBlendFactorOne];
+                [[pipelineDescriptor colorAttachments][i]
+                    setDestinationRGBBlendFactor:
+                    MTLBlendFactorOneMinusSourceAlpha];
+                [[pipelineDescriptor colorAttachments][i]
+                    setDestinationAlphaBlendFactor:
+                    MTLBlendFactorOneMinusSourceAlpha];
+            }
             // ...
             else
             {
