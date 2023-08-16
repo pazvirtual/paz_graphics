@@ -47,6 +47,8 @@ struct paz::Framebuffer::Data
 #ifdef PAZ_MACOS
         std::vector<const RenderTarget*> _colorAttachments;
         const RenderTarget* _depthAttachment = nullptr;
+        int _width = 0;
+        int _height = 0;
 #else
         unsigned int _id = 0;
         int _numTextures = 0;

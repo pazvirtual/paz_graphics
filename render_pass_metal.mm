@@ -359,6 +359,13 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     if(_fbo)
     {
         [renderPassDescriptor release];
+
+        if(_fbo->_data->_width)
+        {
+            [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
+                setViewport:{0., 0., static_cast<double>(_fbo->_data->_width),
+                static_cast<double>(_fbo->_data->_height), 0., 1.}];
+        }
     }
 
     // Flip winding order to CCW to match OpenGL standard.

@@ -8,7 +8,7 @@
 static constexpr float ZNear = 0.1f;
 static constexpr float ZFar = 100.f;
 static constexpr float YFov = 65.f*M_PI/180.f;
-//static constexpr int Res = 2000;
+static constexpr int Res = 2000;
 
 static constexpr std::array<float, 4*4> GroundPos =
 {
@@ -106,7 +106,7 @@ int main(int, char** argv)
     paz::VertexBuffer cubeVerts;
     cubeVerts.attribute(4, CubePos);
 
-    paz::RenderTarget shadowMap(/*Res, Res,*/1., paz::Texture::Format::Depth32Float,
+    paz::RenderTarget shadowMap(Res, Res, paz::Texture::Format::Depth32Float,
         paz::Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::
         Linear);
 
