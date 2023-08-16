@@ -125,7 +125,7 @@ void main()
     }
     else
     {
-        color = vec4(0.5*ill/length(uv));
+        color = vec4(ill);
     }
     color += 0.1;
     color.rgb = pow(clamp(color.rgb, vec3(0.), vec3(1.)), vec3(0.4545));
@@ -141,7 +141,7 @@ static constexpr std::array<float, 16> lightView =
     0,              -S1,               C1, 0,
     0, -2.5*C1 + 0.5*S1, -2.5*S1 - 0.5*C1, 1
 };
-static const auto lightProjection = paz::perspective(YFov, 1.5, ZNear, ZFar);
+static const auto lightProjection = paz::perspective(YFov, 1., ZNear, ZFar);
 
 paz::Texture compute_shadow_map(const paz::VertexBuffer& groundVerts, const
     paz::VertexBuffer& cubeVerts)
