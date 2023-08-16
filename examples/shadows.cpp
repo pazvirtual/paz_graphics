@@ -137,7 +137,7 @@ void main()
     vec2 shadowUv = projCoords.xy;
     color = vec4((max(sign(texture(shadowMap, shadowUv).r + 1e-6 - depth), 0.)*
         ill + 0.1)*texture(surface, uv).r);
-    color.rgb = pow(clamp(color.rgb, vec3(0.), vec3(1.)), vec3(0.4545));
+    color.rgb = clamp(color.rgb, vec3(0.), vec3(1.));
 }
 )===";
 
@@ -192,10 +192,23 @@ int main(int, char** argv)
     cubeVerts.attribute(4, CubeNor);
     cubeVerts.attribute(2, CubeUv);
 
-    const paz::VertexFunction sceneVert(SceneVertSrc);
-    const paz::FragmentFunction sceneFrag(SceneFragSrc);
+    paz::VertexBuffer quadVerts;
+    quadVerts.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
-    paz::RenderPass renderScene(sceneVert, sceneFrag);
+    const paz::VertexFunction sceneVert(SceneVertSrc);
+    const paz::VertexFunction quadVert(paz::load_file(appDir + "/quad.vert").
+        str());
+    const paz::FragmentFunction sceneFrag(SceneFragSrc);
+    const paz::FragmentFunction aaFrag(paz::load_file(appDir + "/fxaa.frag").
+        str());
+
+    paz::Framebuffer buff;
+    buff.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA32Float, paz::
+        MinMagFilter::Linear, paz::MinMagFilter::Linear));
+    buff.attach(paz::RenderTarget(1., paz::TextureFormat::Depth16UNorm));
+
+    paz::RenderPass scenePass(buff, sceneVert, sceneFrag);
+    paz::RenderPass aaPass(quadVert, aaFrag);
 
     const paz::Texture shadowMap = compute_shadow_map(groundVerts, cubeVerts);
     paz::Image<std::uint8_t, 1> img(Scale*Size, Scale*Size);
@@ -236,17 +249,23 @@ int main(int, char** argv)
         const auto projection = paz::perspective(YFov, paz::Window::
             AspectRatio(), ZNear, ZFar);
 
-        renderScene.begin({paz::LoadAction::Clear}, paz::LoadAction::Clear);
-        renderScene.depth(paz::DepthTestMode::Less);
-        renderScene.read("shadowMap", shadowMap);
-        renderScene.read("surface", surface);
-        renderScene.uniform("view", view);
-        renderScene.uniform("projection", projection);
-        renderScene.uniform("lightView", lightView);
-        renderScene.uniform("lightProjection", lightProjection);
-        renderScene.primitives(paz::PrimitiveType::TriangleStrip, groundVerts);
-        renderScene.primitives(paz::PrimitiveType::Triangles, cubeVerts);
-        renderScene.end();
+        scenePass.begin({paz::LoadAction::Clear}, paz::LoadAction::Clear);
+        scenePass.depth(paz::DepthTestMode::Less);
+        scenePass.read("shadowMap", shadowMap);
+        scenePass.read("surface", surface);
+        scenePass.uniform("view", view);
+        scenePass.uniform("projection", projection);
+        scenePass.uniform("lightView", lightView);
+        scenePass.uniform("lightProjection", lightProjection);
+        scenePass.primitives(paz::PrimitiveType::TriangleStrip, groundVerts);
+        scenePass.primitives(paz::PrimitiveType::Triangles, cubeVerts);
+        scenePass.end();
+
+        aaPass.begin();
+        aaPass.read("img", buff.colorAttachment(0));
+        aaPass.read("lum", buff.colorAttachment(0)); // works because grayscale
+        aaPass.primitives(paz::PrimitiveType::TriangleStrip, quadVerts);
+        aaPass.end();
 
         paz::Window::EndFrame();
 
