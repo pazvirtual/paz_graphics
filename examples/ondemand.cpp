@@ -1,12 +1,20 @@
 #include "PAZ_Graphics"
 
 static constexpr std::size_t NumSteps = 1000;
+static constexpr std::size_t Res = 500;
 
 int main(int, char** argv)
 {
     const std::string appDir = paz::split_path(argv[0])[0];
     paz::Window::MakeNotResizable();
-    paz::Window::Resize(1000, 1000);
+    paz::Window::Resize(Res, Res, true);
+    if(paz::Window::ViewportWidth() != Res || paz::Window::ViewportHeight() !=
+        Res)
+    {
+        std::cerr << "Error: Failed to resize to correct dimensions." << std::
+            endl;
+        return 1;
+    }
 
     paz::VertexBuffer quadVertices;
     quadVertices.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});

@@ -301,7 +301,7 @@ namespace paz
         static void SetMaxSize(int width, int height);
         static void MakeResizable();
         static void MakeNotResizable();
-        static void Resize(int width, int height);
+        static void Resize(int width, int height, bool viewportCoords);
         static Image<std::uint8_t, 3> PrintScreen();
     };
 }
