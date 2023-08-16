@@ -9,6 +9,15 @@
 
 paz::Texture::Data::~Data()
 {
+    if(_isRenderTarget)
+    {
+        unregister_target(this);
+    }
+
+    if(_texture)
+    {
+        _texture->Release();
+    }
 }
 
 paz::Texture::Texture()

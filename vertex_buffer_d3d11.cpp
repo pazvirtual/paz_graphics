@@ -11,10 +11,6 @@ paz::VertexBuffer::Data::~Data()
 {
 }
 
-paz::VertexBuffer::Data::Data()
-{
-}
-
 paz::VertexBuffer::VertexBuffer()
 {
 }
@@ -27,40 +23,35 @@ void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)
 {
 }
 
-void paz::VertexBuffer::Data::addAttribute(int dim, DataType type)
-{
-}
-
 void paz::VertexBuffer::addAttribute(int dim, DataType type)
 {
 }
 
-void paz::VertexBuffer::addAttribute(int dim, const GLfloat* data, std::size_t
+void paz::VertexBuffer::addAttribute(int dim, const float* data, std::size_t
     size)
 {
 }
 
-void paz::VertexBuffer::addAttribute(int dim, const GLuint* data, std::size_t
-    size)
-{
-}
-
-void paz::VertexBuffer::addAttribute(int dim, const GLint* data, std::size_t
-    size)
-{
-}
-
-void paz::VertexBuffer::subAttribute(std::size_t idx, const GLfloat* data, std::
+void paz::VertexBuffer::addAttribute(int dim, const unsigned int* data, std::
     size_t size)
 {
 }
 
-void paz::VertexBuffer::subAttribute(std::size_t idx, const GLuint* data, std::
+void paz::VertexBuffer::addAttribute(int dim, const int* data, std::size_t size)
+{
+}
+
+void paz::VertexBuffer::subAttribute(std::size_t idx, const float* data, std::
     size_t size)
 {
 }
 
-void paz::VertexBuffer::subAttribute(std::size_t idx, const GLint* data, std::
+void paz::VertexBuffer::subAttribute(std::size_t idx, const unsigned int* data,
+    std::size_t size)
+{
+}
+
+void paz::VertexBuffer::subAttribute(std::size_t idx, const int* data, std::
     size_t size)
 {
 }

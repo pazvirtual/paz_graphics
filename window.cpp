@@ -1,6 +1,6 @@
 #include "detect_os.hpp"
 
-#ifdef PAZ_LINUX
+#ifndef PAZ_MACOS
 
 #include "PAZ_Graphics"
 #include "render_pass.hpp"
@@ -8,8 +8,14 @@
 #include "util_opengl.hpp"
 #include "window.hpp"
 #include "internal_data.hpp"
+#ifdef PAZ_LINUX
 #include "gl_core_4_1.h"
 #include <GLFW/glfw3.h>
+#else
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
+#endif
 #include <cmath>
 #include <chrono>
 
@@ -44,6 +50,12 @@ static constexpr std::array<float, 16> QuadPos =
 };
 
 static GLFWwindow* WindowPtr;
+#ifdef PAZ_WINDOWS
+ID3D11Device* Device;
+ID3D11DeviceContext* DeviceContext;
+IDXGISwapChain* SwapChain;
+ID3D11RenderTargetView* RenderTargetView;
+#endif
 static int WindowWidth;
 static int WindowHeight;
 static bool WindowIsKey;
@@ -79,6 +91,7 @@ static bool CursorDisabled;
 static bool FrameInProgress;
 static bool HidpiEnabled = true;
 static float Gamma = 2.2;
+#ifdef PAZ_LINUX
 static const unsigned int QuadShaderId = []()
 {
     paz::initialize();
@@ -146,6 +159,9 @@ static const unsigned int QuadBufId = []()
         data(), GL_STATIC_DRAW);
     return a;
 }();
+#else
+// ...
+#endif
 
 paz::Initializer& paz::initialize()
 {
@@ -324,13 +340,17 @@ paz::Initializer::Initializer()
     }
 
     // Set context hints.
+#ifdef PAZ_LINUX
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, GlMajorVersion);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, GlMinorVersion);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#else
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+#endif
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     // Get display size.
-    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    auto* monitor = glfwGetPrimaryMonitor();
     if(!monitor)
     {
         throw std::runtime_error("Failed to get primary monitor. You may be usi"
@@ -341,7 +361,7 @@ paz::Initializer::Initializer()
             ".");
 #endif
     }
-    const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
+    const auto* videoMode = glfwGetVideoMode(monitor);
     const int displayWidth = videoMode->width;
     const int displayHeight = videoMode->height;
 
@@ -353,6 +373,7 @@ paz::Initializer::Initializer()
     WindowPtr = glfwCreateWindow(WindowWidth, WindowHeight,
         "PAZ_Graphics Window", nullptr, nullptr);
     WindowIsFullscreen = false;
+#ifdef PAZ_LINUX
     if(!WindowPtr)
     {
         throw std::runtime_error("Failed to open GLFW window. Your GPU may not "
@@ -360,17 +381,44 @@ paz::Initializer::Initializer()
             to_string(paz::GlMinorVersion) + " compatible.");
     }
     glfwMakeContextCurrent(WindowPtr);
+#else
+    if(!WindowPtr)
+    {
+        throw std::runtime_error("Failed to open GLFW window.");
+    }
+    DXGI_SWAP_CHAIN_DESC swapChainDescriptor = {};
+    swapChainDescriptor.BufferDesc.RefreshRate.Numerator = 0;
+    swapChainDescriptor.BufferDesc.RefreshRate.Denominator = 0;
+    swapChainDescriptor.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    swapChainDescriptor.SampleDesc.Count = 1;
+    swapChainDescriptor.SampleDesc.Quality = 0;
+    swapChainDescriptor.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapChainDescriptor.BufferCount = 1; //TEMP ?
+    swapChainDescriptor.OutputWindow = glfwGetWin32Window(WindowPtr);
+    swapChainDescriptor.Windowed = true;
+    D3D_FEATURE_LEVEL featureLvl;
+    auto hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE,
+        nullptr, D3D11_CREATE_DEVICE_SINGLETHREADED, nullptr, 0,
+        D3D11_SDK_VERSION, &swapChainDescriptor, &SwapChain, &Device,
+        &featureLvl, &DeviceContext);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to intialize Direct3D (HRESULT " +
+            std::to_string(hr) + ").");
+    }
+#endif
     glfwGetWindowPos(WindowPtr, &PrevX, &PrevY);
 
+    // Get window size in pixels.
+    glfwGetFramebufferSize(WindowPtr, &FboWidth, &FboHeight);
+    FboAspectRatio = static_cast<float>(FboWidth)/FboHeight;
+
+#ifdef PAZ_LINUX
     // Load OpenGL functions.
     if(ogl_LoadFunctions() == ogl_LOAD_FAILED)
     {
         throw std::runtime_error("Could not load OpenGL functions.");
     }
-
-    // Get window size in pixels.
-    glfwGetFramebufferSize(WindowPtr, &FboWidth, &FboHeight);
-    FboAspectRatio = static_cast<float>(FboWidth)/FboHeight;
 
     // Activate vsync.
     glfwSwapInterval(1);
@@ -380,6 +428,7 @@ paz::Initializer::Initializer()
 
     // Enable `gl_PointSize`.
     glEnable(GL_PROGRAM_POINT_SIZE);
+#endif
 
     // Use raw mouse input when cursor is disabled.
     if(glfwRawMouseMotionSupported())
@@ -422,8 +471,10 @@ void paz::Window::MakeFullscreen()
             videoMode->height, videoMode->refreshRate);
         WindowIsFullscreen = true;
 
+#ifdef PAZ_LINUX
         // Keep vsync.
         glfwSwapInterval(1);
+#endif
     }
 }
 
@@ -437,8 +488,10 @@ void paz::Window::MakeWindowed()
             PrevHeight, GLFW_DONT_CARE);
         WindowIsFullscreen = false;
 
+#ifdef PAZ_LINUX
         // Keep vsync.
         glfwSwapInterval(1);
+#endif
     }
 }
 
@@ -655,6 +708,7 @@ void paz::Window::EndFrame()
 
     FrameInProgress = false;
 
+#ifdef PAZ_LINUX
     static const auto texLoc = glGetUniformLocation(QuadShaderId, "tex");
     static const auto gammaLoc = glGetUniformLocation(QuadShaderId, "gamma");
 
@@ -677,6 +731,11 @@ void paz::Window::EndFrame()
     }
 
     glfwSwapBuffers(WindowPtr);
+#else
+    // ...
+
+    SwapChain->Present(1, 0);
+#endif
     reset_events();
     const auto now = std::chrono::steady_clock::now();
     PrevFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
@@ -795,6 +854,7 @@ paz::Image paz::Window::ReadPixels()
 {
     initialize();
 
+#ifdef PAZ_LINUX
     if(FrameInProgress)
     {
         throw std::logic_error("Cannot read pixels before ending frame.");
@@ -828,6 +888,9 @@ paz::Image paz::Window::ReadPixels()
         }
     }
     return srgb;
+#else
+    throw std::logic_error("NOT IMPLEMENTED");
+#endif
 }
 
 void paz::begin_frame()
