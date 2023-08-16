@@ -158,7 +158,7 @@ float unif_rand(in float2 v)
 }
 struct InputData
 {
-    float4 glPosition : SV_Position; //TEMP - bad if necessary !
+    float4 glPosition : SV_Position;
     float2 uv : TEXCOORD0;
 };
 struct OutputData
@@ -185,6 +185,7 @@ static constexpr std::array<float, 8> QuadPos =
 };
 
 static HWND WindowHandle;
+static HMONITOR MonitorHandle;
 static ID3D11Device* Device;
 static ID3D11DeviceContext* DeviceContext;
 static IDXGISwapChain* SwapChain;
@@ -192,7 +193,6 @@ static ID3D11RenderTargetView* RenderTargetView;
 static int WindowWidth;
 static int WindowHeight;
 static bool WindowIsKey;
-static bool WindowIsFullscreen;
 static bool FrameAction;
 static bool CursorTracked;
 static int PrevX;
@@ -365,7 +365,7 @@ static ID3D11Buffer* BlitBuf = []()
 static DWORD window_style()
 {
     DWORD style = WS_CLIPSIBLINGS|WS_CLIPCHILDREN;
-    if(WindowIsFullscreen)
+    if(MonitorHandle)
     {
         style |= WS_POPUP;
     }
@@ -383,7 +383,7 @@ static DWORD window_style()
 static DWORD window_ex_style()
 {
     DWORD exStyle = WS_EX_APPWINDOW;
-    if(WindowIsFullscreen)
+    if(MonitorHandle)
     {
         exStyle |= WS_EX_TOPMOST;
     }
@@ -435,8 +435,8 @@ static void capture_cursor()
 {
     RECT clipRect;
     GetClientRect(WindowHandle, &clipRect);
-    ClientToScreen(WindowHandle, (POINT*) &clipRect.left);
-    ClientToScreen(WindowHandle, (POINT*) &clipRect.right);
+    ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(&clipRect.left));
+    ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(&clipRect.right));
     ClipCursor(&clipRect);
 }
 
@@ -482,6 +482,24 @@ static void enable_cursor()
     ClientToScreen(WindowHandle, &PriorCursorPos);
     SetCursorPos(PriorCursorPos.x, PriorCursorPos.y);
     SetCursor(LoadCursorW(nullptr, IDC_ARROW));
+}
+
+static void acquire_monitor()
+{
+    if(!MonitorHandle)
+    {
+        SetThreadExecutionState(ES_CONTINUOUS|ES_DISPLAY_REQUIRED);
+        MonitorHandle = MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY);
+    }
+}
+
+static void release_monitor()
+{
+    if(MonitorHandle)
+    {
+        SetThreadExecutionState(ES_CONTINUOUS);
+        MonitorHandle = nullptr;
+    }
 }
 
 static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
@@ -572,7 +590,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 case SC_SCREENSAVE:
                 case SC_MONITORPOWER:
                 {
-                    if(WindowIsFullscreen)
+                    if(MonitorHandle)
                     {
                         return 0;
                     }
@@ -951,10 +969,12 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 //                _glfwInputWindowSize(window, width, height);
 //            }
 //
-//            if (window->monitor && window->win32.iconified != iconified)
+//            if(MonitorHandle && window->win32.iconified != iconified)
 //            {
-//                if (iconified)
+//                if(iconified)
+//                {
 //                    releaseMonitor(window);
+//                }
 //                else
 //                {
 //                    acquireMonitor(window);
@@ -968,7 +988,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         }
         case WM_MOVE:
         {
-            if(!WindowIsFullscreen)
+            if(!MonitorHandle)
             {
                 PrevX = static_cast<int>(static_cast<short>(LOWORD(lParam)));
                 PrevY = static_cast<int>(static_cast<short>(HIWORD(lParam)));
@@ -989,7 +1009,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         {
             RECT frame = {};
             MINMAXINFO& mmi = *reinterpret_cast<MINMAXINFO*>(lParam);
-            if(WindowIsFullscreen)
+            if(MonitorHandle)
             {
                 break;
             }
@@ -1062,7 +1082,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
             // Resize windowed mode windows that either permit rescaling or that
             // need it to compensate for non-client area scaling
-//            if (!WindowIsFullscreen && (window->win32.scaleToMonitor || IsWindows10Version1703OrGreater))
+//            if (!MonitorHandle && (window->win32.scaleToMonitor || IsWindows10Version1703OrGreater))
 //            {
 //                RECT* suggested = (RECT*) lParam;
 //                SetWindowPos(window->win32.handle, HWND_TOP,
@@ -1140,15 +1160,15 @@ paz::Initializer::Initializer()
     }
 
     // Get display size. (Primary monitor starts at `(0, 0)`.)
-    HMONITOR monitorHandle = MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY);
-    if(!monitorHandle)
+    HMONITOR monitor = MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY);
+    if(!monitor)
     {
         throw std::runtime_error("Failed to get primary monitor. You may be usi"
             "ng a remote shell.");
     }
     MONITORINFO mi;
-    mi.cbSize = sizeof(MONITORINFO);
-    GetMonitorInfo(monitorHandle, &mi);
+    mi.cbSize = sizeof(mi);
+    GetMonitorInfo(monitor, &mi);
     const int displayWidth = mi.rcMonitor.right - mi.rcMonitor.left;
     const int displayHeight = mi.rcMonitor.bottom - mi.rcMonitor.top;
 
@@ -1158,7 +1178,7 @@ paz::Initializer::Initializer()
 
     // Create window and initialize Direct3D.
     WNDCLASSEXW PazWindow = {};
-    PazWindow.cbSize = sizeof(WNDCLASSEXW);
+    PazWindow.cbSize = sizeof(PazWindow);
     PazWindow.style = CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
     PazWindow.lpfnWndProc = window_proc;
     PazWindow.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -1229,35 +1249,57 @@ paz::Initializer::Initializer()
 
 void paz::Window::MakeFullscreen()
 {
-#if 0
     initialize();
 
-    if(!WindowIsFullscreen)
+    if(!MonitorHandle)
     {
+        acquire_monitor();
+
         PrevWidth = WindowWidth;
         PrevHeight = WindowHeight;
 
-        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-        const GLFWvidmode* videoMode = glfwGetVideoMode(monitor);
-        glfwSetWindowMonitor(WindowPtr, monitor, 0, 0, videoMode->width,
-            videoMode->height, videoMode->refreshRate);
-        WindowIsFullscreen = true;
+        MONITORINFO mi = {};
+        mi.cbSize = sizeof(mi);
+        GetMonitorInfoW(MonitorHandle, &mi);
+
+        DWORD style = GetWindowLongW(WindowHandle, GWL_STYLE);
+        style &= ~WS_OVERLAPPEDWINDOW;
+        style |= window_style();
+        SetWindowLongW(WindowHandle, GWL_STYLE, style);
+
+        const UINT flags = SWP_SHOWWINDOW|SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_FRAMECHANGED;
+        SetWindowPos(WindowHandle, HWND_TOPMOST, mi.rcMonitor.left, mi.
+            rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.
+            bottom - mi.rcMonitor.top, flags);
     }
-#endif
 }
 
 void paz::Window::MakeWindowed()
 {
-#if 0
     initialize();
 
-    if(WindowIsFullscreen)
+    if(MonitorHandle)
     {
-        glfwSetWindowMonitor(WindowPtr, nullptr, PrevX, PrevY, PrevWidth,
-            PrevHeight, GLFW_DONT_CARE);
-        WindowIsFullscreen = false;
+        release_monitor();
+
+        DWORD style = GetWindowLongW(WindowHandle, GWL_STYLE);
+        style &= ~WS_POPUP;
+        style |= window_style();
+        SetWindowLongW(WindowHandle, GWL_STYLE, style);
+
+        RECT rect = {PrevX, PrevY, PrevX + PrevWidth, PrevY + PrevHeight};
+        if(IsWindows10Version1607OrGreater)
+        {
+            AdjustWindowRectExForDpi(&rect, window_style(), FALSE, window_ex_style(), GetDpiForWindow(WindowHandle));
+        }
+        else
+        {
+            AdjustWindowRectEx(&rect, window_style(), FALSE, window_ex_style());
+        }
+
+        const UINT flags = SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_FRAMECHANGED;
+        SetWindowPos(WindowHandle, HWND_NOTOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, flags);
     }
-#endif
 }
 
 ID3D11Device* paz::d3d_device()
@@ -1289,7 +1331,7 @@ bool paz::Window::IsFullscreen()
 {
     initialize();
 
-    return WindowIsFullscreen;
+    return MonitorHandle;
 }
 
 int paz::Window::ViewportWidth()
@@ -1784,7 +1826,7 @@ void paz::Window::Resize(int width, int height, bool viewportCoords)
         }
     }
 
-    if(!WindowIsFullscreen)
+    if(!MonitorHandle)
     {
         RECT rect = {0, 0, width, height};
         AdjustWindowRectEx(&rect, window_style(), FALSE, window_ex_style());
