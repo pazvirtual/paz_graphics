@@ -383,10 +383,6 @@ static DWORD window_style()
 static DWORD window_ex_style()
 {
     DWORD exStyle = WS_EX_APPWINDOW;
-    if(MonitorHandle)
-    {
-        exStyle |= WS_EX_TOPMOST;
-    }
     return exStyle;
 }
 
@@ -1268,7 +1264,7 @@ void paz::Window::MakeFullscreen()
         SetWindowLongW(WindowHandle, GWL_STYLE, style);
 
         const UINT flags = SWP_SHOWWINDOW|SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_FRAMECHANGED;
-        SetWindowPos(WindowHandle, HWND_TOPMOST, mi.rcMonitor.left, mi.
+        SetWindowPos(WindowHandle, HWND_NOTOPMOST, mi.rcMonitor.left, mi.
             rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.
             bottom - mi.rcMonitor.top, flags);
     }
