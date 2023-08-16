@@ -6,9 +6,11 @@
 #include <random>
 #include <map>
 
-static constexpr std::size_t NumParticles = 1000;
+static constexpr std::size_t NumParticles = 2000;
 static constexpr double ZDist = 0.;
 static constexpr double Side = 10.;
+static constexpr double MinDist = 1.;
+static constexpr double MaxLum = 2.;
 
 thread_local std::mt19937_64 RandomEngine(0);
 
@@ -38,20 +40,28 @@ int main(int, char** argv)
         "/tonemap.frag").str());
 
     paz::RenderPass r(renderFramebuffer, particleVert, particleFrag, paz::
-        BlendMode::Additive);
+        BlendMode::Blend);
     paz::RenderPass u(quad, tonemap);
 
     paz::VertexBuffer q;
     q.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
-    std::multimap<double, std::array<double, 3>> particles;
+    std::multimap<double, std::array<double, 6>> particles;
     for(std::size_t i = 0; i < NumParticles; ++i)
     {
-        const double x = Side*2.*(uniform() - 0.5);
-        const double y = Side*2.*(uniform() - 0.5);
-        const double z = Side*2.*(uniform() - 0.5) - ZDist;
-        const double distSq = x*x + y*y + z*z;
-        particles.emplace(distSq, std::array<double, 3>{x, y, z});
+        double x = 0.;
+        double y = 0.;
+        double z = 0.;
+        double distSq = 0.;
+        while(distSq < MinDist*MinDist)
+        {
+            x = Side*2.*(uniform() - 0.5);
+            y = Side*2.*(uniform() - 0.5);
+            z = Side*2.*(uniform() - 0.5) - ZDist;
+            distSq = x*x + y*y + z*z;
+        }
+        particles.emplace(distSq, std::array<double, 6>{x, y, z, MaxLum*
+            uniform(), MaxLum*uniform(), MaxLum*uniform()});
     }
 
     double time = 0.;
@@ -64,6 +74,12 @@ int main(int, char** argv)
             paz::GamepadButton::Back))
         {
             paz::Window::Quit();
+        }
+        if(paz::Window::KeyPressed(paz::Key::F) || paz::Window::GamepadPressed(
+            paz::GamepadButton::Start))
+        {
+            paz::Window::IsFullscreen() ? paz::Window::MakeWindowed() : paz::
+                Window::MakeFullscreen();
         }
 
         // Propagate physics.
@@ -85,7 +101,7 @@ int main(int, char** argv)
                                          0, 0,  0, 1};
 
         // Drawing.
-        r.begin({paz::LoadAction::Clear});
+        r.begin({paz::LoadAction::FillOnes});
         r.uniform("projection", p);
         r.uniform("view", v);
         for(auto it = particles.rbegin(); it != particles.rend(); ++it)
@@ -93,14 +109,15 @@ int main(int, char** argv)
             r.uniform("origin", static_cast<float>(it->second[0]), static_cast<
                 float>(it->second[1]), static_cast<float>(it->second[2]));
             r.uniform("distSq", static_cast<float>(it->first));
+            r.uniform("c", static_cast<float>(it->second[3]), static_cast<
+                float>(it->second[4]), static_cast<float>(it->second[5]));
             r.draw(paz::PrimitiveType::TriangleStrip, q);
         }
         r.end();
 
         u.begin();
         u.read("hdrRender", render);
-        u.uniform("whitePoint", 0.5f + 0.5f*static_cast<float>(std::sin(2.*
-            time)));
+        u.uniform("whitePoint", static_cast<float>(0.95*MaxLum));
         u.draw(paz::PrimitiveType::TriangleStrip, q);
         u.end();
 

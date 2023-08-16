@@ -130,6 +130,12 @@ int main(int, char** argv)
         {
             paz::Window::Quit();
         }
+        if(paz::Window::KeyPressed(paz::Key::F) || paz::Window::GamepadPressed(
+            paz::GamepadButton::Start))
+        {
+            paz::Window::IsFullscreen() ? paz::Window::MakeWindowed() : paz::
+                Window::MakeFullscreen();
+        }
 
         basePass.begin({paz::LoadAction::Clear});
         if(mode == 0)
