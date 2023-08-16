@@ -20,10 +20,10 @@ std::array<float, 16> paz::ortho(const float left, const float right, const
     std::array<float, 16> res = {};
     res[0] = 2.f/(right - left);
     res[5] = 2.f/(top - bottom);
-    res[10] = 1.f/(zFar - zNear);
-    res[12] = -(right + left)/(right - left);
-    res[13] = -(top + bottom)/(top - bottom);
-    res[14] = -zNear/(zFar - zNear);
+    res[10] = 2.f/(zNear - zFar);
+    res[12] = (left + right)/(left - right);
+    res[13] = (bottom + top)/(bottom - top);
+    res[14] = (zNear + zFar)/(zNear - zFar);
     res[15] = 1.f;
     return res;
 }
