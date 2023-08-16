@@ -18,7 +18,7 @@ OPTIM := 3
 ZIPNAME := $(PROJNAME)-$(OSPRETTY)
 CFLAGS := -O$(OPTIM) -Wall -Wextra -Wno-missing-braces
 ifeq ($(OSPRETTY), macOS)
-    CFLAGS += -mmacosx-version-min=10.11 -Wunguarded-availability
+    CFLAGS += -mmacosx-version-min=10.11 -Wunguarded-availability -Wno-string-plus-int
 else
     ifeq ($(OSPRETTY), Windows)
         CFLAGS += -Wno-cast-function-type
