@@ -275,6 +275,7 @@ int main(int, char** argv)
         scenePass.uniform("projection", projection);
         scenePass.uniform("lightView", lightView);
         scenePass.uniform("lightProjection", lightProjection);
+        scenePass.cull(paz::CullMode::Back);
         scenePass.draw(paz::PrimitiveType::TriangleStrip, groundVerts,
             instanceAttrs);
         scenePass.draw(paz::PrimitiveType::Triangles, cubeVerts, instanceAttrs);

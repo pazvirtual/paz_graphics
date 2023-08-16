@@ -332,6 +332,7 @@ int main()
         EXPECT_EXCEPTION(otherPass.uniform("projection", projection))
         scenePass.uniform("lightView", lightView);
         scenePass.uniform("lightProjection", lightProjection);
+        scenePass.cull(paz::CullMode::Back);
         scenePass.draw(paz::PrimitiveType::TriangleStrip, groundVerts);
         scenePass.draw(paz::PrimitiveType::Triangles, cubeVerts);
         scenePass.end();
