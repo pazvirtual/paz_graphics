@@ -26,6 +26,8 @@ static constexpr std::array<float, 4*4> GroundNor =
     0, 0, 1, 0
 };
 
+static constexpr std::array<float, 2*4> GroundUv = {4, 0, 4, 4, 0, 0, 0, 4};
+
 #define P1  0.5, -0.5, -2, 1,
 #define P2  0.5, -0.5, -1, 1,
 #define P3 -0.5, -0.5, -1, 1,
@@ -37,17 +39,17 @@ static constexpr std::array<float, 4*4> GroundNor =
 
 static constexpr std::array<float, 4*3*2*6> CubePos =
 {
-    P3 P4 P1
-    P8 P7 P6
     P5 P6 P2
-    P6 P7 P3
-    P8 P4 P3
-    P1 P4 P8
-    P3 P1 P2
-    P8 P6 P5
     P5 P2 P1
-    P6 P3 P2
+    P8 P4 P3
     P8 P3 P7
+    P8 P7 P6
+    P8 P6 P5
+    P3 P4 P1
+    P3 P1 P2
+    P6 P7 P3
+    P6 P3 P2
+    P1 P4 P8
     P1 P8 P5
 };
 
@@ -60,28 +62,33 @@ static constexpr std::array<float, 4*3*2*6> CubePos =
 
 static constexpr std::array<float, 4*3*2*6> CubeNor =
 {
-    N4 N4 N4
-    N3 N3 N3
     N1 N1 N1
-    N5 N5 N5
+    N1 N1 N1
     N2 N2 N2
+    N2 N2 N2
+    N3 N3 N3
+    N3 N3 N3
+    N4 N4 N4
+    N4 N4 N4
+    N5 N5 N5
+    N5 N5 N5
     N6 N6 N6
-    N4 N4 N4
-    N3 N3 N3
-    N1 N1 N1
-    N5 N5 N5
-    N2 N2 N2
     N6 N6 N6
 };
 
+#define UV 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0,
+
+static constexpr std::array<float, 2*3*2*6> CubeUv = {UV UV UV UV UV UV};
+
 static const std::string ShadowVertSrc = 1 + R"===(
-layout(location = 0) in vec4 position;
-layout(location = 1) in vec4 normal;
+layout(location = 0) in vec4 vertexPosition;
+layout(location = 1) in vec4 vertexNormal;
+layout(location = 2) in vec2 vertexUv;
 uniform mat4 lightProjection;
 uniform mat4 lightView;
 void main()
 {
-    gl_Position = lightProjection*lightView*position;
+    gl_Position = lightProjection*lightView*vertexPosition;
 }
 )===";
 
@@ -93,35 +100,40 @@ void main()
 )===";
 
 static const std::string SceneVertSrc = 1 + R"===(
-layout(location = 0) in vec4 position;
-layout(location = 1) in vec4 normal;
+layout(location = 0) in vec4 vertexPosition;
+layout(location = 1) in vec4 vertexNormal;
+layout(location = 2) in vec2 vertexUv;
 uniform mat4 lightProjection;
 uniform mat4 lightView;
 uniform mat4 projection;
 uniform mat4 view;
 out vec4 lightProjPos;
 out vec4 lightSpcNor;
+out vec2 uv;
 void main()
 {
-    lightProjPos = lightProjection*lightView*position;
-    lightSpcNor = lightView*normal;
-    gl_Position = projection*view*position;
+    lightProjPos = lightProjection*lightView*vertexPosition;
+    lightSpcNor = lightView*vertexNormal;
+    gl_Position = projection*view*vertexPosition;
+    uv = vertexUv;
 }
 )===";
 
 static const std::string SceneFragSrc = 1 + R"===(
 in vec4 lightProjPos;
 in vec4 lightSpcNor;
+in vec2 uv;
 uniform depthSampler2D shadowMap;
+uniform sampler2D surface;
 layout(location = 0) out vec4 color;
 void main()
 {
     float ill = max(0., lightSpcNor.z/length(lightSpcNor));
     vec3 projCoords = 0.5*lightProjPos.xyz/lightProjPos.w + 0.5;
     float depth = projCoords.z;
-    vec2 uv = projCoords.xy;
-    color = vec4(max(sign(texture(shadowMap, uv).r + 1e-6 - depth), 0.)*ill +
-        0.1);
+    vec2 shadowUv = projCoords.xy;
+    color = vec4((max(sign(texture(shadowMap, shadowUv).r + 1e-6 - depth), 0.)*
+        ill + 0.1)*textureLod(surface, uv, textureQueryLod(surface, uv).x).r);
     color.rgb = pow(clamp(color.rgb, vec3(0.), vec3(1.)), vec3(0.4545));
 }
 )===";
@@ -173,10 +185,12 @@ int main(int, char** argv)
     paz::VertexBuffer groundVerts;
     groundVerts.attribute(4, GroundPos);
     groundVerts.attribute(4, GroundNor);
+    groundVerts.attribute(2, GroundUv);
 
     paz::VertexBuffer cubeVerts;
     cubeVerts.attribute(4, CubePos);
     cubeVerts.attribute(4, CubeNor);
+    cubeVerts.attribute(2, CubeUv);
 
     paz::ShaderFunctionLibrary lib;
     lib.vertex("scene", SceneVertSrc);
@@ -186,7 +200,18 @@ int main(int, char** argv)
 
     paz::RenderPass renderScene(render);
 
+    paz::Image<std::uint8_t, 1> img(32, 32);
+    for(std::size_t i = 0; i < 32; ++i)
+    {
+        for(std::size_t j = 0; j < 32; ++j)
+        {
+           img[32*i + j] = 255*((32*i + j + i%2)%2);
+        }
+    }
     const paz::Texture shadowMap = compute_shadow_map(groundVerts, cubeVerts);
+    const paz::Texture surface = paz::Texture(img, paz::MinMagFilter::Linear,
+        paz::MinMagFilter::Nearest, paz::WrapMode::Repeat, paz::WrapMode::
+        Repeat, paz::MipmapFilter::Linear);
 
     double time = 0.;
     while(!paz::Window::Done())
@@ -210,6 +235,7 @@ int main(int, char** argv)
         renderScene.begin({paz::LoadAction::Clear}, paz::LoadAction::Clear);
         renderScene.depth(paz::DepthTestMode::Less);
         renderScene.read("shadowMap", shadowMap);
+        renderScene.read("surface", surface);
         renderScene.uniform("view", view);
         renderScene.uniform("projection", projection);
         renderScene.uniform("lightView", lightView);

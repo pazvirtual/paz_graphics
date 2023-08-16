@@ -47,6 +47,11 @@ paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
 {
     initialize();
 
+    if(image.width()%4)
+    {
+        throw std::runtime_error("Image width must be a multiple of four.");
+    }
+
     _data = std::make_shared<Data>();
     _data->_width = image.width();
     _data->_height = image.height();
@@ -111,11 +116,6 @@ void paz::Texture::Data::ensureMipmaps()
     {
         glGenerateMipmap(GL_TEXTURE_2D);
     }
-}
-
-void paz::Texture::resize(int width, int height)
-{
-    _data->resize(width, height);
 }
 
 int paz::Texture::width() const

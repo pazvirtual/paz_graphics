@@ -116,7 +116,6 @@ namespace paz
             WrapMode::ClampToEdge, MipmapFilter mipFilter = MipmapFilter::None,
             bool normalized = true);
         // ...
-        void resize(int width, int height);
         int width() const;
         int height() const;
     };
