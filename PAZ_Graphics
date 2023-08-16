@@ -95,7 +95,6 @@ namespace paz
     public:
         ColorTarget(double scale, int numChannels, int numBits, DataType type,
             MinMagFilter minFilter, MinMagFilter magFilter);
-        void resize(int width, int height) override;
     };
 
     class DepthStencilTarget : public RenderTarget
@@ -106,7 +105,6 @@ namespace paz
     public:
         DepthStencilTarget(double scale, int numBits, DataType type,
             MinMagFilter minFilter, MinMagFilter magFilter);
-        void resize(int width, int height) override;
     };
 
     class VertexBuffer
