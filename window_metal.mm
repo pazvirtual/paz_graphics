@@ -37,7 +37,7 @@ static std::function<void(void)> Draw = [](){};
 
 static std::chrono::time_point<std::chrono::steady_clock> FrameStart = std::
     chrono::steady_clock::now();
-static double CurFrameTime = 1./60.;
+static double PrevFrameTime = 1./60.;
 
 static std::unordered_set<void*> RenderTargets;
 
@@ -67,6 +67,43 @@ paz::Initializer::Initializer()
     }
 }
 
+void paz::resize_targets()
+{
+    for(auto n : RenderTargets)
+    {
+        reinterpret_cast<Texture::Data*>(n)->resize(Window::ViewportWidth(),
+            Window::ViewportHeight());
+    }
+}
+
+void paz::draw_in_renderer()
+{
+    Draw();
+    [VIEW_CONTROLLER resetEvents];
+    const auto now = std::chrono::steady_clock::now();
+    PrevFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
+        FrameStart).count()*1e-6;
+    FrameStart = now;
+}
+
+void paz::register_target(void* target)
+{
+    if(RenderTargets.count(target))
+    {
+        throw std::logic_error("Render target has already been registered.");
+    }
+    RenderTargets.insert(target);
+}
+
+void paz::unregister_target(void* target)
+{
+    if(!RenderTargets.count(target))
+    {
+        throw std::logic_error("Render target was not registered.");
+    }
+    RenderTargets.erase(target);
+}
+
 void paz::Window::MakeFullscreen()
 {
     initialize();
@@ -92,7 +129,20 @@ void paz::Window::MakeWindowed()
     }
 }
 
-// ...
+void paz::Window::SetTitle(const std::string& title)
+{
+    initialize();
+
+    [[APP_DELEGATE window] setTitle:[NSString stringWithUTF8String:title.
+        c_str()]];
+}
+
+bool paz::Window::IsKeyWindow()
+{
+    initialize();
+
+    return [APP_DELEGATE isFocus];
+}
 
 bool paz::Window::IsFullscreen()
 {
@@ -215,13 +265,11 @@ float paz::Window::AspectRatio()
     return [RENDERER aspectRatio];
 }
 
-void paz::resize_targets()
+void paz::Window::Quit()
 {
-    for(auto n : RenderTargets)
-    {
-        reinterpret_cast<Texture::Data*>(n)->resize(Window::ViewportWidth(),
-            Window::ViewportHeight());
-    }
+    initialize();
+
+    [NSApp terminate:nil];
 }
 
 void paz::Window::Loop(const std::function<void(void)>& draw)
@@ -244,70 +292,58 @@ void paz::Window::Commit()
     throw std::logic_error("NOT IMPLEMENTED");
 }
 
-void paz::draw_in_renderer()
-{
-    Draw();
-    [VIEW_CONTROLLER resetEvents];
-    const auto now = std::chrono::steady_clock::now();
-    CurFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
-        FrameStart).count()*1e-6;
-    FrameStart = now;
-}
-
-void paz::Window::Quit()
-{
-    initialize();
-
-    [NSApp terminate:nil];
-}
-
 double paz::Window::FrameTime()
 {
-    return CurFrameTime;
+    return PrevFrameTime;
 }
 
 void paz::Window::SetMinSize(int width, int height)
 {
     initialize();
 
-    const auto size = NSMakeSize(width, height);
+    const NSSize size = NSMakeSize(width, height);
     [[APP_DELEGATE window] setMinSize:size];
     auto frame = [[APP_DELEGATE window] frame];
-    frame.size = size;
+    frame.size.width = std::max(size.width, frame.size.width);
+    frame.size.height = std::max(size.height, frame.size.height);
     [[APP_DELEGATE window] setFrame:frame display:YES];
 }
 
 void paz::Window::SetMaxSize(int width, int height)
 {
-    throw std::logic_error("NOT IMPLEMENTED");
+    initialize();
+
+    const NSSize size = NSMakeSize(width, height);
+    [[APP_DELEGATE window] setMaxSize:size];
+    auto frame = [[APP_DELEGATE window] frame];
+    frame.size.width = std::min(size.width, frame.size.width);
+    frame.size.height = std::min(size.height, frame.size.height);
+    [[APP_DELEGATE window] setFrame:frame display:YES];
 }
 
 void paz::Window::MakeResizable()
 {
-    throw std::logic_error("NOT IMPLEMENTED");
+    initialize();
+
+    [[APP_DELEGATE window] setStyleMask:[[APP_DELEGATE window] styleMask]|
+        NSWindowStyleMaskResizable];
 }
 
 void paz::Window::MakeNotResizable()
 {
-    throw std::logic_error("NOT IMPLEMENTED");
+    initialize();
+
+    [[APP_DELEGATE window] setStyleMask:[[APP_DELEGATE window] styleMask]&
+        ~NSWindowStyleMaskResizable];
 }
 
-void paz::register_target(void* target)
+void paz::Window::Resize(int width, int height)
 {
-    if(RenderTargets.count(target))
-    {
-        throw std::logic_error("Render target has already been registered.");
-    }
-    RenderTargets.insert(target);
-}
+    initialize();
 
-void paz::unregister_target(void* target)
-{
-    if(!RenderTargets.count(target))
-    {
-        throw std::logic_error("Render target was not registered.");
-    }
-    RenderTargets.erase(target);
+    auto frame = [[APP_DELEGATE window] frame];
+    frame.size = NSMakeSize(width, height);
+    [[APP_DELEGATE window] setFrame:frame display:YES];
 }
 
 paz::Image<float, 3> paz::Window::PrintScreen()
