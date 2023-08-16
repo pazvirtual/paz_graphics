@@ -5,6 +5,8 @@
 #include <map>
 #include <regex>
 
+static const std::vector<std::string> unsupportedBuiltins = {"gl_FragCoord"};
+
 std::string paz::frag2hlsl(const std::string& src, std::vector<std::tuple<std::
     string, DataType, int, int>>& uniforms)
 {
@@ -358,6 +360,14 @@ float4 uintBitsToFloat(in uint4 v)
         if(std::regex_match(line, std::regex(".*\\binverse\\b.*")))
         {
             throw std::runtime_error("Matrix inverse is not supported.");
+        }
+        for(const auto& n : unsupportedBuiltins)
+        {
+            if(std::regex_match(line, std::regex(".*\\b" + n + "\\b.*")))
+            {
+                throw std::runtime_error("Line " + std::to_string(l) + ": Shade"
+                    "r input \"" + n + "\" is not currently supported.");
+            }
         }
 
         // Keep macro conditionals.
