@@ -1,9 +1,19 @@
 pipelines:
-  custom:
-    temp:
-        - step:
-            name: Temp
-            image: gcc:10.2
-            script:
-#              - make && cd examples && ./main
-              - pwd && ls
+    custom:
+        build:
+            - step:
+                name: Build
+                image: gcc:10.2
+                script:
+                    - make
+                    - cd examples
+                    - ./main
+                artifacts:
+                    - examples/main
+        run:
+            - step:
+                name: Run
+                image: atlassian/default-image:2
+                script:
+                    - cd examples
+                    - ./main
