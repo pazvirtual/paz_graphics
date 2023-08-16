@@ -423,22 +423,11 @@ namespace paz
             Keypad6, Keypad7, Keypad8, Keypad9, KeypadDecimal, KeypadDivide,
             KeypadMultiply, KeypadMinus, KeypadPlus, KeypadEnter, KeypadEqual,
             LeftShift, LeftControl, LeftAlt, LeftSuper, RightShift,
-            RightControl, RightAlt, RightSuper,
-#ifdef PAZ_MACOS
-            KeypadClear, Function, VolumeUp, VolumeDown, Mute, Section, Yen,
-            Underscore, KeypadComma, Eisu, Kana,
-#else
-            World1, World2, ScrollLock, NumLock, PrintScreen, Pause, Menu,
-#endif
-            Unknown
+            RightControl, RightAlt, RightSuper, Unknown
         };
 
         static constexpr int NumKeys = static_cast<int>(Key::Unknown);
-#ifdef PAZ_MACOS
-        static constexpr int NumMouseButtons = 3;
-#else
         static constexpr int NumMouseButtons = 8;
-#endif
 
     private:
         static std::function<void(void)> _draw;

@@ -117,16 +117,28 @@
      _mouseReleased[1] = true;
 }
 
-- (void)otherMouseDown:(NSEvent*)__unused event
+- (void)otherMouseDown:(NSEvent*)event
 {
-     _mouseDown[2] = true;
-     _mousePressed[2] = true;
+    for(int i = 2; i < paz::Window::NumMouseButtons; ++i)
+    {
+        if(!_mouseDown[i] && [event pressedMouseButtons] << i)
+        {
+             _mouseDown[i] = true;
+             _mousePressed[i] = true;
+        }
+    }
 }
 
-- (void)otherMouseUp:(NSEvent*)__unused event
+- (void)otherMouseUp:(NSEvent*)event
 {
-     _mouseDown[2] = false;
-     _mouseReleased[2] = true;
+    for(int i = 2; i < paz::Window::NumMouseButtons; ++i)
+    {
+        if(_mouseDown[i] && !([event pressedMouseButtons] << i))
+        {
+             _mouseDown[i] = false;
+             _mouseReleased[i] = true;
+        }
+    }
 }
 
 - (void)keyDown:(NSEvent*)event
