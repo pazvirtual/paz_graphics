@@ -122,7 +122,7 @@ paz::Key paz::convert_keycode(int key) noexcept
     return Key::Unknown;
 }
 
-#else
+#elif defined(PAZ_LINUX)
 
 #include "gl_core_4_1.h"
 #include <GLFW/glfw3.h>
@@ -274,6 +274,18 @@ paz::GamepadButton paz::convert_button(int button) noexcept
     }
 
     return GamepadButton::Unknown;
+}
+
+#else
+
+paz::Key paz::convert_keycode(int key) noexcept
+{
+    throw std::logic_error("CONVERT_KEYCODE");
+}
+
+paz::GamepadButton paz::convert_button(int button) noexcept
+{
+    throw std::logic_error("CONVERT_BUTTON");
 }
 
 #endif

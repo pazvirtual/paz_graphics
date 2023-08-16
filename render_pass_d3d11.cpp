@@ -60,7 +60,7 @@ void paz::RenderPass::Data::mapUniforms()
         if(hr)
         {
             throw std::runtime_error("Failed to map vertex function constant bu"
-                "ffer (HRESULT " + std::to_string(hr) + ").");
+                "ffer (" + format_hresult(hr) + ").");
         }
         std::copy(_vertUniformData.begin(), _vertUniformData.end(),
             reinterpret_cast<unsigned char*>(mappedSr.pData));
@@ -75,7 +75,7 @@ void paz::RenderPass::Data::mapUniforms()
         if(hr)
         {
             throw std::runtime_error("Failed to map fragment function constant "
-                "buffer (HRESULT " + std::to_string(hr) + ").");
+                "buffer (" + format_hresult(hr) + ").");
         }
         std::copy(_fragUniformData.begin(), _fragUniformData.end(),
             reinterpret_cast<unsigned char*>(mappedSr.pData));
@@ -149,8 +149,8 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
         _blendState);
     if(hr)
     {
-        throw std::runtime_error("Failed to create blend state (HRESULT " +
-            std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to create blend state (" +
+            format_hresult(hr) + ").");
     }
 
     // Check vertex and fragment function I/O compatibility. (Linking?)
@@ -163,8 +163,8 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
         reinterpret_cast<void**>(&reflection));
     if(hr)
     {
-        throw std::runtime_error("Failed to get fragment function reflection (H"
-            "RESULT " + std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to get fragment function reflection ("
+            + format_hresult(hr) + ").");
     }
     D3D11_SHADER_INPUT_BIND_DESC inputDescriptor;
     int i = 0;
@@ -195,7 +195,7 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
         if(hr)
         {
             throw std::runtime_error("Failed to create constant buffer for vert"
-                "ex function (HRESULT " + std::to_string(hr) + ").");
+                "ex function (" + format_hresult(hr) + ").");
         }
     }
     if(!_data->_frag->_uniforms.empty())
@@ -211,7 +211,7 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
         if(hr)
         {
             throw std::runtime_error("Failed to create constant buffer for frag"
-                "ment function (HRESULT " + std::to_string(hr) + ").");
+                "ment function (" + format_hresult(hr) + ").");
         }
     }
 }
@@ -247,8 +247,8 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         &state);
     if(hr)
     {
-        throw std::runtime_error("Failed to create rasterizer state (HRESULT " +
-            std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to create rasterizer state (" +
+            format_hresult(hr) + ").");
     }
     d3d_context()->RSSetState(state);
     state->Release();
@@ -259,8 +259,8 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         &depthStencilState);
     if(hr)
     {
-        throw std::runtime_error("Failed to create depth/stencil state (HRESULT"
-            " " + std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to create depth/stencil state (" +
+            format_hresult(hr) + ").");
     }
     d3d_context()->OMSetDepthStencilState(depthStencilState, 1);
     depthStencilState->Release();
@@ -382,8 +382,8 @@ void paz::RenderPass::depth(DepthTestMode mode)
         &depthStencilDescriptor, &depthStencilState);
     if(hr)
     {
-        throw std::runtime_error("Failed to create depth/stencil state (HRESULT"
-            " " + std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to create depth/stencil state (" +
+            format_hresult(hr) + ").");
     }
     d3d_context()->OMSetDepthStencilState(depthStencilState, 1);
     depthStencilState->Release();
@@ -415,8 +415,8 @@ void paz::RenderPass::cull(CullMode mode)
             &state);
         if(hr)
         {
-            throw std::runtime_error("Failed to create rasterizer state (HRESUL"
-                "T " + std::to_string(hr) + ").");
+            throw std::runtime_error("Failed to create rasterizer state (" +
+                format_hresult(hr) + ").");
         }
         d3d_context()->RSSetState(state);
         state->Release();
@@ -605,8 +605,8 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
         _bytecode->GetBufferSize(), &layout);
     if(hr)
     {
-        throw std::runtime_error("Failed to create input layout (HRESULT " +
-            std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to create input layout (" +
+            format_hresult(hr) + ").");
     }
     d3d_context()->IASetInputLayout(layout);
     layout->Release();
@@ -637,8 +637,8 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
         _bytecode->GetBufferSize(), &layout);
     if(hr)
     {
-        throw std::runtime_error("Failed to create input layout (HRESULT " +
-            std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to create input layout (" +
+            format_hresult(hr) + ").");
     }
     d3d_context()->IASetInputLayout(layout);
     layout->Release();
@@ -677,8 +677,8 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
         GetBufferPointer(), _data->_vert->_bytecode->GetBufferSize(), &layout);
     if(hr)
     {
-        throw std::runtime_error("Failed to create input layout (HRESULT " +
-            std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to create input layout (" +
+            format_hresult(hr) + ").");
     }
     d3d_context()->IASetInputLayout(layout);
     layout->Release();
@@ -721,8 +721,8 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
         GetBufferPointer(), _data->_vert->_bytecode->GetBufferSize(), &layout);
     if(hr)
     {
-        throw std::runtime_error("Failed to create input layout (HRESULT " +
-            std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to create input layout (" +
+            format_hresult(hr) + ").");
     }
     d3d_context()->IASetInputLayout(layout);
     layout->Release();
