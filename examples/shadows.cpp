@@ -106,8 +106,8 @@ int main(int, char** argv)
     paz::VertexBuffer cubeVerts;
     cubeVerts.attribute(4, CubePos);
 
-    paz::DepthStencilTarget shadowMap(/*Res, Res,*/1., 32, paz::Texture::DataType::
-        Float, paz::Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::
+    paz::RenderTarget shadowMap(/*Res, Res,*/1., paz::Texture::Format::Depth32Float,
+        paz::Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::
         Linear);
 
     paz::Framebuffer framebuffer;
@@ -159,6 +159,7 @@ int main(int, char** argv)
         calcShadows.uniform("lightProjection", lightProjection);
         calcShadows.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
             groundVerts);
+        renderScene.cull(paz::RenderPass::CullMode::Front);
         calcShadows.primitives(paz::RenderPass::PrimitiveType::Triangles,
             cubeVerts);
         calcShadows.end();

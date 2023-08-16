@@ -3,10 +3,8 @@
 
 namespace paz
 {
-    void register_target(ColorTarget* target);
-    void register_target(DepthStencilTarget* target);
-    void unregister_target(ColorTarget* target);
-    void unregister_target(DepthStencilTarget* target);
+    void register_target(RenderTarget* target);
+    void unregister_target(RenderTarget* target);
 #ifdef PAZ_MACOS
     void draw_in_renderer();
 #endif

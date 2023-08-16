@@ -9,17 +9,17 @@ struct paz::Texture::Data
 #ifdef PAZ_MACOS
     void* _sampler = nullptr;
     void* _texture = nullptr;
-    int _numChannels;
-    int _numBits;
-    DataType _type;
+    Format _format;
     MinMagFilter _minFilter;
     MinMagFilter _magFilter;
+    bool _isRenderTarget = false;
 #else
     unsigned int _id = 0;
     int _internalFormat;
     unsigned int _format;
     unsigned int _type;
 #endif
+    double _scale = 1.;
 };
 
 struct paz::VertexBuffer::Data
@@ -46,7 +46,7 @@ struct paz::Framebuffer::Data
 {
 #ifdef PAZ_MACOS
         std::vector<const RenderTarget*> _colorAttachments;
-        const DepthStencilTarget* _depthAttachment = nullptr;
+        const RenderTarget* _depthAttachment = nullptr;
 #else
         unsigned int _id = 0;
         int _numTextures = 0;

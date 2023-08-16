@@ -23,7 +23,7 @@ int main(int, char** argv)
 
     paz::Window::SetMinSize(640, 480);
 
-    paz::ColorTarget render(1., 4, 16, paz::Texture::DataType::Float, paz::
+    paz::RenderTarget render(1., paz::Texture::Format::RGBA16Float, paz::
         Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
     paz::Framebuffer renderFramebuffer;
     renderFramebuffer.attach(render);

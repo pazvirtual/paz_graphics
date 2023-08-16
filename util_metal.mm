@@ -9,6 +9,9 @@
 #define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
     [NSApp delegate]) window] contentViewController]) mtkView] device]
 
+#define CASE(a, b) case Texture::Format::a: return MTLPixelFormat##b;
+#define CASE1(f, n, b) case Texture::Format::f: return n*b/8;
+
 static MTLSamplerMinMagFilter min_mag_filter(paz::Texture::MinMagFilter f)
 {
     switch(f)
@@ -22,198 +25,101 @@ static MTLSamplerMinMagFilter min_mag_filter(paz::Texture::MinMagFilter f)
     throw std::logic_error("Invalid texture filter requested.");
 }
 
-MTLPixelFormat paz::pixel_format(unsigned int c, unsigned int b, Texture::
-    DataType t)
+MTLPixelFormat paz::pixel_format(Texture::Format format)
 {
-    if(c != 1 && c != 2 && c != 4)
+    switch(format)
     {
-        throw std::runtime_error("Texture must have 1, 2, or 4 channels.");
-    }
-    if(b != 8 && b != 16 && b != 32)
-    {
-        throw std::runtime_error("Texture must have 8, 16, or 32 bits per chann"
-            "el.");
+        CASE(R8UInt, R8Uint)
+        CASE(R8SInt, R8Sint)
+        CASE(R8UNorm, R8Unorm)
+        CASE(R8SNorm, R8Snorm)
+        CASE(R16UInt, R16Uint)
+        CASE(R16SInt, R16Sint)
+        CASE(R16UNorm, R16Unorm)
+        CASE(R16SNorm, R16Snorm)
+        CASE(R16Float, R16Float)
+        CASE(R32UInt, R32Uint)
+        CASE(R32SInt, R32Sint)
+        CASE(R32Float, R32Float)
+
+        CASE(RG8UInt, RG8Uint)
+        CASE(RG8SInt, RG8Sint)
+        CASE(RG8UNorm, RG8Unorm)
+        CASE(RG8SNorm, RG8Snorm)
+        CASE(RG16UInt, RG16Uint)
+        CASE(RG16SInt, RG16Sint)
+        CASE(RG16UNorm, RG16Unorm)
+        CASE(RG16SNorm, RG16Snorm)
+        CASE(RG16Float, RG16Float)
+        CASE(RG32UInt, RG32Uint)
+        CASE(RG32SInt, RG32Sint)
+        CASE(RG32Float, RG32Float)
+
+        CASE(RGBA8UInt, RGBA8Uint)
+        CASE(RGBA8SInt, RGBA8Sint)
+        CASE(RGBA8UNorm, RGBA8Unorm)
+        CASE(RGBA8SNorm, RGBA8Snorm)
+        CASE(RGBA16UInt, RGBA16Uint)
+        CASE(RGBA16SInt, RGBA16Sint)
+        CASE(RGBA16UNorm, RGBA16Unorm)
+        CASE(RGBA16SNorm, RGBA16Snorm)
+        CASE(RGBA16Float, RGBA16Float)
+        CASE(RGBA32UInt, RGBA32Uint)
+        CASE(RGBA32SInt, RGBA32Sint)
+        CASE(RGBA32Float, RGBA32Float)
+
+        CASE(Depth16UNorm, Depth16Unorm)
+        CASE(Depth32Float, Depth32Float)
     }
 
-    if(c == 1)
+    throw std::runtime_error("Invalid texture format requested.");
+}
+
+int paz::bytes_per_pixel(Texture::Format format)
+{
+    switch(format)
     {
-        if(b == 8)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return MTLPixelFormatR8Uint;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return MTLPixelFormatR8Sint;
-            }
-            else if(t == Texture::DataType::UNorm)
-            {
-                return MTLPixelFormatR8Unorm;
-            }
-            else if(t == Texture::DataType::SNorm)
-            {
-                return MTLPixelFormatR8Snorm;
-            }
-        }
-        else if(b == 16)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return MTLPixelFormatR16Uint;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return MTLPixelFormatR16Sint;
-            }
-            else if(t == Texture::DataType::UNorm)
-            {
-                return MTLPixelFormatR16Unorm;
-            }
-            else if(t == Texture::DataType::SNorm)
-            {
-                return MTLPixelFormatR16Snorm;
-            }
-            else if(t == Texture::DataType::Float)
-            {
-                return MTLPixelFormatR16Float;
-            }
-        }
-        else if(b == 32)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return MTLPixelFormatR32Uint;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return MTLPixelFormatR32Sint;
-            }
-            else if(t == Texture::DataType::Float)
-            {
-                return MTLPixelFormatR32Float;
-            }
-        }
-    }
-    else if(c == 2)
-    {
-        if(b == 8)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return MTLPixelFormatRG8Uint;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return MTLPixelFormatRG8Sint;
-            }
-            else if(t == Texture::DataType::UNorm)
-            {
-                return MTLPixelFormatRG8Unorm;
-            }
-            else if(t == Texture::DataType::SNorm)
-            {
-                return MTLPixelFormatRG8Snorm;
-            }
-        }
-        else if(b == 16)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return MTLPixelFormatRG16Uint;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return MTLPixelFormatRG16Sint;
-            }
-            else if(t == Texture::DataType::UNorm)
-            {
-                return MTLPixelFormatRG16Unorm;
-            }
-            else if(t == Texture::DataType::SNorm)
-            {
-                return MTLPixelFormatRG16Snorm;
-            }
-            else if(t == Texture::DataType::Float)
-            {
-                return MTLPixelFormatRG16Float;
-            }
-        }
-        else if(b == 32)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return MTLPixelFormatRG32Uint;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return MTLPixelFormatRG32Sint;
-            }
-            else if(t == Texture::DataType::Float)
-            {
-                return MTLPixelFormatRG32Float;
-            }
-        }
-    }
-    else if(c == 4)
-    {
-        if(b == 8)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return MTLPixelFormatRGBA8Uint;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return MTLPixelFormatRGBA8Sint;
-            }
-            else if(t == Texture::DataType::UNorm)
-            {
-                return MTLPixelFormatRGBA8Unorm;
-            }
-            else if(t == Texture::DataType::SNorm)
-            {
-                return MTLPixelFormatRGBA8Snorm;
-            }
-        }
-        else if(b == 16)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return MTLPixelFormatRGBA16Uint;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return MTLPixelFormatRGBA16Sint;
-            }
-            else if(t == Texture::DataType::UNorm)
-            {
-                return MTLPixelFormatRGBA16Unorm;
-            }
-            else if(t == Texture::DataType::SNorm)
-            {
-                return MTLPixelFormatRGBA16Snorm;
-            }
-            else if(t == Texture::DataType::Float)
-            {
-                return MTLPixelFormatRGBA16Float;
-            }
-        }
-        else if(b == 32)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return MTLPixelFormatRGBA32Uint;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return MTLPixelFormatRGBA32Sint;
-            }
-            else if(t == Texture::DataType::Float)
-            {
-                return MTLPixelFormatRGBA32Float;
-            }
-        }
+        CASE1(R8UInt, 1, 8)
+        CASE1(R8SInt, 1, 8)
+        CASE1(R8UNorm, 1, 8)
+        CASE1(R8SNorm, 1, 8)
+        CASE1(R16UInt, 1, 16)
+        CASE1(R16SInt, 1, 16)
+        CASE1(R16UNorm, 1, 16)
+        CASE1(R16SNorm, 1, 16)
+        CASE1(R16Float, 1, 16)
+        CASE1(R32UInt, 1, 32)
+        CASE1(R32SInt, 1, 32)
+        CASE1(R32Float, 1, 32)
+
+        CASE1(RG8UInt, 2, 8)
+        CASE1(RG8SInt, 2, 8)
+        CASE1(RG8UNorm, 2, 8)
+        CASE1(RG8SNorm, 2, 8)
+        CASE1(RG16UInt, 2, 16)
+        CASE1(RG16SInt, 2, 16)
+        CASE1(RG16UNorm, 2, 16)
+        CASE1(RG16SNorm, 2, 16)
+        CASE1(RG16Float, 2, 16)
+        CASE1(RG32UInt, 2, 32)
+        CASE1(RG32SInt, 2, 32)
+        CASE1(RG32Float, 2, 32)
+
+        CASE1(RGBA8UInt, 4, 8)
+        CASE1(RGBA8SInt, 4, 8)
+        CASE1(RGBA8UNorm, 4, 8)
+        CASE1(RGBA8SNorm, 4, 8)
+        CASE1(RGBA16UInt, 4, 16)
+        CASE1(RGBA16SInt, 4, 16)
+        CASE1(RGBA16UNorm, 4, 16)
+        CASE1(RGBA16SNorm, 4, 16)
+        CASE1(RGBA16Float, 4, 16)
+        CASE1(RGBA32UInt, 4, 32)
+        CASE1(RGBA32SInt, 4, 32)
+        CASE1(RGBA32Float, 4, 32)
+
+        CASE1(Depth16UNorm, 1, 16)
+        CASE1(Depth32Float, 1, 32)
     }
 
     throw std::runtime_error("Invalid texture format requested.");
