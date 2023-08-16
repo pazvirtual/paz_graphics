@@ -11,6 +11,7 @@ namespace paz
     void unregister_target(void* t);
     void resize_targets();
     Framebuffer final_framebuffer();
+    unsigned char to_srgb(double x);
 #ifndef PAZ_MACOS
     void begin_frame();
 #endif

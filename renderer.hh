@@ -10,11 +10,11 @@
 @property(readonly) CGSize viewportSize;
 @property(readonly) CGSize size;
 @property(readonly, nonnull) id<MTLCommandBuffer> commandBuffer;
+@property float gamma;
 - (nonnull instancetype)initWithMetalKitView:(nonnull MTKView*)view;
 - (nullable MTLRenderPassDescriptor*)currentRenderPassDescriptor;
 - (void)ensureCommandBuffer;
 - (void)blitToScreen:(nonnull id<MTLTexture>)tex;
-- (void)setGamma:(float)gamma;
 @end
 
 #endif

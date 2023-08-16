@@ -24,9 +24,12 @@ vertex Data vert(uint idx [[vertex_id]], constant float2* pos [[buffer(0)]])
     out.uv.y = 0.5 - 0.5*pos[idx].y;
     return out;
 }
-fragment float4 frag(Data in [[stage_in]], texture2d<float> tex [[texture(0)]])
+fragment float4 frag(Data in [[stage_in]], texture2d<float> tex [[texture(0)]],
+    constant float& gamma [[buffer(0)]])
 {
-    return tex.sample(texSampler, in.uv);
+    float4 col = tex.sample(texSampler, in.uv);
+    col.rgb = pow(col.rgb, float3(1./gamma));
+    return col;
 }
 )===";
 
@@ -55,8 +58,9 @@ static constexpr std::array<float, 16> QuadPos =
         _device = view.device;
         _commandQueue = [_device newCommandQueue];
         _view = view;
+        _gamma = 2.2;
 
-        // Set up a render pipeline for scaling the final render.
+        // Set up a render pipeline for final gamma/scaling pass.
         NSError* error = nil;
         _quadLib = [_device newLibraryWithSource:[NSString stringWithUTF8String:
             QuadSrc] options:nil error:&error];
@@ -160,36 +164,21 @@ static constexpr std::array<float, 16> QuadPos =
 - (void)blitToScreen:(id<MTLTexture>)tex
 {
     [self ensureCommandBuffer];
-    if(paz::Window::DpiScale() == [[NSScreen mainScreen] backingScaleFactor])
+    MTLRenderPassDescriptor* descriptor = [_view currentRenderPassDescriptor];
+    if(!descriptor)
     {
-        id<MTLBlitCommandEncoder> blitEncoder = [_commandBuffer
-            blitCommandEncoder];
-        [blitEncoder copyFromTexture:tex sourceSlice:0 sourceLevel:0
-            sourceOrigin:MTLOriginMake(0, 0, 0) sourceSize:MTLSizeMake([tex
-            width], [tex height], 1) toTexture:[[_view currentDrawable] texture]
-            destinationSlice:0 destinationLevel:0 destinationOrigin:
-            MTLOriginMake(0, 0, 0)];
-        [blitEncoder synchronizeTexture:tex slice:0 level:0];
-        [blitEncoder endEncoding];
+        throw std::runtime_error("Failed to grab current render pass descriptor"
+            ".");
     }
-    else
-    {
-        MTLRenderPassDescriptor* descriptor = [_view
-            currentRenderPassDescriptor];
-        if(!descriptor)
-        {
-            throw std::runtime_error("Failed to grab current render pass descri"
-                "ptor.");
-        }
-        id<MTLRenderCommandEncoder> renderEncoder = [_commandBuffer
-            renderCommandEncoderWithDescriptor:descriptor];
-        [renderEncoder setRenderPipelineState:_pipelineState];
-        [renderEncoder setFragmentTexture:tex atIndex:0];
-        [renderEncoder setVertexBuffer:_quadPos offset:0 atIndex:0];
-        [renderEncoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:
-            0 vertexCount:4];
-        [renderEncoder endEncoding];
-    }
+    id<MTLRenderCommandEncoder> renderEncoder = [_commandBuffer
+        renderCommandEncoderWithDescriptor:descriptor];
+    [renderEncoder setRenderPipelineState:_pipelineState];
+    [renderEncoder setFragmentTexture:tex atIndex:0];
+    [renderEncoder setFragmentBytes:&_gamma length:sizeof(float) atIndex:0];
+    [renderEncoder setVertexBuffer:_quadPos offset:0 atIndex:0];
+    [renderEncoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0
+        vertexCount:4];
+    [renderEncoder endEncoding];
 }
 @end
 
