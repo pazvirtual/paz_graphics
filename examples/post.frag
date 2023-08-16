@@ -1,5 +1,3 @@
-const float WhitePoint = 1.;
-
 uniform sampler2D source;
 uniform float factor;
 uniform float aspectRatio;
