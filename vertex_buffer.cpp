@@ -5,12 +5,12 @@
 #include "PAZ_Graphics"
 #include "util.hpp"
 #include "internal_data.hpp"
-#include "vertex_buffer.hpp"
 #include "window.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
 #include <GLFW/glfw3.h>
+#include <numeric>
 
 paz::VertexBuffer::Data::~Data()
 {
@@ -33,10 +33,53 @@ paz::VertexBuffer::VertexBuffer()
     _data = std::make_shared<Data>();
 }
 
+void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)
+{
+    if(dim != 1 && dim != 2 && dim != 4)
+    {
+        throw std::runtime_error("Vertex attribute dimensions must be 1, 2, or "
+            "4.");
+    }
+    const std::size_t m = size/dim;
+    if(!_numVertices)
+    {
+        _numVertices = m;
+        {
+            std::vector<unsigned int> idx(_numVertices + 2);
+            std::iota(idx.begin(), idx.end(), -1);
+            idx[0] = 0;
+            idx.back() = _numVertices - 1;
+            _lineStripIndices = IndexBuffer(idx);
+        }
+        {
+            std::vector<unsigned int> idx(_numVertices + 3);
+            std::iota(idx.begin(), idx.end(), -1);
+            idx[0] = _numVertices - 1;
+            idx[idx.size() - 2] = 0;
+            idx.back() = 1;
+            _lineLoopIndices = IndexBuffer(idx);
+        }
+        {
+            std::vector<unsigned int> idx(2*_numVertices);
+            for(unsigned int i = 0; i < _numVertices; ++i)
+            {
+                idx[2*i] = i;
+                idx[2*i + 1] = i;
+                _thickLinesIndices = IndexBuffer(idx);
+            }
+        }
+    }
+    else if(m != _numVertices)
+    {
+        throw std::runtime_error("Number of vertices for each attribute must ma"
+            "tch.");
+    }
+}
+
 void paz::VertexBuffer::attribute(int dim, const GLfloat* data, std::size_t
     size)
 {
-    check_size(dim, _data->_numVertices, size);
+    _data->checkSize(dim, size);
 
     const std::size_t i = _data->_ids.size();
 
@@ -59,7 +102,7 @@ void paz::VertexBuffer::attribute(int dim, const GLfloat* data, std::size_t
 
 void paz::VertexBuffer::attribute(int dim, const GLuint* data, std::size_t size)
 {
-    check_size(dim, _data->_numVertices, size);
+    _data->checkSize(dim, size);
 
     const std::size_t i = _data->_ids.size();
 
@@ -82,7 +125,7 @@ void paz::VertexBuffer::attribute(int dim, const GLuint* data, std::size_t size)
 
 void paz::VertexBuffer::attribute(int dim, const GLint* data, std::size_t size)
 {
-    check_size(dim, _data->_numVertices, size);
+    _data->checkSize(dim, size);
 
     const std::size_t i = _data->_ids.size();
 
