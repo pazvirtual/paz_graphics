@@ -1,0 +1,11 @@
+image: gcc:10.2
+
+pipelines:
+  default:
+    - parallel:
+        - step:
+            name: Build Lib Build Main Run Main
+            script:
+              - make
+              - cd examples
+              - ./main
