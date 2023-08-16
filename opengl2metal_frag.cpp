@@ -57,6 +57,31 @@ std::string paz::frag2metal(const std::string& src)
         " float2(uv.x, 1. - uv.y), level(lod)), 0," << std::endl << "        0,"
         " 1);" << std::endl << "}" << std::endl;
 
+    // Define `textureQueryLod()`. Note that this is not the right formula for
+    // lines and that Metal does not support mipmaps for 1D textures.
+    out << "template<typename T>" << std::endl << "float2 textureQueryLod(threa"
+        "d const texture1d<T>& /* tex */, thread const" << std::endl << "    fl"
+        "oat2& /* uv */)" << std::endl << "{" << std::endl << "    return float"
+        "2(0);" << std::endl << "}" << std::endl << "template<typename T>" <<
+        std::endl << "float2 textureQueryLod(thread const texture2d<T>& tex, th"
+        "read const float2& uv)" << std::endl << "{" << std::endl << "    const"
+        " float2 size(tex.get_width(), tex.get_height());" << std::endl << "   "
+        " const float2 duvdx = dfdx(uv);" << std::endl << "    const float2 duv"
+        "dy = dfdy(uv);" << std::endl << "    const float rho = max(length(size"
+        "*duvdx), length(size*duvdy));" << std::endl << "    const float lambda"
+        "Prime = log2(rho);" << std::endl << "    return float2(clamp(lambdaPri"
+        "me, 0., float(tex.get_num_mip_levels()))," << std::endl << "        la"
+        "mbdaPrime);" << std::endl << "}" << std::endl << "template<typename T>"
+        << std::endl << "float2 textureQueryLod(thread const depth2d<T>& tex, t"
+        "hread const float2& uv)" << std::endl << "{" << std::endl << "    cons"
+        "t float2 size(tex.get_width(), tex.get_height());" << std::endl << "  "
+        "  const float2 duvdx = dfdx(uv);" << std::endl << "    const float2 du"
+        "vdy = dfdy(uv);" << std::endl << "    const float rho = max(length(siz"
+        "e*duvdx), length(size*duvdy));" << std::endl << "    const float lambd"
+        "aPrime = log2(rho);" << std::endl << "    return float2(clamp(lambdaPr"
+        "ime, 0., float(tex.get_num_mip_levels()))," << std::endl << "        l"
+        "ambdaPrime);" << std::endl << "}" << std::endl;
+
     std::string line;
     std::size_t l = 0;
     while(std::getline(in, line))

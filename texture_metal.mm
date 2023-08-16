@@ -10,6 +10,9 @@
 #include "window.hpp"
 #import <MetalKit/MetalKit.h>
 
+#define RENDERER static_cast<Renderer*>([static_cast<ViewController*>( \
+    [[static_cast<AppDelegate*>([NSApp delegate]) window] \
+    contentViewController]) renderer])
 #define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
     [NSApp delegate]) window] contentViewController]) mtkView] device]
 
@@ -133,7 +136,11 @@ void paz::Texture::Data::ensureMipmaps()
 {
     if(_mipFilter != MipmapFilter::None)
     {
-        throw std::logic_error("NOT IMPLEMENTED");
+        id<MTLBlitCommandEncoder> blitEncoder = [[RENDERER commandBuffer]
+            blitCommandEncoder];
+        [blitEncoder generateMipmapsForTexture:static_cast<id<MTLTexture>>(
+            _texture)];
+        [blitEncoder endEncoding];
     }
 }
 
