@@ -46,8 +46,6 @@ struct paz::VertexBuffer::Data
 {
 #ifdef PAZ_MACOS
     std::vector<void*> _buffers;
-    void* _lineLoopIndices = nullptr;
-    void* _triangleFanIndices = nullptr;
     std::vector<int> _dims;
 #elif defined(PAZ_LINUX)
     unsigned int _id = 0;
@@ -87,8 +85,6 @@ struct paz::IndexBuffer::Data
 {
 #ifdef PAZ_MACOS
     void* _data = nullptr;
-    void* _lineLoopIndices = nullptr;
-    void* _triangleFanIndices = nullptr;
 #elif defined(PAZ_LINUX)
     unsigned int _id = 0;
 #endif
