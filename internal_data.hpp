@@ -70,10 +70,10 @@ struct paz::Framebuffer::Data
 struct paz::VertexFunction::Data
 {
 #ifdef PAZ_MACOS
-    void* _function;
+    void* _function = nullptr;
 #else
-    unsigned int _id;
-    unsigned int _thickLinesId;
+    unsigned int _id = 0;
+    unsigned int _thickLinesId = 0;
 #endif
     ~Data();
 };
@@ -83,7 +83,7 @@ struct paz::FragmentFunction::Data
 #ifdef PAZ_MACOS
     void* _function;
 #else
-    unsigned int _id;
+    unsigned int _id = 0;
 #endif
     ~Data();
 };
@@ -91,8 +91,8 @@ struct paz::FragmentFunction::Data
 struct paz::Shader::Data
 {
 #ifdef PAZ_MACOS
-    void* _vert = nullptr;
-    void* _frag = nullptr;
+    paz::VertexFunction _vert;
+    paz::FragmentFunction _frag;
 #else
     unsigned int _id = 0;
     // uniformIDs[name] = (id, type, size)
@@ -101,8 +101,8 @@ struct paz::Shader::Data
     // attribTypes[location] = type (array attributes are not supported)
     std::unordered_map<unsigned int, unsigned int> _attribTypes;
     bool _thickLines = false;
-#endif
     ~Data();
+#endif
 };
 
 struct paz::RenderPass::Data

@@ -2,12 +2,12 @@
 
 namespace paz
 {
-    void register_target(void* data);
-    void unregister_target(void* data);
+    void register_target(void* t);
+    void unregister_target(void* t);
     void resize_targets();
     struct Initializer
     {
-        std::unordered_set<void*> renderTargets;
+        std::unordered_set<void*> _renderTargets;
         Initializer();
         ~Initializer();
     };

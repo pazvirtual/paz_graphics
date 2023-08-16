@@ -363,7 +363,7 @@ float paz::Window::AspectRatio()
 
 void paz::resize_targets()
 {
-    for(auto n : initialize().renderTargets)
+    for(auto n : initialize()._renderTargets)
     {
         reinterpret_cast<Texture::Data*>(n)->resize(Window::ViewportWidth(),
             Window::ViewportHeight());
@@ -486,22 +486,22 @@ void paz::Window::Resize(int width, int height, bool viewportCoords)
     }
 }
 
-void paz::register_target(void* target)
+void paz::register_target(void* t)
 {
-    if(initialize().renderTargets.count(target))
+    if(initialize()._renderTargets.count(t))
     {
         throw std::logic_error("Render target has already been registered.");
     }
-    initialize().renderTargets.insert(target);
+    initialize()._renderTargets.insert(t);
 }
 
-void paz::unregister_target(void* target)
+void paz::unregister_target(void* t)
 {
-    if(!initialize().renderTargets.count(target))
+    if(!initialize()._renderTargets.count(t))
     {
         throw std::logic_error("Render target was not registered.");
     }
-    initialize().renderTargets.erase(target);
+    initialize()._renderTargets.erase(t);
 }
 
 paz::Image<std::uint8_t, 3> paz::Window::PrintScreen()

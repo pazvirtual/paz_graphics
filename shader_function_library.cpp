@@ -186,9 +186,19 @@ paz::FragmentFunction::Data::~Data()
     }
 }
 
-paz::VertexFunction::VertexFunction() {}
+paz::VertexFunction::VertexFunction()
+{
+    initialize();
 
-paz::FragmentFunction::FragmentFunction() {}
+    _data = std::make_shared<Data>();
+}
+
+paz::FragmentFunction::FragmentFunction()
+{
+    initialize();
+
+    _data = std::make_shared<Data>();
+}
 
 paz::VertexFunction::VertexFunction(const std::string& src)
 {
