@@ -185,6 +185,11 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         throw std::runtime_error("Shader is not initialized.");
     }
     glUseProgram(_data->_shader->_id);
+    if(_data->_shader->_thickLines)
+    {
+        uniform("paz_Width", Window::ViewportWidth());
+        uniform("paz_Height", Window::ViewportHeight());
+    }
 }
 
 void paz::RenderPass::depth(DepthTestMode mode)

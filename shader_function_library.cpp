@@ -14,8 +14,8 @@
 
 static const std::string ThickLinesGeomSrc = 1 + R"===(
 layout(lines) in;
-uniform int width;
-uniform int height;
+uniform int paz_Width;
+uniform int paz_Height;
 layout(triangle_strip, max_vertices = 4) out;
 in float glLineWidth[];
 void main()
@@ -23,8 +23,8 @@ void main()
     vec2 para = (gl_in[1].gl_Position.xy - gl_in[0].gl_Position.xy);
     para /= length(para);
     vec2 perp = vec2(-para.y, para.x);
-    para /= vec2(width, height);
-    perp /= vec2(width, height);
+    para /= vec2(paz_Width, paz_Height);
+    perp /= vec2(paz_Width, paz_Height);
     gl_Position = vec4(gl_in[0].gl_Position.xy - glLineWidth[0]*perp, 0, 1);
     EmitVertex();
     gl_Position = vec4(gl_in[1].gl_Position.xy - glLineWidth[1]*perp, 0, 1);
