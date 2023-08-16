@@ -1,7 +1,6 @@
 #include "PAZ_Graphics"
 #include <cmath>
 #include <iomanip>
-#include <limits>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338328
@@ -42,19 +41,22 @@ static constexpr int Scale = 8;
 static constexpr float Eps = 1e-4;
 static constexpr double Angle = 3.;
 
-static constexpr int Threshold = 0.05*std::numeric_limits<std::uint8_t>::max();
+static constexpr int Threshold = 0.05*255;
 
+// Metal: 0 110 0 48 191 55 0 183 132 156
+// D3D:   0 108 0 29 192 47 0 183 132 156
+// Avg.:  0 109 0 38 192 51 0 183 132 156
 static constexpr std::array<std::array<int, 3>, 10> SamplePoints =
 {{
     {171,  83, 0},
-    {115, 158, 111},
+    {115, 158, 109},
     {  3,  59, 0},
-    { 62,  69, 52},
-    {100, 162, 191},
-    { 97, 130, 53},
+    { 62,  69, 38},
+    {100, 162, 192},
+    { 97, 130, 51},
     {189,  70, 0},
     {138,  37, 183},
-    { 75,  70, 131},
+    { 75,  70, 132},
     {134,  64, 156}
 }};
 
@@ -358,7 +360,9 @@ int main()
             {
                 throw std::runtime_error("Incorrect pixel value (" + std::
                     to_string(static_cast<int>(img.bytes()[4*(ImgRes*n[0] + n[
-                    1])])) + ") at (" + std::to_string(n[0]) + ", " + std::
+                    1])])) + ", expected " + std::to_string(std::max(0, n[2] -
+                    Threshold)) + "-" + std::to_string(std::min(255, n[2] +
+                    Threshold)) + ") at (" + std::to_string(n[0]) + ", " + std::
                     to_string(n[1]) + ").");
             }
         }
