@@ -77,7 +77,8 @@ std::string paz::frag2metal(const std::string& src)
         // Check for inputs and outputs out of scope.
         if(mode != Mode::Main)
         {
-            if(std::regex_match(line, std::regex(".*\\bgl_FragDepth\\b.*")))
+            if(std::regex_match(line, std::regex(".*\\bgl_Frag(Depth|Coord)\\b."
+                "*")))
             {
                 throw std::runtime_error("Line " + std::to_string(l) + ": Shade"
                     "r outputs cannot be accessed outside of main function.");
@@ -215,6 +216,8 @@ std::string paz::frag2metal(const std::string& src)
             }
             line = std::regex_replace(line, std::regex("\\bgl_FragDepth\\b"),
                 "out.glFragDepth");
+            line = std::regex_replace(line, std::regex("\\bgl_FragCoord\\b"),
+                "in.glFragCoord");
             mainBuffer << line << std::endl;
             continue;
         }
@@ -300,7 +303,7 @@ std::string paz::frag2metal(const std::string& src)
 
     // Append main function.
     out << "struct InputData" << std::endl << "{" << std::endl << "    float4 g"
-        "lPosition [[position]];" << std::endl;
+        "lFragCoord [[position]];" << std::endl;
     for(const auto& n : inputs)
     {
         out << "    " << n.second.first << " " << n.first << (n.second.second ?
