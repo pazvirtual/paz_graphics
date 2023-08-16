@@ -31,120 +31,169 @@ std::string paz::frag2hlsl(const std::string& src)
 
     // Make it easier to pass around textures and their samplers.
     out << 1 + R"===(
-template<typename T>
 struct wrap_texture1d
 {
-    texture1d<T> t;
-    sampler s;
+    Texture1D t;
+    SamplerState s;
 };
-template<typename T>
+struct wrap_itexture1d
+{
+    Texture1D<int4> t;
+    SamplerState s;
+};
+struct wrap_utexture1d
+{
+    Texture1D<uint4> t;
+    SamplerState s;
+};
 struct wrap_texture2d
 {
-    texture2d<T> t;
-    sampler s;
+    Texture2D t;
+    SamplerState s;
 };
-template<typename T>
-struct wrap_depth2d
+struct wrap_itexture2d
 {
-    depth2d<T> t;
-    sampler s;
+    Texture2D<int4> t;
+    SamplerState s;
 };
-#define sampler1D const wrap_texture1d<float>&
-#define sampler2D const wrap_texture2d<float>&
-#define isampler1D const wrap_texture1d<int>&
-#define isampler2D const wrap_texture2d<int>&
-#define usampler1D const wrap_texture1d<uint>&
-#define usampler2D const wrap_texture2d<uint>&
-#define depthSampler2D const wrap_depth2d<float>&
+struct wrap_utexture2d
+{
+    Texture2D<uint4> t;
+    SamplerState s;
+};
+#define sampler1D wrap_texture1d
+#define sampler2D wrap_texture2d
+#define isampler1D wrap_itexture1d
+#define isampler2D wrap_itexture2d
+#define usampler1D wrap_utexture1d
+#define usampler2D wrap_utexture2d
+#define depthSampler2D sampler2D
 )===";
 
-    // Define our Y-reversed sample functions.
+    // Define our sample functions.
     out << 1 + R"===(
-template<typename T>
-auto texture(thread const wrap_texture1d<T>& tex, thread float u)
+float4 sample_texture(in wrap_texture1d tex, in float u)
 {
-    return tex.t.sample(tex.s, u);
+    return tex.t.Sample(tex.s, u);
 }
-template<typename T>
-auto textureLod(thread const wrap_texture1d<T>& tex, thread float u, thread
-    float lod)
+int4 sample_texture(in wrap_itexture1d tex, in float u)
 {
-    return tex.t.sample(tex.s, u, level(lod));
+    return tex.t.Sample(tex.s, u);
 }
-template<typename T>
-auto texture(thread const wrap_texture2d<T>& tex, thread const float2& uv)
+uint4 sample_texture(in wrap_utexture1d tex, in float u)
 {
-    return tex.t.sample(tex.s, float2(uv.x, 1. - uv.y));
+    return tex.t.Sample(tex.s, u);
 }
-template<typename T>
-auto textureLod(thread const wrap_texture2d<T>& tex, thread const float2& uv,
-    thread float lod)
+float4 textureLod(in wrap_texture1d tex, in float u, in float lod)
 {
-    return tex.t.sample(tex.s, float2(uv.x, 1. - uv.y), level(lod));
+    return tex.t.SampleLevel(tex.s, u, lod);
 }
-float4 texture(thread const wrap_depth2d<float>& tex, thread const float2& uv)
+int4 textureLod(in wrap_itexture1d tex, in float u, in float lod)
 {
-    return float4(tex.t.sample(tex.s, float2(uv.x, 1. - uv.y)), 0, 0, 1);
+    return tex.t.SampleLevel(tex.s, u, lod);
 }
-float4 textureLod(thread const wrap_depth2d<float>& tex, thread const float2&
-    uv, thread float lod)
+uint4 textureLod(in wrap_utexture1d tex, in float u, in float lod)
 {
-    return float4(tex.t.sample(tex.s, float2(uv.x, 1. - uv.y), level(lod)), 0,
-        0, 1);
+    return tex.t.SampleLevel(tex.s, u, lod);
+}
+float4 sample_texture(in wrap_texture2d tex, in float2 uv)
+{
+    return tex.t.Sample(tex.s, uv);
+}
+int4 sample_texture(in wrap_itexture2d tex, in float2 uv)
+{
+    return tex.t.Sample(tex.s, uv);
+}
+uint4 sample_texture(in wrap_utexture2d tex, in float2 uv)
+{
+    return tex.t.Sample(tex.s, uv);
+}
+float4 textureLod(in wrap_texture2d tex, in float2 uv, in float lod)
+{
+    return tex.t.SampleLevel(tex.s, uv, lod);
+}
+int4 textureLod(in wrap_itexture2d tex, in float2 uv, in float lod)
+{
+    return tex.t.SampleLevel(tex.s, uv, lod);
+}
+uint4 textureLod(in wrap_utexture2d tex, in float2 uv, in float lod)
+{
+    return tex.t.SampleLevel(tex.s, uv, lod);
+}
+#define texture sample_texture
+)===";
+
+    // Define `textureQueryLod()`. Should check that these are correct.
+    out << 1 + R"===(
+float2 textureQueryLod(in wrap_texture1d tex, in float u)
+{
+    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
+        CalculateLevelOfDetailUnclamped(tex.s, u));
+}
+int2 textureQueryLod(in wrap_itexture1d tex, in float u)
+{
+    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
+        CalculateLevelOfDetailUnclamped(tex.s, u));
+}
+uint2 textureQueryLod(in wrap_utexture1d tex, in float u)
+{
+    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
+        CalculateLevelOfDetailUnclamped(tex.s, u));
+}
+float2 textureQueryLod(in wrap_texture2d tex, in float u)
+{
+    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
+        CalculateLevelOfDetailUnclamped(tex.s, u));
+}
+int2 textureQueryLod(in wrap_itexture2d tex, in float u)
+{
+    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
+        CalculateLevelOfDetailUnclamped(tex.s, u));
+}
+uint2 textureQueryLod(in wrap_utexture2d tex, in float u)
+{
+    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
+        CalculateLevelOfDetailUnclamped(tex.s, u));
 }
 )===";
 
-    // Define `textureQueryLod()`. Note that this is not the right formula for
-    // lines and that Metal does not support mipmaps for 1D textures.
+    // Define `textureSize()`. Note that LOD parameter is currently ignored.
     out << 1 + R"===(
-template<typename T>
-float2 textureQueryLod(thread const wrap_texture1d<T>& /* tex */, thread const
-    float2& /* uv */)
+int textureSize(wrap_texture1d tex, int lod)
 {
-    return float2(0);
+    uint w;
+    tex.t.GetDimensions(w);
+    return w;
 }
-template<typename T>
-float2 textureQueryLod(thread const wrap_texture2d<T>& tex, thread const float2&
-    uv)
+int textureSize(wrap_itexture1d tex, int lod)
 {
-    const float2 size(tex.t.get_width(), tex.t.get_height());
-    const float2 duvdx = dfdx(uv);
-    const float2 duvdy = dfdy(uv);
-    const float rho = max(length(size*duvdx), length(size*duvdy));
-    const float lambdaPrime = log2(rho);
-    return float2(clamp(lambdaPrime, 0., float(tex.t.get_num_mip_levels())),
-        lambdaPrime);
+    uint w;
+    tex.t.GetDimensions(w);
+    return w;
 }
-template<typename T>
-float2 textureQueryLod(thread const wrap_depth2d<T>& tex, thread const float2&
-    uv)
+int textureSize(wrap_utexture1d tex, int lod)
 {
-    const float2 size(tex.t.get_width(), tex.t.get_height());
-    const float2 duvdx = dfdx(uv);
-    const float2 duvdy = dfdy(uv);
-    const float rho = max(length(size*duvdx), length(size*duvdy));
-    const float lambdaPrime = log2(rho);
-    return float2(clamp(lambdaPrime, 0., float(tex.t.get_num_mip_levels())),
-        lambdaPrime);
+    uint w;
+    tex.t.GetDimensions(w);
+    return w;
 }
-)===";
-
-    // Define `textureSize()`.
-    out << 1 + R"===(
-template<typename T>
-int textureSize(thread const wrap_texture1d<T>& tex, thread int lod)
+int2 textureSize(wrap_texture2d tex, int lod)
 {
-    return tex.t.get_width(lod);
+    uint w, h;
+    tex.t.GetDimensions(w, h);
+    return int2(w, h);
 }
-template<typename T>
-int2 textureSize(thread const wrap_texture2d<T>& tex, thread int lod)
+int2 textureSize(wrap_itexture2d tex, int lod)
 {
-    return int2(tex.t.get_width(lod), tex.t.get_height(lod));
+    uint w, h;
+    tex.t.GetDimensions(w, h);
+    return int2(w, h);
 }
-template<typename T>
-int2 textureSize(thread const wrap_depth2d<T>& tex, thread int lod)
+int2 textureSize(wrap_utexture2d tex, int lod)
 {
-    return int2(tex.t.get_width(lod), tex.t.get_height(lod));
+    uint w, h;
+    tex.t.GetDimensions(w, h);
+    return int2(w, h);
 }
 )===";
 
@@ -508,7 +557,7 @@ float4 uintBitsToFloat(in uint4 v)
                 {
                     type = "texture1d<uint>";
                 }
-                else if(type == "usampler2D")
+                else if(type == "wrap_utexture2d")
                 {
                     type = "texture2d<uint>";
                 }
