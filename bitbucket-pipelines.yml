@@ -1,4 +1,4 @@
-image: gcc:10.2
+image: nvidia/opengl
 
 pipelines:
   custom:
