@@ -5,6 +5,7 @@
 #include "PAZ_Graphics"
 #include "internal_data.hpp"
 #include "common.hpp"
+#include "util_d3d11.hpp"
 
 paz::IndexBuffer::Data::~Data()
 {
@@ -36,8 +37,8 @@ paz::IndexBuffer::IndexBuffer(std::size_t size)
             &_data->_buffer);
         if(hr)
         {
-            throw std::runtime_error("Failed to create index buffer (HRESULT " +
-                std::to_string(hr) + ").");
+            throw std::runtime_error("Failed to create index buffer (" +
+                format_hresult(hr) + ").");
         }
     }
 }
@@ -61,8 +62,8 @@ paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
             &_data->_buffer);
         if(hr)
         {
-            throw std::runtime_error("Failed to create index buffer (HRESULT " +
-                std::to_string(hr) + ").");
+            throw std::runtime_error("Failed to create index buffer (" +
+                format_hresult(hr) + ").");
         }
     }
 }
@@ -74,8 +75,8 @@ void paz::IndexBuffer::sub(const unsigned int* data, std::size_t size)
         D3D11_MAP_WRITE_DISCARD, 0, &mappedSr);
     if(hr)
     {
-        throw std::runtime_error("Failed to map index buffer (HRESULT " + std::
-            to_string(hr) + ").");
+        throw std::runtime_error("Failed to map index buffer (" +
+            format_hresult(hr) + ").");
     }
     std::copy(data, data + size, reinterpret_cast<unsigned int*>(mappedSr.
         pData));

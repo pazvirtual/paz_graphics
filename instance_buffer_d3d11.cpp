@@ -38,8 +38,8 @@ void paz::InstanceBuffer::Data::addAttribute(int dim, DataType type, const void*
             &_buffers.back());
         if(hr)
         {
-            throw std::runtime_error("Failed to create instance buffer (HRESULT"
-                " " + std::to_string(hr) + ").");
+            throw std::runtime_error("Failed to create instance buffer (" +
+                format_hresult(hr) + ").");
         }
     }
     const unsigned int slot = _inputElemDescriptors.size();
@@ -102,8 +102,8 @@ void paz::InstanceBuffer::addAttribute(int dim, DataType type)
         _buffers.back());
     if(hr)
     {
-        throw std::runtime_error("Failed to create instance buffer (HRESULT " +
-            std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to create instance buffer (" +
+            format_hresult(hr) + ").");
     }
     const unsigned int slot = _data->_inputElemDescriptors.size();
     D3D11_INPUT_ELEMENT_DESC inputDescriptor = {};
@@ -143,8 +143,8 @@ void paz::InstanceBuffer::subAttribute(std::size_t idx, const float* data, std::
         D3D11_MAP_WRITE_DISCARD, 0, &mappedSr);
     if(hr)
     {
-        throw std::runtime_error("Failed to map instance buffer (HRESULT " +
-            std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to map instance buffer (" +
+            format_hresult(hr) + ").");
     }
     std::copy(data, data + size, reinterpret_cast<float*>(mappedSr.pData));
     d3d_context()->Unmap(_data->_buffers[idx], 0);
@@ -158,8 +158,8 @@ void paz::InstanceBuffer::subAttribute(std::size_t idx, const unsigned int*
         D3D11_MAP_WRITE_DISCARD, 0, &mappedSr);
     if(hr)
     {
-        throw std::runtime_error("Failed to map instance buffer (HRESULT " +
-            std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to map instance buffer (" +
+            format_hresult(hr) + ").");
     }
     std::copy(data, data + size, reinterpret_cast<unsigned int*>(mappedSr.
         pData));
@@ -174,8 +174,8 @@ void paz::InstanceBuffer::subAttribute(std::size_t idx, const int* data, std::
         D3D11_MAP_WRITE_DISCARD, 0, &mappedSr);
     if(hr)
     {
-        throw std::runtime_error("Failed to map instance buffer (HRESULT " +
-            std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to map instance buffer (" +
+            format_hresult(hr) + ").");
     }
     std::copy(data, data + size, reinterpret_cast<int*>(mappedSr.pData));
     d3d_context()->Unmap(_data->_buffers[idx], 0);

@@ -230,8 +230,8 @@ static ID3D11SamplerState* create_sampler(paz::MinMagFilter minFilter, paz::
         &sampler);
     if(hr)
     {
-        throw std::runtime_error("Failed to create sampler (HRESULT " + std::
-            to_string(hr) + ").");
+        throw std::runtime_error("Failed to create sampler (" + paz::
+            format_hresult(hr) + ").");
     }
     return sampler;
 }
@@ -390,8 +390,8 @@ void paz::Texture::Data::init(const void* data)
                 &_texture);
             if(hr)
             {
-                throw std::runtime_error("Failed to create texture (HRESULT " +
-                    std::to_string(hr) + ").");
+                throw std::runtime_error("Failed to create texture (" +
+                    format_hresult(hr) + ").");
             }
         }
         else
@@ -401,8 +401,8 @@ void paz::Texture::Data::init(const void* data)
                 &_texture);
             if(hr)
             {
-                throw std::runtime_error("Failed to create texture (HRESULT " +
-                    std::to_string(hr) + ").");
+                throw std::runtime_error("Failed to create texture (" +
+                    format_hresult(hr) + ").");
             }
 
             // Create temporary texture with data.
@@ -416,8 +416,8 @@ void paz::Texture::Data::init(const void* data)
                 &staging);
             if(hr)
             {
-                throw std::runtime_error("Failed to create temporary texture (H"
-                    "RESULT " + std::to_string(hr) + ").");
+                throw std::runtime_error("Failed to create temporary texture ("
+                    + format_hresult(hr) + ").");
             }
 
             // Copy data.
@@ -434,8 +434,8 @@ void paz::Texture::Data::init(const void* data)
             &_texture);
         if(hr)
         {
-            throw std::runtime_error("Failed to create texture (HRESULT " +
-                std::to_string(hr) + ").");
+            throw std::runtime_error("Failed to create texture (" +
+                format_hresult(hr) + ").");
         }
     }
     if(!_sampler)
@@ -465,8 +465,8 @@ void paz::Texture::Data::init(const void* data)
             &rvDescriptor, &_resourceView);
         if(hr)
         {
-            throw std::runtime_error("Failed to create resource view (HRESULT "
-                + std::to_string(hr) + ").");
+            throw std::runtime_error("Failed to create resource view (" +
+                format_hresult(hr) + ").");
         }
     }
     if(_isRenderTarget)
@@ -485,7 +485,7 @@ void paz::Texture::Data::init(const void* data)
                 if(hr)
                 {
                     throw std::runtime_error("Failed to create depth/stencil vi"
-                        "ew (HRESULT " + std::to_string(hr) + ").");
+                        "ew (" + format_hresult(hr) + ").");
                 }
             }
         }
@@ -496,7 +496,7 @@ void paz::Texture::Data::init(const void* data)
             if(hr)
             {
                 throw std::runtime_error("Failed to create render target view ("
-                    "HRESULT " + std::to_string(hr) + ").");
+                    + format_hresult(hr) + ").");
             }
         }
     }

@@ -4,6 +4,8 @@
 
 #include "PAZ_Graphics"
 #include "util_d3d11.hpp"
+#include <sstream>
+#include <iomanip>
 
 #define CASE(a, b) case DataType::a: return DXGI_FORMAT_##b;
 
@@ -40,6 +42,13 @@ DXGI_FORMAT paz::dxgi_format(int dim, DataType type)
         }
     }
     throw std::runtime_error("Attribute dimensions must be 1, 2, or 4.");
+}
+
+std::string paz::format_hresult(HRESULT hr)
+{
+    std::ostringstream oss;
+    oss << "HRESULT 0x" << std::hex << std::setfill('0') << std::setw(8) << hr;
+    return oss.str();
 }
 
 #endif

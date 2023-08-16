@@ -24,9 +24,8 @@ LDLIBS := ../libpazgraphics.a
 ifeq ($(OSPRETTY), macOS)
     LDLIBS += -framework MetalKit -framework Metal -framework Cocoa -framework IOKit
 else
-    LDLIBS += $(LIBPATH)/libglfw3.a
     ifeq ($(OSPRETTY), Linux)
-        LDLIBS += -lGL -lX11 -ldl
+        LDLIBS += $(LIBPATH)/libglfw3.a -lGL -lX11 -ldl
     else
         LDLIBS += -ld3d11 -ldxgi -ld3dcompiler -ldxguid
     endif

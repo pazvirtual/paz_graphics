@@ -92,8 +92,8 @@ paz::VertexFunction::VertexFunction(const std::string& src)
         _data->_bytecode->GetBufferSize(), nullptr, &_data->_shader);
     if(hr)
     {
-        throw std::runtime_error("Failed to create vertex shader (HRESULT " +
-            std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to create vertex shader (" +
+            format_hresult(hr) + ").");
     }
     _data->_uniformBufSize = process_uniforms(uniforms, _data->_uniforms);
 }
@@ -119,8 +119,8 @@ paz::FragmentFunction::FragmentFunction(const std::string& src)
         _data->_bytecode->GetBufferSize(), nullptr, &_data->_shader);
     if(hr)
     {
-        throw std::runtime_error("Failed to create fragment shader (HRESULT " +
-            std::to_string(hr) + ").");
+        throw std::runtime_error("Failed to create fragment shader (" +
+            format_hresult(hr) + ").");
     }
     _data->_uniformBufSize = process_uniforms(uniforms, _data->_uniforms);
 }
