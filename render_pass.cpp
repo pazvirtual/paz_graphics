@@ -220,6 +220,41 @@ void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
     _shader->uniform(name, x, y, z, w);
 }
 
+void paz::RenderPass::uniform(const std::string& name, const int* x, int n)
+    const
+{
+    _shader->uniform(name, x, n);
+}
+
+void paz::RenderPass::uniform(const std::string& name, unsigned int x) const
+{
+    _shader->uniform(name, x);
+}
+
+void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
+    int y) const
+{
+    _shader->uniform(name, x, y);
+}
+
+void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
+    int y, unsigned int z) const
+{
+    _shader->uniform(name, x, y, z);
+}
+
+void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
+    int y, unsigned int z, unsigned int w) const
+{
+    _shader->uniform(name, x, y, z, w);
+}
+
+void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
+    int n) const
+{
+    _shader->uniform(name, x, n);
+}
+
 void paz::RenderPass::uniform(const std::string& name, float x) const
 {
     _shader->uniform(name, x);
@@ -242,10 +277,10 @@ void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     _shader->uniform(name, x, y, z, w);
 }
 
-void paz::RenderPass::uniform(const std::string& name, const float* x, int
-    numFloats) const
+void paz::RenderPass::uniform(const std::string& name, const float* x, int n)
+    const
 {
-    _shader->uniform(name, x, numFloats);
+    _shader->uniform(name, x, n);
 }
 
 void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&

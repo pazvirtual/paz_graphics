@@ -70,7 +70,7 @@ void paz::Shader::use() const
     glUseProgram(_id);
 }
 
-// _i (also currently being used for samplers)
+// _i (also used for samplers)
 void paz::Shader::uniform(const std::string& name, GLint x) const
 {
     if(!_uniformIds.count(name))
@@ -108,6 +108,106 @@ void paz::Shader::uniform(const std::string& name, GLint x, GLint y, GLint z,
     }
 
     glUniform4i(std::get<0>(_uniformIds.at(name)), x, y, z, w);
+}
+
+// _iv
+void paz::Shader::uniform(const std::string& name, const GLint* x, GLsizei n)
+    const
+{
+    if(!_uniformIds.count(name))
+    {
+        UNUSED_UNIFORM
+    }
+    switch(std::get<1>(_uniformIds.at(name)))
+    {
+        case GL_INT:
+            glUniform1iv(std::get<0>(_uniformIds.at(name)), n, x);
+            break;
+        case GL_INT_VEC2:
+            glUniform2iv(std::get<0>(_uniformIds.at(name)), n/2, x);
+            break;
+        case GL_INT_VEC3:
+            glUniform3iv(std::get<0>(_uniformIds.at(name)), n/3, x);
+            break;
+        case GL_INT_VEC4:
+            glUniform4iv(std::get<0>(_uniformIds.at(name)), n/4, x);
+            break;
+        default:
+            throw std::invalid_argument("Unsupported type " + std::to_string(
+                std::get<1>(_uniformIds.at(name))) + " for uniform \"" + name +
+                "\".");
+            break;
+    }
+}
+
+// _u
+void paz::Shader::uniform(const std::string& name, GLuint x) const
+{
+    if(!_uniformIds.count(name))
+    {
+        UNUSED_UNIFORM
+    }
+
+    glUniform1ui(std::get<0>(_uniformIds.at(name)), x);
+}
+void paz::Shader::uniform(const std::string& name, GLuint x, GLuint y) const
+{
+    if(!_uniformIds.count(name))
+    {
+        UNUSED_UNIFORM
+    }
+
+    glUniform2ui(std::get<0>(_uniformIds.at(name)), x, y);
+}
+void paz::Shader::uniform(const std::string& name, GLuint x, GLuint y, GLuint z)
+    const
+{
+    if(!_uniformIds.count(name))
+    {
+        UNUSED_UNIFORM
+    }
+
+    glUniform3ui(std::get<0>(_uniformIds.at(name)), x, y, z);
+}
+void paz::Shader::uniform(const std::string& name, GLuint x, GLuint y, GLuint z,
+    GLuint w) const
+{
+    if(!_uniformIds.count(name))
+    {
+        UNUSED_UNIFORM
+    }
+
+    glUniform4ui(std::get<0>(_uniformIds.at(name)), x, y, z, w);
+}
+
+// _uiv
+void paz::Shader::uniform(const std::string& name, const GLuint* x, GLsizei n)
+    const
+{
+    if(!_uniformIds.count(name))
+    {
+        UNUSED_UNIFORM
+    }
+    switch(std::get<1>(_uniformIds.at(name)))
+    {
+        case GL_UNSIGNED_INT:
+            glUniform1uiv(std::get<0>(_uniformIds.at(name)), n, x);
+            break;
+        case GL_UNSIGNED_INT_VEC2:
+            glUniform2uiv(std::get<0>(_uniformIds.at(name)), n/2, x);
+            break;
+        case GL_UNSIGNED_INT_VEC3:
+            glUniform3uiv(std::get<0>(_uniformIds.at(name)), n/3, x);
+            break;
+        case GL_UNSIGNED_INT_VEC4:
+            glUniform4uiv(std::get<0>(_uniformIds.at(name)), n/4, x);
+            break;
+        default:
+            throw std::invalid_argument("Unsupported type " + std::to_string(
+                std::get<1>(_uniformIds.at(name))) + " for uniform \"" + name +
+                "\".");
+            break;
+    }
 }
 
 // _f
@@ -150,9 +250,9 @@ void paz::Shader::uniform(const std::string& name, GLfloat x, GLfloat y, GLfloat
     glUniform4f(std::get<0>(_uniformIds.at(name)), x, y, z, w);
 }
 
-// _fv and _Matrix_fv - COULD ADD SOME MORE TYPE SAFETY CHECKS BY USING glm::[type]* INSTEAD OF GENERIC GLfloat*
-void paz::Shader::uniform(const std::string& name, const GLfloat* x, GLsizei
-    numFloats) const
+// _fv and _Matrix_fv
+void paz::Shader::uniform(const std::string& name, const GLfloat* x, GLsizei n)
+    const
 {
     if(!_uniformIds.count(name))
     {
@@ -161,27 +261,27 @@ void paz::Shader::uniform(const std::string& name, const GLfloat* x, GLsizei
     switch(std::get<1>(_uniformIds.at(name)))
     {
         case GL_FLOAT:
-            glUniform1fv(std::get<0>(_uniformIds.at(name)), numFloats, x);
+            glUniform1fv(std::get<0>(_uniformIds.at(name)), n, x);
             break;
         case GL_FLOAT_VEC2:
-            glUniform2fv(std::get<0>(_uniformIds.at(name)), numFloats/2, x);
+            glUniform2fv(std::get<0>(_uniformIds.at(name)), n/2, x);
             break;
         case GL_FLOAT_VEC3:
-            glUniform3fv(std::get<0>(_uniformIds.at(name)), numFloats/3, x);
+            glUniform3fv(std::get<0>(_uniformIds.at(name)), n/3, x);
             break;
         case GL_FLOAT_VEC4:
-            glUniform4fv(std::get<0>(_uniformIds.at(name)), numFloats/4, x);
+            glUniform4fv(std::get<0>(_uniformIds.at(name)), n/4, x);
             break;
         case GL_FLOAT_MAT2:
-            glUniformMatrix2fv(std::get<0>(_uniformIds.at(name)), numFloats/4,
-                GL_FALSE, x);
+            glUniformMatrix2fv(std::get<0>(_uniformIds.at(name)), n/4, GL_FALSE,
+                x);
             break;
         case GL_FLOAT_MAT3:
-            glUniformMatrix3fv(std::get<0>(_uniformIds.at(name)), numFloats/9,
+            glUniformMatrix3fv(std::get<0>(_uniformIds.at(name)), n/9,
                 GL_FALSE, x);
             break;
         case GL_FLOAT_MAT4:
-            glUniformMatrix4fv(std::get<0>(_uniformIds.at(name)), numFloats/16,
+            glUniformMatrix4fv(std::get<0>(_uniformIds.at(name)), n/16,
                 GL_FALSE, x);
             break;
         default:

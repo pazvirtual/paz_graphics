@@ -373,40 +373,43 @@ void paz::RenderPass::read(const std::string& name, const TextureBase& tex)
 
 void paz::RenderPass::uniform(const std::string& name, int x) const
 {
-    bool used = false;
-    if(_vertexArgs.count(name))
-    {
-        used = true;
-        [(id<MTLRenderCommandEncoder>)_renderEncoder setVertexBytes:&x length:
-            sizeof(int) atIndex:_vertexArgs.at(name)];
-    }
-    if(_fragmentArgs.count(name))
-    {
-        used = true;
-        [(id<MTLRenderCommandEncoder>)_renderEncoder setFragmentBytes:&x length:
-            sizeof(int) atIndex:_fragmentArgs.at(name)];
-    }
-    if(!used)
-    {
-        UNUSED_ARG
-    }
+    uniform(name, &x, 1);
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y) const
 {
     std::array<int, 2> v = {x, y};
+    uniform(name, v.data(), v.size());
+}
+
+void paz::RenderPass::uniform(const std::string& name, int x, int y, int z)
+    const
+{
+    std::array<int, 3> v = {x, y, z};
+    uniform(name, v.data(), v.size());
+}
+
+void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
+    w) const
+{
+    std::array<int, 4> v = {x, y, z, w};
+    uniform(name, v.data(), v.size());
+}
+
+void paz::RenderPass::uniform(const std::string& name, int* x, int n) const
+{
     bool used = false;
     if(_vertexArgs.count(name))
     {
         used = true;
-        [(id<MTLRenderCommandEncoder>)_renderEncoder setVertexBytes:v.data()
-            length:v.size()*sizeof(int) atIndex:_vertexArgs.at(name)];
+        [(id<MTLRenderCommandEncoder>)_renderEncoder setVertexBytes:x length:
+            n*sizeof(int) atIndex:_vertexArgs.at(name)];
     }
     if(_fragmentArgs.count(name))
     {
         used = true;
-        [(id<MTLRenderCommandEncoder>)_renderEncoder setFragmentBytes:v.data()
-            length:v.size()*sizeof(int) atIndex:_fragmentArgs.at(name)];
+        [(id<MTLRenderCommandEncoder>)_renderEncoder setFragmentBytes:x length:
+            n*sizeof(int) atIndex:_fragmentArgs.at(name)];
     }
     if(!used)
     {
@@ -414,37 +417,57 @@ void paz::RenderPass::uniform(const std::string& name, int x, int y) const
     }
 }
 
-void paz::RenderPass::uniform(const std::string& /* name */, int /* x */, int /*
-    y */, int /* z */) const
+void paz::RenderPass::uniform(const std::string& name, unsigned int x) const
 {
-    throw std::runtime_error("NOT IMPLEMENTED");
+    uniform(name, &x, 1);
 }
 
-void paz::RenderPass::uniform(const std::string& /* name */, int /* x */, int /*
-    y */, int /* z */, int /* w */) const
+void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
+    int y) const
 {
-    throw std::runtime_error("NOT IMPLEMENTED");
+    std::array<unsigned int, 2> v = {x, y};
+    uniform(name, v.data(), v.size());
+}
+
+void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
+    int y, unsigned int z) const
+{
+    std::array<unsigned int, 3> v = {x, y, z};
+    uniform(name, v.data(), v.size());
+}
+
+void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
+    int y, unsigned int z, unsigned int w) const
+{
+    std::array<unsigned int, 4> v = {x, y, z, w};
+    uniform(name, v.data(), v.size());
+}
+
+void paz::RenderPass::uniform(const std::string& name, unsigned int* x, int n)
+    const
+{
+    bool used = false;
+    if(_vertexArgs.count(name))
+    {
+        used = true;
+        [(id<MTLRenderCommandEncoder>)_renderEncoder setVertexBytes:x length:
+            n*sizeof(unsigned int) atIndex:_vertexArgs.at(name)];
+    }
+    if(_fragmentArgs.count(name))
+    {
+        used = true;
+        [(id<MTLRenderCommandEncoder>)_renderEncoder setFragmentBytes:x length:
+            n*sizeof(unsigned int) atIndex:_fragmentArgs.at(name)];
+    }
+    if(!used)
+    {
+        UNUSED_ARG
+    }
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x) const
 {
-    bool used = false;
-    if(_vertexArgs.count(name))
-    {
-        used = true;
-        [(id<MTLRenderCommandEncoder>)_renderEncoder setVertexBytes:&x length:
-            sizeof(float) atIndex:_vertexArgs.at(name)];
-    }
-    if(_fragmentArgs.count(name))
-    {
-        used = true;
-        [(id<MTLRenderCommandEncoder>)_renderEncoder setFragmentBytes:&x length:
-            sizeof(float) atIndex:_fragmentArgs.at(name)];
-    }
-    if(!used)
-    {
-        UNUSED_ARG
-    }
+    uniform(name, &x, 1);
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y) const
@@ -453,33 +476,35 @@ void paz::RenderPass::uniform(const std::string& name, float x, float y) const
     uniform(name, v.data(), v.size());
 }
 
-void paz::RenderPass::uniform(const std::string& /* name */, float /* x */,
-    float /* y */, float /* z */) const
+void paz::RenderPass::uniform(const std::string& name, float x, float y, float
+    z) const
 {
-    throw std::runtime_error("NOT IMPLEMENTED");
+    std::array<float, 3> v = {x, y, z};
+    uniform(name, v.data(), v.size());
 }
 
-void paz::RenderPass::uniform(const std::string& /* name */, float /* x */,
-    float /* y */, float /* z */, float /* w */) const
+void paz::RenderPass::uniform(const std::string& name, float x, float y, float
+    z, float w) const
 {
-    throw std::runtime_error("NOT IMPLEMENTED");
+    std::array<float, 4> v = {x, y, z, w};
+    uniform(name, v.data(), v.size());
 }
 
-void paz::RenderPass::uniform(const std::string& name, const float* x, int
-    numFloats) const
+void paz::RenderPass::uniform(const std::string& name, const float* x, int n)
+    const
 {
     bool used = false;
     if(_vertexArgs.count(name))
     {
         used = true;
         [(id<MTLRenderCommandEncoder>)_renderEncoder setVertexBytes:x length:
-            numFloats*sizeof(float) atIndex:_vertexArgs.at(name)];
+            n*sizeof(float) atIndex:_vertexArgs.at(name)];
     }
     if(_fragmentArgs.count(name))
     {
         used = true;
         [(id<MTLRenderCommandEncoder>)_renderEncoder setFragmentBytes:x length:
-            numFloats*sizeof(float) atIndex:_fragmentArgs.at(name)];
+            n*sizeof(float) atIndex:_fragmentArgs.at(name)];
     }
     if(!used)
     {
