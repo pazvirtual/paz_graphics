@@ -41,25 +41,15 @@ static std::pair<double, double> ScrollOffset = {};
 
 static bool CursorDisabled = false;
 
-namespace paz
-{
-    struct Initializer
-    {
-        Initializer();
-        ~Initializer();
-    };
-}
-
-void paz::initialize()
+paz::Initializer& paz::initialize()
 {
     static paz::Initializer initializer;
+    return initializer;
 }
 
 static std::chrono::time_point<std::chrono::steady_clock> FrameStart = std::
     chrono::steady_clock::now();
 static double PrevFrameTime = 1./60.;
-
-static std::unordered_set<void*> RenderTargets;
 
 static void key_callback(int key, int action)
 {
@@ -373,7 +363,7 @@ float paz::Window::AspectRatio()
 
 void paz::resize_targets()
 {
-    for(auto n : RenderTargets)
+    for(auto n : initialize().renderTargets)
     {
         reinterpret_cast<Texture::Data*>(n)->resize(Window::ViewportWidth(),
             Window::ViewportHeight());
@@ -498,20 +488,20 @@ void paz::Window::Resize(int width, int height, bool viewportCoords)
 
 void paz::register_target(void* target)
 {
-    if(RenderTargets.count(target))
+    if(initialize().renderTargets.count(target))
     {
         throw std::logic_error("Render target has already been registered.");
     }
-    RenderTargets.insert(target);
+    initialize().renderTargets.insert(target);
 }
 
 void paz::unregister_target(void* target)
 {
-    if(!RenderTargets.count(target))
+    if(!initialize().renderTargets.count(target))
     {
         throw std::logic_error("Render target was not registered.");
     }
-    RenderTargets.erase(target);
+    initialize().renderTargets.erase(target);
 }
 
 paz::Image<std::uint8_t, 3> paz::Window::PrintScreen()
