@@ -791,15 +791,20 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         }
         case WM_MOVE:
         {
-            if(CurCursorMode == paz::CursorMode::Disable)
+            if(!WindowIsFullscreen)
             {
-                RECT clipRect;
-                GetClientRect(WindowHandle, &clipRect);
-                ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(&clipRect.
-                    left));
-                ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(&clipRect.
-                    right));
-                ClipCursor(&clipRect);
+                PrevX = static_cast<int>(static_cast<short>(LOWORD(lParam)));
+                PrevY = static_cast<int>(static_cast<short>(HIWORD(lParam)));
+                if(CurCursorMode == paz::CursorMode::Disable)
+                {
+                    RECT clipRect;
+                    GetClientRect(WindowHandle, &clipRect);
+                    ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(
+                        &clipRect.left));
+                    ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(
+                        &clipRect.right));
+                    ClipCursor(&clipRect);
+                }
             }
             return 0;
         }
@@ -1014,14 +1019,6 @@ paz::Initializer::Initializer()
         throw std::runtime_error("Failed to create default framebuffer view.");
     }
     framebuffer->Release();
-//    glfwGetWindowPos(WindowPtr, &PrevX, &PrevY);
-
-    // Get window size in pixels.
-    RECT windowArea;
-    GetClientRect(WindowHandle, &windowArea);
-    FboWidth = windowArea.right;
-    FboHeight = windowArea.bottom;
-    FboAspectRatio = static_cast<float>(FboWidth)/FboHeight;
 
     // Use raw mouse input when cursor is disabled.
     const RAWINPUTDEVICE rid = {0x01, 0x02, 0, WindowHandle};
@@ -1038,8 +1035,6 @@ void paz::Window::MakeFullscreen()
 
     if(!WindowIsFullscreen)
     {
-        glfwGetWindowPos(WindowPtr, &PrevX, &PrevY);
-
         PrevWidth = WindowWidth;
         PrevHeight = WindowHeight;
 
