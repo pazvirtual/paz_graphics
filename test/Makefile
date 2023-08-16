@@ -29,7 +29,8 @@ else
     ifeq ($(OSPRETTY), Linux)
         LDLIBS += $(LIBPATH)/libglfw3.a -lGL -lX11 -ldl
     else
-        LDLIBS += -ld3d11 -ldxgi -ld3dcompiler -ldxguid
+        LDLIBS += $(LIBPATH)/libpthread.a -ld3d11 -ldxgi -ld3dcompiler -ldxguid
+        LDFLAGS += -static-libgcc -static-libstdc++
     endif
 endif
 
@@ -44,8 +45,8 @@ all: $(EXE)
 
 ifeq ($(OSPRETTY), macOS)
 %: %.cpp
-	$(CXX) -arch arm64 -o $@_arm64 $< $(CXXFLAGS) $(INCL) $(LDLIBS)
-	$(CXX) -arch x86_64 -o $@_x86_64 $< $(CXXFLAGS) $(INCL) $(LDLIBS)
+	$(CXX) -arch arm64 -o $@_arm64 $< $(CXXFLAGS) $(INCL) $(LDFLAGS) $(LDLIBS)
+	$(CXX) -arch x86_64 -o $@_x86_64 $< $(CXXFLAGS) $(INCL) $(LDFLAGS) $(LDLIBS)
 	lipo -create -output $@ $@_arm64 $@_x86_64
 endif
 
