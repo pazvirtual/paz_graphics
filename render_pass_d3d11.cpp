@@ -44,6 +44,10 @@ paz::RenderPass::Data::~Data()
     {
         _fragUniformBuf->Release();
     }
+    if(_blendState)
+    {
+        _blendState->Release();
+    }
 }
 
 paz::RenderPass::RenderPass()
@@ -88,15 +92,13 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
     {
         throw std::logic_error("Invalid blending function.");
     }
-    ID3D11BlendState* blendState;
-    auto hr = d3d_device()->CreateBlendState(&blendDescriptor, &blendState);
+    auto hr = d3d_device()->CreateBlendState(&blendDescriptor, &_data->
+        _blendState);
     if(hr)
     {
         throw std::runtime_error("Failed to create blend state (HRESULT " +
             std::to_string(hr) + ").");
     }
-    d3d_context()->OMSetBlendState(blendState, nullptr, 0xffffffff);
-    blendState->Release();
 
     // Check vertex and fragment function I/O compatibility. (Linking?)
     // ...
@@ -208,6 +210,8 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     }
     d3d_context()->OMSetDepthStencilState(depthStencilState, 1);
     depthStencilState->Release();
+
+    d3d_context()->OMSetBlendState(_data->_blendState, nullptr, 0xffffffff);
 
     const auto numColor = _data->_fbo->_colorAttachments.size();
     std::vector<ID3D11RenderTargetView*> colorTargets(numColor);
