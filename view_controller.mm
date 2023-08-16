@@ -119,26 +119,14 @@
 
 - (void)otherMouseDown:(NSEvent*)event
 {
-    for(int i = 2; i < paz::Window::NumMouseButtons; ++i)
-    {
-        if(!_mouseDown[i] && [event pressedMouseButtons] << i)
-        {
-             _mouseDown[i] = true;
-             _mousePressed[i] = true;
-        }
-    }
+    _mouseDown[[event buttonNumber]] = true;
+    _mousePressed[[event buttonNumber]] = true;
 }
 
 - (void)otherMouseUp:(NSEvent*)event
 {
-    for(int i = 2; i < paz::Window::NumMouseButtons; ++i)
-    {
-        if(_mouseDown[i] && !([event pressedMouseButtons] << i))
-        {
-             _mouseDown[i] = false;
-             _mouseReleased[i] = true;
-        }
-    }
+    _mouseDown[[event buttonNumber]] = false;
+    _mouseReleased[[event buttonNumber]] = true;
 }
 
 - (void)keyDown:(NSEvent*)event

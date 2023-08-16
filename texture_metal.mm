@@ -10,13 +10,13 @@
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
     contentViewController] mtkView] device]
 
-static MTLSamplerMinMagFilter min_mag_filter(paz::TextureBase::MinMagFilter f)
+static MTLSamplerMinMagFilter min_mag_filter(paz::Texture::MinMagFilter f)
 {
     switch(f)
     {
-        case paz::TextureBase::MinMagFilter::Linear: return
+        case paz::Texture::MinMagFilter::Linear: return
             MTLSamplerMinMagFilterLinear;
-        case paz::TextureBase::MinMagFilter::Nearest: return
+        case paz::Texture::MinMagFilter::Nearest: return
             MTLSamplerMinMagFilterNearest;
     }
 
@@ -36,6 +36,17 @@ void paz::Texture::createSampler(MinMagFilter minFilter, MinMagFilter magFilter)
 
 paz::Texture::Texture() {}
 
+paz::Texture::~Texture()
+{
+    if(_texture)
+    {
+        [(id<MTLTexture>)_texture release];
+    }
+    if(_sampler)
+    {
+        [(id<MTLSamplerState>)_sampler release];
+    }
+}
 
 paz::Texture::Texture(int width, int height, int numChannels, int numBits,
     DataType type, MinMagFilter minFilter, MinMagFilter magFilter)

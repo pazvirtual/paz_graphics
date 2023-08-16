@@ -1,6 +1,6 @@
 #import "util_metal.hh"
 
-MTLPixelFormat paz::pixel_format(unsigned int c, unsigned int b, TextureBase::
+MTLPixelFormat paz::pixel_format(unsigned int c, unsigned int b, Texture::
     DataType t)
 {
     if(c != 1 && c != 2 && c != 4)
@@ -17,57 +17,57 @@ MTLPixelFormat paz::pixel_format(unsigned int c, unsigned int b, TextureBase::
     {
         if(b == 8)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return MTLPixelFormatR8Uint;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return MTLPixelFormatR8Sint;
             }
-            else if(t == TextureBase::DataType::UNorm)
+            else if(t == Texture::DataType::UNorm)
             {
                 return MTLPixelFormatR8Unorm;
             }
-            else if(t == TextureBase::DataType::SNorm)
+            else if(t == Texture::DataType::SNorm)
             {
                 return MTLPixelFormatR8Snorm;
             }
         }
         else if(b == 16)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return MTLPixelFormatR16Uint;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return MTLPixelFormatR16Sint;
             }
-            else if(t == TextureBase::DataType::UNorm)
+            else if(t == Texture::DataType::UNorm)
             {
                 return MTLPixelFormatR16Unorm;
             }
-            else if(t == TextureBase::DataType::SNorm)
+            else if(t == Texture::DataType::SNorm)
             {
                 return MTLPixelFormatR16Snorm;
             }
-            else if(t == TextureBase::DataType::Float)
+            else if(t == Texture::DataType::Float)
             {
                 return MTLPixelFormatR16Float;
             }
         }
         else if(b == 32)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return MTLPixelFormatR32Uint;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return MTLPixelFormatR32Sint;
             }
-            else if(t == TextureBase::DataType::Float)
+            else if(t == Texture::DataType::Float)
             {
                 return MTLPixelFormatR32Float;
             }
@@ -77,57 +77,57 @@ MTLPixelFormat paz::pixel_format(unsigned int c, unsigned int b, TextureBase::
     {
         if(b == 8)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return MTLPixelFormatRG8Uint;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return MTLPixelFormatRG8Sint;
             }
-            else if(t == TextureBase::DataType::UNorm)
+            else if(t == Texture::DataType::UNorm)
             {
                 return MTLPixelFormatRG8Unorm;
             }
-            else if(t == TextureBase::DataType::SNorm)
+            else if(t == Texture::DataType::SNorm)
             {
                 return MTLPixelFormatRG8Snorm;
             }
         }
         else if(b == 16)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return MTLPixelFormatRG16Uint;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return MTLPixelFormatRG16Sint;
             }
-            else if(t == TextureBase::DataType::UNorm)
+            else if(t == Texture::DataType::UNorm)
             {
                 return MTLPixelFormatRG16Unorm;
             }
-            else if(t == TextureBase::DataType::SNorm)
+            else if(t == Texture::DataType::SNorm)
             {
                 return MTLPixelFormatRG16Snorm;
             }
-            else if(t == TextureBase::DataType::Float)
+            else if(t == Texture::DataType::Float)
             {
                 return MTLPixelFormatRG16Float;
             }
         }
         else if(b == 32)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return MTLPixelFormatRG32Uint;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return MTLPixelFormatRG32Sint;
             }
-            else if(t == TextureBase::DataType::Float)
+            else if(t == Texture::DataType::Float)
             {
                 return MTLPixelFormatRG32Float;
             }
@@ -137,57 +137,57 @@ MTLPixelFormat paz::pixel_format(unsigned int c, unsigned int b, TextureBase::
     {
         if(b == 8)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return MTLPixelFormatRGBA8Uint;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return MTLPixelFormatRGBA8Sint;
             }
-            else if(t == TextureBase::DataType::UNorm)
+            else if(t == Texture::DataType::UNorm)
             {
                 return MTLPixelFormatRGBA8Unorm;
             }
-            else if(t == TextureBase::DataType::SNorm)
+            else if(t == Texture::DataType::SNorm)
             {
                 return MTLPixelFormatRGBA8Snorm;
             }
         }
         else if(b == 16)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return MTLPixelFormatRGBA16Uint;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return MTLPixelFormatRGBA16Sint;
             }
-            else if(t == TextureBase::DataType::UNorm)
+            else if(t == Texture::DataType::UNorm)
             {
                 return MTLPixelFormatRGBA16Unorm;
             }
-            else if(t == TextureBase::DataType::SNorm)
+            else if(t == Texture::DataType::SNorm)
             {
                 return MTLPixelFormatRGBA16Snorm;
             }
-            else if(t == TextureBase::DataType::Float)
+            else if(t == Texture::DataType::Float)
             {
                 return MTLPixelFormatRGBA16Float;
             }
         }
         else if(b == 32)
         {
-            if(t == TextureBase::DataType::UInt)
+            if(t == Texture::DataType::UInt)
             {
                 return MTLPixelFormatRGBA32Uint;
             }
-            else if(t == TextureBase::DataType::SInt)
+            else if(t == Texture::DataType::SInt)
             {
                 return MTLPixelFormatRGBA32Sint;
             }
-            else if(t == TextureBase::DataType::Float)
+            else if(t == Texture::DataType::Float)
             {
                 return MTLPixelFormatRGBA32Float;
             }

@@ -9,7 +9,7 @@
 
 namespace paz
 {
-    MTLPixelFormat pixel_format(unsigned int c, unsigned int b, TextureBase::
+    MTLPixelFormat pixel_format(unsigned int c, unsigned int b, Texture::
         DataType t);
 }
 
