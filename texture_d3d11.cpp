@@ -7,19 +7,60 @@
 #include "internal_data.hpp"
 #include "window.hpp"
 
-#define CASE(a, b) case paz::WrapMode::a: return D3D11_TEXTURE_ADDRESS_##b;
+#define CASE0(a, b) case paz::TextureFormat::a: return DXGI_FORMAT_##b;
+#define CASE1(a, b) case paz::WrapMode::a: return D3D11_TEXTURE_ADDRESS_##b;
 
 static DXGI_FORMAT dxgi_format(paz::TextureFormat format)
 {
-    if(format == paz::TextureFormat::RGBA16UNorm)
+    switch(format)
     {
-        return DXGI_FORMAT_R16G16B16A16_FLOAT;
+        CASE0(R8UInt, R8_UINT)
+        CASE0(R8SInt, R8_SINT)
+        CASE0(R8UNorm, R8_UNORM)
+        CASE0(R8SNorm, R8_SNORM)
+        CASE0(R16UInt, R16_UINT)
+        CASE0(R16SInt, R16_SINT)
+        CASE0(R16UNorm, R16_UNORM)
+        CASE0(R16SNorm, R16_SNORM)
+        CASE0(R16Float, R16_FLOAT)
+        CASE0(R32UInt, R32_UINT)
+        CASE0(R32SInt, R32_SINT)
+        CASE0(R32Float, R32_FLOAT)
+
+        CASE0(RG8UInt, R8G8_UINT)
+        CASE0(RG8SInt, R8G8_SINT)
+        CASE0(RG8UNorm, R8G8_UNORM)
+        CASE0(RG8SNorm, R8G8_SNORM)
+        CASE0(RG16UInt, R16G16_UINT)
+        CASE0(RG16SInt, R16G16_SINT)
+        CASE0(RG16UNorm, R16G16_UNORM)
+        CASE0(RG16SNorm, R16G16_SNORM)
+        CASE0(RG16Float, R16G16_FLOAT)
+        CASE0(RG32UInt, R32G32_UINT)
+        CASE0(RG32SInt, R32G32_SINT)
+        CASE0(RG32Float, R32G32_FLOAT)
+
+        CASE0(RGBA8UInt, R8G8B8A8_UINT)
+        CASE0(RGBA8SInt, R8G8B8A8_SINT)
+        CASE0(RGBA8UNorm, R8G8B8A8_UNORM)
+        CASE0(RGBA8UNorm_sRGB, R8G8B8A8_UNORM_SRGB)
+        CASE0(RGBA8SNorm, R8G8B8A8_SNORM)
+        CASE0(RGBA16UInt, R16G16B16A16_UINT)
+        CASE0(RGBA16SInt, R16G16B16A16_SINT)
+        CASE0(RGBA16UNorm, R16G16B16A16_UNORM)
+        CASE0(RGBA16SNorm, R16G16B16A16_SNORM)
+        CASE0(RGBA16Float, R16G16B16A16_FLOAT)
+        CASE0(RGBA32UInt, R32G32B32A32_UINT)
+        CASE0(RGBA32SInt, R32G32B32A32_SINT)
+        CASE0(RGBA32Float, R32G32B32A32_FLOAT)
+
+        CASE0(Depth16UNorm, R16_TYPELESS)
+        CASE0(Depth32Float, R32_TYPELESS)
+
+        CASE0(BGRA8UNorm, B8G8R8A8_UNORM)
     }
-    if(format == paz::TextureFormat::Depth16UNorm)
-    {
-        return DXGI_FORMAT_R16_TYPELESS;
-    }
-    throw std::runtime_error("INCOMPLETE");
+
+    throw std::runtime_error("Invalid texture format requested.");
 }
 
 static D3D11_FILTER tex_filter(paz::MinMagFilter minFilter, paz::MinMagFilter
@@ -110,10 +151,10 @@ static D3D11_TEXTURE_ADDRESS_MODE address_mode(paz::WrapMode m)
 {
     switch(m)
     {
-        CASE(Repeat, WRAP)
-        CASE(MirrorRepeat, MIRROR)
-        CASE(ClampToEdge, CLAMP)
-        CASE(ClampToZero, BORDER)
+        CASE1(Repeat, WRAP)
+        CASE1(MirrorRepeat, MIRROR)
+        CASE1(ClampToEdge, CLAMP)
+        CASE1(ClampToZero, BORDER)
     }
 
     throw std::logic_error("Invalid texture wrapping mode requested.");
