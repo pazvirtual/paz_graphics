@@ -102,8 +102,6 @@ int main(int, char** argv)
     triVertices1.attribute(2, TriPosData1);
     triVertices1.attribute(4, TriColorData1);
 
-    const paz::IndexBuffer loopIndices({0, 1, 2, 0});
-
     paz::VertexBuffer quadVertices;
     quadVertices.attribute(2, QuadPosData);
 
@@ -168,8 +166,7 @@ int main(int, char** argv)
         scenePass.uniform("length", static_cast<float>(length));
         if(mode)
         {
-            scenePass.indexed(paz::PrimitiveType::LineStrip, triVertices1,
-                loopIndices);
+            scenePass.primitives(paz::PrimitiveType::LineLoop, triVertices1);
         }
         else
         {
