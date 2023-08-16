@@ -53,7 +53,7 @@ int main(int, char** argv)
     }
 
     double time = 0.;
-    paz::Window::Loop([&]()
+    while(!paz::Window::Done())
     {
         // Handle events.
         if(paz::Window::KeyPressed(paz::Key::Q))
@@ -96,5 +96,7 @@ int main(int, char** argv)
         u.uniform("whitePoint", 0.5f + 0.5f*static_cast<float>(std::sin(time)));
         u.primitives(paz::PrimitiveType::TriangleStrip, q);
         u.end();
-    });
+
+        paz::Window::EndFrame();
+    }
 }

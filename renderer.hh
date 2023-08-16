@@ -12,12 +12,10 @@
 @property(readonly) float aspectRatio;
 @property(readonly) CGSize viewportSize;
 @property(readonly) CGSize size;
-@property(readonly) id<MTLCommandBuffer> _Nullable commandBuffer;
-@property(readonly) id<MTLBuffer> _Nonnull skyVertices;
-@property(readonly) id<MTLBuffer> _Nonnull quadVertices;
-@property(readonly) id<MTLTexture> _Nonnull bayerTexture;
-- (instancetype _Nonnull)initWithMetalKitView:(MTKView* _Nonnull)view;
-- (MTLRenderPassDescriptor* _Nullable)currentRenderPassDescriptor;
+@property(readonly, nonnull) id<MTLCommandBuffer> commandBuffer;
+- (nonnull instancetype)initWithMetalKitView:(nonnull MTKView*)view;
+- (nullable MTLRenderPassDescriptor*)currentRenderPassDescriptor;
+- (void)ensureCommandBuffer;
 @end
 
 #endif

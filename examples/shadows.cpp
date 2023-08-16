@@ -189,7 +189,7 @@ int main(int, char** argv)
     const paz::Texture shadowMap = compute_shadow_map(groundVerts, cubeVerts);
 
     double time = 0.;
-    paz::Window::Loop([&]()
+    while(!paz::Window::Done())
     {
         if(paz::Window::KeyPressed(paz::Key::Q))
         {
@@ -219,10 +219,11 @@ int main(int, char** argv)
         renderScene.primitives(paz::PrimitiveType::Triangles, cubeVerts);
         renderScene.end();
 
+        paz::Window::EndFrame();
+
         if(!paz::Window::KeyDown(paz::Key::Space))
         {
             time += paz::Window::FrameTime();
         }
     }
-    );
 }

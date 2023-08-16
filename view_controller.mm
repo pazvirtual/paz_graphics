@@ -75,6 +75,10 @@
     // This is required for `paz::Window::PrintScreen()`.
     [_mtkView setFramebufferOnly:NO];
 
+    // This is required for on-demand rendering.
+    [_mtkView setEnableSetNeedsDisplay:NO];
+    [_mtkView setPaused:YES];
+
     [_renderer mtkView:_mtkView drawableSizeWillChange:[_mtkView drawableSize]];
 }
 

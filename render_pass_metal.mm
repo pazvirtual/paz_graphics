@@ -262,10 +262,7 @@ paz::RenderPass::RenderPass(const Shader& shader, BlendMode blendMode)
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
 {
-    if(![RENDERER commandBuffer])
-    {
-        throw std::logic_error("Command buffer does not exist.");
-    }
+    [RENDERER ensureCommandBuffer];
 
     MTLRenderPassDescriptor* renderPassDescriptor;
     if(_data->_fbo)

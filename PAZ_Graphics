@@ -286,8 +286,8 @@ namespace paz
         static void SetCursorMode(CursorMode mode);
         static float AspectRatio();
         static void Quit();
-        static void Loop(const std::function<void(void)>& draw);
-        static void Commit();
+        static bool Done();
+        static void EndFrame();
         static double FrameTime();
         static void SetMinSize(int width, int height);
         static void SetMaxSize(int width, int height);

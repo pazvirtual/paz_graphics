@@ -223,6 +223,9 @@ paz::Initializer::Initializer()
         focus_callback(focused); });
     glfwSetWindowSizeCallback(WindowPtr, [](GLFWwindow*, int width, int height){
         resize_callback(width, height); });
+
+    // Poll events.
+    glfwPollEvents();
 }
 
 void paz::Window::MakeFullscreen()
@@ -376,18 +379,14 @@ void paz::resize_targets()
     }
 }
 
-void paz::Window::Loop(const std::function<void(void)>& draw)
+bool paz::Window::Done()
 {
     initialize();
 
-    while(!glfwWindowShouldClose(WindowPtr))
-    {
-        draw();
-        Commit();
-    }
+    return glfwWindowShouldClose(WindowPtr);
 }
 
-void paz::Window::Commit()
+void paz::Window::EndFrame()
 {
     initialize();
 
