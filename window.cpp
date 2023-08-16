@@ -556,8 +556,7 @@ paz::Image<std::uint8_t, 3> paz::Window::ReadPixels()
 
     if(FrameInProgress)
     {
-        throw std::logic_error("Failed to read window pixels: Called before `pa"
-            "z::Window::EndFrame`.");
+        throw std::logic_error("Cannot read pixels before ending frame.");
     }
 
     Image<std::uint8_t, 3> image(ViewportWidth(), ViewportHeight());
@@ -568,8 +567,8 @@ paz::Image<std::uint8_t, 3> paz::Window::ReadPixels()
     const GLenum error = glGetError();
     if(error != GL_NO_ERROR)
     {
-        throw std::runtime_error("Error reading default framebuffer: " +
-            gl_error(error) + ".");
+        throw std::runtime_error("Error reading window pixels: " + gl_error(
+            error) + ".");
     }
     return image;
 }
