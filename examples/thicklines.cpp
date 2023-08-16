@@ -44,15 +44,12 @@ static constexpr std::array<float, 5*4> sep =
      0.5f, -0.5f
 };
 
-int main(int argc, char** argv)
+static int mode;
+static paz::VertexBuffer vertices;
+static void set_mode(int m)
 {
-    int mode = 0;
-    if(argc >= 2)
-    {
-        mode = std::stoi(argv[1]);
-    }
-
-    paz::VertexBuffer vertices;
+    mode = m;
+    vertices = paz::VertexBuffer();
     if(mode)
     {
         vertices.attribute(2, strip);
@@ -62,6 +59,12 @@ int main(int argc, char** argv)
         vertices.attribute(2, sep);
     }
 
+}
+
+int main()
+{
+    set_mode(0);
+
     const paz::VertexFunction vert(VertSrc);
     const paz::FragmentFunction frag(FragSrc);
 
@@ -69,6 +72,18 @@ int main(int argc, char** argv)
 
     while(!paz::Window::Done())
     {
+        if(paz::Window::KeyPressed(paz::Key::One))
+        {
+            set_mode(0);
+        }
+        else if(paz::Window::KeyPressed(paz::Key::Two))
+        {
+            set_mode(1);
+        }
+        else if(paz::Window::KeyPressed(paz::Key::Three))
+        {
+            set_mode(2);
+        }
         if(paz::Window::KeyPressed(paz::Key::Q))
         {
             paz::Window::Quit();
