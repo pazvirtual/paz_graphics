@@ -3,12 +3,11 @@ ifeq ($(OS), Windows_NT)
     OSPRETTY := Windows
 else
     ifeq ($(shell uname -s), Darwin)
-        LIBPATH := /usr/local/lib
         OSPRETTY := macOS
     else
-        LIBPATH := /usr/local/lib64
         OSPRETTY := Linux
     endif
+    LIBPATH := /usr/local/lib
 endif
 CXXVER := 14
 CXXFLAGS := -std=c++$(CXXVER) -Ofast -Wall -Wextra -Wno-missing-braces
