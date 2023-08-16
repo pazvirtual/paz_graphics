@@ -83,7 +83,7 @@ void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)
 
 void paz::VertexBuffer::addAttribute(int dim, DataType type)
 {
-    if(_data->_numVertices)
+    if(!_data->_numVertices)
     {
         throw std::runtime_error("Vertex buffer size has not been set.");
     }

@@ -47,6 +47,7 @@ void paz::InstanceBuffer::Data::addAttribute(int dim, DataType type, const void*
     inputDescriptor.InputSlot = slot;
     inputDescriptor.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
     inputDescriptor.InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+    inputDescriptor.InstanceDataStepRate = 1;
     _inputElemDescriptors.push_back(inputDescriptor);
 }
 
@@ -83,7 +84,7 @@ void paz::InstanceBuffer::Data::checkSize(int dim, std::size_t size)
 
 void paz::InstanceBuffer::addAttribute(int dim, DataType type)
 {
-    if(_data->_numInstances)
+    if(!_data->_numInstances)
     {
         throw std::runtime_error("Instance buffer size has not been set.");
     }
@@ -109,6 +110,7 @@ void paz::InstanceBuffer::addAttribute(int dim, DataType type)
     inputDescriptor.InputSlot = slot;
     inputDescriptor.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
     inputDescriptor.InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+    inputDescriptor.InstanceDataStepRate = 1;
     _data->_inputElemDescriptors.push_back(inputDescriptor);
 }
 
