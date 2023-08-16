@@ -7,6 +7,7 @@
 #import "app_delegate.hh"
 #import "view_controller.hh"
 #include "internal_data.hpp"
+#include "window.hpp"
 #import <MetalKit/MetalKit.h>
 
 #define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
@@ -26,53 +27,65 @@ static paz::Image<T, NumChannels> flip_image(const paz::Image<T, NumChannels>&
     return flipped;
 }
 
+paz::Texture::Data::~Data()
+{
+    if(_isRenderTarget)
+    {
+        unregister_target(this);
+    }
+
+    if(_texture)
+    {
+        [static_cast<id<MTLTexture>>(_texture) release];
+    }
+    if(_sampler)
+    {
+        [static_cast<id<MTLSamplerState>>(_sampler) release];
+    }
+}
+
 paz::Texture::Texture()
 {
-    _data = std::make_unique<Data>();
+    initialize();
 }
 
 paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
     minFilter, MinMagFilter magFilter, bool normalized) : Texture()
 {
-    _width = image.width();
-    _height = image.height();
-    _data->_format = normalized ? Format::R8UNorm : Format::R8UInt;
+    initialize();
+
+    _data = std::make_unique<Data>();
+    _data->_width = image.width();
+    _data->_height = image.height();
+    _data->_format = normalized ? TextureFormat::R8UNorm : TextureFormat::
+        R8UInt;
     _data->_minFilter = minFilter;
     _data->_magFilter = magFilter;
-    init(flip_image(image).data());
+    _data->init(flip_image(image).data());
 }
 
-paz::Texture::~Texture()
-{
-    if(_data->_texture)
-    {
-        [static_cast<id<MTLTexture>>(_data->_texture) release];
-    }
-    if(_data->_sampler)
-    {
-        [static_cast<id<MTLSamplerState>>(_data->_sampler) release];
-    }
-}
-
-paz::Texture::Texture(int width, int height, Format format, MinMagFilter
+paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
     minFilter, MinMagFilter magFilter) : Texture()
 {
-    _width = width;
-    _height = height;
+    initialize();
+
+    _data = std::make_unique<Data>();
+    _data->_width = width;
+    _data->_height = height;
     _data->_format = format;
     _data->_minFilter = minFilter;
     _data->_magFilter = magFilter;
-    init();
+    _data->init();
 }
 
-void paz::Texture::init(const void* data)
+void paz::Texture::Data::init(const void* data)
 {
     MTLTextureDescriptor* textureDescriptor = [[MTLTextureDescriptor alloc]
         init];
-    [textureDescriptor setPixelFormat:pixel_format(_data->_format)];
+    [textureDescriptor setPixelFormat:pixel_format(_format)];
     [textureDescriptor setWidth:_width];
     [textureDescriptor setHeight:_height];
-    if(_data->_isRenderTarget)
+    if(_isRenderTarget)
     {
         [textureDescriptor setUsage:MTLTextureUsageRenderTarget|
             MTLTextureUsageShaderRead];
@@ -82,32 +95,47 @@ void paz::Texture::init(const void* data)
     {
         [textureDescriptor setUsage:MTLTextureUsageShaderRead];
     }
-    _data->_texture = [DEVICE newTextureWithDescriptor:textureDescriptor];
+    _texture = [DEVICE newTextureWithDescriptor:textureDescriptor];
     [textureDescriptor release];
     if(data)
     {
-        [static_cast<id<MTLTexture>>(_data->_texture) replaceRegion:
-            MTLRegionMake2D(0, 0, _width, _height) mipmapLevel:0 withBytes:data
-            bytesPerRow:_width*bytes_per_pixel(_data->_format)];
+        [static_cast<id<MTLTexture>>(_texture) replaceRegion:MTLRegionMake2D(0,
+            0, _width, _height) mipmapLevel:0 withBytes:data bytesPerRow:_width*
+            bytes_per_pixel(_format)];
     }
-    if(!_data->_sampler)
+    if(!_sampler)
     {
-        _data->_sampler = create_sampler(_data->_minFilter, _data->_magFilter);
+        _sampler = create_sampler(_minFilter, _magFilter);
+    }
+}
+
+void paz::Texture::Data::resize(int width, int height)
+{
+    if(_scale)
+    {
+        if(_texture)
+        {
+            [static_cast<id<MTLTexture>>(_texture) release];
+        }
+        _width = _scale*width;
+        _height = _scale*height;
+        init();
     }
 }
 
 void paz::Texture::resize(int width, int height)
 {
-    if(_data->_scale)
-    {
-        if(_data->_texture)
-        {
-            [static_cast<id<MTLTexture>>(_data->_texture) release];
-        }
-        _width = _data->_scale*width;
-        _height = _data->_scale*height;
-        init();
-    }
+    _data->resize(width, height);
+}
+
+int paz::Texture::width() const
+{
+    return _data->_width;
+}
+
+int paz::Texture::height() const
+{
+    return _data->_height;
 }
 
 #endif

@@ -7,6 +7,7 @@
 #import "view_controller.hh"
 #import "renderer.hh"
 #include "internal_data.hpp"
+#include "window.hpp"
 #import <MetalKit/MetalKit.h>
 
 #define VIEW_CONTROLLER static_cast<ViewController*>([[static_cast<\
@@ -17,12 +18,11 @@
 #define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
     [NSApp delegate]) window] contentViewController]) mtkView] device]
 
-#define CASE0(a, b) case paz::RenderPass::PrimitiveType::a: return \
-    MTLPrimitiveType##b;
+#define CASE0(a, b) case paz::PrimitiveType::a: return MTLPrimitiveType##b;
 #define CASE1(a, b, n) case MTLDataType##a: return {MTLVertexFormat##a, n* \
     sizeof(b)};
 
-static MTLPrimitiveType primitive_type(paz::RenderPass::PrimitiveType t)
+static MTLPrimitiveType primitive_type(paz::PrimitiveType t)
 {
     switch(t)
     {
@@ -99,40 +99,47 @@ static id<MTLRenderPipelineState> create(const void* descriptor, std::
     return pipelineState;
 }
 
-paz::RenderPass::~RenderPass()
+paz::RenderPass::Data::~Data()
 {
-    if(_data->_pipelineState)
+    if(_pipelineState)
     {
-        [static_cast<id<MTLRenderPipelineState>>(_data->_pipelineState)
-            release];
+        [static_cast<id<MTLRenderPipelineState>>(_pipelineState) release];
     }
+}
+
+paz::RenderPass::RenderPass()
+{
+    initialize();
 }
 
 paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
     BlendMode blendMode)
 {
+    initialize();
+
     _data = std::make_unique<Data>();
 
-    _fbo = &fbo;
+    _data->_shader = shader._data;
+    _data->_fbo = fbo._data;
     MTLRenderPipelineDescriptor* pipelineDescriptor =
         [[MTLRenderPipelineDescriptor alloc] init];
     [pipelineDescriptor setVertexFunction:static_cast<id<MTLFunction>>(shader.
         _data->_vert)];
     [pipelineDescriptor setFragmentFunction:static_cast<id<MTLFunction>>(shader.
         _data->_frag)];
-    for(std::size_t i = 0; i < _fbo->_data->_colorAttachments.size(); ++i)
+    for(std::size_t i = 0; i < _data->_fbo->_colorAttachments.size(); ++i)
     {
         [[pipelineDescriptor colorAttachments][i] setPixelFormat:
-            [static_cast<id<MTLTexture>>(_fbo->_data->_colorAttachments[i]->
-            Texture::_data->_texture) pixelFormat]];
-        if(blendMode != paz::RenderPass::BlendMode::Disable)
+            [static_cast<id<MTLTexture>>(_data->_fbo->_colorAttachments[i]->
+            _texture) pixelFormat]];
+        if(blendMode != paz::BlendMode::Disable)
         {
             [[pipelineDescriptor colorAttachments][i] setBlendingEnabled:YES];
             [[pipelineDescriptor colorAttachments][i] setRgbBlendOperation:
                 MTLBlendOperationAdd];
             [[pipelineDescriptor colorAttachments][i] setAlphaBlendOperation:
                 MTLBlendOperationAdd];
-            if(blendMode == paz::RenderPass::BlendMode::Additive)
+            if(blendMode == paz::BlendMode::Additive)
             {
                 [[pipelineDescriptor colorAttachments][i]
                     setSourceRGBBlendFactor:MTLBlendFactorOne];
@@ -143,7 +150,7 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
                 [[pipelineDescriptor colorAttachments][i]
                     setDestinationAlphaBlendFactor:MTLBlendFactorOne];
             }
-            else if(blendMode == paz::RenderPass::BlendMode::Blend)
+            else if(blendMode == paz::BlendMode::Blend)
             {
                 [[pipelineDescriptor colorAttachments][i]
                     setSourceRGBBlendFactor:MTLBlendFactorSourceAlpha];
@@ -163,11 +170,11 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
             }
         }
     }
-    if(_fbo->_data->_depthAttachment)
+    if(_data->_fbo->_depthStencilAttachment)
     {
         [pipelineDescriptor setDepthAttachmentPixelFormat:[static_cast<id<
-            MTLTexture>>(_fbo->_data->_depthAttachment->Texture::_data->
-            _texture) pixelFormat]];
+            MTLTexture>>(_data->_fbo->_depthStencilAttachment->_texture)
+            pixelFormat]];
     }
     _data->_pipelineState = create(pipelineDescriptor, _data->_vertexArgs,
         _data->_fragmentArgs);
@@ -176,8 +183,11 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
 
 paz::RenderPass::RenderPass(const Shader& shader, BlendMode blendMode)
 {
+    initialize();
+
     _data = std::make_unique<Data>();
 
+    _data->_shader = shader._data;
     MTLRenderPipelineDescriptor* pipelineDescriptor =
         [[MTLRenderPipelineDescriptor alloc] init];
     [pipelineDescriptor setVertexFunction:static_cast<id<MTLFunction>>(shader.
@@ -186,14 +196,14 @@ paz::RenderPass::RenderPass(const Shader& shader, BlendMode blendMode)
         _data->_frag)];
     [[pipelineDescriptor colorAttachments][0] setPixelFormat:[[VIEW_CONTROLLER
         mtkView] colorPixelFormat]];
-    if(blendMode != paz::RenderPass::BlendMode::Disable)
+    if(blendMode != paz::BlendMode::Disable)
     {
         [[pipelineDescriptor colorAttachments][0] setBlendingEnabled:YES];
         [[pipelineDescriptor colorAttachments][0] setRgbBlendOperation:
             MTLBlendOperationAdd];
         [[pipelineDescriptor colorAttachments][0] setAlphaBlendOperation:
             MTLBlendOperationAdd];
-        if(blendMode == paz::RenderPass::BlendMode::Additive)
+        if(blendMode == paz::BlendMode::Additive)
         {
                 [[pipelineDescriptor colorAttachments][0]
                     setSourceRGBBlendFactor:MTLBlendFactorOne];
@@ -204,7 +214,7 @@ paz::RenderPass::RenderPass(const Shader& shader, BlendMode blendMode)
                 [[pipelineDescriptor colorAttachments][0]
                     setDestinationAlphaBlendFactor:MTLBlendFactorOne];
         }
-        else if(blendMode == paz::RenderPass::BlendMode::Blend)
+        else if(blendMode == paz::BlendMode::Blend)
         {
             [[pipelineDescriptor colorAttachments][0] setSourceRGBBlendFactor:
                 MTLBlendFactorSourceAlpha];
@@ -233,7 +243,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
 {
     MTLRenderPassDescriptor* renderPassDescriptor;
-    if(_fbo)
+    if(_data->_fbo)
     {
         renderPassDescriptor = [[MTLRenderPassDescriptor alloc] init];
         if(!renderPassDescriptor)
@@ -242,11 +252,11 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
                 ".");
         }
 
-        for(std::size_t i = 0; i < _fbo->_data->_colorAttachments.size(); ++i)
+        for(std::size_t i = 0; i < _data->_fbo->_colorAttachments.size(); ++i)
         {
             [[renderPassDescriptor colorAttachments][i] setTexture:
-                static_cast<id<MTLTexture>>(_fbo->_data->_colorAttachments[i]->
-                Texture::_data->_texture)];
+                static_cast<id<MTLTexture>>(_data->_fbo->_colorAttachments[i]->
+                _texture)];
             if(colorLoadActions.empty() || colorLoadActions[i] == LoadAction::
                 DontCare)
             {
@@ -272,11 +282,10 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
                 MTLStoreActionStore];
         }
 
-        if(_fbo->_data->_depthAttachment)
+        if(_data->_fbo->_depthStencilAttachment)
         {
             [[renderPassDescriptor depthAttachment] setTexture:static_cast<id<
-                MTLTexture>>(_fbo->_data->_depthAttachment->Texture::_data->
-                _texture)];
+                MTLTexture>>(_data->_fbo->_depthStencilAttachment->_texture)];
             if(depthLoadAction == LoadAction::DontCare)
             {
                 [[renderPassDescriptor depthAttachment] setLoadAction:
@@ -356,15 +365,15 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     _data->_renderEncoder = [[RENDERER commandBuffer]
         renderCommandEncoderWithDescriptor:renderPassDescriptor];
 
-    if(_fbo)
+    if(_data->_fbo)
     {
         [renderPassDescriptor release];
 
-        if(_fbo->_data->_width)
+        if(_data->_fbo->_width)
         {
             [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-                setViewport:{0., 0., static_cast<double>(_fbo->_data->_width),
-                static_cast<double>(_fbo->_data->_height), 0., 1.}];
+                setViewport:{0., 0., static_cast<double>(_data->_fbo->_width),
+                static_cast<double>(_data->_fbo->_height), 0., 1.}];
         }
     }
 
@@ -643,7 +652,7 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
 }
 
 void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
-    vertices, int offset) const
+    vertices) const
 {
     for(std::size_t i = 0; i < vertices._data->_buffers.size(); ++i)
     {
@@ -652,12 +661,12 @@ void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
             i]) offset:0 atIndex:i];
     }
     [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-        drawPrimitives:primitive_type(type) vertexStart:offset vertexCount:
-        vertices._numVertices];
+        drawPrimitives:primitive_type(type) vertexStart:0 vertexCount:vertices.
+        _data->_numVertices];
 }
 
 void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
-    const IndexBuffer& indices, int offset) const
+    const IndexBuffer& indices) const
 {
     for(std::size_t i = 0; i < vertices._data->_buffers.size(); ++i)
     {
@@ -673,9 +682,16 @@ void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
         default: throw std::runtime_error("Indices must be 16 or 32 bits.");
     }
     [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-        drawIndexedPrimitives:primitive_type(type) indexCount:indices.
+        drawIndexedPrimitives:primitive_type(type) indexCount:indices._data->
         _numIndices indexType:t indexBuffer:static_cast<id<MTLBuffer>>(indices.
-        _data->_data) indexBufferOffset:offset];
+        _data->_data) indexBufferOffset:0];
+}
+
+paz::Framebuffer paz::RenderPass::framebuffer() const
+{
+    Framebuffer temp;
+    temp._data = _data->_fbo;
+    return temp;
 }
 
 #endif

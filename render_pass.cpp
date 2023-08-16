@@ -481,24 +481,23 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
 }
 
 void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
-    vertices, int offset) const
+    vertices) const
 {
     check_attributes(vertices._data->_types, _data->_shader->_attribTypes);
 
     glBindVertexArray(vertices._data->_id);
-    glDrawArrays(primitive_type(type), offset, vertices._data->_numVertices);
+    glDrawArrays(primitive_type(type), vertices._data->_numVertices);
 }
 
 void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
-    const IndexBuffer& indices, int offset) const
+    const IndexBuffer& indices) const
 {
     check_attributes(vertices._data->_types, _data->_shader->_attribTypes);
 
     glBindVertexArray(vertices._data->_id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);
     glDrawElements(primitive_type(type), indices._data->_numIndices,
-        GL_UNSIGNED_INT, reinterpret_cast<void*>(static_cast<std::intptr_t>(
-        offset)));
+        GL_UNSIGNED_INT, 0);
 }
 
 paz::Framebuffer paz::RenderPass::framebuffer() const

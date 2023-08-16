@@ -69,7 +69,7 @@
         [mainMenu release];
 
         // Create window and set content view controller.
-        _cursorMode = paz::Window::CursorMode::Normal;
+        _cursorMode = paz::CursorMode::Normal;
 
         _screenRect = [[NSScreen mainScreen] frame];
 
@@ -149,27 +149,27 @@
         _screenRect.size.height - frame.origin.y - 0.5*frame.size.height));
 }
 
-- (void)setCursorMode:(paz::Window::CursorMode)mode
+- (void)setCursorMode:(paz::CursorMode)mode
 {
-    if(mode == paz::Window::CursorMode::Normal)
+    if(mode == paz::CursorMode::Normal)
     {
-        if(_cursorMode == paz::Window::CursorMode::Disable)
+        if(_cursorMode == paz::CursorMode::Disable)
         {
             CGWarpMouseCursorPosition(_priorCursorPos);
         }
         CGAssociateMouseAndMouseCursorPosition(true);
         [NSCursor unhide];
     }
-    else if(mode == paz::Window::CursorMode::Hidden)
+    else if(mode == paz::CursorMode::Hidden)
     {
-        if(_cursorMode == paz::Window::CursorMode::Disable)
+        if(_cursorMode == paz::CursorMode::Disable)
         {
             CGWarpMouseCursorPosition(_priorCursorPos);
         }
         CGAssociateMouseAndMouseCursorPosition(true);
         [NSCursor hide];
     }
-    else if(mode == paz::Window::CursorMode::Disable)
+    else if(mode == paz::CursorMode::Disable)
     {
         CGAssociateMouseAndMouseCursorPosition(false);
         [NSCursor hide];
@@ -196,11 +196,11 @@
 - (void)windowDidResize:(NSNotification*)__unused notification
 {
     // Re-hide/warp cursor.
-    if(_cursorMode == paz::Window::CursorMode::Hidden)
+    if(_cursorMode == paz::CursorMode::Hidden)
     {
         [NSCursor hide];
     }
-    else if(_cursorMode == paz::Window::CursorMode::Disable)
+    else if(_cursorMode == paz::CursorMode::Disable)
     {
         [NSCursor hide];
         [self centerCursor];

@@ -21,7 +21,7 @@ paz::RenderTarget::RenderTarget(double scale, TextureFormat format, MinMagFilter
     _data->_width = _data->_scale*Window::ViewportWidth();
     _data->_height = _data->_scale*Window::ViewportHeight();
 
-    init();
+    _data->init();
 
     register_target(_data.get());
 }
@@ -40,7 +40,7 @@ paz::RenderTarget::RenderTarget(int width, int height, TextureFormat format,
     _data->_width = width;
     _data->_height = height;
 
-    init();
+    _data->init();
 
     register_target(_data.get());
 }

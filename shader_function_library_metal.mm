@@ -6,6 +6,7 @@
 #import "app_delegate.hh"
 #import "view_controller.hh"
 #include "opengl2metal.hpp"
+#include "window.hpp"
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
@@ -35,27 +36,29 @@ static id<MTLLibrary> create_library(std::string src, bool isVert)
     return lib;
 }
 
-paz::ShaderFunctionLibrary::ShaderFunctionLibrary()
+paz::ShaderFunctionLibrary::Data::~Data()
 {
-    _data = std::make_unique<Data>();
+    for(const auto& n : _verts)
+    {
+        if(n.second)
+        {
+            [static_cast<id<MTLLibrary>>(n.second) release];
+        }
+    }
+    for(const auto& n : _frags)
+    {
+        if(n.second)
+        {
+            [static_cast<id<MTLLibrary>>(n.second) release];
+        }
+    }
 }
 
-paz::ShaderFunctionLibrary::~ShaderFunctionLibrary()
+paz::ShaderFunctionLibrary::ShaderFunctionLibrary()
 {
-    for(const auto& n : _data->_verts)
-    {
-        if(n.second)
-        {
-            [static_cast<id<MTLLibrary>>(n.second) release];
-        }
-    }
-    for(const auto& n : _data->_frags)
-    {
-        if(n.second)
-        {
-            [static_cast<id<MTLLibrary>>(n.second) release];
-        }
-    }
+    initialize();
+
+    _data = std::make_unique<Data>();
 }
 
 void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
@@ -76,6 +79,12 @@ void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
         throw std::runtime_error("Failed to compile vertex function \"" + name +
             "\": " + e.what());
     }
+}
+
+void paz::ShaderFunctionLibrary::geometry(const std::string& /* name */, const
+    std::string& /* src */)
+{
+    throw std::logic_error("NOT IMPLEMENTED");
 }
 
 void paz::ShaderFunctionLibrary::fragment(const std::string& name, const std::

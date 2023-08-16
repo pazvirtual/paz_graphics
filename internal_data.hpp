@@ -21,6 +21,7 @@ struct paz::Texture::Data
     bool _isRenderTarget = false;
     double _scale = 1.;
     ~Data();
+    void init(const void* data = nullptr);
     void resize(int width, int height);
 };
 
@@ -53,10 +54,7 @@ struct paz::Framebuffer::Data
 {
     std::vector<std::shared_ptr<Texture::Data>> _colorAttachments; //TEMP
     std::shared_ptr<Texture::Data> _depthStencilAttachment; //TEMP
-#ifdef PAZ_MACOS
-    std::vector<const RenderTarget*> _colorAttachments;
-    const RenderTarget* _depthAttachment = nullptr;
-#else
+#ifndef PAZ_MACOS
     unsigned int _id = 0;
     int _numTextures = 0;
 #endif

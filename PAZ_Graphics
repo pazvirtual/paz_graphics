@@ -96,7 +96,6 @@ namespace paz
         std::shared_ptr<Data> _data;
 
         Texture();
-        void init(const void* data = nullptr);
 
     public:
         Texture(int width, int height, TextureFormat format, MinMagFilter
@@ -243,10 +242,9 @@ namespace paz
             uniform(name, &*std::begin(data), std::distance(&*std::begin(data),
                 &*std::end(data)));
         }
-        void primitives(PrimitiveType type, const VertexBuffer& vertices, int
-            offset = 0) const;
+        void primitives(PrimitiveType type, const VertexBuffer& vertices) const;
         void indexed(PrimitiveType type, const VertexBuffer& vertices, const
-            IndexBuffer& indices, int offset = 0) const;
+            IndexBuffer& indices) const;
         Framebuffer framebuffer() const;
     };
 
