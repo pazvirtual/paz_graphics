@@ -11,33 +11,8 @@
 
 #define CASE0(a, b) case TextureFormat::a: return MTLPixelFormat##b;
 #define CASE1(f, n, b) case TextureFormat::f: return n*b/8;
-#define CASE2(a, b) case paz::WrapMode::a: return MTLSamplerAddressMode##b;
 #define DEPTH(a) static const DepthStencilState a(DepthTestMode::a);
-#define CASE3(a) case DepthTestMode::a: return a._state;
-
-static MTLSamplerMinMagFilter min_mag_filter(paz::MinMagFilter f)
-{
-    switch(f)
-    {
-        case paz::MinMagFilter::Linear: return MTLSamplerMinMagFilterLinear;
-        case paz::MinMagFilter::Nearest: return MTLSamplerMinMagFilterNearest;
-    }
-
-    throw std::logic_error("Invalid texture filter requested.");
-}
-
-static MTLSamplerAddressMode address_mode(paz::WrapMode m)
-{
-    switch(m)
-    {
-        CASE2(Repeat, Repeat)
-        CASE2(MirrorRepeat, MirrorRepeat)
-        CASE2(ClampToEdge, ClampToEdge)
-        CASE2(ClampToZero, ClampToZero)
-    }
-
-    throw std::logic_error("Invalid texture wrapping mode requested.");
-}
+#define CASE2(a) case DepthTestMode::a: return a._state;
 
 MTLPixelFormat paz::pixel_format(TextureFormat format)
 {
@@ -243,22 +218,22 @@ id<MTLDepthStencilState> paz::depth_stencil_state(DepthTestMode mode)
 
     switch(mode)
     {
-        CASE3(NeverNoMask);
-        CASE3(LessNoMask);
-        CASE3(EqualNoMask);
-        CASE3(LessEqualNoMask);
-        CASE3(GreaterNoMask);
-        CASE3(NotEqualNoMask);
-        CASE3(GreaterEqualNoMask);
-        CASE3(AlwaysNoMask);
-        CASE3(Never);
-        CASE3(Less);
-        CASE3(Equal);
-        CASE3(LessEqual);
-        CASE3(Greater);
-        CASE3(NotEqual);
-        CASE3(GreaterEqual);
-        CASE3(Always);
+        CASE2(NeverNoMask);
+        CASE2(LessNoMask);
+        CASE2(EqualNoMask);
+        CASE2(LessEqualNoMask);
+        CASE2(GreaterNoMask);
+        CASE2(NotEqualNoMask);
+        CASE2(GreaterEqualNoMask);
+        CASE2(AlwaysNoMask);
+        CASE2(Never);
+        CASE2(Less);
+        CASE2(Equal);
+        CASE2(LessEqual);
+        CASE2(Greater);
+        CASE2(NotEqual);
+        CASE2(GreaterEqual);
+        CASE2(Always);
         case DepthTestMode::Disable: return nil;
     }
 

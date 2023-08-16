@@ -32,7 +32,14 @@ else
     endif
 endif
 
-.PHONY: test.cpp
-default: test
+SRC := $(wildcard *.cpp)
+EXE := $(SRC:.cpp=)
+
+.PHONY: $(SRC)
+
+all: $(EXE)
+
+clean:
+	$(RM) $(EXE)
 
 print-% : ; @echo $* = $($*)

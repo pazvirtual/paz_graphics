@@ -1,9 +1,10 @@
 *.o
 *.a
+*.exe
+*.zip
+test/test
 examples/example2d
 examples/particles
 examples/shadows
 examples/thicklines
 examples/ondemand
-*.exe
-*.zip
