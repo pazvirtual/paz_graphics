@@ -12,6 +12,31 @@
 #endif
 #include <GLFW/glfw3.h>
 
+static const std::string ThickLinesGeomSrc = 1 + R"===(
+layout(lines) in;
+uniform int width;
+uniform int height;
+layout(triangle_strip, max_vertices = 4) out;
+in float glLineWidth[];
+void main()
+{
+    vec2 para = (gl_in[1].gl_Position.xy - gl_in[0].gl_Position.xy);
+    para /= length(para);
+    vec2 perp = vec2(-para.y, para.x);
+    para /= vec2(width, height);
+    perp /= vec2(width, height);
+    gl_Position = vec4(gl_in[0].gl_Position.xy - glLineWidth[0]*perp, 0, 1);
+    EmitVertex();
+    gl_Position = vec4(gl_in[1].gl_Position.xy - glLineWidth[1]*perp, 0, 1);
+    EmitVertex();
+    gl_Position = vec4(gl_in[0].gl_Position.xy + glLineWidth[0]*perp, 0, 1);
+    EmitVertex();
+    gl_Position = vec4(gl_in[1].gl_Position.xy + glLineWidth[1]*perp, 0, 1);
+    EmitVertex();
+    EndPrimitive();
+}
+)===";
+
 static unsigned int compile_shader(const std::string& src, GLenum type)
 {
     // Compile shader.
@@ -45,6 +70,8 @@ paz::ShaderFunctionLibrary::Data::~Data()
     {
         glDeleteShader(n.second);
     }
+
+    glDeleteShader(_thickLinesId);
 }
 
 paz::ShaderFunctionLibrary::ShaderFunctionLibrary()
@@ -52,6 +79,17 @@ paz::ShaderFunctionLibrary::ShaderFunctionLibrary()
     initialize();
 
     _data = std::make_shared<Data>();
+
+    try
+    {
+        _data->_thickLinesId = compile_shader(ThickLinesGeomSrc,
+            GL_GEOMETRY_SHADER);
+    }
+    catch(const std::exception& e)
+    {
+        throw std::runtime_error("Failed to compile geometry function: " + std::
+            string(e.what()));
+    }
 }
 
 void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
@@ -65,34 +103,15 @@ void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
 
     try
     {
-        vert2metal(src);
-        _data->_vertexIds[name] = compile_shader(src, GL_VERTEX_SHADER);
+        vert2metal(src, _data->_thickLines[name]);
+        _data->_vertexIds[name] = compile_shader((_data->_thickLines.at(name) ?
+            "#define gl_LineWidth glLineWidth\nout float glLineWidth;\n" : "") +
+            src, GL_VERTEX_SHADER);
     }
     catch(const std::exception& e)
     {
         throw std::runtime_error("Failed to compile vertex function \"" + name +
             "\": " + e.what());
-    }
-}
-
-void paz::ShaderFunctionLibrary::geometry(const std::string& name, const std::
-    string& src)
-{
-    if(_data->_geometryIds.count(name))
-    {
-        throw std::runtime_error("Geometry function \"" + name + "\" has alread"
-            "y been defined.");
-    }
-
-    try
-    {
-//        geom2metal(src);
-        _data->_geometryIds[name] = compile_shader(src, GL_GEOMETRY_SHADER);
-    }
-    catch(const std::exception& e)
-    {
-        throw std::runtime_error("Failed to compile geometry function \"" + name
-            + "\": " + e.what());
     }
 }
 
