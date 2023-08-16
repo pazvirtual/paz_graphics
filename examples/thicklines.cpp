@@ -74,10 +74,10 @@ int main(int, char** argv)
     quadVerts.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
 
     const paz::VertexFunction lineVert(LineVertSrc);
-    const paz::VertexFunction quadVert(paz::load_file(appDir + "/quad.vert").
+    const paz::VertexFunction quadVert(paz::load_bytes(appDir + "/quad.vert").
         str());
     const paz::FragmentFunction lineFrag0(LineFragSrc);
-    const paz::FragmentFunction lineFrag1(paz::load_file(appDir + "/lines.frag"
+    const paz::FragmentFunction lineFrag1(paz::load_bytes(appDir + "/lines.frag"
         ).str());
 
     paz::Framebuffer buff;
