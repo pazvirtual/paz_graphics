@@ -10,8 +10,8 @@
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
-#define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
-    contentViewController] mtkView] device]
+#define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
+    [NSApp delegate]) window] contentViewController]) mtkView] device]
 
 static MTLPixelFormat depth_pixel_format(unsigned int b, paz::Texture::DataType
     t)
@@ -76,7 +76,7 @@ void paz::DepthStencilTarget::resize(int width, int height)
 {
     if(_data->_texture)
     {
-        [(id<MTLTexture>)_data->_texture release];
+        [static_cast<id<MTLTexture>>(_data->_texture) release];
     }
     _width = _scale*width;
     _height = _scale*height;

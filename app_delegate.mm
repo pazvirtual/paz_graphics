@@ -82,7 +82,8 @@
         _window = [NSWindow windowWithContentViewController:viewController];
         [viewController release];
         [_window makeFirstResponder:[_window contentViewController]];
-        [(ViewController*)[_window contentViewController] resetEvents];
+        [static_cast<ViewController*>([_window contentViewController])
+            resetEvents];
 
         [_window setTitle:[NSString stringWithUTF8String:title.c_str()]];
         [_window setStyleMask:NSWindowStyleMaskTitled|

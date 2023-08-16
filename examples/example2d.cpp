@@ -124,8 +124,9 @@ int main(int, char** argv)
 
         // Propagate physics.
         std::pair<double, double> m = paz::Window::MousePos();
-        m.first = std::min(m.first, (double)paz::Window::Width());
-        m.second = std::min(m.second, (double)paz::Window::Height());
+        m.first = std::min(m.first, static_cast<double>(paz::Window::Width()));
+        m.second = std::min(m.second, static_cast<double>(paz::Window::
+            Height()));
         m.first = std::max(m.first*2./paz::Window::Height(), 0.);
         m.second = std::max(m.second*2./paz::Window::Height(), 0.);
         m.first -= paz::Window::AspectRatio();
@@ -149,10 +150,12 @@ int main(int, char** argv)
 
         // Drawing.
         scenePass.begin({paz::RenderPass::LoadAction::Clear});
-        scenePass.uniform("angle", (float)angle);
-        scenePass.uniform("aspectRatio", (float)paz::Window::AspectRatio());
-        scenePass.uniform("origin", (float)x, (float)y);
-        scenePass.uniform("length", (float)length);
+        scenePass.uniform("angle", static_cast<float>(angle));
+        scenePass.uniform("aspectRatio", static_cast<float>(paz::Window::
+            AspectRatio()));
+        scenePass.uniform("origin", static_cast<float>(x), static_cast<float>(
+            y));
+        scenePass.uniform("length", static_cast<float>(length));
         if(mode)
         {
             scenePass.indexed(paz::RenderPass::PrimitiveType::LineStrip,
@@ -212,9 +215,10 @@ int main(int, char** argv)
         textPass.end();
 
         postPass.begin();
-        postPass.uniform("factor", (float)std::abs(y));
+        postPass.uniform("factor", static_cast<float>(std::abs(y)));
         postPass.read("source", render);
-        postPass.uniform("aspectRatio", (float)paz::Window::AspectRatio());
+        postPass.uniform("aspectRatio", static_cast<float>(paz::Window::
+            AspectRatio()));
         postPass.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
             quadVertices);
         postPass.end();

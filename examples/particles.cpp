@@ -87,16 +87,16 @@ int main(int, char** argv)
         r.uniform("view", v);
         for(auto it = particles.rbegin(); it != particles.rend(); ++it)
         {
-            r.uniform("origin", (float)it->second[0], (float)it->second[1],
-                (float)it->second[2]);
-            r.uniform("distSq", (float)it->first);
+            r.uniform("origin", static_cast<float>(it->second[0]), static_cast<
+                float>(it->second[1]), static_cast<float>(it->second[2]));
+            r.uniform("distSq", static_cast<float>(it->first));
             r.primitives(paz::RenderPass::PrimitiveType::TriangleStrip, q);
         }
         r.end();
 
         u.begin();
         u.read("hdrRender", render);
-        u.uniform("whitePoint", 0.5f + 0.5f*(float)std::sin(time));
+        u.uniform("whitePoint", 0.5f + 0.5f*static_cast<float>(std::sin(time)));
         u.primitives(paz::RenderPass::PrimitiveType::TriangleStrip, q);
         u.end();
     });

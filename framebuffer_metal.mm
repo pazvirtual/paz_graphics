@@ -8,8 +8,8 @@
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
-#define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
-    contentViewController] mtkView] device]
+#define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
+    [NSApp delegate]) window] contentViewController]) mtkView] device]
 
 paz::Framebuffer::~Framebuffer()
 {

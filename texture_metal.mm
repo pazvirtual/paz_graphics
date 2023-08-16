@@ -9,6 +9,9 @@
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
+#define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
+    [NSApp delegate]) window] contentViewController]) mtkView] device]
+
 template<typename T, int NumChannels>
 static paz::Image<T, NumChannels> flip_image(const paz::Image<T, NumChannels>&
     image)
@@ -22,9 +25,6 @@ static paz::Image<T, NumChannels> flip_image(const paz::Image<T, NumChannels>&
     }
     return flipped;
 }
-
-#define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
-    contentViewController] mtkView] device]
 
 paz::Texture::Texture()
 {
@@ -42,11 +42,11 @@ paz::Texture::~Texture()
 {
     if(_data->_texture)
     {
-        [(id<MTLTexture>)_data->_texture release];
+        [static_cast<id<MTLTexture>>(_data->_texture) release];
     }
     if(_data->_sampler)
     {
-        [(id<MTLSamplerState>)_data->_sampler release];
+        [static_cast<id<MTLSamplerState>>(_data->_sampler) release];
     }
 }
 
@@ -79,9 +79,9 @@ void paz::Texture::init(int width, int height, int numChannels, int numBits,
     [textureDescriptor release];
     if(data)
     {
-        [(id<MTLTexture>)_data->_texture replaceRegion:MTLRegionMake2D(0, 0,
-            _width, _height) mipmapLevel:0 withBytes:data bytesPerRow:_width*
-            numChannels*numBits/8];
+        [static_cast<id<MTLTexture>>(_data->_texture) replaceRegion:
+            MTLRegionMake2D(0, 0, _width, _height) mipmapLevel:0 withBytes:data
+            bytesPerRow:_width*numChannels*numBits/8];
     }
     if(!_data->_sampler)
     {
@@ -93,7 +93,7 @@ void paz::Texture::resize(int width, int height)
 {
     if(_data->_texture)
     {
-        [(id<MTLTexture>)_data->_texture release];
+        [static_cast<id<MTLTexture>>(_data->_texture) release];
     }
     init(width, height, _data->_numChannels, _data->_numBits, _data->_type,
         _data->_minFilter, _data->_magFilter, nullptr);

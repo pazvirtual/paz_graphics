@@ -6,8 +6,8 @@
 #import "app_delegate.hh"
 #import "view_controller.hh"
 
-#define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
-    contentViewController] mtkView] device]
+#define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
+    [NSApp delegate]) window] contentViewController]) mtkView] device]
 
 static MTLSamplerMinMagFilter min_mag_filter(paz::Texture::MinMagFilter f)
 {

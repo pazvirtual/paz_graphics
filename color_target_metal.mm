@@ -10,8 +10,8 @@
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
-#define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
-    contentViewController] mtkView] device]
+#define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
+    [NSApp delegate]) window] contentViewController]) mtkView] device]
 
 static id<MTLTexture> init(int width, int height, int numChannels, int numBits,
     paz::Texture::DataType type)
@@ -56,7 +56,7 @@ void paz::ColorTarget::resize(int width, int height)
 {
     if(_data->_texture)
     {
-        [(id<MTLTexture>)_data->_texture release];
+        [static_cast<id<MTLTexture>>(_data->_texture) release];
     }
     _width = _scale*width;
     _height = _scale*height;

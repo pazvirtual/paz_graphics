@@ -9,8 +9,8 @@
 #include "internal_data.hpp"
 #import <MetalKit/MetalKit.h>
 
-#define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
-    contentViewController] mtkView] device]
+#define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
+    [NSApp delegate]) window] contentViewController]) mtkView] device]
 
 static id<MTLLibrary> create_library(std::string src, bool isVert)
 {
@@ -46,14 +46,14 @@ paz::ShaderFunctionLibrary::~ShaderFunctionLibrary()
     {
         if(n.second)
         {
-            [(id<MTLLibrary>)n.second release];
+            [static_cast<id<MTLLibrary>>(n.second) release];
         }
     }
     for(const auto& n : _data->_frags)
     {
         if(n.second)
         {
-            [(id<MTLLibrary>)n.second release];
+            [static_cast<id<MTLLibrary>>(n.second) release];
         }
     }
 }
