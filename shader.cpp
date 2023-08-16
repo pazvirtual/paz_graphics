@@ -5,21 +5,24 @@
 #include "PAZ_Graphics"
 #include "util.hpp"
 #include "internal_data.hpp"
+#include "window.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
 #include <GLFW/glfw3.h>
 
-paz::Shader::~Shader()
+paz::Shader::Data::~Data()
 {
-    glDeleteProgram(_data->_id);
+    glDeleteProgram(_id);
 }
 
 paz::Shader::Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
     vertName, const ShaderFunctionLibrary& fragLibrary, const std::string&
     fragName)
 {
-    _data = std::make_unique<Data>();
+    initialize();
+
+    _data = std::make_shared<Data>();
 
     if(!vertLibrary._data->_vertexIds.count(vertName))
     {
@@ -110,6 +113,8 @@ paz::Shader::Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
     geomName, const ShaderFunctionLibrary& fragLibrary, const std::string&
     fragName)
 {
+    initialize();
+
     _data = std::make_unique<Data>();
 
     if(!vertLibrary._data->_vertexIds.count(vertName))

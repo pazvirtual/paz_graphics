@@ -16,12 +16,11 @@ namespace paz
     constexpr int GlMajorVersion = 4;
     constexpr int GlMinorVersion = 1;
 
-    std::pair<GLint, GLint> min_mag_filter(Texture::MinMagFilter minFilter,
-        Texture::MinMagFilter magFilter, paz::Texture::MipmapFilter mipmapFilter
-        = Texture::MipmapFilter::None);
-    GLint gl_internal_format(Texture::Format format);
-    GLenum gl_format(Texture::Format format);
-    GLenum gl_type(Texture::Format format);
+    std::pair<GLint, GLint> min_mag_filter(MinMagFilter minFilter, MinMagFilter
+        magFilter, MipmapFilter mipmapFilter = MipmapFilter::None);
+    GLint gl_internal_format(TextureFormat format);
+    GLenum gl_format(TextureFormat format);
+    GLenum gl_type(TextureFormat format);
     std::string get_log(unsigned int id, bool isProgram);
     std::string gl_error(GLenum error);
 }

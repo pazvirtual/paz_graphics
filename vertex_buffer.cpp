@@ -6,25 +6,31 @@
 #include "util.hpp"
 #include "internal_data.hpp"
 #include "vertex_buffer.hpp"
+#include "window.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
 #include <GLFW/glfw3.h>
 
-paz::VertexBuffer::~VertexBuffer()
+paz::VertexBuffer::Data::~Data()
 {
-    for(auto& n : _data->_ids)
+    for(auto& n : _ids)
     {
         glDeleteBuffers(1, &n);
     }
-    glDeleteVertexArrays(1, &_data->_id);
+    glDeleteVertexArrays(1, &_id);
+}
+
+paz::VertexBuffer::Data::Data()
+{
+    glGenVertexArrays(1, &_id);
 }
 
 paz::VertexBuffer::VertexBuffer()
 {
-    _data = std::make_unique<Data>();
+    initialize();
 
-    glGenVertexArrays(1, &_data->_id);
+    _data = std::make_shared<Data>();
 }
 
 void paz::VertexBuffer::attribute(int dim, const GLfloat* data, std::size_t

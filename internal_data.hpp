@@ -15,11 +15,13 @@ struct paz::Texture::Data
     int _width = 0;
     int _height = 0;
     bool _mipmap = false;
-    Format _format;
+    TextureFormat _format;
     MinMagFilter _minFilter;
     MinMagFilter _magFilter;
     bool _isRenderTarget = false;
     double _scale = 1.;
+    ~Data();
+    void resize(int width, int height);
 };
 
 struct paz::VertexBuffer::Data
@@ -32,6 +34,8 @@ struct paz::VertexBuffer::Data
     std::vector<unsigned int> _types;
 #endif
     std::size_t _numVertices = 0;
+    ~Data();
+    Data();
 };
 
 struct paz::IndexBuffer::Data
@@ -42,32 +46,37 @@ struct paz::IndexBuffer::Data
     unsigned int _id = 0;
 #endif
     std::size_t _numIndices = 0;
+    ~Data();
 };
 
 struct paz::Framebuffer::Data
 {
+    std::vector<std::shared_ptr<Texture::Data>> _colorAttachments; //TEMP
+    std::shared_ptr<Texture::Data> _depthStencilAttachment; //TEMP
 #ifdef PAZ_MACOS
-        std::vector<const RenderTarget*> _colorAttachments;
-        const RenderTarget* _depthAttachment = nullptr;
+    std::vector<const RenderTarget*> _colorAttachments;
+    const RenderTarget* _depthAttachment = nullptr;
 #else
-        unsigned int _id = 0;
-        int _numTextures = 0;
-        bool _hasDepthAttachment = false;
+    unsigned int _id = 0;
+    int _numTextures = 0;
 #endif
-        int _width = 0;
-        int _height = 0;
+    int _width = 0;
+    int _height = 0;
+    ~Data();
+    Data();
 };
 
 struct paz::ShaderFunctionLibrary::Data
 {
 #ifdef PAZ_MACOS
-        std::unordered_map<std::string, void*> _verts;
-        std::unordered_map<std::string, void*> _frags;
+    std::unordered_map<std::string, void*> _verts;
+    std::unordered_map<std::string, void*> _frags;
 #else
-        std::unordered_map<std::string, unsigned int> _vertexIds;
-        std::unordered_map<std::string, unsigned int> _geometryIds;
-        std::unordered_map<std::string, unsigned int> _fragmentIds;
+    std::unordered_map<std::string, unsigned int> _vertexIds;
+    std::unordered_map<std::string, unsigned int> _geometryIds;
+    std::unordered_map<std::string, unsigned int> _fragmentIds;
 #endif
+    ~Data();
 };
 
 struct paz::Shader::Data
@@ -83,6 +92,7 @@ struct paz::Shader::Data
     // attribTypes[location] = type (array attributes are not supported)
     std::unordered_map<unsigned int, unsigned int> _attribTypes;
 #endif
+    ~Data();
 };
 
 struct paz::RenderPass::Data
@@ -92,11 +102,12 @@ struct paz::RenderPass::Data
     void* _renderEncoder = nullptr;
     std::unordered_map<std::string, int> _vertexArgs;
     std::unordered_map<std::string, int> _fragmentArgs;
+    ~Data();
 #else
-    const Shader* _shader = nullptr;
     BlendMode _blendMode = BlendMode::Disable;
 #endif
-    const Framebuffer* _fbo = nullptr;
+    std::shared_ptr<Shader::Data> _shader;
+    std::shared_ptr<Framebuffer::Data> _fbo;
 };
 
 #endif

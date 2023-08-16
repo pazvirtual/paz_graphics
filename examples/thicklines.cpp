@@ -52,8 +52,6 @@ static constexpr std::array<float, 4*5> points =
 
 int main()
 {
-    paz::Window::SetMinSize(640, 480);
-
     paz::VertexBuffer vertices;
     vertices.attribute(2, points);
 
@@ -68,10 +66,10 @@ int main()
 
     paz::Window::Loop([&]()
     {
-        render.begin({paz::RenderPass::LoadAction::Clear});
+        render.begin({paz::LoadAction::Clear});
         render.uniform("width", paz::Window::ViewportWidth());
         render.uniform("height", paz::Window::ViewportHeight());
-        render.primitives(paz::RenderPass::PrimitiveType::Lines, vertices);
+        render.primitives(paz::PrimitiveType::Lines, vertices);
         render.end();
     }
     );

@@ -2,13 +2,15 @@
 #include "window.hpp"
 #include "internal_data.hpp"
 
-paz::RenderTarget::RenderTarget(double scale, Format format, MinMagFilter
-    minFilter, MinMagFilter magFilter) : Texture()
+paz::RenderTarget::RenderTarget(double scale, TextureFormat format, MinMagFilter
+    minFilter, MinMagFilter magFilter)
 {
     if(scale <= 0.)
     {
         throw std::runtime_error("Render target scale must be positive.");
     }
+
+    _data = std::make_shared<Data>();
 
     _data->_format = format;
     _data->_minFilter = minFilter;
@@ -21,12 +23,14 @@ paz::RenderTarget::RenderTarget(double scale, Format format, MinMagFilter
 
     init();
 
-    register_target(this);
+    register_target(_data.get());
 }
 
-paz::RenderTarget::RenderTarget(int width, int height, Format format,
-    MinMagFilter minFilter, MinMagFilter magFilter) : Texture()
+paz::RenderTarget::RenderTarget(int width, int height, TextureFormat format,
+    MinMagFilter minFilter, MinMagFilter magFilter)
 {
+    _data = std::make_shared<Data>();
+
     _data->_format = format;
     _data->_minFilter = minFilter;
     _data->_magFilter = magFilter;
@@ -38,10 +42,5 @@ paz::RenderTarget::RenderTarget(int width, int height, Format format,
 
     init();
 
-    register_target(this);
-}
-
-paz::RenderTarget::~RenderTarget()
-{
-    unregister_target(this);
+    register_target(_data.get());
 }
