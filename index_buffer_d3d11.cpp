@@ -8,6 +8,7 @@
 
 paz::IndexBuffer::Data::~Data()
 {
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 paz::IndexBuffer::IndexBuffer()
@@ -26,18 +27,22 @@ paz::IndexBuffer::IndexBuffer(std::size_t size)
 
 paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
 {
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 void paz::IndexBuffer::sub(const unsigned int* data, std::size_t size)
 {
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 bool paz::IndexBuffer::empty() const
 {
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 std::size_t paz::IndexBuffer::size() const
 {
+    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
 }
 
 #endif

@@ -9,8 +9,9 @@
 
 #define CASE0(a, b) case paz::TextureFormat::a: return DXGI_FORMAT_##b;
 #define CASE1(a, b) case paz::WrapMode::a: return D3D11_TEXTURE_ADDRESS_##b;
+#define CASE2(f, n, b) case paz::TextureFormat::f: return n*b/8;
 
-static DXGI_FORMAT dxgi_format(paz::TextureFormat format)
+static DXGI_FORMAT tex_format(paz::TextureFormat format)
 {
     switch(format)
     {
@@ -160,6 +161,59 @@ static D3D11_TEXTURE_ADDRESS_MODE address_mode(paz::WrapMode m)
     throw std::logic_error("Invalid texture wrapping mode requested.");
 }
 
+static int bytes_per_pixel(paz::TextureFormat format)
+{
+    switch(format)
+    {
+        CASE2(R8UInt, 1, 8)
+        CASE2(R8SInt, 1, 8)
+        CASE2(R8UNorm, 1, 8)
+        CASE2(R8SNorm, 1, 8)
+        CASE2(R16UInt, 1, 16)
+        CASE2(R16SInt, 1, 16)
+        CASE2(R16UNorm, 1, 16)
+        CASE2(R16SNorm, 1, 16)
+        CASE2(R16Float, 1, 16)
+        CASE2(R32UInt, 1, 32)
+        CASE2(R32SInt, 1, 32)
+        CASE2(R32Float, 1, 32)
+
+        CASE2(RG8UInt, 2, 8)
+        CASE2(RG8SInt, 2, 8)
+        CASE2(RG8UNorm, 2, 8)
+        CASE2(RG8SNorm, 2, 8)
+        CASE2(RG16UInt, 2, 16)
+        CASE2(RG16SInt, 2, 16)
+        CASE2(RG16UNorm, 2, 16)
+        CASE2(RG16SNorm, 2, 16)
+        CASE2(RG16Float, 2, 16)
+        CASE2(RG32UInt, 2, 32)
+        CASE2(RG32SInt, 2, 32)
+        CASE2(RG32Float, 2, 32)
+
+        CASE2(RGBA8UInt, 4, 8)
+        CASE2(RGBA8SInt, 4, 8)
+        CASE2(RGBA8UNorm, 4, 8)
+        CASE2(RGBA8UNorm_sRGB, 4, 8)
+        CASE2(RGBA8SNorm, 4, 8)
+        CASE2(RGBA16UInt, 4, 16)
+        CASE2(RGBA16SInt, 4, 16)
+        CASE2(RGBA16UNorm, 4, 16)
+        CASE2(RGBA16SNorm, 4, 16)
+        CASE2(RGBA16Float, 4, 16)
+        CASE2(RGBA32UInt, 4, 32)
+        CASE2(RGBA32SInt, 4, 32)
+        CASE2(RGBA32Float, 4, 32)
+
+        CASE2(Depth16UNorm, 1, 16)
+        CASE2(Depth32Float, 1, 32)
+
+        CASE2(BGRA8UNorm, 4, 8)
+    }
+
+    throw std::runtime_error("Invalid texture format requested.");
+}
+
 static ID3D11SamplerState* create_sampler(paz::MinMagFilter minFilter, paz::
     MinMagFilter magFilter, paz::MipmapFilter mipFilter, paz::WrapMode wrapS,
     paz::WrapMode wrapT)
@@ -293,7 +347,7 @@ void paz::Texture::Data::init(const void* data)
     descriptor.Height = _height;
     descriptor.MipLevels = _mipFilter == MipmapFilter::None;
     descriptor.ArraySize = 1;
-    descriptor.Format = dxgi_format(_format);
+    descriptor.Format = tex_format(_format);
     descriptor.SampleDesc.Count = 1;
     descriptor.Usage = _isRenderTarget || _mipFilter != MipmapFilter::None ?
         D3D11_USAGE_DEFAULT : D3D11_USAGE_IMMUTABLE;
@@ -309,22 +363,64 @@ void paz::Texture::Data::init(const void* data)
     }
     descriptor.MiscFlags = _mipFilter == MipmapFilter::None ? 0 :
         D3D11_RESOURCE_MISC_GENERATE_MIPS;
-    HRESULT hr;
     if(data)
     {
-        throw std::logic_error("IMPLEMENT THIS");
         D3D11_SUBRESOURCE_DATA srData = {};
-        // ...
-        hr = d3d_device()->CreateTexture2D(&descriptor, &srData, &_texture);
+        srData.pSysMem = data;
+        srData.SysMemPitch = _width*bytes_per_pixel(_format);
+        if(_mipFilter == MipmapFilter::None)
+        {
+            const auto hr = d3d_device()->CreateTexture2D(&descriptor, &srData,
+                &_texture);
+            if(hr)
+            {
+                throw std::runtime_error("Failed to create texture (HRESULT " +
+                    std::to_string(hr) + ").");
+            }
+        }
+        else
+        {
+            // Crate texture.
+            auto hr = d3d_device()->CreateTexture2D(&descriptor, nullptr,
+                &_texture);
+            if(hr)
+            {
+                throw std::runtime_error("Failed to create texture (HRESULT " +
+                    std::to_string(hr) + ").");
+            }
+
+            // Create temporary texture with data.
+            D3D11_TEXTURE2D_DESC stagingDescriptor = descriptor;
+            stagingDescriptor.MipLevels = 1;
+            stagingDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
+            stagingDescriptor.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+            stagingDescriptor.MiscFlags = 0;
+            ID3D11Texture2D* staging;
+            hr = d3d_device()->CreateTexture2D(&stagingDescriptor, &srData,
+                &staging);
+            if(hr)
+            {
+                throw std::runtime_error("Failed to create temporary texture (H"
+                    "RESULT " + std::to_string(hr) + ").");
+            }
+
+            // Copy data.
+            d3d_context()->CopySubresourceRegion(_texture, 0, 0, 0, 0, staging,
+                0, nullptr);
+
+            // Clean up.
+            staging->Release();
+        }
     }
     else
     {
-        hr = d3d_device()->CreateTexture2D(&descriptor, nullptr, &_texture);
-    }
-    if(hr)
-    {
-        throw std::runtime_error("Failed to create texture (HRESULT " + std::
-            to_string(hr) + ").");
+        const auto hr = d3d_device()->CreateTexture2D(&descriptor, nullptr,
+            &_texture);
+        if(hr)
+        {
+            throw std::runtime_error("Failed to create texture (HRESULT " +
+                std::to_string(hr) + ").");
+        }
     }
     if(!_sampler)
     {
@@ -344,10 +440,11 @@ void paz::Texture::Data::init(const void* data)
         }
         else
         {
-            rvDescriptor.Format = dxgi_format(_format);
+            rvDescriptor.Format = tex_format(_format);
         }
         rvDescriptor.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        rvDescriptor.Texture2D.MipLevels = descriptor.MipLevels;
+        rvDescriptor.Texture2D.MipLevels = _mipFilter == MipmapFilter::None ? 1
+            : -1;
         const auto hr = d3d_device()->CreateShaderResourceView(_texture,
             &rvDescriptor, &_resourceView);
         if(hr)
@@ -423,7 +520,10 @@ void paz::Texture::Data::resize(int width, int height)
 
 void paz::Texture::Data::ensureMipmaps()
 {
-    d3d_context()->GenerateMips(_resourceView);
+    if(_mipFilter != MipmapFilter::None)
+    {
+        d3d_context()->GenerateMips(_resourceView);
+    }
 }
 
 int paz::Texture::width() const

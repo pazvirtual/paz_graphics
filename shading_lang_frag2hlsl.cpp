@@ -32,91 +32,91 @@ std::string paz::frag2hlsl(const std::string& src)
 
     // Make it easier to pass around textures and their samplers.
     out << 1 + R"===(
-struct wrap_texture1d
+struct wrap_sampler1D
 {
     Texture1D t;
     SamplerState s;
 };
-struct wrap_itexture1d
+struct wrap_isampler1D
 {
     Texture1D<int4> t;
     SamplerState s;
 };
-struct wrap_utexture1d
+struct wrap_usampler1D
 {
     Texture1D<uint4> t;
     SamplerState s;
 };
-struct wrap_texture2d
+struct wrap_sampler2D
 {
     Texture2D t;
     SamplerState s;
 };
-struct wrap_itexture2d
+struct wrap_isampler2D
 {
     Texture2D<int4> t;
     SamplerState s;
 };
-struct wrap_utexture2d
+struct wrap_usampler2D
 {
     Texture2D<uint4> t;
     SamplerState s;
 };
-#define sampler1D wrap_texture1d
-#define sampler2D wrap_texture2d
-#define isampler1D wrap_itexture1d
-#define isampler2D wrap_itexture2d
-#define usampler1D wrap_utexture1d
-#define usampler2D wrap_utexture2d
+#define sampler1D wrap_sampler1D
+#define sampler2D wrap_sampler2D
+#define isampler1D wrap_isampler1D
+#define isampler2D wrap_isampler2D
+#define usampler1D wrap_usampler1D
+#define usampler2D wrap_usampler2D
 )===";
 
     // Define our Y-reversed sample functions.
     out << 1 + R"===(
-float4 sample_texture(in wrap_texture1d tex, in float u)
+float4 sample_texture(in wrap_sampler1D tex, in float u)
 {
     return tex.t.Sample(tex.s, u);
 }
-int4 sample_texture(in wrap_itexture1d tex, in float u)
+int4 sample_texture(in wrap_isampler1D tex, in float u)
 {
     return tex.t.Sample(tex.s, u);
 }
-uint4 sample_texture(in wrap_utexture1d tex, in float u)
+uint4 sample_texture(in wrap_usampler1D tex, in float u)
 {
     return tex.t.Sample(tex.s, u);
 }
-float4 textureLod(in wrap_texture1d tex, in float u, in float lod)
+float4 textureLod(in wrap_sampler1D tex, in float u, in float lod)
 {
     return tex.t.SampleLevel(tex.s, u, lod);
 }
-int4 textureLod(in wrap_itexture1d tex, in float u, in float lod)
+int4 textureLod(in wrap_isampler1D tex, in float u, in float lod)
 {
     return tex.t.SampleLevel(tex.s, u, lod);
 }
-uint4 textureLod(in wrap_utexture1d tex, in float u, in float lod)
+uint4 textureLod(in wrap_usampler1D tex, in float u, in float lod)
 {
     return tex.t.SampleLevel(tex.s, u, lod);
 }
-float4 sample_texture(in wrap_texture2d tex, in float2 uv)
+float4 sample_texture(in wrap_sampler2D tex, in float2 uv)
 {
     return tex.t.Sample(tex.s, float2(uv.x, 1. - uv.y));
 }
-int4 sample_texture(in wrap_itexture2d tex, in float2 uv)
+int4 sample_texture(in wrap_isampler2D tex, in float2 uv)
 {
     return tex.t.Sample(tex.s, float2(uv.x, 1. - uv.y));
 }
-uint4 sample_texture(in wrap_utexture2d tex, in float2 uv)
+uint4 sample_texture(in wrap_usampler2D tex, in float2 uv)
 {
     return tex.t.Sample(tex.s, float2(uv.x, 1. - uv.y));
 }
-float4 textureLod(in wrap_texture2d tex, in float2 uv, in float lod)
+float4 textureLod(in wrap_sampler2D tex, in float2 uv, in float lod)
 {
     return tex.t.SampleLevel(tex.s, float2(uv.x, 1. - uv.y), lod);
 }
-int4 textureLod(in wrap_itexture2d tex, in float2 uv, in float lod)
+int4 textureLod(in wrap_isampler2D tex, in float2 uv, in float lod)
 {
     return tex.t.SampleLevel(tex.s, float2(uv.x, 1. - uv.y), lod);
 }
-uint4 textureLod(in wrap_utexture2d tex, in float2 uv, in float lod)
+uint4 textureLod(in wrap_usampler2D tex, in float2 uv, in float lod)
 {
     return tex.t.SampleLevel(tex.s, float2(uv.x, 1. - uv.y), lod);
 }
@@ -125,32 +125,32 @@ uint4 textureLod(in wrap_utexture2d tex, in float2 uv, in float lod)
 
     // Define `textureQueryLod()`. Should check that these are correct.
     out << 1 + R"===(
-float2 textureQueryLod(in wrap_texture1d tex, in float u)
+float2 textureQueryLod(in wrap_sampler1D tex, in float u)
 {
     return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
         CalculateLevelOfDetailUnclamped(tex.s, u));
 }
-int2 textureQueryLod(in wrap_itexture1d tex, in float u)
+int2 textureQueryLod(in wrap_isampler1D tex, in float u)
 {
     return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
         CalculateLevelOfDetailUnclamped(tex.s, u));
 }
-uint2 textureQueryLod(in wrap_utexture1d tex, in float u)
+uint2 textureQueryLod(in wrap_usampler1D tex, in float u)
 {
     return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
         CalculateLevelOfDetailUnclamped(tex.s, u));
 }
-float2 textureQueryLod(in wrap_texture2d tex, in float u)
+float2 textureQueryLod(in wrap_sampler2D tex, in float u)
 {
     return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
         CalculateLevelOfDetailUnclamped(tex.s, u));
 }
-int2 textureQueryLod(in wrap_itexture2d tex, in float u)
+int2 textureQueryLod(in wrap_isampler2D tex, in float u)
 {
     return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
         CalculateLevelOfDetailUnclamped(tex.s, u));
 }
-uint2 textureQueryLod(in wrap_utexture2d tex, in float u)
+uint2 textureQueryLod(in wrap_usampler2D tex, in float u)
 {
     return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
         CalculateLevelOfDetailUnclamped(tex.s, u));
@@ -159,37 +159,37 @@ uint2 textureQueryLod(in wrap_utexture2d tex, in float u)
 
     // Define `textureSize()`. Note that LOD parameter is currently ignored.
     out << 1 + R"===(
-int textureSize(wrap_texture1d tex, int lod)
+int textureSize(wrap_sampler1D tex, int lod)
 {
     uint w;
     tex.t.GetDimensions(w);
     return w;
 }
-int textureSize(wrap_itexture1d tex, int lod)
+int textureSize(wrap_isampler1D tex, int lod)
 {
     uint w;
     tex.t.GetDimensions(w);
     return w;
 }
-int textureSize(wrap_utexture1d tex, int lod)
+int textureSize(wrap_usampler1D tex, int lod)
 {
     uint w;
     tex.t.GetDimensions(w);
     return w;
 }
-int2 textureSize(wrap_texture2d tex, int lod)
+int2 textureSize(wrap_sampler2D tex, int lod)
 {
     uint w, h;
     tex.t.GetDimensions(w, h);
     return int2(w, h);
 }
-int2 textureSize(wrap_itexture2d tex, int lod)
+int2 textureSize(wrap_isampler2D tex, int lod)
 {
     uint w, h;
     tex.t.GetDimensions(w, h);
     return int2(w, h);
 }
-int2 textureSize(wrap_utexture2d tex, int lod)
+int2 textureSize(wrap_usampler2D tex, int lod)
 {
     uint w, h;
     tex.t.GetDimensions(w, h);
@@ -531,41 +531,45 @@ float4 uintBitsToFloat(in uint4 v)
         {
             const std::string dec = line.substr(8, line.size() - 9);
             const std::size_t pos = dec.find_last_of(' ');
-            std::string wrapType = dec.substr(0, pos);
+            std::string type = dec.substr(0, pos);
             std::string name = dec.substr(pos + 1);
-            std::string type;
-            if(wrapType.back() == 'D')
+            std::string texType;
+            if(type.back() == 'D')
             {
-                if(wrapType == "sampler1D")
+                if(type == "depthSampler2D")
                 {
-                    type = "Texture1D";
+                    type = "sampler2D";
                 }
-                else if(wrapType == "sampler2D" || wrapType == "depthSampler2D")
+                if(type == "sampler1D")
                 {
-                    type = "Texture2D";
+                    texType = "Texture1D";
                 }
-                else if(wrapType == "isampler1D")
+                else if(type == "sampler2D")
                 {
-                    type = "Texture1D<int>";
+                    texType = "Texture2D";
                 }
-                else if(wrapType == "isampler2D")
+                else if(type == "isampler1D")
                 {
-                    type = "Texture2D<int>";
+                    texType = "Texture1D<int>";
                 }
-                else if(wrapType == "usampler1D")
+                else if(type == "isampler2D")
                 {
-                    type = "Texture1D<uint>";
+                    texType = "Texture2D<int>";
                 }
-                else if(wrapType == "usampler2D")
+                else if(type == "usampler1D")
                 {
-                    type = "Texture2D<uint>";
+                    texType = "Texture1D<uint>";
+                }
+                else if(type == "usampler2D")
+                {
+                    texType = "Texture2D<uint>";
                 }
                 else
                 {
                     throw std::runtime_error("Line " + std::to_string(l) + ": U"
-                        "nsupported texture type \"" + wrapType + "\".");
+                        "nsupported texture type \"" + type + "\".");
                 }
-                textures[name] = {type, wrapType};
+                textures[name] = {texType, type};
             }
             else
             {
