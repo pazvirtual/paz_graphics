@@ -15,6 +15,8 @@ paz::IndexBuffer::Data::~Data()
     glDeleteBuffers(1, &_id);
 }
 
+paz::IndexBuffer::IndexBuffer() {}
+
 paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
 {
     initialize();
