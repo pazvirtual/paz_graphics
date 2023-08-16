@@ -37,6 +37,8 @@ struct paz::VertexBuffer::Data
 {
 #ifdef PAZ_MACOS
     std::vector<void*> _buffers;
+    void* _lineLoopIndices = nullptr;
+    void* _triangleFanIndices = nullptr;
 #else
     unsigned int _id = 0;
     std::vector<unsigned int> _ids;
@@ -55,6 +57,8 @@ struct paz::IndexBuffer::Data
 {
 #ifdef PAZ_MACOS
     void* _data = nullptr;
+    void* _lineLoopIndices = nullptr;
+    void* _triangleFanIndices = nullptr;
 #else
     unsigned int _id = 0;
     unsigned int _lineStripId = 0;
