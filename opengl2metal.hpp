@@ -14,7 +14,7 @@ namespace paz
         Struct // In struct definition
     };
 
-    std::string vert2metal(const std::string& src, bool& usesGlLineWidth);
+    std::string vert2metal(const std::string& src);
     std::string frag2metal(const std::string& src);
     std::string process_sig(const std::string& sig);
 }

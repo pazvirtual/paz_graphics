@@ -74,9 +74,8 @@ struct paz::ShaderFunctionLibrary::Data
     std::unordered_map<std::string, void*> _frags;
 #else
     std::unordered_map<std::string, unsigned int> _vertexIds;
-    std::unordered_map<std::string, bool> _thickLines;
+    std::unordered_map<std::string, unsigned int> _thickLinesIds;
     std::unordered_map<std::string, unsigned int> _fragmentIds;
-    unsigned int _thickLinesId = 0;
 #endif
     ~Data();
 };

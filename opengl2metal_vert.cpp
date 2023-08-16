@@ -9,7 +9,7 @@
 static const std::vector<std::string> unsupportedBuiltins = {"gl_PerVertex",
     "gl_PointSize", "gl_ClipDistance"};
 
-std::string paz::vert2metal(const std::string& src, bool& usesGlLineWidth)
+std::string paz::vert2metal(const std::string& src)
 {
     std::istringstream in(src);
     std::ostringstream out;
@@ -23,7 +23,7 @@ std::string paz::vert2metal(const std::string& src, bool& usesGlLineWidth)
 
     bool usesGlPosition = false;
     bool usesGlVertexId = false;
-    usesGlLineWidth = false;
+    bool usesGlLineWidth = false;
 
     std::unordered_map<std::string, std::pair<std::string, bool>> buffers;
     std::map<unsigned int, std::pair<std::string, std::string>> inputs;

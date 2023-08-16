@@ -7,10 +7,32 @@
 #include "opengl2metal.hpp"
 #include "internal_data.hpp"
 #include "window.hpp"
+#include <sstream>
+#include <regex>
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
 #include <GLFW/glfw3.h>
+
+static bool uses_gl_line_width(const std::string& vertSrc)
+{
+    std::istringstream iss(vertSrc);
+    std::string line;
+    while(std::getline(iss, line))
+    {
+        line = std::regex_replace(line, std::regex("//.*$"), "");
+        line = std::regex_replace(line, std::regex("\\s+$"), "");
+        if(line.empty())
+        {
+            continue;
+        }
+        if(line.find("gl_LineWidth") != std::string::npos)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 static const std::string ThickLinesGeomSrc = 1 + R"===(
 layout(lines) in;
@@ -75,8 +97,6 @@ paz::ShaderFunctionLibrary::Data::~Data()
     {
         glDeleteShader(n.second);
     }
-
-    glDeleteShader(_thickLinesId);
 }
 
 paz::ShaderFunctionLibrary::ShaderFunctionLibrary()
@@ -84,17 +104,6 @@ paz::ShaderFunctionLibrary::ShaderFunctionLibrary()
     initialize();
 
     _data = std::make_shared<Data>();
-
-    try
-    {
-        _data->_thickLinesId = compile_shader(ThickLinesGeomSrc,
-            GL_GEOMETRY_SHADER);
-    }
-    catch(const std::exception& e)
-    {
-        throw std::runtime_error("Failed to compile geometry function: " + std::
-            string(e.what()));
-    }
 }
 
 void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
@@ -108,10 +117,20 @@ void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
 
     try
     {
-        vert2metal(src, _data->_thickLines[name]);
-        _data->_vertexIds[name] = compile_shader((_data->_thickLines.at(name) ?
-            "#define gl_LineWidth glLineWidth\nout float glLineWidth;\n" : "") +
-            src, GL_VERTEX_SHADER);
+        vert2metal(src);
+        const bool usesGlLineWidth = uses_gl_line_width(src);
+        if(usesGlLineWidth)
+        {
+            _data->_vertexIds[name] = compile_shader("#define gl_LineWidth glLi"
+                "neWidth\nout float glLineWidth;\n" + src, GL_VERTEX_SHADER);
+            _data->_thickLinesIds[name] = compile_shader(ThickLinesGeomSrc,
+                GL_GEOMETRY_SHADER);
+        }
+        else
+        {
+            _data->_vertexIds[name] = compile_shader(src, GL_VERTEX_SHADER);
+            _data->_thickLinesIds[name] = 0;
+        }
     }
     catch(const std::exception& e)
     {
