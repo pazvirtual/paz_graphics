@@ -1,3 +1,5 @@
+const float eps = 1e-6;
+
 uniform sampler2D hdrRender;
 uniform float whitePoint;
 
@@ -12,8 +14,8 @@ float luminance(in vec3 v)
 
 vec3 reinhard(in vec3 col, in float w)
 {
-    float lOld = luminance(col);
-    float lNew = lOld*(1. + lOld/(w*w))/(1. + lOld);
+    float lOld = max(eps, luminance(col));
+    float lNew = lOld*(1. + lOld/max(eps, w*w))/(1. + lOld);
     return col*lNew/lOld;
 }
 
