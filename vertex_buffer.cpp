@@ -54,7 +54,7 @@ void paz::VertexBuffer::attribute(int dim, const std::vector<GLuint>& data)
     glGenBuffers(1, &_data->_ids.back());
     glEnableVertexAttribArray(i);
     glBindBuffer(GL_ARRAY_BUFFER, _data->_ids.back());
-    glVertexAttribPointer(i, dim, GL_UNSIGNED_INT, GL_FALSE, 0, nullptr);
+    glVertexAttribIPointer(i, dim, GL_UNSIGNED_INT, 0, nullptr);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLuint)*dim*_numVertices, data.data(),
         GL_STATIC_DRAW);
 }
@@ -70,7 +70,7 @@ void paz::VertexBuffer::attribute(int dim, const std::vector<GLint>& data)
     glGenBuffers(1, &_data->_ids.back());
     glEnableVertexAttribArray(i);
     glBindBuffer(GL_ARRAY_BUFFER, _data->_ids.back());
-    glVertexAttribPointer(i, dim, GL_INT, GL_FALSE, 0, nullptr);
+    glVertexAttribIPointer(i, dim, GL_INT, 0, nullptr);
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLint)*dim*_numVertices, data.data(),
         GL_STATIC_DRAW);
 }
