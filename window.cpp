@@ -12,6 +12,7 @@
 #endif
 #include <GLFW/glfw3.h>
 #include <cmath>
+#include <chrono>
 
 static GLFWwindow* WindowPtr;
 static int WindowWidth;

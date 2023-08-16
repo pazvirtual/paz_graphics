@@ -1,5 +1,7 @@
 #include "PAZ_Graphics"
 
+#include <unordered_set>
+
 namespace paz
 {
     void register_target(void* t);
