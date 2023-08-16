@@ -91,7 +91,7 @@ void paz::VertexBuffer::addAttribute(int dim, DataType type)
     _data->_strides.push_back(TypeSize*dim);
     D3D11_BUFFER_DESC bufDescriptor = {};
     bufDescriptor.Usage = D3D11_USAGE_DYNAMIC;
-    bufDescriptor.ByteWidth = TypeSize*_data->_numVertices;
+    bufDescriptor.ByteWidth = TypeSize*dim*_data->_numVertices;
     bufDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     bufDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     const auto hr = d3d_device()->CreateBuffer(&bufDescriptor, nullptr, &_data->
