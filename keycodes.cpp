@@ -128,6 +128,7 @@ paz::Key paz::convert_keycode(int key) noexcept
 #include <GLFW/glfw3.h>
 
 #define CASE(a, b) case GLFW_KEY_##a: return Key::b;
+#define CASE1(a, b) case GLFW_GAMEPAD_BUTTON_##a: return GamepadButton::b;
 
 paz::Key paz::convert_keycode(int key) noexcept
 {
@@ -249,6 +250,30 @@ paz::Key paz::convert_keycode(int key) noexcept
     }
 
     return Key::Unknown;
+}
+
+paz::GamepadButton paz::convert_button(int button) noexcept
+{
+    switch(button)
+    {
+        CASE1(A, A)
+        CASE1(B, B)
+        CASE1(X, X)
+        CASE1(Y, Y)
+        CASE1(LEFT_BUMPER, LeftBumper)
+        CASE1(RIGHT_BUMPER, RightBumper)
+        CASE1(BACK, Back)
+        CASE1(START, Start)
+        CASE1(GUIDE, Guide)
+        CASE1(LEFT_THUMB, LeftThumb)
+        CASE1(RIGHT_THUMB, RightThumb)
+        CASE1(DPAD_UP, Up)
+        CASE1(DPAD_RIGHT, Right)
+        CASE1(DPAD_DOWN, Down)
+        CASE1(DPAD_LEFT, Left)
+    }
+
+    return GamepadButton::Unknown;
 }
 
 #endif

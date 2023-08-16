@@ -58,7 +58,10 @@ int main(int, char** argv)
     while(!paz::Window::Done())
     {
         // Handle events.
-        if(paz::Window::KeyPressed(paz::Key::Q))
+        paz::Window::SetCursorMode(paz::Window::GamepadActive() ? paz::
+            CursorMode::Disable : paz::CursorMode::Normal);
+        if(paz::Window::KeyPressed(paz::Key::Q) || paz::Window::GamepadPressed(
+            paz::GamepadButton::Back))
         {
             paz::Window::Quit();
         }
@@ -69,7 +72,8 @@ int main(int, char** argv)
         // Drawing prep.
         const std::array<float, 16> p = paz::perspective(1., paz::Window::
             AspectRatio(), 0.01f, 100.f);
-        if(!paz::Window::KeyDown(paz::Key::Space))
+        if(!paz::Window::KeyDown(paz::Key::Space) && !paz::Window::GamepadDown(
+            paz::GamepadButton::A))
         {
             time += paz::Window::FrameTime();
         }

@@ -236,7 +236,10 @@ int main(int, char** argv)
     double time = 0.;
     while(!paz::Window::Done())
     {
-        if(paz::Window::KeyPressed(paz::Key::Q))
+        paz::Window::SetCursorMode(paz::Window::GamepadActive() ? paz::
+            CursorMode::Disable : paz::CursorMode::Normal);
+        if(paz::Window::KeyPressed(paz::Key::Q) || paz::Window::GamepadPressed(
+            paz::GamepadButton::Back))
         {
             paz::Window::Quit();
         }
@@ -272,7 +275,8 @@ int main(int, char** argv)
 
         paz::Window::EndFrame();
 
-        if(!paz::Window::KeyDown(paz::Key::Space))
+        if(!paz::Window::KeyDown(paz::Key::Space) && !paz::Window::GamepadDown(
+            paz::GamepadButton::A))
         {
             time += paz::Window::FrameTime();
         }

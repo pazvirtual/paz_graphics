@@ -82,7 +82,8 @@ int main(int, char** argv)
 {
     const std::string appDir = paz::split_path(argv[0])[0];
 
-    const std::string msg = paz::load_bytes(appDir + "/msg.txt").str();
+    const std::array<std::string, 2> msg = {paz::load_bytes(appDir +
+        "/msg.txt").str(), paz::load_bytes(appDir + "/msg-gp.txt").str()};
 
     paz::Window::SetTitle("PAZ_Graphics: example2d");
     paz::Window::SetMinSize(640, 480);
@@ -113,25 +114,45 @@ int main(int, char** argv)
 
     unsigned int mode = 0;
 
+    std::pair<double, double> cursorPos = {};
+
     while(!paz::Window::Done())
     {
         // Handle events.
-        if(paz::Window::KeyPressed(paz::Key::Q))
+        paz::Window::SetCursorMode(paz::Window::GamepadActive() ? paz::
+            CursorMode::Disable : paz::CursorMode::Normal);
+        if(paz::Window::KeyPressed(paz::Key::Q) || paz::Window::GamepadPressed(
+            paz::GamepadButton::Back))
         {
             paz::Window::Quit();
         }
-        if(paz::Window::KeyPressed(paz::Key::F))
+        if(paz::Window::KeyPressed(paz::Key::F) || paz::Window::GamepadPressed(
+            paz::GamepadButton::Start))
         {
             paz::Window::IsFullscreen() ? paz::Window::MakeWindowed() : paz::
                 Window::MakeFullscreen();
         }
-        if(paz::Window::MousePressed(0))
+        if(paz::Window::MousePressed(0) || paz::Window::GamepadPressed(paz::
+            GamepadButton::RightThumb))
         {
             mode = !mode;
         }
+        if(paz::Window::GamepadActive())
+        {
+            cursorPos.first = std::max(0., std::min(static_cast<double>(paz::
+                Window::Width()), cursorPos.first) + 3e3*paz::Window::
+                GamepadRightStick().first*paz::Window::FrameTime());
+            cursorPos.second = std::max(0., std::min(static_cast<double>(paz::
+                Window::Height()), cursorPos.second) - 3e3*paz::Window::
+                GamepadRightStick().second*paz::Window::FrameTime());
+        }
+        else
+        {
+            cursorPos = paz::Window::MousePos();
+        }
 
         // Propagate physics.
-        std::pair<double, double> m = paz::Window::MousePos();
+        auto m = cursorPos;
         m.first = std::min(m.first, static_cast<double>(paz::Window::Width()));
         m.second = std::min(m.second, static_cast<double>(paz::Window::
             Height()));
@@ -181,7 +202,8 @@ int main(int, char** argv)
         int row = 0;
         int col = 0;
         std::stringstream fullMsg;
-        fullMsg << msg << std::round(1./paz::Window::FrameTime()) << " fps";
+        fullMsg << msg[paz::Window::GamepadActive()] << std::round(1./paz::
+            Window::FrameTime()) << " fps";
         for(const auto& n : fullMsg.str())
         {
             int c = -1;
@@ -200,6 +222,18 @@ int main(int, char** argv)
             else if(n == ':')
             {
                 c = 36;
+            }
+            else if(n == '/')
+            {
+                c = 40;
+            }
+            else if(n == '@')
+            {
+                c = 42;
+            }
+            else if(n == '#')
+            {
+                c = 43;
             }
             else if(n == '\n')
             {
@@ -228,7 +262,8 @@ int main(int, char** argv)
 
         paz::Window::EndFrame();
 
-        if(paz::Window::KeyPressed(paz::Key::S))
+        if(paz::Window::KeyPressed(paz::Key::S) || paz::Window::GamepadPressed(
+            paz::GamepadButton::A))
         {
             paz::write_bytes(appDir + "/screenshot.bmp", paz::to_bmp(paz::
                 Window::ReadPixels()));

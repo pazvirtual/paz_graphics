@@ -1,4 +1,4 @@
-q:          quit
-f:          fullscreen
-left click: change
-s:          screenshot
+q:           quit
+f:           fullscreen
+left click:  change
+s:           screenshot
