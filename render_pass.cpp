@@ -18,6 +18,7 @@ static constexpr float Transparent[] = {0.f, 0.f, 0.f, 0.f};
 static int NextSlot = 0;
 
 static bool DepthTestEnabled = false;
+static bool BlendEnabled = false;
 
 static GLenum primitive_type(paz::RenderPass::PrimitiveType t)
 {
@@ -149,9 +150,9 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     glUseProgram(_data->_shader->_data->_id);
 }
 
-void paz::RenderPass::depth(DepthTestMode depthMode)
+void paz::RenderPass::depth(DepthTestMode mode)
 {
-    if(depthMode == DepthTestMode::Disable)
+    if(mode == DepthTestMode::Disable)
     {
         if(DepthTestEnabled)
         {
@@ -166,41 +167,70 @@ void paz::RenderPass::depth(DepthTestMode depthMode)
             DepthTestEnabled = true;
             glEnable(GL_DEPTH_TEST);
         }
-        if(depthMode == DepthTestMode::Never)
+        if(mode == DepthTestMode::Never)
         {
             glDepthFunc(GL_NEVER);
         }
-        else if(depthMode == DepthTestMode::Less)
+        else if(mode == DepthTestMode::Less)
         {
             glDepthFunc(GL_LESS);
         }
-        else if(depthMode == DepthTestMode::Equal)
+        else if(mode == DepthTestMode::Equal)
         {
             glDepthFunc(GL_EQUAL);
         }
-        else if(depthMode == DepthTestMode::LessEqual)
+        else if(mode == DepthTestMode::LessEqual)
         {
             glDepthFunc(GL_LEQUAL);
         }
-        else if(depthMode == DepthTestMode::Greater)
+        else if(mode == DepthTestMode::Greater)
         {
             glDepthFunc(GL_GREATER);
         }
-        else if(depthMode == DepthTestMode::NotEqual)
+        else if(mode == DepthTestMode::NotEqual)
         {
             glDepthFunc(GL_NOTEQUAL);
         }
-        else if(depthMode == DepthTestMode::GreaterEqual)
+        else if(mode == DepthTestMode::GreaterEqual)
         {
             glDepthFunc(GL_GEQUAL);
         }
-        else if(depthMode == DepthTestMode::Always)
+        else if(mode == DepthTestMode::Always)
         {
             glDepthFunc(GL_ALWAYS);
         }
         else
         {
             throw std::runtime_error("Invalid depth testing function.");
+        }
+    }
+}
+
+void paz::RenderPass::blend(BlendMode mode)
+{
+    if(mode == BlendMode::Disable)
+    {
+        if(BlendEnabled)
+        {
+            BlendEnabled = false;
+            glDisable(GL_BLEND);
+        }
+    }
+    else
+    {
+        if(!BlendEnabled)
+        {
+            BlendEnabled = true;
+            glEnable(GL_BLEND);
+        }
+        if(mode == BlendMode::Additive)
+        {
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        }
+        // ...
+        else
+        {
+            throw std::runtime_error("Invalid blending function.");
         }
     }
 }

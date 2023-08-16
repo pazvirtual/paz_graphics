@@ -107,20 +107,10 @@ int main()
         float), fontData, paz::Texture::MinMagFilter::Nearest, paz::Texture::
         MinMagFilter::Nearest);
 
-    paz::ColorTarget scene(1., 4, 16, paz::Texture::DataType::Float, paz::
+    paz::ColorTarget render(1., 4, 16, paz::Texture::DataType::Float, paz::
         Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
-    paz::Framebuffer sceneFramebuffer;
-    sceneFramebuffer.attach(scene);
-
-    paz::ColorTarget overlay(1., 1, 16, paz::Texture::DataType::Float, paz::
-        Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
-    paz::Framebuffer overlayFramebuffer;
-    overlayFramebuffer.attach(overlay);
-
-    paz::ColorTarget blended(1., 4, 16, paz::Texture::DataType::Float, paz::
-        Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
-    paz::Framebuffer blendedFramebuffer;
-    blendedFramebuffer.attach(blended);
+    paz::Framebuffer renderFramebuffer;
+    renderFramebuffer.attach(render);
 
     paz::ShaderFunctionLibrary shaders;
     shaders.vertex("shader", read_file("shader.vert"));
@@ -128,18 +118,15 @@ int main()
     shaders.vertex("quad", read_file("quad.vert")),
     shaders.fragment("shader", read_file("shader.frag"));
     shaders.fragment("font", read_file("font.frag"));
-    shaders.fragment("blend", read_file("blend.frag"));
     shaders.fragment("post", read_file("post.frag"));
 
     const paz::Shader s(shaders, "shader", shaders, "shader");
     const paz::Shader f(shaders, "font", shaders, "font");
-    const paz::Shader blend(shaders, "quad", shaders, "blend");
     const paz::Shader post(shaders, "quad", shaders, "post");
 
-    paz::RenderPass r0(sceneFramebuffer, s);
-    paz::RenderPass r1(overlayFramebuffer, f);
-    paz::RenderPass r2(blendedFramebuffer, blend);
-    paz::RenderPass r3(post);
+    paz::RenderPass r0(renderFramebuffer, s);
+    paz::RenderPass r1(renderFramebuffer, f);
+    paz::RenderPass r2(post);
 
     paz::VertexBuffer vertices0;
     vertices0.attribute(2, a0);
@@ -221,7 +208,8 @@ int main()
         }
         r0.end();
 
-        r1.begin({paz::RenderPass::LoadAction::Clear});
+        r1.begin();
+        r1.blend(paz::RenderPass::BlendMode::Additive);
         r1.read("font", font);
         r1.uniform("aspectRatio", paz::Window::AspectRatio());
         int row = 0;
@@ -263,21 +251,15 @@ int main()
             }
             ++col;
         }
+        r1.blend(paz::RenderPass::BlendMode::Disable);//TEMP ?
         r1.end();
 
         r2.begin();
-        r2.read("render", scene);
-        r2.read("overlay", overlay);
+        r2.uniform("factor", (float)std::abs(y));
+        r2.read("source", render);
+        r2.uniform("aspectRatio", (float)paz::Window::AspectRatio());
         r2.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
             quadVertices);
         r2.end();
-
-        r3.begin();
-        r3.uniform("factor", (float)std::abs(y));
-        r3.read("source", blended);
-        r3.uniform("aspectRatio", (float)paz::Window::AspectRatio());
-        r3.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
-            quadVertices);
-        r3.end();
     });
 }

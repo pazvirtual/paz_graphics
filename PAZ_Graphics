@@ -208,6 +208,13 @@ namespace paz
             Disable
         };
 
+        enum class BlendMode
+        {
+            Additive,
+            // ...
+            Disable
+        };
+
         enum class LoadAction
         {
             Clear,
@@ -255,6 +262,7 @@ namespace paz
             LoadAction depthLoadAction = LoadAction::DontCare);
         void end();
         void depth(DepthTestMode depthMode);
+        void blend(BlendMode mode);
         void cull(CullMode mode) const;
         void read(const std::string& name, const Texture& tex) const;
         void uniform(const std::string& name, int x) const;

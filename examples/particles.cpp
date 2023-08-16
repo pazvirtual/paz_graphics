@@ -85,6 +85,7 @@ int main()
 
         // Drawing.
         r.begin({paz::RenderPass::LoadAction::Clear});
+        r.blend(paz::RenderPass::BlendMode::Additive);
         r.uniform("projection", p.data(), 16);
         r.uniform("view", v.data(), 16);
         for(auto it = particles.rbegin(); it != particles.rend(); ++it)
@@ -95,6 +96,7 @@ int main()
             r.uniform("distSq", (float)it->first);
             r.primitives(paz::RenderPass::PrimitiveType::TriangleStrip, q);
         }
+        r.blend(paz::RenderPass::BlendMode::Disable);//TEMP ?
         r.end();
     });
 }
