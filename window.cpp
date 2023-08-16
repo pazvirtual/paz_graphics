@@ -265,7 +265,7 @@ static ID3D11Buffer* QuadBuf = []()
     paz::initialize();
 
     D3D11_BUFFER_DESC bufDescriptor = {};
-    bufDescriptor.Usage = D3D11_USAGE_DEFAULT;
+    bufDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
     bufDescriptor.ByteWidth = sizeof(float)*QuadPos.size();
     bufDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     D3D11_SUBRESOURCE_DATA data = {};
@@ -990,7 +990,7 @@ void paz::Window::EndFrame()
     D3D11_MAPPED_SUBRESOURCE mappedSr;
     const auto hr = DeviceContext->Map(GammaBuf, 0, D3D11_MAP_WRITE_DISCARD, 0,
         &mappedSr);
-     if(hr)
+    if(hr)
     {
         throw std::runtime_error("Failed to map final fragment function constan"
             "t buffer (HRESULT " + std::to_string(hr) + ").");

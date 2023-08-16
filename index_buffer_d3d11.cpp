@@ -38,7 +38,7 @@ paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
 
     _data->_numIndices = size;
     D3D11_BUFFER_DESC bufDescriptor = {};
-    bufDescriptor.Usage = D3D11_USAGE_DEFAULT;
+    bufDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
     bufDescriptor.ByteWidth = sizeof(unsigned int)*size;
     bufDescriptor.BindFlags = D3D11_BIND_INDEX_BUFFER;
     D3D11_SUBRESOURCE_DATA srData = {};
