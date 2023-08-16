@@ -199,6 +199,10 @@ int2 textureSize(thread const wrap_depth2d<T>& tex, thread int lod)
         {
             throw std::runtime_error("Array length method is not supported.");
         }
+        if(std::regex_match(line, std::regex(".*\\binverse\\b.*")))
+        {
+            throw std::runtime_error("Matrix inverse is not supported.");
+        }
 
         // Keep macro conditionals.
         if(std::regex_match(line, std::regex("\\s*#((end)?if|else|ifn?def).*")))
