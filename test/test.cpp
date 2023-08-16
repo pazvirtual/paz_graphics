@@ -202,8 +202,8 @@ static const auto lightProjection = paz::perspective(YFov, 1., ZNear, ZFar);
 paz::Texture compute_shadow_map(const paz::VertexBuffer& groundVerts, const
     paz::VertexBuffer& cubeVerts)
 {
-    paz::RenderTarget shadowMap(ShadowRes, ShadowRes, paz::TextureFormat::
-        Depth32Float, paz::MinMagFilter::Linear, paz::MinMagFilter::Linear);
+    paz::RenderTarget shadowMap(paz::TextureFormat::Depth32Float, ShadowRes,
+        ShadowRes, paz::MinMagFilter::Linear, paz::MinMagFilter::Linear);
 
     paz::Framebuffer framebuffer;
     framebuffer.attach(shadowMap);

@@ -87,15 +87,15 @@ int main(int, char** argv)
         "/lines-post.frag").str());
 
     paz::Framebuffer buff0;
-    buff0.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA16Float, paz::
+    buff0.attach(paz::RenderTarget(paz::TextureFormat::RGBA16Float, paz::
         MinMagFilter::Linear, paz::MinMagFilter::Linear));
 
     paz::Framebuffer buff1;
-    buff1.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA16Float, paz::
+    buff1.attach(paz::RenderTarget(paz::TextureFormat::RGBA16Float, paz::
         MinMagFilter::Linear, paz::MinMagFilter::Linear));
 
     paz::Framebuffer buff2;
-    buff2.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA16Float));
+    buff2.attach(paz::RenderTarget(paz::TextureFormat::RGBA16Float));
 
     paz::RenderPass basePass(buff0, lineVert0, lineFrag0);
     paz::RenderPass xPass(buff1, lineVert1, lineFrag1);

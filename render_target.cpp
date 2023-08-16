@@ -2,7 +2,12 @@
 #include "window.hpp"
 #include "internal_data.hpp"
 
-paz::RenderTarget::RenderTarget(double scale, TextureFormat format, MinMagFilter
+paz::RenderTarget::RenderTarget(TextureFormat format, MinMagFilter minFilter,
+    MinMagFilter magFilter, MipmapFilter mipFilter, WrapMode wrapS, WrapMode
+    wrapT) : RenderTarget(format, 1., minFilter, magFilter, mipFilter, wrapS,
+    wrapT) {}
+
+paz::RenderTarget::RenderTarget(TextureFormat format, double scale, MinMagFilter
     minFilter, MinMagFilter magFilter, MipmapFilter mipFilter, WrapMode wrapS,
     WrapMode wrapT)
 {
@@ -30,7 +35,7 @@ paz::RenderTarget::RenderTarget(double scale, TextureFormat format, MinMagFilter
     register_target(_data.get());
 }
 
-paz::RenderTarget::RenderTarget(int width, int height, TextureFormat format,
+paz::RenderTarget::RenderTarget(TextureFormat format, int width, int height,
     MinMagFilter minFilter, MinMagFilter magFilter, MipmapFilter mipFilter,
     WrapMode wrapS, WrapMode wrapT)
 {

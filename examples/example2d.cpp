@@ -55,7 +55,7 @@ static double normalize_angle(const double n)
 static void init(paz::RenderPass& scenePass, paz::RenderPass& textPass, paz::
     RenderPass& postPass, const std::string& appDir)
 {
-    paz::RenderTarget render(1., paz::TextureFormat::RGBA16Float);
+    paz::RenderTarget render(paz::TextureFormat::RGBA16Float);
     paz::Framebuffer renderFramebuffer;
     renderFramebuffer.attach(render);
 
