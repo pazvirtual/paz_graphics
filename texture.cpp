@@ -9,9 +9,6 @@
 #endif
 #include <GLFW/glfw3.h>
 
-static constexpr GLenum Slots[] = {GL_TEXTURE0, GL_TEXTURE1, GL_TEXTURE2,
-    GL_TEXTURE3, GL_TEXTURE4, GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7};
-
 paz::Texture::~Texture()
 {
     if(_id)
@@ -22,7 +19,7 @@ paz::Texture::~Texture()
 
 void paz::Texture::activate(std::size_t slot) const
 {
-    glActiveTexture(Slots[slot]);
+    glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, _id);
 }
 
