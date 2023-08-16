@@ -52,6 +52,10 @@ paz::Framebuffer::Framebuffer()
 
 void paz::Framebuffer::attach(const RenderTarget& target)
 {
+    if(target._data->_format == TextureFormat::RGBA8UNorm_sRGB)
+    {
+        throw std::runtime_error("Drawing to sRGB textures is not supported.");
+    }
     glBindFramebuffer(GL_FRAMEBUFFER, _data->_id);
     if(target._data->_format == TextureFormat::Depth16UNorm || target._data->
         _format == TextureFormat::Depth32Float)

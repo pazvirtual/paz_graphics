@@ -684,7 +684,7 @@ void paz::unregister_target(void* t)
     initialize()._renderTargets.erase(t);
 }
 
-paz::Image<std::uint8_t, 4> paz::Window::ReadPixels()
+paz::Image paz::Window::ReadPixels()
 {
     initialize();
 
@@ -693,12 +693,15 @@ paz::Image<std::uint8_t, 4> paz::Window::ReadPixels()
         throw std::logic_error("Cannot read pixels before ending frame.");
     }
 
-    Image<std::uint8_t, 4> image(ViewportWidth(), ViewportHeight());
+    //TEMP - should convert from final render gamma (window gamma?) to sRGB
+    Image image(ImageFormat::RGBA8UNorm_sRGB, ViewportWidth(),
+        ViewportHeight());
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, final_framebuffer().colorAttachment(0)._data->
         _id);
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.bytes().
+        data());
     const GLenum error = glGetError();
     if(error != GL_NO_ERROR)
     {

@@ -285,7 +285,7 @@ int main()
     try
     {
         // Texture width is odd again to verify robustness.
-        paz::Image<std::uint8_t, 1> img(Scale*Size - 1, Scale*Size);
+        paz::Image img(paz::ImageFormat::R8UNorm, Scale*Size - 1, Scale*Size);
         for(std::size_t i = 0; i < Size; ++i)
         {
             for(std::size_t j = 0; j < Size; ++j)
@@ -299,7 +299,8 @@ int main()
                         {
                             break;
                         }
-                        img[img.width()*(Scale*i + a) + (Scale*j + b)] = c;
+                        img.bytes()[img.width()*(Scale*i + a) + (Scale*j + b)] =
+                            c;
                     }
                 }
             }
@@ -350,10 +351,10 @@ int main()
 
     try
     {
-        const paz::Image<std::uint8_t, 4> img = paz::Window::ReadPixels();
+        const paz::Image img = paz::Window::ReadPixels();
         for(const auto& n : SamplePoints)
         {
-            if(std::abs(img[4*(ImgRes*n[0] + n[1])] - n[2]) > Threshold)
+            if(std::abs(img.bytes()[4*(ImgRes*n[0] + n[1])] - n[2]) > Threshold)
             {
                 throw std::runtime_error("Incorrect pixel value at (" + std::
                     to_string(n[0]) + ", " + std::to_string(n[1]) + ").");

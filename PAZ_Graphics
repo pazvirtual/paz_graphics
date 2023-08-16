@@ -6,21 +6,6 @@
 #include <array>
 #include <memory>
 
-#define PAZ_TEX_IMG_CTOR_T_N(t, n) Texture(const Image<t, n>& image,\
-    MinMagFilter minFilter = MinMagFilter::Nearest, MinMagFilter magFilter =\
-    MinMagFilter::Nearest, MipmapFilter mipFilter = MipmapFilter::None,\
-    WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::\
-    ClampToEdge);
-#define PAZ_TEX_IMG_CTOR_T_N_NORM(t, n) Texture(const Image<t, n>& image,\
-    MinMagFilter minFilter = MinMagFilter::Nearest, MinMagFilter magFilter =\
-    MinMagFilter::Nearest, MipmapFilter mipFilter = MipmapFilter::None,\
-    WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::\
-    ClampToEdge, bool normalized = true);
-#define PAZ_TEX_IMG_CTOR_T(t) PAZ_TEX_IMG_CTOR_T_N(t, 1) PAZ_TEX_IMG_CTOR_T_N(\
-    t, 2) PAZ_TEX_IMG_CTOR_T_N(t, 4)
-#define PAZ_TEX_IMG_CTOR_T_NORM(t) PAZ_TEX_IMG_CTOR_T_N_NORM(t, 1) \
-    PAZ_TEX_IMG_CTOR_T_N_NORM(t, 2) PAZ_TEX_IMG_CTOR_T_N_NORM(t, 4)
-
 namespace paz
 {
     template<typename T>
@@ -29,54 +14,102 @@ namespace paz
         T&>()))>::value>;
 
 #ifndef PAZ_IO
-    template<typename T, typename U>
-    using require_same = std::enable_if_t<std::is_same<T, U>::value>;
-
-    template<typename T, typename U>
-    using require_different = std::enable_if_t<!std::is_same<T, U>::value>;
-
-    template<typename T, int NumChannels>
-    class Image : public std::vector<T>
+    enum class ImageFormat
     {
+        R8UInt, R8SInt, R8UNorm, R8SNorm, R16UInt, R16SInt, R16UNorm, R16SNorm,
+        R16Float, R32UInt, R32SInt, R32Float, RG8UInt, RG8SInt, RG8UNorm,
+        RG8SNorm, RG16UInt, RG16SInt, RG16UNorm, RG16SNorm, RG16Float, RG32UInt,
+        RG32SInt, RG32Float, RGBA8UInt, RGBA8SInt, RGBA8UNorm, RGBA8UNorm_sRGB,
+        RGBA8SNorm, RGBA16UInt, RGBA16SInt, RGBA16UNorm, RGBA16SNorm,
+        RGBA16Float, RGBA32UInt, RGBA32SInt, RGBA32Float
+    };
+
+    class Image
+    {
+        std::vector<unsigned char> _data;
+        ImageFormat _format;
         int _rows = 0;
+        int _cols = 0;
 
     public:
         Image() = default;
-        Image(int width, int height) : std::vector<T>(width*height*NumChannels),
-            _rows(height) {}
-        Image(const T* data, int width, int height) : std::vector<T>(data, data
-            + width*height*NumChannels), _rows(height) {}
-        Image(const std::vector<T>& data, int width, int height) : std::vector<
-            T>(data), _rows(height)
+        Image(ImageFormat format, int width, int height) : _format(format),
+            _rows(height), _cols(width)
         {
-            if(data.size() != static_cast<std::size_t>(width*height*
-                NumChannels))
+            int c, b;
+            switch(_format)
             {
-                throw std::runtime_error("Image dimensions do not match.");
+                case ImageFormat::R8SInt:          c = 1; b = 1; break;
+                case ImageFormat::R8UNorm:         c = 1; b = 1; break;
+                case ImageFormat::R8SNorm:         c = 1; b = 1; break;
+                case ImageFormat::R16UInt:         c = 1; b = 2; break;
+                case ImageFormat::R16SInt:         c = 1; b = 2; break;
+                case ImageFormat::R16UNorm:        c = 1; b = 2; break;
+                case ImageFormat::R16SNorm:        c = 1; b = 2; break;
+                case ImageFormat::R16Float:        c = 1; b = 2; break;
+                case ImageFormat::R32UInt:         c = 1; b = 4; break;
+                case ImageFormat::R32SInt:         c = 1; b = 4; break;
+                case ImageFormat::R32Float:        c = 1; b = 4; break;
+                case ImageFormat::RG8UInt:         c = 2; b = 1; break;
+                case ImageFormat::RG8SInt:         c = 2; b = 1; break;
+                case ImageFormat::RG8UNorm:        c = 2; b = 1; break;
+                case ImageFormat::RG8SNorm:        c = 2; b = 1; break;
+                case ImageFormat::RG16UInt:        c = 2; b = 2; break;
+                case ImageFormat::RG16SInt:        c = 2; b = 2; break;
+                case ImageFormat::RG16UNorm:       c = 2; b = 2; break;
+                case ImageFormat::RG16SNorm:       c = 2; b = 2; break;
+                case ImageFormat::RG16Float:       c = 2; b = 2; break;
+                case ImageFormat::RG32UInt:        c = 2; b = 4; break;
+                case ImageFormat::RG32SInt:        c = 2; b = 4; break;
+                case ImageFormat::RG32Float:       c = 2; b = 4; break;
+                case ImageFormat::RGBA8UInt:       c = 4; b = 1; break;
+                case ImageFormat::RGBA8SInt:       c = 4; b = 1; break;
+                case ImageFormat::RGBA8UNorm:      c = 4; b = 1; break;
+                case ImageFormat::RGBA8UNorm_sRGB: c = 4; b = 1; break;
+                case ImageFormat::RGBA8SNorm:      c = 4; b = 1; break;
+                case ImageFormat::RGBA16UInt:      c = 4; b = 2; break;
+                case ImageFormat::RGBA16SInt:      c = 4; b = 2; break;
+                case ImageFormat::RGBA16UNorm:     c = 4; b = 2; break;
+                case ImageFormat::RGBA16SNorm:     c = 4; b = 2; break;
+                case ImageFormat::RGBA16Float:     c = 4; b = 2; break;
+                case ImageFormat::RGBA32UInt:      c = 4; b = 4; break;
+                case ImageFormat::RGBA32SInt:      c = 4; b = 4; break;
+                case ImageFormat::RGBA32Float:     c = 4; b = 4; break;
+                default: throw std::logic_error("Unrecognized image format.");
             }
+            _data.resize(static_cast<std::size_t>(width)*height*c*b);
         }
-        template<typename U, require_iterable<U>* = nullptr>
-        Image(const U& data, int width, int height) : std::vector<T>(std::begin(
-            data), std::end(data)), _rows(height)
+        Image(ImageFormat format, int width, int height, const void* data) :
+            Image(format, width, height)
         {
-            if(data.size() != static_cast<std::size_t>(width*height*
-                NumChannels))
-            {
-                throw std::runtime_error("Image dimensions do not match.");
-            }
+            std::copy(reinterpret_cast<const unsigned char*>(data),
+                reinterpret_cast<const unsigned char*>(data) + _data.size(),
+                _data.begin());
         }
-        template<typename U, require_different<T, U>* = nullptr>
-        explicit Image(const Image<U, NumChannels>& img) : std::vector<T>(img.
-            begin(), img.end()), _rows(img.height()) {}
+
+        std::vector<unsigned char>& bytes()
+        {
+            return _data;
+        }
+
+        const std::vector<unsigned char>& bytes() const
+        {
+            return _data;
+        }
 
         int width() const
         {
-            return _rows ? std::vector<T>::size()/NumChannels/_rows : 0;
+            return _cols;
         }
 
         int height() const
         {
             return _rows;
+        }
+
+        ImageFormat format() const
+        {
+            return _format;
         }
     };
 #endif
@@ -86,10 +119,10 @@ namespace paz
         R8UInt, R8SInt, R8UNorm, R8SNorm, R16UInt, R16SInt, R16UNorm, R16SNorm,
         R16Float, R32UInt, R32SInt, R32Float, RG8UInt, RG8SInt, RG8UNorm,
         RG8SNorm, RG16UInt, RG16SInt, RG16UNorm, RG16SNorm, RG16Float, RG32UInt,
-        RG32SInt, RG32Float, RGBA8UInt, RGBA8SInt, RGBA8UNorm, RGBA8SNorm,
-        RGBA16UInt, RGBA16SInt, RGBA16UNorm, RGBA16SNorm, RGBA16Float,
-        RGBA32UInt, RGBA32SInt, RGBA32Float, Depth16UNorm, Depth32Float,
-        BGRA8UNorm
+        RG32SInt, RG32Float, RGBA8UInt, RGBA8SInt, RGBA8UNorm, RGBA8UNorm_sRGB,
+        RGBA8SNorm, RGBA16UInt, RGBA16SInt, RGBA16UNorm, RGBA16SNorm,
+        RGBA16Float, RGBA32UInt, RGBA32SInt, RGBA32Float, Depth16UNorm,
+        Depth32Float, BGRA8UNorm
     };
 
     enum class DataType
@@ -192,13 +225,10 @@ namespace paz
             WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::
             ClampToEdge);
         Texture(RenderTarget&& target);
-        PAZ_TEX_IMG_CTOR_T_NORM(std::int8_t)
-        PAZ_TEX_IMG_CTOR_T_NORM(std::int16_t)
-        PAZ_TEX_IMG_CTOR_T(std::int32_t)
-        PAZ_TEX_IMG_CTOR_T_NORM(std::uint8_t)
-        PAZ_TEX_IMG_CTOR_T_NORM(std::uint16_t)
-        PAZ_TEX_IMG_CTOR_T(std::uint32_t)
-        PAZ_TEX_IMG_CTOR_T(float)
+        Texture(const Image& image, MinMagFilter minFilter = MinMagFilter::
+            Nearest, MinMagFilter magFilter = MinMagFilter::Nearest,
+            MipmapFilter mipFilter = MipmapFilter::None, WrapMode wrapS =
+            WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::ClampToEdge);
         int width() const;
         int height() const;
     };
@@ -429,7 +459,7 @@ namespace paz
         static void MakeResizable();
         static void MakeNotResizable();
         static void Resize(int width, int height, bool viewportCoords);
-        static Image<std::uint8_t, 4> ReadPixels();
+        static Image ReadPixels();
         static float DpiScale();
         static float UiScale();
         static void DisableHidpi();

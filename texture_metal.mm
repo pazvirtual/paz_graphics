@@ -101,62 +101,23 @@ paz::Texture::Texture()
     initialize();
 }
 
-#define TEX(t, n, f) paz::Texture::Texture(const Image<t, n>& image, \
-    MinMagFilter minFilter, MinMagFilter magFilter, MipmapFilter mipFilter, \
-    WrapMode wrapS, WrapMode wrapT)\
-{\
-    initialize();\
-    _data = std::make_shared<Data>();\
-    _data->_width = image.width();\
-    _data->_height = image.height();\
-    _data->_format = TextureFormat::f;\
-    _data->_minFilter = minFilter;\
-    _data->_magFilter = magFilter;\
-    _data->_mipFilter = mipFilter;\
-    _data->_wrapS = wrapS;\
-    _data->_wrapT = wrapT;\
-    _data->init(flip_image(image).data());\
-}
+paz::Texture::Texture(const Image& image, TextureFormat format, MinMagFilter
+    minFilter, MinMagFilter magFilter, MipmapFilter mipFilter, WrapMode wrapS,
+    WrapMode wrapT)
+{
+    initialize();
 
-#define TEX_NORM(t, n, f) paz::Texture::Texture(const Image<t, n>& image, \
-    MinMagFilter minFilter, MinMagFilter magFilter, MipmapFilter mipFilter, \
-    WrapMode wrapS, WrapMode wrapT, bool normalized)\
-{\
-    initialize();\
-    _data = std::make_shared<Data>();\
-    _data->_width = image.width();\
-    _data->_height = image.height();\
-    _data->_format = normalized ? TextureFormat::f##Norm : TextureFormat::\
-        f##Int;\
-    _data->_minFilter = minFilter;\
-    _data->_magFilter = magFilter;\
-    _data->_mipFilter = mipFilter;\
-    _data->_wrapS = wrapS;\
-    _data->_wrapT = wrapT;\
-    _data->init(flip_image(image).data());\
+    _data = std::make_shared<Data>();
+    _data->_width = image.width();
+    _data->_height = image.height();
+    _data->_format = static_cast<TextureFormat>(image.format());
+    _data->_minFilter = minFilter;
+    _data->_magFilter = magFilter;
+    _data->_mipFilter = mipFilter;
+    _data->_wrapS = wrapS;
+    _data->_wrapT = wrapT;
+    _data->init(image.bytes().data());
 }
-
-TEX_NORM(std::int8_t, 1, R8S)
-TEX_NORM(std::int8_t, 2, RG8S)
-TEX_NORM(std::int8_t, 4, RGBA8S)
-TEX_NORM(std::int16_t, 1, R16S)
-TEX_NORM(std::int16_t, 2, RG16S)
-TEX_NORM(std::int16_t, 4, RGBA16S)
-TEX(std::int32_t, 1, R32SInt)
-TEX(std::int32_t, 2, RG32SInt)
-TEX(std::int32_t, 4, RGBA32SInt)
-TEX_NORM(std::uint8_t, 1, R8U)
-TEX_NORM(std::uint8_t, 2, RG8U)
-TEX_NORM(std::uint8_t, 4, RGBA8U)
-TEX_NORM(std::uint16_t, 1, R16U)
-TEX_NORM(std::uint16_t, 2, RG16U)
-TEX_NORM(std::uint16_t, 4, RGBA16U)
-TEX(std::uint32_t, 1, R32UInt)
-TEX(std::uint32_t, 2, RG32UInt)
-TEX(std::uint32_t, 4, RGBA32UInt)
-TEX(float, 1, R32Float)
-TEX(float, 2, RG32Float)
-TEX(float, 4, RGBA32Float)
 
 paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
     minFilter, MinMagFilter magFilter, MipmapFilter mipFilter, WrapMode wrapS,
