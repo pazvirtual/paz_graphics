@@ -70,7 +70,7 @@
 
     [_mtkView setDelegate:_renderer];
     [_mtkView setClearColor:MTLClearColorMake(0., 0., 0., 0.)];
-    [_mtkView setDepthStencilPixelFormat:MTLPixelFormatDepth32Float];
+    [_mtkView setDepthStencilPixelFormat:MTLPixelFormatDepth24Unorm_Stencil8];
 
     [_renderer mtkView:_mtkView drawableSizeWillChange:[_mtkView drawableSize]];
 }
