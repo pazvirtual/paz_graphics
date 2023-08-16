@@ -241,8 +241,6 @@ void paz::Window::Loop(const std::function<void(void)>& draw)
 
 void paz::draw_in_renderer()
 {
-    initialize();
-
     Draw();
     [VIEW_CONTROLLER resetEvents];
     const auto now = std::chrono::steady_clock::now();
