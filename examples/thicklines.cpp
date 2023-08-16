@@ -35,11 +35,10 @@ int main()
     paz::VertexBuffer vertices;
     vertices.attribute(2, points);
 
-    paz::ShaderFunctionLibrary lib;
-    lib.vertex("vert", VertSrc);
-    lib.fragment("frag", FragSrc);
+    const paz::VertexFunction vert(VertSrc);
+    const paz::FragmentFunction frag(FragSrc);
 
-    const paz::Shader shader(lib, "vert", lib, "frag");
+    const paz::Shader shader(vert, frag);
 
     paz::RenderPass render(shader);
 

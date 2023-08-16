@@ -24,11 +24,12 @@ int main(int, char** argv)
     const paz::Texture font(paz::parse_pbm(paz::load_file(appDir + "/font.pbm"
         )));
 
-    paz::ShaderFunctionLibrary lib;
-    lib.vertex("font", paz::load_file(appDir + "/font.vert").str());
-    lib.fragment("font", paz::load_file(appDir + "/font.frag").str());
+    const paz::VertexFunction fontVert(paz::load_file(appDir + "/font.vert").
+        str());
+    const paz::FragmentFunction fontFrag(paz::load_file(appDir + "/font.frag").
+        str());
 
-    paz::RenderPass textPass(paz::Shader(lib, "font", lib, "font"));
+    paz::RenderPass textPass(paz::Shader(fontVert, fontFrag));
 
     double time = 0.;
     for(std::size_t k = 0; k < NumSteps; ++k)

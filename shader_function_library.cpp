@@ -166,33 +166,31 @@ static unsigned int compile_shader(const std::string& src, GLenum type)
     return shader;
 }
 
-paz::ShaderFunctionLibrary::Data::~Data()
+paz::VertexFunction::Data::~Data()
 {
-    for(auto& n : _vertexIds)
+    if(_id)
     {
-        glDeleteShader(n.second);
+        glDeleteShader(_id);
     }
-    for(auto& n : _fragmentIds)
+    if(_thickLinesId)
     {
-        glDeleteShader(n.second);
+        glDeleteShader(_thickLinesId);
     }
 }
 
-paz::ShaderFunctionLibrary::ShaderFunctionLibrary()
+paz::FragmentFunction::Data::~Data()
+{
+    if(_id)
+    {
+        glDeleteShader(_id);
+    }
+}
+
+paz::VertexFunction::VertexFunction(const std::string& src)
 {
     initialize();
 
     _data = std::make_shared<Data>();
-}
-
-void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
-    string& src)
-{
-    if(_data->_vertexIds.count(name))
-    {
-        throw std::runtime_error("Vertex function \"" + name + "\" has already "
-            "been defined.");
-    }
 
     try
     {
@@ -205,44 +203,40 @@ void paz::ShaderFunctionLibrary::vertex(const std::string& name, const std::
             std::string block1;
             const std::string modifiedSrc = prep_for_geom(src, block, block0,
                 block1);
-            _data->_vertexIds[name] = compile_shader("#define gl_LineWidth glLi"
-                "neWidth\nout float glLineWidth;\n" + modifiedSrc,
-                GL_VERTEX_SHADER);
-            _data->_thickLinesIds[name] = compile_shader(Src0 + block + Src1 +
-                block0 + Src2 + block1 + Src3 + block0 + Src4 + block1 + Src5,
+            _data->_id = compile_shader("#define gl_LineWidth glLineWidth\nout "
+                "float glLineWidth;\n" + modifiedSrc, GL_VERTEX_SHADER);
+            _data->_thickLinesId = compile_shader(Src0 + block + Src1 + block0 +
+                Src2 + block1 + Src3 + block0 + Src4 + block1 + Src5,
                 GL_GEOMETRY_SHADER);
         }
         else
         {
-            _data->_vertexIds[name] = compile_shader(src, GL_VERTEX_SHADER);
-            _data->_thickLinesIds[name] = 0;
+            _data->_id = compile_shader(src, GL_VERTEX_SHADER);
+            _data->_thickLinesId = 0;
         }
     }
     catch(const std::exception& e)
     {
-        throw std::runtime_error("Failed to compile vertex function \"" + name +
-            "\": " + e.what());
+        throw std::runtime_error("Failed to compile vertex function: " + std::
+            string(e.what()));
     }
 }
 
-void paz::ShaderFunctionLibrary::fragment(const std::string& name, const std::
-    string& src)
+paz::FragmentFunction::FragmentFunction(const std::string& src)
 {
-    if(_data->_fragmentIds.count(name))
-    {
-        throw std::runtime_error("Fragment function \"" + name + "\" has alread"
-            "y been defined.");
-    }
+    initialize();
+
+    _data = std::make_shared<Data>();
 
     try
     {
         frag2metal(src);
-        _data->_fragmentIds[name] = compile_shader(src, GL_FRAGMENT_SHADER);
+        _data->_id = compile_shader(src, GL_FRAGMENT_SHADER);
     }
     catch(const std::exception& e)
     {
-        throw std::runtime_error("Failed to compile fragment function \"" + name
-            + "\": " + e.what());
+        throw std::runtime_error("Failed to compile fragment function: " + std::
+            string(e.what()));
     }
 }
 
