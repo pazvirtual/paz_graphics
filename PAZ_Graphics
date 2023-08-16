@@ -389,6 +389,8 @@ namespace paz
         static Image<std::uint8_t, 4> ReadPixels();
         static float DpiScale();
         static float UiScale();
+        static void DisableHidpi();
+        static void EnableHidpi();
     };
 }
 

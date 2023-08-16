@@ -198,7 +198,6 @@ void paz::Texture::Data::init(const void* data)
         [textureDescriptor setStorageMode:MTLStorageModePrivate];
     }
     _texture = [DEVICE newTextureWithDescriptor:textureDescriptor];
-    [textureDescriptor release];
     if(data)
     {
         [static_cast<id<MTLTexture>>(_texture) replaceRegion:MTLRegionMake2D(0,

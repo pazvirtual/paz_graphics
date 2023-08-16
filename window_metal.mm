@@ -19,6 +19,7 @@
     contentViewController]) renderer])
 
 static bool CursorDisabled = false;
+static bool HidpiEnabled = true;
 
 paz::Initializer& paz::initialize()
 {
@@ -156,28 +157,32 @@ int paz::Window::ViewportWidth()
 {
     initialize();
 
-    return [RENDERER viewportSize].width;
+    const auto width = [RENDERER viewportSize].width;
+    return HidpiEnabled ? width : std::round(width/[[APP_DELEGATE window]
+        backingScaleFactor]);
 }
 
 int paz::Window::ViewportHeight()
 {
     initialize();
 
-    return [RENDERER viewportSize].height;
+    const auto height = [RENDERER viewportSize].height;
+    return HidpiEnabled ? height : std::round(height/[[APP_DELEGATE window]
+        backingScaleFactor]);
 }
 
 int paz::Window::Width()
 {
     initialize();
 
-    return [RENDERER size].width;
+    return std::round([RENDERER size].width);
 }
 
 int paz::Window::Height()
 {
     initialize();
 
-    return [RENDERER size].height;
+    return std::round([RENDERER size].height);
 }
 
 bool paz::Window::KeyDown(Key key)
@@ -340,18 +345,8 @@ void paz::Window::EndFrame()
 {
     initialize();
 
-    [RENDERER ensureCommandBuffer];
-    id<MTLTexture> tex = static_cast<id<MTLTexture>>(final_framebuffer().
-        colorAttachment(0)._data->_texture);
-    id<MTLBlitCommandEncoder> blitEncoder = [[RENDERER commandBuffer]
-        blitCommandEncoder];
-    [blitEncoder copyFromTexture:tex sourceSlice:0 sourceLevel:0 sourceOrigin:
-        MTLOriginMake(0, 0, 0) sourceSize:MTLSizeMake(final_framebuffer().
-        colorAttachment(0).width(), final_framebuffer().colorAttachment(0).
-        height(), 1) toTexture:[RENDERER outputTex] destinationSlice:0
-        destinationLevel:0 destinationOrigin:MTLOriginMake(0, 0, 0)];
-    [blitEncoder synchronizeTexture:tex slice:0 level:0];
-    [blitEncoder endEncoding];
+    [RENDERER blitToScreen:static_cast<id<MTLTexture>>(final_framebuffer().
+        colorAttachment(0)._data->_texture)];
 
     [[VIEW_CONTROLLER mtkView] draw];
     [VIEW_CONTROLLER resetEvents];
@@ -476,7 +471,7 @@ float paz::Window::DpiScale()
 {
     initialize();
 
-    return [[APP_DELEGATE window] backingScaleFactor];
+    return HidpiEnabled ? [[APP_DELEGATE window] backingScaleFactor] : 1.;
 }
 
 float paz::Window::UiScale()
@@ -484,6 +479,22 @@ float paz::Window::UiScale()
     initialize();
 
     return DpiScale();
+}
+
+void paz::Window::DisableHidpi()
+{
+    initialize();
+
+    HidpiEnabled = false;
+    resize_targets();
+}
+
+void paz::Window::EnableHidpi()
+{
+    initialize();
+
+    HidpiEnabled = true;
+    resize_targets();
 }
 
 #endif

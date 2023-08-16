@@ -41,9 +41,18 @@
 
 - (void)dealloc
 {
-    [_renderer release];
-    [_mtkView release];
-    [_device release];
+    if(_renderer)
+    {
+        [_renderer release];
+    }
+    if(_mtkView)
+    {
+        [_mtkView release];
+    }
+    if(_device)
+    {
+        [_device release];
+    }
     [super dealloc];
 }
 
