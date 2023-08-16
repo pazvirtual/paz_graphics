@@ -1,4 +1,4 @@
-const int numChars = 42;
+const int numChars = 44;
 const float scale = 0.005;
 
 uniform int baseSize;

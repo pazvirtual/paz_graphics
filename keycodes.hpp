@@ -6,6 +6,7 @@
 namespace paz
 {
     paz::Key convert_keycode(int key) noexcept;
+    paz::GamepadButton convert_button(int button) noexcept;
 }
 
 #endif

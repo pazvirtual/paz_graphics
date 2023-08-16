@@ -90,30 +90,39 @@ int main(int, char** argv)
     int width = MinWidth;
     while(!paz::Window::Done())
     {
+        paz::Window::SetCursorMode(paz::Window::GamepadActive() ? paz::
+            CursorMode::Disable : paz::CursorMode::Normal);
+
         const double displayScale = static_cast<double>(paz::Window::
             ViewportWidth())/paz::Window::Width();
 
-        if(paz::Window::KeyPressed(paz::Key::One))
+        if(paz::Window::KeyPressed(paz::Key::One) || paz::Window::
+            GamepadPressed(paz::GamepadButton::X))
         {
             set_mode(0);
         }
-        else if(paz::Window::KeyPressed(paz::Key::Two))
+        else if(paz::Window::KeyPressed(paz::Key::Two) || paz::Window::
+            GamepadPressed(paz::GamepadButton::A))
         {
             set_mode(1);
         }
-        else if(paz::Window::KeyPressed(paz::Key::Three))
+        else if(paz::Window::KeyPressed(paz::Key::Three) || paz::Window::
+            GamepadPressed(paz::GamepadButton::B))
         {
             set_mode(2);
         }
-        if(paz::Window::KeyPressed(paz::Key::Up))
+        if(paz::Window::KeyPressed(paz::Key::Up) || paz::Window::GamepadPressed(
+            paz::GamepadButton::Up))
         {
             width = std::min(width + 1, MaxWidth);
         }
-        if(paz::Window::KeyPressed(paz::Key::Down))
+        if(paz::Window::KeyPressed(paz::Key::Down) || paz::Window::
+            GamepadPressed(paz::GamepadButton::Down))
         {
             width = std::max(width - 1, MinWidth);
         }
-        if(paz::Window::KeyPressed(paz::Key::Q))
+        if(paz::Window::KeyPressed(paz::Key::Q) || paz::Window::GamepadPressed(
+            paz::GamepadButton::Back))
         {
             paz::Window::Quit();
         }

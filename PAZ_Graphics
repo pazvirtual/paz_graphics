@@ -155,8 +155,17 @@ namespace paz
         RightShift, RightControl, RightAlt, RightSuper, Unknown
     };
 
+    // Cross = A, Circle = B, Square = X, Triangle = Y
+    enum class GamepadButton : int
+    {
+        A, B, X, Y, LeftBumper, RightBumper, Back, Start, Guide, LeftThumb,
+        RightThumb, Up, Right, Down, Left, Unknown
+    };
+
     static constexpr int NumKeys = static_cast<int>(Key::Unknown);
     static constexpr int NumMouseButtons = 8;
+    static constexpr int NumGamepadButtons = static_cast<int>(GamepadButton::
+        Unknown);
 
     class RenderTarget;
     class Texture
@@ -358,6 +367,14 @@ namespace paz
         static bool MouseReleased(int button);
         static std::pair<double, double> MousePos();
         static std::pair<double, double> ScrollOffset();
+        static bool GamepadDown(GamepadButton button);
+        static bool GamepadPressed(GamepadButton button);
+        static bool GamepadReleased(GamepadButton button);
+        static std::pair<double, double> GamepadLeftStick();
+        static std::pair<double, double> GamepadRightStick();
+        static double GamepadLeftTrigger();
+        static double GamepadRightTrigger();
+        static bool GamepadActive();
         static void SetCursorMode(CursorMode mode);
         static float AspectRatio();
         static void Quit();
