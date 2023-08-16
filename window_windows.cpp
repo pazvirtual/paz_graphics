@@ -420,7 +420,6 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 //            _glfwUpdateKeyNamesWin32();
             break;
         }
-#if 0
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
         case WM_KEYUP:
@@ -429,57 +428,42 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             GamepadActive = false;
             MouseActive = false;
 
-const paz::Key k = paz::convert_keycode(key, scancode);
-if(k == paz::Key::Unknown)
-{
-    break;
-}
+            const bool released = HIWORD(lParam)&KF_UP; // Otherwise, pressed
 
-const int i = static_cast<int>(k);
-if(action == GLFW_PRESS)
-{
-    KeyDown[i] = true;
-    KeyPressed[i] = true;
-}
-else if(action == GLFW_RELEASE)
-{
-    KeyDown[i] = false;
-    KeyReleased[i] = true;
-}
-
-            int key, scancode;
-            const int action = (HIWORD(lParam) & KF_UP) ? GLFW_RELEASE : GLFW_PRESS;
-            const int mods = getKeyMods();
-
-            scancode = (HIWORD(lParam) & (KF_EXTENDED | 0xff));
-            if (!scancode)
+            int key = HIWORD(lParam)&(KF_EXTENDED|0xff);
+            if(!key)
             {
-                // NOTE: Some synthetic key messages have a scancode of zero
-                // HACK: Map the virtual key back to a usable scancode
-                scancode = MapVirtualKeyW((UINT) wParam, MAPVK_VK_TO_VSC);
+                // NOTE: Some synthetic key messages have a key of zero
+                // HACK: Map the virtual key back to a usable key
+                key = MapVirtualKeyW(static_cast<UINT>(wParam),
+                    MAPVK_VK_TO_VSC);
             }
 
-            // HACK: Alt+PrtSc has a different scancode than just PrtSc
-            if (scancode == 0x54)
-                scancode = 0x137;
-
-            // HACK: Ctrl+Pause has a different scancode than just Pause
-            if (scancode == 0x146)
-                scancode = 0x45;
-
+            // HACK: Alt+PrtSc has a different key than just PrtSc
+            if(key == 0x54)
+            {
+                key = 0x137;
+            }
+            // HACK: Ctrl+Pause has a different key than just Pause
+            else if(key == 0x146)
+            {
+                key = 0x45;
+            }
             // HACK: CJK IME sets the extended bit for right Shift
-            if (scancode == 0x136)
-                scancode = 0x36;
+            else if(key == 0x136)
+            {
+                key = 0x36;
+            }
 
-            key = _glfw.win32.keycodes[scancode];
+            paz::Key k = paz::convert_keycode(key);
 
             // The Ctrl keys require special handling
-            if (wParam == VK_CONTROL)
+            if(wParam == VK_CONTROL)
             {
-                if (HIWORD(lParam) & KF_EXTENDED)
+                if(HIWORD(lParam)&KF_EXTENDED)
                 {
                     // Right side keys have the extended key bit set
-                    key = GLFW_KEY_RIGHT_CONTROL;
+                    k = paz::Key::RightControl;
                 }
                 else
                 {
@@ -490,16 +474,14 @@ else if(action == GLFW_RELEASE)
                     MSG next;
                     const DWORD time = GetMessageTime();
 
-                    if (PeekMessageW(&next, NULL, 0, 0, PM_NOREMOVE))
+                    if(PeekMessageW(&next, nullptr, 0, 0, PM_NOREMOVE))
                     {
-                        if (next.message == WM_KEYDOWN ||
-                            next.message == WM_SYSKEYDOWN ||
-                            next.message == WM_KEYUP ||
-                            next.message == WM_SYSKEYUP)
+                        if(next.message == WM_KEYDOWN || next.message ==
+                            WM_SYSKEYDOWN || next.message == WM_KEYUP || next.
+                            message == WM_SYSKEYUP)
                         {
-                            if (next.wParam == VK_MENU &&
-                                (HIWORD(next.lParam) & KF_EXTENDED) &&
-                                next.time == time)
+                            if(next.wParam == VK_MENU && (HIWORD(next.lParam)&
+                                KF_EXTENDED) && next.time == time)
                             {
                                 // Next message is Right Alt down so discard this
                                 break;
@@ -508,35 +490,58 @@ else if(action == GLFW_RELEASE)
                     }
 
                     // This is a regular Left Ctrl message
-                    key = GLFW_KEY_LEFT_CONTROL;
+                    k = paz::Key::LeftControl;
                 }
             }
-            else if (wParam == VK_PROCESSKEY)
+            else if(wParam == VK_PROCESSKEY)
             {
                 // IME notifies that keys have been filtered by setting the
                 // virtual key-code to VK_PROCESSKEY
                 break;
             }
 
-            if (action == GLFW_RELEASE && wParam == VK_SHIFT)
+            if(released && wParam == VK_SHIFT)
             {
                 // HACK: Release both Shift keys on Shift up event, as when both
                 //       are pressed the first release does not emit any event
                 // NOTE: The other half of this is in _glfwPollEventsWin32
-                _glfwInputKey(window, GLFW_KEY_LEFT_SHIFT, scancode, action, mods);
-                _glfwInputKey(window, GLFW_KEY_RIGHT_SHIFT, scancode, action, mods);
+                static constexpr int l = static_cast<int>(paz::Key::LeftShift);
+                static constexpr int r = static_cast<int>(paz::Key::RightShift);
+                KeyDown[l] = false;
+                KeyReleased[l] = true;
+                KeyDown[r] = false;
+                KeyReleased[r] = true;
             }
-            else if (wParam == VK_SNAPSHOT)
+            else if(wParam == VK_SNAPSHOT)
             {
                 // HACK: Key down is not reported for the Print Screen key
-                _glfwInputKey(window, key, scancode, GLFW_PRESS, mods);
-                _glfwInputKey(window, key, scancode, GLFW_RELEASE, mods);
+                const int i = static_cast<int>(k);
+                KeyDown[i] = false;
+                KeyPressed[i] = true;
+                KeyReleased[i] = true;
+            }
+            else if(k == paz::Key::Unknown)
+            {
+                break;
             }
             else
-                _glfwInputKey(window, key, scancode, action, mods);
+            {
+                const int i = static_cast<int>(k);
+                if(released)
+                {
+                    KeyDown[i] = false;
+                    KeyReleased[i] = true;
+                }
+                else
+                {
+                    KeyDown[i] = true;
+                    KeyPressed[i] = true;
+                }
+            }
 
             break;
         }
+#if 0
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
