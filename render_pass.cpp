@@ -153,7 +153,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         }
         if(_data->_blendMode == BlendMode::Additive)
         {
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            glBlendFunc(GL_ONE, GL_ONE);
         }
         else if(_data->_blendMode == BlendMode::Blend)
         {

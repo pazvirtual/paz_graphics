@@ -216,6 +216,7 @@ int main(int, char** argv)
         textPass.begin({paz::RenderPass::LoadAction::Load}, paz::RenderPass::
             LoadAction::DontCare);
         textPass.read("font", font);
+        textPass.uniform("baseSize", fontRows);
         textPass.uniform("aspectRatio", paz::Window::AspectRatio());
         int row = 0;
         int col = 0;
