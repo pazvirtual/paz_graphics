@@ -1,6 +1,9 @@
 #include "PAZ_Graphics"
 #include "PAZ_IO"
 
+static constexpr int MinWidth = 2;
+static constexpr int MaxWidth = 10;
+
 static const std::string LineVertSrc = 1 + R"===(
 layout(location = 0) in vec2 pos;
 out float a;
@@ -83,7 +86,7 @@ int main(int, char** argv)
     paz::RenderPass basePass(buff, lineVert, lineFrag0);
     paz::RenderPass sdfPass(quadVert, lineFrag1);
 
-    int width = 1;
+    int width = MinWidth;
     while(!paz::Window::Done())
     {
         const double displayScale = static_cast<double>(paz::Window::
@@ -103,11 +106,11 @@ int main(int, char** argv)
         }
         if(paz::Window::KeyPressed(paz::Key::Up))
         {
-            width = std::min(width + 1, 10);
+            width = std::min(width + 1, MaxWidth);
         }
         if(paz::Window::KeyPressed(paz::Key::Down))
         {
-            width = std::max(width - 1, 1);
+            width = std::max(width - 1, MinWidth);
         }
         if(paz::Window::KeyPressed(paz::Key::Q))
         {
@@ -131,7 +134,7 @@ int main(int, char** argv)
 
         sdfPass.begin({paz::LoadAction::Clear});
         sdfPass.read("base", buff.colorAttachment(0));
-        sdfPass.uniform("width", static_cast<float>(displayScale*width));
+        sdfPass.uniform("width", static_cast<int>(displayScale*width));
         sdfPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
         sdfPass.end();
 
