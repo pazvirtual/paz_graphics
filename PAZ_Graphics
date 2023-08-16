@@ -78,7 +78,8 @@ namespace paz
 
     enum class PrimitiveType
     {
-        Points, Lines, LineStrip, Triangles, TriangleStrip
+        Points, Lines, LineStrip, LineLoop, Triangles, TriangleStrip,
+        TriangleFan
     };
 
     enum class CursorMode
