@@ -3,6 +3,7 @@
 #ifndef PAZ_MACOS
 
 #include "PAZ_Graphics"
+#include "render_pass.hpp"
 #include "internal_data.hpp"
 #include "util.hpp"
 #include "window.hpp"
@@ -832,6 +833,21 @@ paz::Framebuffer paz::RenderPass::framebuffer() const
     Framebuffer temp;
     temp._data = _data->_fbo;
     return temp;
+}
+
+void paz::disable_blend_depth_cull()
+{
+    if(BlendEnabled)
+    {
+        BlendEnabled = false;
+        glDisable(GL_BLEND);
+    }
+    if(DepthTestEnabled)
+    {
+        DepthTestEnabled = false;
+        glDisable(GL_DEPTH_TEST);
+    }
+    glDisable(GL_CULL_FACE);
 }
 
 #endif

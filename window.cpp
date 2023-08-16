@@ -3,6 +3,7 @@
 #ifndef PAZ_MACOS
 
 #include "PAZ_Graphics"
+#include "render_pass.hpp"
 #include "keycodes.hpp"
 #include "util.hpp"
 #include "window.hpp"
@@ -659,9 +660,7 @@ void paz::Window::EndFrame()
 
     glGetError();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glDisable(GL_BLEND);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
+    disable_blend_depth_cull();
     glUseProgram(QuadShaderId);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, final_framebuffer().colorAttachment(0)._data->
