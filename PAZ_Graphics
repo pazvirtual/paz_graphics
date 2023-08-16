@@ -38,9 +38,10 @@ namespace paz
     template<typename T, int NumChannels>
     class Image : public std::vector<T>
     {
-        int _rows;
+        int _rows = 0;
 
     public:
+        Image() = default;
         Image(int width, int height) : std::vector<T>(width*height*NumChannels),
             _rows(height) {}
         Image(const T* data, int width, int height) : std::vector<T>(data, data
@@ -156,6 +157,7 @@ namespace paz
     static constexpr int NumKeys = static_cast<int>(Key::Unknown);
     static constexpr int NumMouseButtons = 8;
 
+    class RenderTarget;
     class Texture
     {
         friend class Framebuffer;
@@ -173,6 +175,7 @@ namespace paz
             MinMagFilter::Nearest, MipmapFilter mipFilter = MipmapFilter::None,
             WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::
             ClampToEdge);
+        Texture(RenderTarget&& target);
         PAZ_TEX_IMG_CTOR_T_NORM(std::int8_t)
         PAZ_TEX_IMG_CTOR_T_NORM(std::int16_t)
         PAZ_TEX_IMG_CTOR_T(std::int32_t)
