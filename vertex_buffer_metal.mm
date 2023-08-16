@@ -29,29 +29,29 @@ paz::VertexBuffer::VertexBuffer()
     _data = std::make_unique<Data>();
 }
 
-void paz::VertexBuffer::attribute(int dim, const std::vector<float>& data)
+void paz::VertexBuffer::attribute(int dim, const float* data, std::size_t size)
 {
-    check_size(dim, _numVertices, data);
+    check_size(dim, _numVertices, size);
 
-    _data->_buffers.push_back([DEVICE newBufferWithBytes:data.data() length:
-        sizeof(float)*dim*_numVertices options:MTLStorageModeShared]);
+    _data->_buffers.push_back([DEVICE newBufferWithBytes:data length:sizeof(
+        float)*size options:MTLStorageModeShared]);
 }
 
-void paz::VertexBuffer::attribute(int dim, const std::vector<unsigned int>&
-    data)
+void paz::VertexBuffer::attribute(int dim, const unsigned int* data, std::size_t
+    size)
 {
-    check_size(dim, _numVertices, data);
+    check_size(dim, _numVertices, size);
 
-    _data->_buffers.push_back([DEVICE newBufferWithBytes:data.data() length:
-        sizeof(unsigned int)*dim*_numVertices options:MTLStorageModeShared]);
+    _data->_buffers.push_back([DEVICE newBufferWithBytes:data length:sizeof(
+        unsigned int)*size options:MTLStorageModeShared]);
 }
 
-void paz::VertexBuffer::attribute(int dim, const std::vector<int>& data)
+void paz::VertexBuffer::attribute(int dim, const int* data, std::size_t size)
 {
-    check_size(dim, _numVertices, data);
+    check_size(dim, _numVertices, size);
 
-    _data->_buffers.push_back([DEVICE newBufferWithBytes:data.data() length:
-        sizeof(int)*dim*_numVertices options:MTLStorageModeShared]);
+    _data->_buffers.push_back([DEVICE newBufferWithBytes:data length:sizeof(
+        int)*size options:MTLStorageModeShared]);
 }
 
 #endif
