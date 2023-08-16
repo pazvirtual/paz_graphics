@@ -189,7 +189,6 @@ static ID3D11Device* Device;
 static ID3D11DeviceContext* DeviceContext;
 static IDXGISwapChain* SwapChain;
 static ID3D11RenderTargetView* RenderTargetView;
-static std::vector<unsigned char> RawInputBuf;
 static int WindowWidth;
 static int WindowHeight;
 static bool WindowIsKey;
@@ -209,7 +208,7 @@ static int MaxWidth = 0;
 static int MaxHeight = 0;
 static bool Resizable = true;
 static bool Done;
-static paz::CursorMode CurCursorMode;
+static paz::CursorMode CurCursorMode = paz::CursorMode::Normal;
 static std::array<bool, paz::NumKeys> KeyDown;
 static std::array<bool, paz::NumKeys> KeyPressed;
 static std::array<bool, paz::NumKeys> KeyReleased;
@@ -425,6 +424,66 @@ static std::chrono::time_point<std::chrono::steady_clock> FrameStart = std::
     chrono::steady_clock::now();
 static double PrevFrameTime = 1./60.;
 
+static void center_cursor()
+{
+    POINT pos = {WindowWidth/2, WindowHeight/2};
+    ClientToScreen(WindowHandle, &pos);
+    SetCursorPos(pos.x, pos.y);
+}
+
+static void capture_cursor()
+{
+    RECT clipRect;
+    GetClientRect(WindowHandle, &clipRect);
+    ClientToScreen(WindowHandle, (POINT*) &clipRect.left);
+    ClientToScreen(WindowHandle, (POINT*) &clipRect.right);
+    ClipCursor(&clipRect);
+}
+
+static void release_cursor()
+{
+    ClipCursor(nullptr);
+}
+
+static void enable_raw_mouse_motion()
+{
+    const RAWINPUTDEVICE rid = {0x01, 0x02, 0, WindowHandle};
+    if(!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
+    {
+        throw std::runtime_error("Failed to register raw input device");
+    }
+}
+
+static void disable_raw_mouse_motion()
+{
+    const RAWINPUTDEVICE rid = {0x01, 0x02, RIDEV_REMOVE, nullptr};
+    if(!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
+    {
+        throw std::runtime_error("Failed to remove raw input device");
+    }
+}
+
+static void disable_cursor()
+{
+    GetCursorPos(&PriorCursorPos);
+    ScreenToClient(WindowHandle, &PriorCursorPos);
+    center_cursor();
+    SetCursor(nullptr);
+    capture_cursor();
+    enable_raw_mouse_motion();
+}
+
+static void enable_cursor()
+{
+    disable_raw_mouse_motion();
+    release_cursor();
+    PrevMousePos.first = PriorCursorPos.x;
+    PrevMousePos.second = WindowHeight - PriorCursorPos.y;
+    ClientToScreen(WindowHandle, &PriorCursorPos);
+    SetCursorPos(PriorCursorPos.x, PriorCursorPos.y);
+    SetCursor(LoadCursorW(nullptr, IDC_ARROW));
+}
+
 static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
     lParam)
 {
@@ -474,14 +533,9 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             // completed or canceled.
             if(!lParam && FrameAction)
             {
-                if(CurCursorMode == paz::CursorMode::Disable)
+                if(CursorDisabled)
                 {
-                    GetCursorPos(&PriorCursorPos);
-                    ScreenToClient(WindowHandle, &PriorCursorPos);
-                    POINT pos = {WindowWidth/2, WindowHeight/2};
-                    ClientToScreen(WindowHandle, &pos);
-                    SetCursorPos(pos.x, pos.y);
-                    SetCursor(nullptr);
+                    disable_cursor();
                 }
                 FrameAction = false;
             }
@@ -496,26 +550,18 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             {
                 break;
             }
-            if(CurCursorMode == paz::CursorMode::Disable)
+            if(CursorDisabled)
             {
-                GetCursorPos(&PriorCursorPos);
-                ScreenToClient(WindowHandle, &PriorCursorPos);
-                POINT pos = {WindowWidth/2, WindowHeight/2};
-                ClientToScreen(WindowHandle, &pos);
-                SetCursorPos(pos.x, pos.y);
-                SetCursor(nullptr);
+                disable_cursor();
             }
             return 0;
         }
         case WM_KILLFOCUS:
         {
             WindowIsKey = false;
-            if(CurCursorMode == paz::CursorMode::Disable)
+            if(CursorDisabled)
             {
-                POINT pos = {WindowWidth/2, WindowHeight/2};
-                ClientToScreen(WindowHandle, &pos);
-                SetCursorPos(pos.x, pos.y);
-                SetCursor(LoadCursorW(nullptr, IDC_ARROW));
+                enable_cursor();
             }
             return 0;
         }
@@ -552,9 +598,6 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         case WM_KEYUP:
         case WM_SYSKEYUP:
         {
-            GamepadActive = false;
-            MouseActive = false;
-
             const bool released = HIWORD(lParam)&KF_UP; // Otherwise, pressed
 
             int key = HIWORD(lParam)&(KF_EXTENDED|0xff);
@@ -629,6 +672,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
             if(released && wParam == VK_SHIFT)
             {
+                GamepadActive = false;
+                MouseActive = false;
                 // HACK: Release both Shift keys on Shift up event, as when both
                 //       are pressed the first release does not emit any event
                 // NOTE: The other half of this is in _glfwPollEventsWin32
@@ -641,6 +686,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             }
             else if(wParam == VK_SNAPSHOT)
             {
+                GamepadActive = false;
+                MouseActive = false;
                 // HACK: Key down is not reported for the Print Screen key
                 const int i = static_cast<int>(k);
                 KeyDown[i] = false;
@@ -653,6 +700,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             }
             else
             {
+                GamepadActive = false;
+                MouseActive = false;
                 const int i = static_cast<int>(k);
                 if(released)
                 {
@@ -735,9 +784,6 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         }
         case WM_MOUSEMOVE:
         {
-            GamepadActive = false;
-            MouseActive = true;
-
             const int x = GET_X_LPARAM(lParam);
             const int y = WindowHeight - GET_Y_LPARAM(lParam);
 
@@ -751,44 +797,45 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 CursorTracked = true;
             }
 
-            if(CurCursorMode != paz::CursorMode::Disable)
+            if(CursorDisabled)
             {
-                MousePos.first = x;
-                MousePos.second = y;
-                VirtMousePos = MousePos;
+                break;
             }
 
-            PrevMousePos = MousePos;
+            if(VirtMousePos.first != x || VirtMousePos.second != y)
+            {
+                GamepadActive = false;
+                MouseActive = true;
+                VirtMousePos.first = x;
+                VirtMousePos.second = y;
+                MousePos = VirtMousePos;
+            }
+
+            PrevMousePos.first = x;
+            PrevMousePos.second = y;
 
             return 0;
         }
         case WM_INPUT:
         {
-            GamepadActive = false;
-            MouseActive = true;
-            if(CurCursorMode != paz::CursorMode::Disable)
+            if(!CursorDisabled)
             {
                 break;
             }
 
             UINT size = 0;
             HRAWINPUT ri = reinterpret_cast<HRAWINPUT>(lParam);
-            GetRawInputData(ri, RID_INPUT, nullptr, &size,
-                sizeof(RAWINPUTHEADER));
-            if(size > RawInputBuf.size())
-            {
-                RawInputBuf.resize(size);
-            }
+            GetRawInputData(ri, RID_INPUT, nullptr, &size, sizeof(
+                RAWINPUTHEADER));
 
-            size = RawInputBuf.size();
-            if(GetRawInputData(ri, RID_INPUT, RawInputBuf.data(), &size, sizeof(
+            std::vector<unsigned char> buf(size);
+            if(GetRawInputData(ri, RID_INPUT, buf.data(), &size, sizeof(
                 RAWINPUTHEADER)) == std::numeric_limits<UINT>::max())
             {
                 throw std::runtime_error("Failed to retrieve raw input data.");
             }
 
-            const auto& data = reinterpret_cast<const RAWINPUT&>(*RawInputBuf.
-                data());
+            const auto& data = reinterpret_cast<const RAWINPUT&>(*buf.data());
             int deltaX, deltaY;
             if(data.data.mouse.usFlags&MOUSE_MOVE_ABSOLUTE)
             {
@@ -801,11 +848,20 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 deltaY = data.data.mouse.lLastY;
             }
 
-            MousePos.first = VirtMousePos.first + deltaX;
-            MousePos.second = VirtMousePos.second + deltaY;
-            VirtMousePos = MousePos;
+            const double x = VirtMousePos.first + deltaX;
+            const double y = VirtMousePos.second + deltaY;
+            if(VirtMousePos.first != x || VirtMousePos.second != y)
+            {
+                GamepadActive = false;
+                MouseActive = true;
+                VirtMousePos.first = x;
+                VirtMousePos.second = y;
+                MousePos = VirtMousePos;
+            }
+
             PrevMousePos.first += deltaX;
             PrevMousePos.second += deltaY;
+
             break;
         }
         case WM_MOUSELEAVE:
@@ -840,12 +896,9 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             }
             // Enable the cursor while the user is moving or resizing the window
             // or using the window menu.
-            if(CurCursorMode == paz::CursorMode::Disable)
+            if(CursorDisabled)
             {
-                POINT pos = {WindowWidth/2, WindowHeight/2};
-                ClientToScreen(WindowHandle, &pos);
-                SetCursorPos(pos.x, pos.y);
-                SetCursor(LoadCursorW(nullptr, IDC_ARROW));
+                enable_cursor();
             }
             break;
         }
@@ -858,14 +911,9 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             }
             // Disable the cursor once the user is done moving or resizing the
             // window or using the menu.
-            if(CurCursorMode == paz::CursorMode::Disable)
+            if(CursorDisabled)
             {
-                GetCursorPos(&PriorCursorPos);
-                ScreenToClient(WindowHandle, &PriorCursorPos);
-                POINT pos = {WindowWidth/2, WindowHeight/2};
-                ClientToScreen(WindowHandle, &pos);
-                SetCursorPos(pos.x, pos.y);
-                SetCursor(nullptr);
+                disable_cursor();
             }
             break;
         }
@@ -923,7 +971,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             {
                 PrevX = static_cast<int>(static_cast<short>(LOWORD(lParam)));
                 PrevY = static_cast<int>(static_cast<short>(HIWORD(lParam)));
-                if(CurCursorMode == paz::CursorMode::Disable)
+                if(CursorDisabled)
                 {
                     RECT clipRect;
                     GetClientRect(WindowHandle, &clipRect);
@@ -1056,6 +1104,10 @@ static void reset_events()
 {
     if(CursorDisabled)
     {
+if(MousePos.first || MousePos.second)
+{
+std::cout << MousePos.first << ' ' << MousePos.second << std::endl;
+}
         ::MousePos = {};
     }
     ::ScrollOffset = {};
@@ -1394,23 +1446,39 @@ void paz::Window::SetCursorMode(CursorMode mode)
 {
     initialize();
 
-    CurCursorMode = mode;
-/*    if(mode == CursorMode::Normal)
+    if(WindowIsKey)
     {
-        glfwSetInputMode(WindowPtr, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        if(!CursorDisabled && mode == CursorMode::Disable)
+        {
+            GetCursorPos(&PriorCursorPos);
+            ScreenToClient(WindowHandle, &PriorCursorPos);
+            center_cursor();
+            enable_raw_mouse_motion();
+            capture_cursor();
+        }
+        else if(CursorDisabled && mode != CursorMode::Disable)
+        {
+            disable_raw_mouse_motion();
+            release_cursor();
+            ClientToScreen(WindowHandle, &PriorCursorPos);
+            SetCursorPos(PriorCursorPos.x, PriorCursorPos.y);
+        }
     }
-    else if(mode == CursorMode::Hidden)
+
+    if(mode == CursorMode::Normal)
     {
-        glfwSetInputMode(WindowPtr, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+        SetCursor(LoadCursorW(nullptr, IDC_ARROW));
     }
-    else if(mode == CursorMode::Disable)
+    else if(mode == CursorMode::Hidden || mode == CursorMode::Disable)
     {
-        glfwSetInputMode(WindowPtr, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        SetCursor(nullptr);
     }
     else
     {
         throw std::runtime_error("Unknown cursor mode.");
-    }*/
+    }
+
+    CurCursorMode = mode;
     CursorDisabled = (mode == CursorMode::Disable);
 }
 
@@ -1517,6 +1585,17 @@ void paz::Window::PollEvents()
         }
     }
 
+    if(CursorDisabled)
+    {
+        if(PrevMousePos.first != WindowWidth/2 || PrevMousePos.second !=
+            WindowHeight/2)
+        {
+            PrevMousePos.first = WindowWidth/2;
+            PrevMousePos.second = WindowHeight/2;
+            center_cursor();
+        }
+    }
+
     GamepadState state;
     if(poll_gamepad_state(state))
     {
@@ -1579,13 +1658,6 @@ void paz::Window::PollEvents()
             ::MouseActive = false;
             ::GamepadRightTrigger = state.axes[5];
         }
-    }
-
-    if(CursorDisabled)
-    {
-        POINT pos = {WindowWidth/2, WindowHeight/2};
-        ClientToScreen(WindowHandle, &pos);
-        SetCursorPos(pos.x, pos.y);
     }
 }
 

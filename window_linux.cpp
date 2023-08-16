@@ -694,7 +694,7 @@ void paz::Window::PollEvents()
     }
     if(CursorDisabled)
     {
-        glfwSetCursorPos(WindowPtr, 0, WindowHeight);
+        glfwSetCursorPos(WindowPtr, WindowWidth/2, WindowHeight/2);
     }
 }
 
