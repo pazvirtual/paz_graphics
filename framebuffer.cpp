@@ -37,6 +37,13 @@ paz::Framebuffer::~Framebuffer()
     glDeleteFramebuffers(1, &_data->_id);
 }
 
+paz::Framebuffer::Framebuffer()
+{
+    _data = std::make_unique<Data>();
+
+    glGenFramebuffers(1, &_data->_id);
+}
+
 void paz::Framebuffer::attach(const ColorTarget& target)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, _data->_id);
@@ -63,13 +70,6 @@ void paz::Framebuffer::attach(const DepthStencilTarget& target)
             framebuffer_status(status) + ".");
     }
     _data->_hasDepthAttachment = true;
-}
-
-paz::Framebuffer::Framebuffer()
-{
-    _data = std::make_unique<Data>();
-
-    glGenFramebuffers(1, &_data->_id);
 }
 
 #endif
