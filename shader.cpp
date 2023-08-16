@@ -115,7 +115,7 @@ paz::Shader::Shader(const ShaderFunctionLibrary& vertLibrary, const std::string&
 {
     initialize();
 
-    _data = std::make_unique<Data>();
+    _data = std::make_shared<Data>();
 
     if(!vertLibrary._data->_vertexIds.count(vertName))
     {

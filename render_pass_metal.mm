@@ -117,7 +117,7 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
 {
     initialize();
 
-    _data = std::make_unique<Data>();
+    _data = std::make_shared<Data>();
 
     _data->_shader = shader._data;
     _data->_fbo = fbo._data;
@@ -185,7 +185,7 @@ paz::RenderPass::RenderPass(const Shader& shader, BlendMode blendMode)
 {
     initialize();
 
-    _data = std::make_unique<Data>();
+    _data = std::make_shared<Data>();
 
     _data->_shader = shader._data;
     MTLRenderPipelineDescriptor* pipelineDescriptor =

@@ -26,7 +26,7 @@ paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
 {
     initialize();
 
-    _data = std::make_unique<Data>();
+    _data = std::make_shared<Data>();
 
     _data->_numIndices = size;
     _data->_data = [DEVICE newBufferWithBytes:data length:sizeof(unsigned int)*
