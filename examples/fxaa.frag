@@ -1,4 +1,3 @@
-// Linear LDR -> Antialiased gamma-corrected LDR
 const int numEdgeSteps = 10;
 const float edgeSteps[] = {1., 1.5, 2., 2., 2., 2., 2., 2., 2., 4.};
 const float edgeGuess = 8.;
@@ -128,5 +127,4 @@ void main()
     vec2 deltaUv = mix(vec2(e.pixelStep*fac, 0.), vec2(0., e.pixelStep*fac),
         float(e.isHorizontal));
     color = texture(img, uv + deltaUv);
-    color.rgb = pow(color.rgb, vec3(0.4545));
 }

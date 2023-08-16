@@ -19,7 +19,7 @@ layout(location = 0) out vec4 color;
 in float a;
 void main()
 {
-    color = vec4(pow(0.5, 2.2)*vec3(a, 1. - a, 1.), 1.);
+    color = vec4(0.25*vec3(a, 1. - a, 1.), 1.);
 }
 )===";
 
@@ -78,13 +78,9 @@ int main(int, char** argv)
         ).str());
     const paz::VertexFunction lineVert2(paz::read_bytes(appDir + "/lines-y.vert"
         ).str());
-    const paz::VertexFunction quadVert(paz::read_bytes(appDir + "/quad.vert").
-        str());
     const paz::FragmentFunction lineFrag0(LineFragSrc);
     const paz::FragmentFunction lineFrag1(paz::read_bytes(appDir + "/lines.frag"
         ).str());
-    const paz::FragmentFunction lineFrag2(paz::read_bytes(appDir +
-        "/lines-post.frag").str());
 
     paz::Framebuffer buff0;
     buff0.attach(paz::RenderTarget(paz::TextureFormat::RGBA16Float, paz::
@@ -94,13 +90,9 @@ int main(int, char** argv)
     buff1.attach(paz::RenderTarget(paz::TextureFormat::RGBA16Float, paz::
         MinMagFilter::Linear, paz::MinMagFilter::Linear));
 
-    paz::Framebuffer buff2;
-    buff2.attach(paz::RenderTarget(paz::TextureFormat::RGBA16Float));
-
     paz::RenderPass basePass(buff0, lineVert0, lineFrag0);
     paz::RenderPass xPass(buff1, lineVert1, lineFrag1);
-    paz::RenderPass yPass(buff2, lineVert2, lineFrag1);
-    paz::RenderPass postPass(quadVert, lineFrag2);
+    paz::RenderPass yPass(lineVert2, lineFrag1);
 
     double width = 0.5*(MaxWidth - MinWidth);
     while(!paz::Window::Done())
@@ -169,11 +161,6 @@ int main(int, char** argv)
         yPass.uniform("width", static_cast<float>(width));
         yPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
         yPass.end();
-
-        postPass.begin();
-        postPass.read("img", buff2.colorAttachment(0));
-        postPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
-        postPass.end();
 
         paz::Window::EndFrame();
     }

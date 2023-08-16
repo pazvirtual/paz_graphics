@@ -22,5 +22,5 @@ vec3 reinhard(in vec3 col, in float w)
 void main()
 {
     vec3 hdrCol = texture(hdrRender, uv).rgb;
-    color = vec4(pow(reinhard(hdrCol, whitePoint), vec3(0.4545)), 1.);
+    color = vec4(reinhard(hdrCol, whitePoint), 1.);
 }

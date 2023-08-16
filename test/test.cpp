@@ -47,15 +47,15 @@ static constexpr int Threshold = 0.02*std::numeric_limits<std::uint8_t>::max();
 static constexpr std::array<std::array<int, 3>, 10> SamplePoints =
 {{
     {171,  83, 0},
-    {115, 158, 40},
+    {115, 158, 111},
     {  3,  59, 0},
-    { 62,  69, 10},
-    {100, 162, 133},
-    { 97, 130, 9},
+    { 62,  69, 55},
+    {100, 162, 191},
+    { 97, 130, 53},
     {189,  70, 0},
-    {138,  37, 120},
-    { 75,  70, 58},
-    {134,  64, 85}
+    {138,  37, 183},
+    { 75,  70, 131},
+    {134,  64, 156}
 }};
 
 static constexpr std::array<float, 4*4> GroundPos =

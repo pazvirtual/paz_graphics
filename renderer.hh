@@ -14,6 +14,7 @@
 - (nullable MTLRenderPassDescriptor*)currentRenderPassDescriptor;
 - (void)ensureCommandBuffer;
 - (void)blitToScreen:(nonnull id<MTLTexture>)tex;
+- (void)setGamma:(float)gamma;
 @end
 
 #endif
