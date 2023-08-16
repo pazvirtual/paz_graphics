@@ -10,30 +10,6 @@
 #define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
     contentViewController] mtkView] device]
 
-static MTLSamplerMinMagFilter min_mag_filter(paz::Texture::MinMagFilter f)
-{
-    switch(f)
-    {
-        case paz::Texture::MinMagFilter::Linear: return
-            MTLSamplerMinMagFilterLinear;
-        case paz::Texture::MinMagFilter::Nearest: return
-            MTLSamplerMinMagFilterNearest;
-    }
-
-    throw std::logic_error("Invalid texture filter requested.");
-}
-
-void paz::Texture::createSampler(MinMagFilter minFilter, MinMagFilter magFilter)
-{
-    MTLSamplerDescriptor* descriptor = [[MTLSamplerDescriptor alloc] init];
-    [descriptor setMinFilter:min_mag_filter(minFilter)];
-    [descriptor setMagFilter:min_mag_filter(magFilter)];
-    [descriptor setSAddressMode:MTLSamplerAddressModeRepeat];
-    [descriptor setTAddressMode:MTLSamplerAddressModeRepeat];
-    _sampler = [DEVICE newSamplerStateWithDescriptor:descriptor];
-    [descriptor release];
-}
-
 paz::Texture::Texture() {}
 
 paz::Texture::~Texture()
@@ -90,7 +66,7 @@ void paz::Texture::init(int width, int height, int numChannels, int numBits,
     }
     if(!_sampler)
     {
-        createSampler(minFilter, magFilter);
+        _sampler = create_sampler(minFilter, magFilter);
     }
 }
 

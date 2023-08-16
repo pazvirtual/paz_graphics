@@ -78,9 +78,6 @@ namespace paz
 #endif
 
         Texture();
-#ifdef PAZ_MACOS
-        void createSampler(MinMagFilter minFilter, MinMagFilter magFilter);
-#endif
         void init(int width, int height, int numChannels, int numBits, DataType
             type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
             data);
@@ -344,11 +341,6 @@ namespace paz
 
         RenderPass(const RenderPass&) = delete;
         RenderPass& operator=(const RenderPass&) = delete;
-
-#ifdef PAZ_MACOS
-        void create(const void* descriptor);
-        void bind(const VertexBuffer& vertices) const;
-#endif
 
     public:
         enum class PrimitiveType

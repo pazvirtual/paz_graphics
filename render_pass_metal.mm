@@ -56,7 +56,9 @@ static std::pair<MTLVertexFormat, NSUInteger> vertex_format_stride(NSUInteger t)
     }
 }
 
-void paz::RenderPass::create(const void* descriptor)
+static id<MTLRenderPipelineState> create(const void* descriptor, std::
+    unordered_map<std::string, int>& vertexArgs, std::unordered_map<std::string,
+    int>& fragmentArgs)
 {
     // Get vertex attributes.
     MTLVertexDescriptor* vertexDescriptor = [MTLVertexDescriptor
@@ -79,23 +81,25 @@ void paz::RenderPass::create(const void* descriptor)
     // Get uniforms.
     MTLRenderPipelineReflection* reflection;
     NSError* error = nil;
-    _pipelineState = [DEVICE newRenderPipelineStateWithDescriptor:
-        (MTLRenderPipelineDescriptor*)descriptor options:
-        MTLPipelineOptionArgumentInfo reflection:&reflection error:&error];
+    id<MTLRenderPipelineState> pipelineState = [DEVICE
+        newRenderPipelineStateWithDescriptor:(MTLRenderPipelineDescriptor*)
+        descriptor options:MTLPipelineOptionArgumentInfo reflection:&reflection
+        error:&error];
     [(MTLRenderPipelineDescriptor*)descriptor release];
-    if(!_pipelineState)
+    if(!pipelineState)
     {
         throw std::runtime_error([[NSString stringWithFormat:@"Failed to create"
             " pipeline state: %@", [error localizedDescription]] UTF8String]);
     }
     for(id n in [reflection vertexArguments])
     {
-        _vertexArgs[[[n name] UTF8String]] = [n index];
+        vertexArgs[[[n name] UTF8String]] = [n index];
     }
     for(id n in [reflection fragmentArguments])
     {
-        _fragmentArgs[[[n name] UTF8String]] = [n index];
+        fragmentArgs[[[n name] UTF8String]] = [n index];
     }
+    return pipelineState;
 }
 
 paz::RenderPass::~RenderPass()
@@ -129,7 +133,7 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const Shader& shader,
         [pipelineDescriptor setDepthAttachmentPixelFormat:[(id<MTLTexture>)
             _fbo->depthAttachment->_texture pixelFormat]];
     }
-    create(pipelineDescriptor);
+    _pipelineState = create(pipelineDescriptor, _vertexArgs, _fragmentArgs);
 }
 
 paz::RenderPass::RenderPass(const Shader& shader)
@@ -141,7 +145,7 @@ paz::RenderPass::RenderPass(const Shader& shader)
     [pipelineDescriptor setFragmentFunction:(id<MTLFunction>)shader._frag];
     [[pipelineDescriptor colorAttachments][0] setPixelFormat:[[VIEW_CONTROLLER
         mtkView] colorPixelFormat]];
-    create(pipelineDescriptor);
+    _pipelineState = create(pipelineDescriptor, _vertexArgs, _fragmentArgs);
 }
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
@@ -512,19 +516,14 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, int n)
     }
 }
 
-void paz::RenderPass::bind(const VertexBuffer& vertices) const
+void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
+    vertices, int offset) const
 {
     for(std::size_t i = 0; i < vertices._buffers.size(); ++i)
     {
         [(id<MTLRenderCommandEncoder>)_renderEncoder setVertexBuffer:
             (id<MTLBuffer>)vertices._buffers[i] offset:0 atIndex:i];
     }
-}
-
-void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
-    vertices, int offset) const
-{
-    bind(vertices);
     [(id<MTLRenderCommandEncoder>)_renderEncoder drawPrimitives:primitive_type(
         type) vertexStart:offset vertexCount:vertices._numVertices];
 }
@@ -532,7 +531,11 @@ void paz::RenderPass::primitives(PrimitiveType type, const VertexBuffer&
 void paz::RenderPass::indexed(PrimitiveType type, const VertexBuffer& vertices,
     const IndexBuffer& indices, int offset) const
 {
-    bind(vertices);
+    for(std::size_t i = 0; i < vertices._buffers.size(); ++i)
+    {
+        [(id<MTLRenderCommandEncoder>)_renderEncoder setVertexBuffer:
+            (id<MTLBuffer>)vertices._buffers[i] offset:0 atIndex:i];
+    }
     MTLIndexType t;
     switch(sizeof(unsigned int))
     {

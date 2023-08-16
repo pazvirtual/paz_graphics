@@ -1,4 +1,22 @@
 #import "util_metal.hh"
+#import "app_delegate.hh"
+#import "view_controller.hh"
+
+#define DEVICE [[(ViewController*)[[(AppDelegate*)[NSApp delegate] window] \
+    contentViewController] mtkView] device]
+
+static MTLSamplerMinMagFilter min_mag_filter(paz::Texture::MinMagFilter f)
+{
+    switch(f)
+    {
+        case paz::Texture::MinMagFilter::Linear: return
+            MTLSamplerMinMagFilterLinear;
+        case paz::Texture::MinMagFilter::Nearest: return
+            MTLSamplerMinMagFilterNearest;
+    }
+
+    throw std::logic_error("Invalid texture filter requested.");
+}
 
 MTLPixelFormat paz::pixel_format(unsigned int c, unsigned int b, Texture::
     DataType t)
@@ -195,4 +213,18 @@ MTLPixelFormat paz::pixel_format(unsigned int c, unsigned int b, Texture::
     }
 
     throw std::runtime_error("Invalid texture format requested.");
+}
+
+id<MTLSamplerState> paz::create_sampler(Texture::MinMagFilter minFilter,
+    Texture::MinMagFilter magFilter)
+{
+    MTLSamplerDescriptor* descriptor = [[MTLSamplerDescriptor alloc] init];
+    [descriptor setMinFilter:min_mag_filter(minFilter)];
+    [descriptor setMagFilter:min_mag_filter(magFilter)];
+    [descriptor setSAddressMode:MTLSamplerAddressModeRepeat];
+    [descriptor setTAddressMode:MTLSamplerAddressModeRepeat];
+    id<MTLSamplerState> sampler = [DEVICE newSamplerStateWithDescriptor:
+        descriptor];
+    [descriptor release];
+    return sampler;
 }

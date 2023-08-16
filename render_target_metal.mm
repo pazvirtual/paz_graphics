@@ -49,7 +49,7 @@ paz::RenderTarget::RenderTarget(double scale, int numChannels, int numBits,
     _numBits = numBits;
     _type = type;
     init(_scale*Window::Width(), _scale*Window::Height());
-    createSampler(minFilter, magFilter);
+    _sampler = create_sampler(minFilter, magFilter);
     paz::Window::RegisterTarget(this);
 }
 

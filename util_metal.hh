@@ -11,6 +11,8 @@ namespace paz
 {
     MTLPixelFormat pixel_format(unsigned int c, unsigned int b, Texture::
         DataType t);
+    id<MTLSamplerState> create_sampler(paz::Texture::MinMagFilter minFilter,
+        paz::Texture::MinMagFilter magFilter);
 }
 
 #endif
