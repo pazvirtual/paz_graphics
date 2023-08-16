@@ -30,7 +30,8 @@ std::string paz::vert2hlsl(const std::string& src, std::vector<std::tuple<std::
     bool usesGlInstanceId = false;
 
     std::vector<std::pair<std::string, std::pair<std::string, int>>> buffers;
-    std::map<int, std::pair<std::string, std::string>> inputs;
+    std::vector<std::pair<std::string, std::string>> vertInputs;
+    std::vector<std::pair<std::string, std::string>> instInputs;
     std::vector<std::pair<std::string, std::pair<std::string, bool>>> outputs;
     std::unordered_set<std::string> structs;
 
@@ -218,11 +219,20 @@ float4 uintBitsToFloat(in uint4 v)
                             "n function.");
                     }
                 }
-                for(const auto& n : inputs)
+                for(const auto& n : vertInputs)
                 {
-                    if(std::regex_match(line, std::regex(".*\\b" + std::get<0>(
-                        n.second) + "\\b.*")) && !curArgNames.count(std::get<0>(
-                        n.second)))
+                    if(std::regex_match(line, std::regex(".*\\b" + n.first +
+                        "\\b.*")) && !curArgNames.count(n.first))
+                    {
+                        throw std::runtime_error("Line " + std::to_string(l) +
+                            ": Shader inputs cannot be accessed outside of main"
+                            " function.");
+                    }
+                }
+                for(const auto& n : instInputs)
+                {
+                    if(std::regex_match(line, std::regex(".*\\b" + n.first +
+                        "\\b.*")) && !curArgNames.count(n.first))
                     {
                         throw std::runtime_error("Line " + std::to_string(l) +
                             ": Shader inputs cannot be accessed outside of main"
@@ -340,10 +350,15 @@ float4 uintBitsToFloat(in uint4 v)
             {
                 continue;
             }
-            for(const auto& n : inputs)
+            for(const auto& n : vertInputs)
             {
-                line = std::regex_replace(line, std::regex("\\b" + n.second.
-                    first + "\\b"), "input." + n.second.first);
+                line = std::regex_replace(line, std::regex("\\b" + n.first +
+                    "\\b"), "input." + n.first);
+            }
+            for(const auto& n : instInputs)
+            {
+                line = std::regex_replace(line, std::regex("\\b" + n.first +
+                    "\\b"), "input." + n.first);
             }
             for(const auto& n : outputs)
             {
@@ -394,19 +409,23 @@ float4 uintBitsToFloat(in uint4 v)
         }
         if(std::regex_match(line, std::regex("layout\\b.*")))
         {
-            const std::string layout = std::regex_replace(line, std::regex("^.*"
-                "location\\s*=\\s*([0-9]+).*$"), "$1");
-            const int i = std::stoi(layout);
+            //TEMP - does not account for explicit attribute locations
             const bool isInstance = std::regex_match(line, std::regex(".*\\[\\["
                 "\\s*instance\\s*\\]\\].*"));
-            usesGlInstanceId |= isInstance;
             const std::string dec = std::regex_replace(line, std::regex("^.*in"
                 "\\s+(.*)\\s" + std::string(isInstance ? "+\\[\\[\\s*instance\\"
                 "s*\\]\\]\\s*" : "*") + ";$"), "$1");
             const std::size_t pos = dec.find_last_of(' ');
             const std::string type = dec.substr(0, pos);
             const std::string name = dec.substr(pos + 1);
-            inputs[i] = {name, type};
+            if(isInstance)
+            {
+                instInputs.push_back({name, type});
+            }
+            else
+            {
+                vertInputs.push_back({name, type});
+            }
             continue;
         }
         if(std::regex_match(line, std::regex("out\\s.*")))
@@ -523,10 +542,15 @@ float4 uintBitsToFloat(in uint4 v)
         uniforms.push_back({n.first, type, rows*cols, size});
     }
     out << "struct InputData" << std::endl << "{" << std::endl;
-    for(const auto& n : inputs)
+    for(std::size_t i = 0; i < vertInputs.size(); ++i)
     {
-        out << "    " << n.second.second << " " << n.second.first << " : ATTR"
-            << n.first << ";" << std::endl;
+        out << "    " << vertInputs[i].second << " " << vertInputs[i].first <<
+            " : ATTR" << i << ";" << std::endl;
+    }
+    for(std::size_t i = 0; i < instInputs.size(); ++i)
+    {
+        out << "    " << instInputs[i].second << " " << instInputs[i].first <<
+            " : INST" << i << ";" << std::endl;
     }
     if(usesGlVertexId)
     {

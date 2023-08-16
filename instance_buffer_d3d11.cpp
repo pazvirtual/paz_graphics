@@ -74,10 +74,9 @@ void paz::InstanceBuffer::addAttribute(int dim, const float* data, std::size_t
     }
     const unsigned int slot = _data->_inputElemDescriptors.size();
     D3D11_INPUT_ELEMENT_DESC inputDescriptor = {};
-    inputDescriptor.SemanticName = "ATTR";
+    inputDescriptor.SemanticName = "INST";
     inputDescriptor.SemanticIndex = slot;
-    inputDescriptor.Format = dxgi_format(dim, paz::
-        DataType::Float);
+    inputDescriptor.Format = dxgi_format(dim, paz::DataType::Float);
     inputDescriptor.InputSlot = slot;
     inputDescriptor.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
     inputDescriptor.InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;

@@ -631,10 +631,16 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     _data->mapUniforms();
 
     ID3D11InputLayout* layout;
-    const auto hr = d3d_device()->CreateInputLayout(vertices._data->
-        _inputElemDescriptors.data(), vertices._data->_inputElemDescriptors.
-        size(), _data->_vert->_bytecode->GetBufferPointer(), _data->_vert->
-        _bytecode->GetBufferSize(), &layout);
+    auto inputElemDescriptors = vertices._data->_inputElemDescriptors;
+    const auto startSlot = inputElemDescriptors.size();
+    for(const auto& n : instances._data->_inputElemDescriptors)
+    {
+        inputElemDescriptors.push_back(n);
+        inputElemDescriptors.back().InputSlot += startSlot;
+    }
+    const auto hr = d3d_device()->CreateInputLayout(inputElemDescriptors.data(),
+        inputElemDescriptors.size(), _data->_vert->_bytecode->
+        GetBufferPointer(), _data->_vert->_bytecode->GetBufferSize(), &layout);
     if(hr)
     {
         throw std::runtime_error("Failed to create input layout (HRESULT " +
@@ -643,7 +649,17 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     d3d_context()->IASetInputLayout(layout);
     layout->Release();
 
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    d3d_context()->IASetPrimitiveTopology(primitive_topology(type));
+    const std::vector<unsigned int> offsets(std::max(startSlot, instances.
+        _data->_buffers.size()), 0);
+    d3d_context()->IASetVertexBuffers(0, vertices._data->_buffers.size(),
+        vertices._data->_buffers.data(), vertices._data->_strides.data(),
+        offsets.data());
+    d3d_context()->IASetVertexBuffers(startSlot, instances._data->_buffers.
+        size(), instances._data->_buffers.data(), instances._data->_strides.
+        data(), offsets.data());
+    d3d_context()->DrawInstanced(vertices._data->_numVertices, instances._data->
+        _numInstances, 0, 0);
 }
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
@@ -654,10 +670,16 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     _data->mapUniforms();
 
     ID3D11InputLayout* layout;
-    const auto hr = d3d_device()->CreateInputLayout(vertices._data->
-        _inputElemDescriptors.data(), vertices._data->_inputElemDescriptors.
-        size(), _data->_vert->_bytecode->GetBufferPointer(), _data->_vert->
-        _bytecode->GetBufferSize(), &layout);
+    auto inputElemDescriptors = vertices._data->_inputElemDescriptors;
+    const auto startSlot = inputElemDescriptors.size();
+    for(const auto& n : instances._data->_inputElemDescriptors)
+    {
+        inputElemDescriptors.push_back(n);
+        inputElemDescriptors.back().InputSlot += startSlot;
+    }
+    const auto hr = d3d_device()->CreateInputLayout(inputElemDescriptors.data(),
+        inputElemDescriptors.size(), _data->_vert->_bytecode->
+        GetBufferPointer(), _data->_vert->_bytecode->GetBufferSize(), &layout);
     if(hr)
     {
         throw std::runtime_error("Failed to create input layout (HRESULT " +
@@ -666,7 +688,19 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     d3d_context()->IASetInputLayout(layout);
     layout->Release();
 
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    d3d_context()->IASetPrimitiveTopology(primitive_topology(type));
+    const std::vector<unsigned int> offsets(std::max(startSlot, instances.
+        _data->_buffers.size()), 0);
+    d3d_context()->IASetVertexBuffers(0, vertices._data->_buffers.size(),
+        vertices._data->_buffers.data(), vertices._data->_strides.data(),
+        offsets.data());
+    d3d_context()->IASetVertexBuffers(startSlot, instances._data->_buffers.
+        size(), instances._data->_buffers.data(), instances._data->_strides.
+        data(), offsets.data());
+    d3d_context()->IASetIndexBuffer(indices._data->_buffer,
+        DXGI_FORMAT_R32_UINT, 0);
+    d3d_context()->DrawIndexedInstanced(indices._data->_numIndices, instances.
+        _data->_numInstances, 0, 0, 0);
 }
 
 paz::Framebuffer paz::RenderPass::framebuffer() const
