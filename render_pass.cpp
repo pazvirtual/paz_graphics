@@ -14,7 +14,7 @@
 #define CASE(a, b) case paz::PrimitiveType::a: return GL_##b;
 #define CHECK_UNIFORM if(!_data->_shader._uniformIds.count(name)) return;
 
-static constexpr float Transparent[] = {0.f, 0.f, 0.f, 0.f};
+static constexpr float Black[] = {0.f, 0.f, 0.f, 1.f};
 static int NextSlot = 0;
 
 static bool DepthTestEnabled = false;
@@ -108,7 +108,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         {
             if(colorLoadActions[i] == LoadAction::Clear)
             {
-                glClearBufferfv(GL_COLOR, i, Transparent);
+                glClearBufferfv(GL_COLOR, i, Black);
             }
             else if(colorLoadActions[i] != LoadAction::DontCare &&
                 colorLoadActions[i] != LoadAction::Load)
@@ -143,7 +143,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         if(!colorLoadActions.empty() && colorLoadActions[0] == LoadAction::
             Clear)
         {
-            glClearBufferfv(GL_COLOR, 0, Transparent);
+            glClearBufferfv(GL_COLOR, 0, Black);
         }
         if(depthLoadAction == LoadAction::Clear)
         {
