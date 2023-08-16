@@ -1,9 +1,9 @@
-image: nvidia/opengl
-
 pipelines:
   custom:
-    build-lib-build-main-run-main:
+    temp:
         - step:
-            name: Build Lib Build Main Run Main
+            name: Temp
+            image: gcc:10.2
             script:
-              - make && cd examples && ./main
+#              - make && cd examples && ./main
+              - pwd && ls
