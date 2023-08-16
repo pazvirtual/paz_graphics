@@ -450,34 +450,6 @@ namespace paz
 #endif
 
     private:
-#ifndef PAZ_MACOS
-        static void* _window;
-        static int _width;
-        static int _height;
-        static int _widthCoords;
-        static int _heightCoords;
-        static float _aspectRatio;
-        static float _backingScaleFactor;
-        static bool _isKeyWindow;
-        static bool _isFullscreen;
-
-        static int _windowX;
-        static int _windowY;
-        static int _windowWidth;
-        static int _windowHeight;
-
-        static std::array<bool, NumKeys> _keyDown;
-        static std::array<bool, NumKeys> _keyPressed;
-        static std::array<bool, NumKeys> _keyReleased;
-        static std::array<bool, NumMouseButtons> _mouseDown;
-        static std::array<bool, NumMouseButtons> _mousePressed;
-        static std::array<bool, NumMouseButtons> _mouseReleased;
-
-        static std::pair<double, double> _mousePos;
-        static std::pair<double, double> _mouseOffset;
-        static std::pair<double, double> _scrollOffset;
-#endif
-
         static std::function<void(void)> _draw;
 
         static std::chrono::time_point<std::chrono::steady_clock> _frameStart;
@@ -497,7 +469,7 @@ namespace paz
         static void ResizeCallback(int width, int height);
 #endif
         static void LoopInternal();
-
+        static void ResetEvents();
         static void RegisterTarget(RenderTarget* target);
         static void UnregisterTarget(RenderTarget* target);
 
@@ -521,7 +493,6 @@ namespace paz
         static std::pair<double, double> MousePos();
         static std::pair<double, double> MouseOffset();
         static std::pair<double, double> ScrollOffset();
-        static void ResetEvents();
         static void SetCursorMode(CursorMode mode);
         static float AspectRatio();
         static void Quit();
@@ -533,7 +504,9 @@ namespace paz
         }
         static double FrameTime();
         static void SetMinSize(int width, int height);
-static void DrawInRenderer();//TEMP
+#ifdef PAZ_MACOS
+        static void DrawInRenderer();
+#endif
         static void ResizeTargets();
     };
 }
