@@ -660,45 +660,52 @@ float4 uintBitsToFloat(in uint4 v)
             second < 0 ? "" : "[" + std::to_string(n.second.second) + "]") <<
             ";" << std::endl;
         auto size = n.second.second < 0 ? 1 : n.second.second;
-        if(n.second.first == "int")
+        DataType type;
+        int len;
+        if(n.second.first.substr(0, 3) == "int")
         {
-            uniforms.push_back({n.first, DataType::SInt, 1, size});
+            type = DataType::SInt;
+            len = 3;
         }
-        // ...
-        else if(n.second.first == "float")
+        else if(n.second.first.substr(0, 4) == "uint")
         {
-            uniforms.push_back({n.first, DataType::Float, 1, size});
+            type = DataType::UInt;
+            len = 4;
         }
-        else if(n.second.first == "float2")
+        else if(n.second.first.substr(0, 5) == "float")
         {
-            uniforms.push_back({n.first, DataType::Float, 2, size});
+            type = DataType::Float;
+            len = 5;
         }
-        else if(n.second.first == "float3")
-        {
-            uniforms.push_back({n.first, DataType::Float, 3, size});
-        }
-        else if(n.second.first == "float4")
-        {
-            uniforms.push_back({n.first, DataType::Float, 4, size});
-        }
-        else if(n.second.first == "float2x2")
-        {
-            uniforms.push_back({n.first, DataType::Float, 2*2, size});
-        }
-        else if(n.second.first == "float3x3")
-        {
-            uniforms.push_back({n.first, DataType::Float, 3*3, size});
-        }
-        else if(n.second.first == "float4x4")
-        {
-            uniforms.push_back({n.first, DataType::Float, 4*4, size});
-        }
-        // ...
         else
         {
             throw std::runtime_error("Unsupported uniform type \"" + n.second.
                 first + "\".");
         }
+        const auto suffix = n.second.first.substr(len);
+        int rows, cols;
+        if(suffix.empty())
+        {
+            rows = 1;
+            cols = 1;
+        }
+        else if(suffix.size() == 1 && suffix[0] >= '1' && suffix[0] <= '4')
+        {
+            rows = suffix[0] - '0';
+            cols = 1;
+        }
+        else if(suffix.size() == 3 && suffix[0] >= '1' && suffix[0] <= '4' &&
+            suffix[1] == 'x' && suffix[2] >= '1' && suffix[2] <= '4')
+        {
+            rows = suffix[0] - '0';
+            cols = suffix[2] - '0';
+        }
+        else
+        {
+            throw std::runtime_error("Unsupported uniform type \"" + n.second.
+                first + "\".");
+        }
+        uniforms.push_back({n.first, type, rows*cols, size});
     }
     for(const auto& n : textures)
     {
