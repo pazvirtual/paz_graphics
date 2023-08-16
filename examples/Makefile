@@ -33,15 +33,18 @@ else
     endif
 endif
 
-.PHONY:main
+SRC := $(wildcard *.cpp)
+OBJ := $(SRC:.cpp=.o)
+EXE := $(OBJ:.o=)
 
-main: main.o
+.PHONY:$(SRC)
+
+all: $(EXE)
+
+%: %.cpp
 	$(CXX) $(CXXFLAGS) -o $@ $< $(INCL) $(LIBS)
 
-main.o: main.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $< $(INCL)
-
 clean:
-	$(RM) main main.o
+	$(RM) $(OBJ) $(EXE)
 
 print-% : ; @echo $* = $($*)
