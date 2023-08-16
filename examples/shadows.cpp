@@ -2,13 +2,11 @@
 #include "PAZ_IO"
 #include <cmath>
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846264338328
-#endif
+static constexpr double Pi = 3.14159265358979323846264338328; // M_PI
 
 static constexpr float ZNear = 1.;
 static constexpr float ZFar = 10.;
-static constexpr float YFov = 65.*M_PI/180.;
+static constexpr float YFov = 65.*Pi/180.;
 static constexpr int Res = 2000;
 static constexpr int Size = 16;
 static constexpr int Scale = 16;

@@ -4,6 +4,9 @@
 #include <fstream>
 #include <cmath>
 
+static constexpr double Pi    = 3.14159265358979323846264338328; // M_PI
+static constexpr double TwoPi = 6.28318530717958647692528676656; // 2.*M_PI
+
 static constexpr double BaseLength = 0.25;
 static constexpr std::array<float, 6> TriPosData0 =
 {
@@ -40,10 +43,6 @@ static constexpr std::array<float, 8> QuadPosData =
     -1,  1
 };
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846264338328
-#endif
-
 static double fract(const double n)
 {
     return n - std::floor(n);
@@ -51,7 +50,7 @@ static double fract(const double n)
 
 static double normalize_angle(const double n)
 {
-    return fract(n/(2.*M_PI))*2.*M_PI;
+    return fract(n/TwoPi)*TwoPi;
 }
 
 static void init(paz::RenderPass& scenePass, paz::RenderPass& textPass, paz::
@@ -180,7 +179,7 @@ int main(int, char** argv)
         if(dist > 1e-2)
         {
             const double t = std::atan2(deltaY, deltaX);
-            const double delta = normalize_angle(t - angle + M_PI) - M_PI;
+            const double delta = normalize_angle(t - angle + Pi) - Pi;
             angle = normalize_angle(angle + 0.5*delta);
 
             const double k = std::min(10.*paz::Window::FrameTime(), 1.);
