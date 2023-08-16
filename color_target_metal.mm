@@ -28,39 +28,18 @@ static id<MTLTexture> init(int width, int height, int numChannels, int numBits,
     return texture;
 }
 
-paz::RenderTarget::RenderTarget()
-{
-    _data = std::make_unique<Data>();
-}
-
-paz::RenderTarget::~RenderTarget()
-{
-    paz::Window::UnregisterTarget(this);
-}
-
-paz::RenderTarget::RenderTarget(double scale, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter) :
-    RenderTarget()
+paz::ColorTarget::ColorTarget(double scale, int numChannels, int numBits,
+    DataType type, MinMagFilter minFilter, MinMagFilter magFilter)
 {
     _scale = scale;
     _data->_numChannels = numChannels;
     _data->_numBits = numBits;
     _data->_type = type;
-    Texture::_data->_texture = ::init(_scale*Window::ViewportWidth(), _scale*
-        Window::ViewportHeight(), _data->_numChannels, _data->_numBits, _data->
-        _type);
-    Texture::_data->_sampler = create_sampler(minFilter, magFilter);
-    paz::Window::RegisterTarget(this);
-}
-
-void paz::RenderTarget::resize(int width, int height)
-{
-    if(Texture::_data->_texture)
-    {
-        [(id<MTLTexture>)Texture::_data->_texture release];
-    }
-    Texture::_data->_texture = ::init(_scale*width, _scale*height, _data->
-        _numChannels, _data->_numBits, _data->_type);
+    _data->_minFilter = minFilter;
+    _data->_magFilter = magFilter;
+    _data->_texture = ::init(_scale*Window::ViewportWidth(), _scale*Window::
+        ViewportHeight(), _data->_numChannels, _data->_numBits, _data->_type);
+    _data->_sampler = create_sampler(minFilter, magFilter);
 }
 
 #endif

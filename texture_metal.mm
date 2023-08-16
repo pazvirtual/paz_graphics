@@ -33,22 +33,32 @@ paz::Texture::Texture(int width, int height, int numChannels, int numBits,
     DataType type, MinMagFilter minFilter, MinMagFilter magFilter) :
     Texture()
 {
-    init(width, height, numChannels, numBits, type, minFilter, magFilter,
-        nullptr);
+    _data->_numChannels = numChannels;
+    _data->_numBits = numBits;
+    _data->_type = type;
+    _data->_minFilter = minFilter;
+    _data->_magFilter = magFilter;
+    init(width, height, _data->_numChannels, _data->_numBits, _data->_type,
+        _data->_minFilter, _data->_magFilter, nullptr);
 }
 
 paz::Texture::Texture(int width, int height, int numChannels, int numBits, const
     std::vector<float>& data, MinMagFilter minFilter, MinMagFilter magFilter) :
     Texture()
 {
+    _data->_numChannels = numChannels;
+    _data->_numBits = numBits;
+    _data->_type = DataType::Float;
+    _data->_minFilter = minFilter;
+    _data->_magFilter = magFilter;
     std::vector<float> v(data.size());
     for(int i = 0; i < height; ++i)
     {
         std::copy(data.begin() + width*i, data.begin() + width*i + width, v.
             begin() + width*(height - i - 1));
     }
-    init(width, height, numChannels, numBits, DataType::Float, minFilter,
-        magFilter, v.data());
+    init(width, height, _data->_numChannels, _data->_numBits, _data->_type,
+        _data->_minFilter, _data->_magFilter, v.data());
 }
 
 // ...
@@ -57,14 +67,19 @@ paz::Texture::Texture(int width, int height, int numChannels, int numBits, const
     std::vector<unsigned int>& data, MinMagFilter minFilter, MinMagFilter
     magFilter) : Texture()
 {
+    _data->_numChannels = numChannels;
+    _data->_numBits = numBits;
+    _data->_type = DataType::UInt;
+    _data->_minFilter = minFilter;
+    _data->_magFilter = magFilter;
     std::vector<unsigned int> v(data.size());
     for(int i = 0; i < height; ++i)
     {
         std::copy(data.begin() + width*i, data.begin() + width*i + width, v.
             begin() + width*(height - i - 1));
     }
-    init(width, height, numChannels, numBits, DataType::UInt, minFilter,
-        magFilter, v.data());
+    init(width, height, _data->_numChannels, _data->_numBits, _data->_type,
+        _data->_minFilter, _data->_magFilter, v.data());
 }
 
 // ...
@@ -95,7 +110,12 @@ void paz::Texture::init(int width, int height, int numChannels, int numBits,
 
 void paz::Texture::resize(int width, int height)
 {
-    throw std::runtime_error("TEXTURE RESIZE NOT IMPLEMENTED");
+    if(_data->_texture)
+    {
+        [(id<MTLTexture>)_data->_texture release];
+    }
+    init(width, height, _data->_numChannels, _data->_numBits, _data->_type,
+        _data->_minFilter, _data->_magFilter, nullptr);
 }
 
 #endif

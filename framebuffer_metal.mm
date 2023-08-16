@@ -16,7 +16,7 @@ paz::Framebuffer::~Framebuffer()
     _data->_colorAttachments.clear();
 }
 
-void paz::Framebuffer::attach(const RenderTarget& target)
+void paz::Framebuffer::attach(const ColorTarget& target)
 {
     _data->_colorAttachments.push_back(&target);
 }
