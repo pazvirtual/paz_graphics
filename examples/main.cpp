@@ -171,14 +171,8 @@ int main()
         }
         if(paz::Window::KeyPressed(paz::Window::Key::F))
         {
-            if(paz::Window::IsFullscreen())
-            {
-                paz::Window::MakeWindowed();
-            }
-            else
-            {
-                paz::Window::MakeFullscreen();
-            }
+            paz::Window::IsFullscreen() ? paz::Window::MakeWindowed() : paz::
+                Window::MakeFullscreen();
         }
         if(paz::Window::MousePressed(0))
         {
