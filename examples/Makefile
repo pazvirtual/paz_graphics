@@ -37,7 +37,7 @@ SRC := $(wildcard *.cpp)
 OBJ := $(SRC:.cpp=.o)
 EXE := $(OBJ:.o=)
 
-.PHONY:$(SRC)
+.PHONY: $(SRC)
 
 all: $(EXE)
 
