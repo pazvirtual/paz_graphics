@@ -563,6 +563,7 @@ paz::Image<std::uint8_t, 3> paz::Window::ReadPixels()
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, final_framebuffer().colorAttachment(0)._data->
         _id);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data());
     const GLenum error = glGetError();
     if(error != GL_NO_ERROR)

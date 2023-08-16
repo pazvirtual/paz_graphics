@@ -224,7 +224,7 @@ int main(int, char** argv)
             {
                 for(std::size_t b = 0; b < Scale; ++b)
                 {
-                    img[Scale*Size*(Scale*i + a) + (Scale*j + b)] = c;
+                    img[img.width()*(Scale*i + a) + (Scale*j + b)] = c;
                 }
             }
         }

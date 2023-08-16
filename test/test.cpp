@@ -32,8 +32,9 @@
 static constexpr float ZNear = 1.;
 static constexpr float ZFar = 5.;
 static constexpr float YFov = 65.*M_PI/180.;
-static constexpr int ShadowRes = 2000;
-static constexpr int ImgRes = 200;
+// Texture widths are odd to verify robustness.
+static constexpr int ShadowRes = 1999;
+static constexpr int ImgRes = 199;
 static constexpr int Size = 16;
 static constexpr int Scale = 8;
 static constexpr float Eps = 1e-4;
@@ -44,15 +45,15 @@ static constexpr int Threshold = 0.01*std::numeric_limits<std::uint8_t>::max();
 static constexpr std::array<std::array<int, 3>, 10> SamplePoints =
 {{
     {171,  83, 0},
-    {115, 158, 2},
+    {115, 158, 88},
     {  3,  59, 0},
-    { 62,  69, 0},
-    {100, 162, 199},
-    { 97, 130, 9},
+    { 62,  69, 17},
+    {100, 162, 73},
+    { 97, 130, 1},
     {189,  70, 0},
-    {138,  37, 127},
-    { 75,  70, 147},
-    {134,  64, 85}
+    {138,  37, 84},
+    { 75,  70, 14},
+    {134,  64, 0}
 }};
 
 static constexpr std::array<float, 4*4> GroundPos =
@@ -281,7 +282,8 @@ int main()
     paz::Texture surface;
     try
     {
-        paz::Image<std::uint8_t, 1> img(Scale*Size, Scale*Size);
+        // Texture width is odd again to verify robustness.
+        paz::Image<std::uint8_t, 1> img(Scale*Size - 1, Scale*Size);
         for(std::size_t i = 0; i < Size; ++i)
         {
             for(std::size_t j = 0; j < Size; ++j)
@@ -291,7 +293,11 @@ int main()
                 {
                     for(std::size_t b = 0; b < Scale; ++b)
                     {
-                        img[Scale*Size*(Scale*i + a) + (Scale*j + b)] = c;
+                        if(static_cast<int>(Scale*j + b) == img.width())
+                        {
+                            break;
+                        }
+                        img[img.width()*(Scale*i + a) + (Scale*j + b)] = c;
                     }
                 }
             }
