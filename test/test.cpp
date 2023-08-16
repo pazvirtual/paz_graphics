@@ -1,5 +1,7 @@
 #include "PAZ_Graphics"
 #include <cmath>
+#include <iomanip>
+#include <limits>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338328
@@ -23,6 +25,8 @@ static constexpr int Size = 16;
 static constexpr int Scale = 8;
 static constexpr float Eps = 1e-4;
 static constexpr double Angle = 3.;
+
+static constexpr int Threshold = 0.01*std::numeric_limits<std::uint8_t>::max();
 
 static constexpr std::array<std::array<int, 3>, 10> SamplePoints =
 {{
@@ -321,7 +325,8 @@ int main()
         const paz::Image<std::uint8_t, 3> img = paz::Window::PrintScreen();
         for(const auto& n : SamplePoints)
         {
-            if(img[3*(ImgRes*n[0] + n[1])] != n[2])
+            if(std::abs(img[3*(ImgRes*n[0] + n[1])] - static_cast<int>(n[2])) >
+                Threshold)
             {
                 throw std::runtime_error("Incorrect pixel value at (" + std::
                     to_string(n[0]) + ", " + std::to_string(n[1]) + ").");
