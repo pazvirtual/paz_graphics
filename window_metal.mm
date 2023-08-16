@@ -45,6 +45,7 @@ static void poll_events()
         [NSApp sendEvent:event];
         [NSApp updateWindows];
     }
+    [VIEW_CONTROLLER pollGamepadState];
 }
 
 paz::Initializer::~Initializer()
