@@ -99,7 +99,7 @@ struct paz::Framebuffer::Data
     int _width = 0;
     int _height = 0;
     double _scale = 1.;
-#ifndef PAZ_MACOS
+#ifdef PAZ_LINUX
     unsigned int _id = 0;
     int _numTextures = 0;
     ~Data();
