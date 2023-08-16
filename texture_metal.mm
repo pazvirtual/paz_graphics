@@ -184,6 +184,8 @@ paz::Texture::Texture(int width, int height, TextureFormat format, MinMagFilter
     _data->init();
 }
 
+paz::Texture::Texture(RenderTarget&& target) : _data(std::move(target._data)) {}
+
 void paz::Texture::Data::init(const void* data)
 {
     // This is because of Metal restrictions.

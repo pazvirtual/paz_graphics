@@ -81,8 +81,8 @@ static constexpr std::array<float, 4*3*2*6> CubeNor =
     N6 N6 N6
 };
 
-#define UV Eps, Eps, Eps, 1.f - Eps, 1.f - Eps, 1.f - Eps, Eps,\
-    Eps, 1.f - Eps, 1.f - Eps, 1.f - Eps, Eps,
+#define UV Eps, Eps, Eps, 1.f - Eps, 1.f - Eps, 1.f - Eps, Eps, Eps, 1.f - Eps,\
+    1.f - Eps, 1.f - Eps, Eps,
 
 static constexpr std::array<float, 2*3*2*6> CubeUv = {UV UV UV UV UV UV};
 
@@ -178,7 +178,7 @@ paz::Texture compute_shadow_map(const paz::VertexBuffer& groundVerts, const
     calcShadows.draw(paz::PrimitiveType::Triangles, cubeVerts);
     calcShadows.end();
 
-    return static_cast<paz::Texture>(shadowMap);
+    return shadowMap;
 }
 
 int main(int, char** argv)
