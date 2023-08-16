@@ -73,15 +73,15 @@ int main(int, char** argv)
     const paz::VertexFunction lineVert(LineVertSrc);
     const paz::VertexFunction quadVert(paz::load_file(appDir + "/quad.vert").
         str());
-    const paz::FragmentFunction lineFrag(LineFragSrc);
-    const paz::FragmentFunction sdfFrag(paz::load_file(appDir + "/sdf.frag").
-        str());
+    const paz::FragmentFunction lineFrag0(LineFragSrc);
+    const paz::FragmentFunction lineFrag1(paz::load_file(appDir + "/lines.frag"
+        ).str());
 
     paz::Framebuffer buff;
     buff.attach(paz::RenderTarget(1., paz::TextureFormat::RGBA16Float));
 
-    paz::RenderPass basePass(buff, lineVert, lineFrag);
-    paz::RenderPass sdfPass(quadVert, sdfFrag);
+    paz::RenderPass basePass(buff, lineVert, lineFrag0);
+    paz::RenderPass sdfPass(quadVert, lineFrag1);
 
     int width = 1;
     while(!paz::Window::Done())
