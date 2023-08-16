@@ -534,7 +534,7 @@ void paz::Window::DisableDithering()
     [RENDERER setDither:false];
 }
 
-void paz::Window::enableDithering()
+void paz::Window::EnableDithering()
 {
     [RENDERER setDither:true];
 }

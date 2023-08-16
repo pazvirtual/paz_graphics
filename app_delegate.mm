@@ -407,8 +407,7 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
         const CGFloat windowHeight = 0.5*_screenRect.size.height;
 
         ViewController* viewController = [[ViewController alloc]
-            initWithContentRect:NSMakeRect(0.0, 0.0, windowWidth,
-            windowHeight)];
+            initWithContentRect:NSMakeRect(0., 0., windowWidth, windowHeight)];
         _window = [NSWindow windowWithContentViewController:viewController];
         [viewController release];
         [_window makeFirstResponder:[_window contentViewController]];

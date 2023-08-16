@@ -20,22 +20,22 @@ uint hash(thread uint x)
     x += (x << 15u);
     return x;
 }
-uint hash(thread float2 v)
+uint hash(thread const uint2& v)
 {
     return hash(v.x^hash(v.y));
 }
 float construct_float(thread uint m)
 {
-    constant uint ieeeMantissa = 0x007FFFFFu;
-    constant uint ieeeOne = 0x3F800000u;
+    constexpr uint ieeeMantissa = 0x007FFFFFu;
+    constexpr uint ieeeOne = 0x3F800000u;
     m &= ieeeMantissa;
     m |= ieeeOne;
     float f = as_type<float>(m);
     return f - 1.;
 }
-float unif_rand(thread vec2 v)
+float unif_rand(thread const float2& v)
 {
-    return construct_float(hash(as_type<uint>(v)));
+    return construct_float(hash(as_type<uint2>(v)));
 }
 struct Data
 {
