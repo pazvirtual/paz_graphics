@@ -5,6 +5,8 @@
 #include "PAZ_Graphics"
 #include "util.hpp"
 
+#define CASE_STRING(x) case x: return #x;
+
 std::pair<GLint, GLint> paz::min_mag_filter(Texture::MinMagFilter minFilter,
     Texture::MinMagFilter magFilter, Texture::MipmapFilter mipmapFilter)
 {
@@ -320,6 +322,27 @@ std::string paz::get_log(unsigned int id, bool isProgram)
     }
 
     return std::string(buf.begin(), buf.begin() + logLen);
+}
+
+std::string paz::gl_error(GLenum error)
+{
+    switch(error)
+    {
+        CASE_STRING(GL_NO_ERROR)
+        CASE_STRING(GL_INVALID_ENUM)
+        CASE_STRING(GL_INVALID_VALUE)
+        CASE_STRING(GL_INVALID_OPERATION)
+        CASE_STRING(GL_INVALID_FRAMEBUFFER_OPERATION)
+        CASE_STRING(GL_OUT_OF_MEMORY)
+#ifdef GL_STACK_UNDERFLOW
+        CASE_STRING(GL_STACK_UNDERFLOW)
+#endif
+#ifdef GL_STACK_OVERFLOW
+        CASE_STRING(GL_STACK_OVERFLOW)
+#endif
+        default: return "Unrecognized OpenGL error code " + std::to_string(
+            error);
+    }
 }
 
 #endif

@@ -4,6 +4,7 @@
 
 #include "PAZ_Graphics"
 #include "keycodes.hpp"
+#include "util.hpp"
 #ifndef __gl_h_
 #include "gl_core_4_1.h"
 #endif
@@ -422,6 +423,23 @@ void paz::Window::UnregisterTarget(RenderTarget* target)
         throw std::logic_error("Rendering target was not registered.");
     }
     Targets.erase(target);
+}
+
+std::vector<float> paz::Window::PrintScreen()
+{
+    std::vector<float> pixels(3*ViewportWidth()*ViewportHeight());
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, ViewportWidth(), ViewportHeight());
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, ViewportWidth(), ViewportHeight(), GL_RGB, GL_FLOAT,
+        pixels.data());
+    const GLenum error = glGetError();
+    if(error != GL_NO_ERROR)
+    {
+        throw std::runtime_error("Error reading default framebuffer: " +
+            gl_error(error) + ".");
+    }
+    return pixels;
 }
 
 #endif

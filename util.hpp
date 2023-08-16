@@ -19,6 +19,7 @@ namespace paz
     GLint internal_format(int c, int b, Texture::DataType t);
     GLenum gl_type(Texture::DataType t);
     std::string get_log(unsigned int id, bool isProgram);
+    std::string gl_error(GLenum error);
 }
 
 #endif

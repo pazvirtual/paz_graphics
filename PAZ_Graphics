@@ -153,9 +153,9 @@ namespace paz
 
     public:
         ~Framebuffer();
+        Framebuffer();
         void attach(const ColorTarget& target);
         void attach(const DepthStencilTarget& target);
-        Framebuffer();
     };
 
     class ShaderFunctionLibrary
@@ -362,6 +362,7 @@ namespace paz
         static void SetMinSize(int width, int height);
         static void DrawInRenderer();//TEMP (for internal use on macOS builds)
         static void ResizeTargets();//TEMP (for internal use)
+        static std::vector<float> PrintScreen();
     };
 }
 
