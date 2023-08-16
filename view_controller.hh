@@ -33,6 +33,7 @@
 @property(retain, readonly) id<MTLDevice> device;
 - (id)initWithContentRect:(CGRect)rect;
 - (void)resetEvents;
+- (void)pollGamepadState;
 @end
 
 #endif

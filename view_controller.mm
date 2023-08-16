@@ -5,6 +5,7 @@
 #include "PAZ_Graphics"
 #import "view_controller.hh"
 #include "keycodes.hpp"
+#include "macos_controller_db.hpp"
 
 @implementation ViewController
 {
@@ -288,6 +289,11 @@
     _gamepadRightStick = {};
     _gamepadLeftTrigger = -1.;
     _gamepadRightTrigger = -1.;
+}
+
+- (void)pollGamepadState
+{
+    // ...
 }
 @end
 
