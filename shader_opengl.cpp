@@ -21,8 +21,8 @@ paz::ShaderData::~ShaderData()
 
 paz::ShaderData::ShaderData() {}
 
-void paz::ShaderData::init(unsigned int vertId, unsigned int thickLinesId,
-    unsigned int fragId)
+void paz::ShaderData::init(unsigned int vertId, unsigned int thickLinesVertId,
+    unsigned int thickLinesGeomId, unsigned int fragId)
 {
     if(_id)
     {
@@ -34,11 +34,6 @@ void paz::ShaderData::init(unsigned int vertId, unsigned int thickLinesId,
     // Link shaders.
     _id = glCreateProgram();
     glAttachShader(_id, vertId);
-    if(thickLinesId)
-    {
-        _thickLines = true;
-        glAttachShader(_id, thickLinesId);
-    }
     glAttachShader(_id, fragId);
     glLinkProgram(_id);
 
@@ -103,6 +98,50 @@ void paz::ShaderData::init(unsigned int vertId, unsigned int thickLinesId,
                 end).c_str());
             _uniformIds[name.substr(0, end)] = std::make_tuple(location, type,
                 size);
+        }
+    }
+
+    // Link thick lines variant.
+    if(thickLinesVertId)
+    {
+        // Link shaders.
+        _thickLinesId = glCreateProgram();
+        glAttachShader(_thickLinesId, thickLinesVertId);
+        glAttachShader(_thickLinesId, thickLinesGeomId);
+        glAttachShader(_thickLinesId, fragId);
+        glLinkProgram(_thickLinesId);
+
+        // Check linking.
+        int success;
+        glGetProgramiv(_thickLinesId, GL_LINK_STATUS, &success);
+        if(!success)
+        {
+            std::string errorLog = get_log(_thickLinesId, true);
+            throw std::runtime_error("Failed to link thick lines shader program"
+                ":\n" + errorLog);
+        }
+
+        // Get uniforms.
+        {
+            GLint n;
+            GLsizei bufSiz;
+            glGetProgramiv(_thickLinesId, GL_ACTIVE_UNIFORMS, &n);
+            glGetProgramiv(_thickLinesId, GL_ACTIVE_UNIFORM_MAX_LENGTH,
+                &bufSiz);
+            for(GLint i = 0; i < n; ++i)
+            {
+                GLint size;
+                GLenum type;
+                std::vector<GLchar> buf(bufSiz);
+                glGetActiveUniform(_thickLinesId, i, bufSiz, nullptr, &size,
+                    &type, buf.data());
+                const std::string name(buf.data());
+                std::size_t end = name.find("[", 0);
+                const GLuint location = glGetUniformLocation(_thickLinesId,
+                    name.substr(0, end).c_str());
+                _thickLinesUniformIds[name.substr(0, end)] = std::make_tuple(
+                    location, type, size);
+            }
         }
     }
 }

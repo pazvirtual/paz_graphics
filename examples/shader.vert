@@ -18,5 +18,6 @@ void main()
     pos += origin;
     pos.x /= aspectRatio;
     gl_Position = vec4(pos, 0., 1.);
+    gl_LineWidth = 3.;
     c = color;
 }

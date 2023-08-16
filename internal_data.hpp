@@ -90,7 +90,8 @@ struct paz::VertexFunction::Data
     void* _function = nullptr;
 #else
     unsigned int _id = 0;
-    unsigned int _thickLinesId = 0;
+    unsigned int _thickLinesVertId = 0;
+    unsigned int _thickLinesGeomId = 0;
 #endif
     ~Data();
 };
