@@ -706,14 +706,9 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
 
     for(std::size_t i = 0; i < instances._data->_buffers.size(); ++i)
     {
-        const auto l = instances._data->_buffers[i].size();
-        if(l > 4*1024) //TEMP - `set*Bytes` limitation
-        {
-            throw std::runtime_error("Too many bytes to send without buffer.");
-        }
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            setVertexBytes:instances._data->_buffers[i].data() length:l atIndex:
-            vertices._data->_buffers.size() + i];
+            setVertexBuffer:static_cast<id<MTLBuffer>>(instances._data->
+            _buffers[i]) offset:0 atIndex:vertices._data->_buffers.size() + i];
     }
 
     if(type == PrimitiveType::Points)
@@ -792,14 +787,9 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
 
     for(std::size_t i = 0; i < instances._data->_buffers.size(); ++i)
     {
-        const auto l = instances._data->_buffers[i].size();
-        if(l > 4*1024) //TEMP - `set*Bytes` limitation
-        {
-            throw std::runtime_error("Too many bytes to send without buffer.");
-        }
         [static_cast<id<MTLRenderCommandEncoder>>(_data->_renderEncoder)
-            setVertexBytes:instances._data->_buffers[i].data() length:l atIndex:
-            vertices._data->_buffers.size() + i];
+            setVertexBuffer:static_cast<id<MTLBuffer>>(instances._data->
+            _buffers[i]) offset:0 atIndex:vertices._data->_buffers.size() + i];
     }
 
     if(type == PrimitiveType::Points)

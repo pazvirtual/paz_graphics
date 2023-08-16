@@ -31,11 +31,8 @@ paz::InstanceBuffer::InstanceBuffer()
     _data = std::make_shared<Data>();
 }
 
-paz::InstanceBuffer::InstanceBuffer(std::size_t size)
+paz::InstanceBuffer::InstanceBuffer(std::size_t size) : InstanceBuffer()
 {
-    initialize();
-
-    _data = std::make_shared<Data>();
     _data->_numInstances = size;
 }
 

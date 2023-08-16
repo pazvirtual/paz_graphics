@@ -202,8 +202,9 @@ int main(int, char** argv)
     cubeVerts.attribute(4, CubeNor);
     cubeVerts.attribute(2, CubeUv);
 
-    paz::InstanceBuffer instanceAttrs;
-    instanceAttrs.addAttribute(1, InstanceOffsets);
+    paz::InstanceBuffer instanceAttrs(InstanceOffsets.size());
+    instanceAttrs.addAttribute(1, paz::DataType::Float);
+    instanceAttrs.subAttribute(0, InstanceOffsets);
 
     paz::VertexBuffer quadVerts;
     quadVerts.attribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1, 1});
