@@ -110,6 +110,7 @@ static const std::string Src1 = 1 + R"===(
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338328
 #endif
+#define PAZ_ANG 0.5*M_PI
 void main()
 {
     vec2 paz_size = vec2(paz_Width, paz_Height);
@@ -119,17 +120,46 @@ void main()
         gl_in[1].gl_Position.xy/gl_in[1].gl_Position.w)*paz_size);
     vec2 paz_paraNext = normalize((gl_in[3].gl_Position.xy/gl_in[3].gl_Position.
         w - gl_in[2].gl_Position.xy/gl_in[2].gl_Position.w)*paz_size);
-    float paz_anglePrev = acos(clamp(dot(paz_para, paz_paraPrev), -1., 1.));
-    float paz_angleNext = acos(clamp(dot(paz_para, paz_paraNext), -1., 1.));
-    float paz_a = sin(0.5*(M_PI - paz_anglePrev));
-    float paz_b = sin(0.5*(M_PI - paz_angleNext));
-    if(paz_anglePrev > 0.9*M_PI || gl_in[1].gl_Position == gl_in[0].gl_Position)
+    float paz_angle = atan(paz_para.y, paz_para.x);
+    float paz_anglePrev = atan(paz_paraPrev.y, paz_paraPrev.x) - paz_angle;
+    float paz_angleNext = atan(paz_paraNext.y, paz_paraNext.x) - paz_angle;
+    paz_anglePrev = fract(paz_anglePrev*0.5/M_PI + 0.5)*2.*M_PI - M_PI;
+    paz_angleNext = fract(paz_angleNext*0.5/M_PI + 0.5)*2.*M_PI - M_PI;
+    float paz_a = sin(0.5*(M_PI - abs(paz_anglePrev)));
+    float paz_b = sin(0.5*(M_PI - abs(paz_angleNext)));
+    const mat2 paz_r = mat2(cos(PAZ_ANG), -sin(PAZ_ANG), sin(PAZ_ANG), cos(PAZ_ANG));
+    const mat2 paz_s = mat2(cos(PAZ_ANG), sin(PAZ_ANG), -sin(PAZ_ANG), cos(PAZ_ANG));
+    if(paz_anglePrev > PAZ_ANG)
+    {
+        paz_paraPrev = paz_s*paz_para;
+        paz_anglePrev = PAZ_ANG;
+        paz_a = sin(0.5*(M_PI - PAZ_ANG));
+    }
+    else if(paz_anglePrev < -PAZ_ANG)
+    {
+        paz_paraPrev = paz_r*paz_para;
+        paz_anglePrev = PAZ_ANG;
+        paz_a = sin(0.5*(M_PI - PAZ_ANG));
+    }
+    if(paz_angleNext > PAZ_ANG)
+    {
+        paz_paraNext = paz_s*paz_para;
+        paz_angleNext = PAZ_ANG;
+        paz_b = sin(0.5*(M_PI - PAZ_ANG));
+    }
+    else if(paz_angleNext < -PAZ_ANG)
+    {
+        paz_paraNext = paz_r*paz_para;
+        paz_angleNext = PAZ_ANG;
+        paz_b = sin(0.5*(M_PI - PAZ_ANG));
+    }
+    if(gl_in[1].gl_Position == gl_in[0].gl_Position)
     {
         paz_paraPrev = paz_para;
         paz_anglePrev = 0;
         paz_a = 1.;
     }
-    if(paz_angleNext > 0.9*M_PI || gl_in[3].gl_Position == gl_in[2].gl_Position)
+    if(gl_in[3].gl_Position == gl_in[2].gl_Position)
     {
         paz_paraNext = paz_para;
         paz_angleNext = 0;
