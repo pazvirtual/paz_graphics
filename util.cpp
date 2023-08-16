@@ -127,7 +127,7 @@ GLint paz::gl_internal_format(TextureFormat format)
         CASE(Depth16UNorm, DEPTH_COMPONENT16)
         CASE(Depth32Float, DEPTH_COMPONENT32F)
 
-        CASE(BGRA8UNorm, BGRA8)
+        CASE(BGRA8UNorm, RGBA8)
     }
 
     throw std::runtime_error("Invalid texture format requested.");
