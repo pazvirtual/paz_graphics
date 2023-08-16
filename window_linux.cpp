@@ -237,8 +237,16 @@ static void cursor_position_callback(double xPos, double yPos)
     GamepadActive = false;
     MouseActive = true;
 
-    MousePos.first = xPos;
-    MousePos.second = WindowHeight - yPos;
+    if(CursorDisabled)
+    {
+        MousePos.first = xPos - WindowWidth/2;
+        MousePos.second = WindowHeight/2 - yPos;
+    }
+    else
+    {
+        MousePos.first = xPos;
+        MousePos.second = WindowHeight - yPos;
+    }
 }
 
 static void scroll_callback(double xOffset, double yOffset)

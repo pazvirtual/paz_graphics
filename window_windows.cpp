@@ -785,7 +785,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         case WM_MOUSEMOVE:
         {
             const int x = GET_X_LPARAM(lParam);
-            const int y = WindowHeight - GET_Y_LPARAM(lParam);
+            const int y = GET_Y_LPARAM(lParam);
 
             if(!CursorTracked)
             {
@@ -808,7 +808,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 MouseActive = true;
                 VirtMousePos.first = x;
                 VirtMousePos.second = y;
-                MousePos = VirtMousePos;
+                MousePos.first = VirtMousePos.first;
+                MousePos.second = WindowHeight - VirtMousePos.second;
             }
 
             PrevMousePos.first = x;
@@ -856,7 +857,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 MouseActive = true;
                 VirtMousePos.first = x;
                 VirtMousePos.second = y;
-                MousePos = VirtMousePos;
+                MousePos.first = VirtMousePos.first - WindowWidth/2;
+                MousePos.second = WindowHeight/2 - VirtMousePos.second;
             }
 
             PrevMousePos.first += deltaX;
@@ -1104,10 +1106,6 @@ static void reset_events()
 {
     if(CursorDisabled)
     {
-if(MousePos.first || MousePos.second)
-{
-std::cout << MousePos.first << ' ' << MousePos.second << std::endl;
-}
         ::MousePos = {};
     }
     ::ScrollOffset = {};
