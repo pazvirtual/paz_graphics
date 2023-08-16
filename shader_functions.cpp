@@ -12,6 +12,82 @@
 #include "gl_core_4_1.h"
 #include <GLFW/glfw3.h>
 
+static std::unordered_map<unsigned int, unsigned int> get_frag_outputs(const
+    std::string& src)
+{
+    std::unordered_map<unsigned int, unsigned int> outputTypes;
+    std::istringstream in(src);
+    std::string line;
+    while(std::getline(in, line))
+    {
+        std::size_t l = 0;
+        if(std::regex_match(line, std::regex("layout\\b.*")))
+        {
+            ++l;
+            const std::string layout = std::regex_replace(line, std::regex("^.*"
+                "location\\s*=\\s*([0-9]+).*$"), "$1");
+            const int i = std::stoi(layout);
+            if(i < 0)
+            {
+                throw std::runtime_error("Line " + std::to_string(l) + ": Outpu"
+                    "t locations must be non-negative.");
+            }
+            const std::string dec = std::regex_replace(line, std::regex("^.*out"
+                "\\s+(.*);$"), "$1");
+            const std::size_t pos = dec.find_last_of(' ');
+            const std::string type = dec.substr(0, pos);
+            if(outputTypes.count(i))
+            {
+                throw std::runtime_error("Line " + std::to_string(l) + ": Outpu"
+                    "t location " + std::to_string(i) + " has already been assi"
+                    "gned.");
+            }
+            if(type == "float")
+            {
+                outputTypes[i] = GL_FLOAT;
+            }
+            else if(type == "int")
+            {
+                outputTypes[i] = GL_INT;
+            }
+            else if(type == "uint")
+            {
+                outputTypes[i] = GL_UNSIGNED_INT;
+            }
+            else if(type == "vec2")
+            {
+                outputTypes[i] = GL_FLOAT_VEC2;
+            }
+            else if(type == "ivec2")
+            {
+                outputTypes[i] = GL_FLOAT_VEC2;
+            }
+            else if(type == "uvec2")
+            {
+                outputTypes[i] = GL_FLOAT_VEC2;
+            }
+            else if(type == "vec4")
+            {
+                outputTypes[i] = GL_FLOAT_VEC4;
+            }
+            else if(type == "ivec4")
+            {
+                outputTypes[i] = GL_FLOAT_VEC4;
+            }
+            else if(type == "uvec4")
+            {
+                outputTypes[i] = GL_FLOAT_VEC4;
+            }
+            else
+            {
+                throw std::runtime_error("Line " + std::to_string(l) + ": Outpu"
+                    "ts must be scalars, 2-vectors, or 4-vectors.");
+            }
+        }
+    }
+    return outputTypes;
+}
+
 static std::string fix_initializers(const std::string& src)
 {
     int inInit = 0;
@@ -153,6 +229,7 @@ paz::FragmentFunction::FragmentFunction(const std::string& src)
     try
     {
         frag2metal(src);
+        _data->_outputTypes = get_frag_outputs(src);
         const std::string fixedSrc = fix_initializers(src);
         _data->_id = compile_shader(fixedSrc, GL_FRAGMENT_SHADER);
     }
