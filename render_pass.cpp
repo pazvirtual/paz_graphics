@@ -11,17 +11,21 @@
 
 #define CASE(a, b) case paz::PrimitiveType::a: return GL_##b;
 #define CHECK_UNIFORM if(!_data->_shader._uniformIds.count(name)) return;
+#define CHECK_PASS if(!CurPass) throw std::logic_error("No current render pass"\
+    "."); else if(this != CurPass) throw std::logic_error("Render pass operati"\
+    "ons cannot be interleaved.");
 
 static constexpr float Clear[] = {0.f, 0.f, 0.f, 0.f};
 static constexpr float Black[] = {0.f, 0.f, 0.f, 1.f};
 static constexpr float White[] = {1.f, 1.f, 1.f, 1.f};
-static int NextSlot = 0;
+static int NextSlot;
 
-static bool DepthTestEnabled = false;
+static bool DepthTestEnabled;
 static bool DepthMaskEnabled = true;
-static bool BlendEnabled = false;
+static bool BlendEnabled;
 static bool DepthCalledThisPass;
 static bool CullCalledThisPass;
+static const paz::RenderPass* CurPass;
 
 static GLenum primitive_type(paz::PrimitiveType t)
 {
@@ -165,13 +169,18 @@ paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
 {
+    if(CurPass)
+    {
+        throw std::logic_error("Previous render pass was not ended.");
+    }
+    CurPass = this;
+
     if(!_data)
     {
         throw std::runtime_error("Render pass has not been initialized.");
     }
 
     begin_frame();
-
     glGetError();
     DepthCalledThisPass = false;
     CullCalledThisPass = false;
@@ -273,6 +282,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
 
 void paz::RenderPass::depth(DepthTestMode mode)
 {
+    CHECK_PASS
     DepthCalledThisPass = true;
     if(mode == DepthTestMode::Disable)
     {
@@ -347,6 +357,7 @@ void paz::RenderPass::depth(DepthTestMode mode)
 
 void paz::RenderPass::end()
 {
+    CHECK_PASS
     for(auto n : _data->_fbo->_colorAttachments)
     {
         n->ensureMipmaps();
@@ -365,6 +376,7 @@ void paz::RenderPass::end()
 
 void paz::RenderPass::cull(CullMode mode)
 {
+    CHECK_PASS
     CullCalledThisPass = true;
     if(mode == CullMode::Disable)
     {
@@ -388,6 +400,7 @@ void paz::RenderPass::cull(CullMode mode)
 
 void paz::RenderPass::read(const std::string& name, const Texture& tex)
 {
+    CHECK_PASS
     glActiveTexture(GL_TEXTURE0 + NextSlot);
     glBindTexture(GL_TEXTURE_2D, tex._data->_id);
     uniform(name, NextSlot);
@@ -396,18 +409,21 @@ void paz::RenderPass::read(const std::string& name, const Texture& tex)
 
 void paz::RenderPass::uniform(const std::string& name, int x)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     glUniform1i(std::get<0>(_data->_shader._uniformIds.at(name)), x);
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     glUniform2i(std::get<0>(_data->_shader._uniformIds.at(name)), x, y);
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     glUniform3i(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z);
 }
@@ -415,6 +431,7 @@ void paz::RenderPass::uniform(const std::string& name, int x, int y, int z)
 void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
     w)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     glUniform4i(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z, w);
 }
@@ -422,6 +439,7 @@ void paz::RenderPass::uniform(const std::string& name, int x, int y, int z, int
 void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
     size)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     switch(std::get<1>(_data->_shader._uniformIds.at(name)))
     {
@@ -451,6 +469,7 @@ void paz::RenderPass::uniform(const std::string& name, const int* x, std::size_t
 
 void paz::RenderPass::uniform(const std::string& name, unsigned int x)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     glUniform1ui(std::get<0>(_data->_shader._uniformIds.at(name)), x);
 }
@@ -458,6 +477,7 @@ void paz::RenderPass::uniform(const std::string& name, unsigned int x)
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     glUniform2ui(std::get<0>(_data->_shader._uniformIds.at(name)), x, y);
 }
@@ -465,6 +485,7 @@ void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     glUniform3ui(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z);
 }
@@ -472,6 +493,7 @@ void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
 void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
     int y, unsigned int z, unsigned int w)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     glUniform4ui(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z, w);
 }
@@ -479,6 +501,7 @@ void paz::RenderPass::uniform(const std::string& name, unsigned int x, unsigned
 void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
     std::size_t size)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     switch(std::get<1>(_data->_shader._uniformIds.at(name)))
     {
@@ -508,12 +531,14 @@ void paz::RenderPass::uniform(const std::string& name, const unsigned int* x,
 
 void paz::RenderPass::uniform(const std::string& name, float x)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     glUniform1f(std::get<0>(_data->_shader._uniformIds.at(name)), x);
 }
 
 void paz::RenderPass::uniform(const std::string& name, float x, float y)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     glUniform2f(std::get<0>(_data->_shader._uniformIds.at(name)), x, y);
 }
@@ -521,6 +546,7 @@ void paz::RenderPass::uniform(const std::string& name, float x, float y)
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     glUniform3f(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z);
 }
@@ -528,6 +554,7 @@ void paz::RenderPass::uniform(const std::string& name, float x, float y, float
 void paz::RenderPass::uniform(const std::string& name, float x, float y, float
     z, float w)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     glUniform4f(std::get<0>(_data->_shader._uniformIds.at(name)), x, y, z, w);
 }
@@ -535,6 +562,7 @@ void paz::RenderPass::uniform(const std::string& name, float x, float y, float
 void paz::RenderPass::uniform(const std::string& name, const float* x, std::
     size_t size)
 {
+    CHECK_PASS
     CHECK_UNIFORM
     switch(std::get<1>(_data->_shader._uniformIds.at(name)))
     {
@@ -576,6 +604,7 @@ void paz::RenderPass::uniform(const std::string& name, const float* x, std::
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
 {
+    CHECK_PASS
     check_attributes(vertices._data->_types, _data->_shader._attribTypes);
 
     // Ensure that depth test mode and face culling mode do not persist.
@@ -595,6 +624,7 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     const IndexBuffer& indices)
 {
+    CHECK_PASS
     check_attributes(vertices._data->_types, _data->_shader._attribTypes);
 
     // Ensure that depth test mode and face culling mode do not persist.

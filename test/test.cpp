@@ -16,6 +16,19 @@
     std::cout << "Passed " << test << std::endl; \
     ++test;
 
+#define EXPECT_EXCEPTION(statement) \
+    try \
+    { \
+        statement; \
+        std::cerr << "Failed " << test << ": Did not throw." << std::endl; \
+        return 1; \
+    } \
+    catch(const std::exception& e) \
+    { \
+        std::cerr << "Passed " << test << std::endl; \
+    } \
+    ++test;
+
 static constexpr float ZNear = 1.;
 static constexpr float ZFar = 5.;
 static constexpr float YFov = 65.*M_PI/180.;
@@ -248,11 +261,13 @@ int main()
     CATCH
 
     paz::RenderPass scenePass;
+    paz::RenderPass otherPass;
     try
     {
         const paz::VertexFunction sceneVert(SceneVertSrc);
         const paz::FragmentFunction sceneFrag(SceneFragSrc);
         scenePass = paz::RenderPass(sceneVert, sceneFrag);
+        otherPass = paz::RenderPass(sceneVert, sceneFrag);
     }
     CATCH
 
@@ -306,13 +321,17 @@ int main()
         scenePass.read("surface", surface);
         scenePass.uniform("view", view);
         scenePass.uniform("projection", projection);
+        EXPECT_EXCEPTION(otherPass.uniform("projection", projection))
         scenePass.uniform("lightView", lightView);
         scenePass.uniform("lightProjection", lightProjection);
         scenePass.draw(paz::PrimitiveType::TriangleStrip, groundVerts);
         scenePass.draw(paz::PrimitiveType::Triangles, cubeVerts);
         scenePass.end();
+        EXPECT_EXCEPTION(otherPass.end());
     }
     CATCH
+
+    EXPECT_EXCEPTION(paz::Window::ReadPixels())
 
     try
     {
