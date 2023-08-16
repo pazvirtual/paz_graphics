@@ -159,7 +159,6 @@ int main(int, char** argv)
         calcShadows.uniform("lightProjection", lightProjection);
         calcShadows.primitives(paz::RenderPass::PrimitiveType::TriangleStrip,
             groundVerts);
-        renderScene.cull(paz::RenderPass::CullMode::Front);
         calcShadows.primitives(paz::RenderPass::PrimitiveType::Triangles,
             cubeVerts);
         calcShadows.end();

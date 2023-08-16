@@ -44,32 +44,34 @@ paz::Framebuffer::Framebuffer()
     glGenFramebuffers(1, &_data->_id);
 }
 
-void paz::Framebuffer::attach(const ColorTarget& target)
+void paz::Framebuffer::attach(const RenderTarget& target)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, _data->_id);
-    glFramebufferTexture(GL_FRAMEBUFFER, Attachments[_data->_numTextures],
-        target.Texture::_data->_id, 0);
-    glDrawBuffers(++_data->_numTextures, Attachments);
+    if(target._data->_format == Texture::Format::Depth16UNorm || target._data->
+        _format == Texture::Format::Depth32Float)
+    {
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, target._data->
+            _id, 0);
+        _data->_hasDepthAttachment = true;
+    }
+    else
+    {
+        glFramebufferTexture(GL_FRAMEBUFFER, Attachments[_data->_numTextures],
+            target._data->_id, 0);
+        glDrawBuffers(++_data->_numTextures, Attachments);
+    }
     const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     if(status != GL_FRAMEBUFFER_COMPLETE)
     {
         throw std::runtime_error("Framebuffer incomplete: " +
             framebuffer_status(status) + ".");
     }
-}
+    if(!target._data->_scale) //TEMP
+    {
+        _data->_width = target.width();
+        _data->_height = target.height();
+    }
 
-void paz::Framebuffer::attach(const DepthStencilTarget& target)
-{
-    glBindFramebuffer(GL_FRAMEBUFFER, _data->_id);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, target.Texture::
-        _data->_id, 0);
-    const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if(status != GL_FRAMEBUFFER_COMPLETE)
-    {
-        throw std::runtime_error("Framebuffer incomplete: " +
-            framebuffer_status(status) + ".");
-    }
-    _data->_hasDepthAttachment = true;
 }
 
 #endif

@@ -26,55 +26,35 @@ paz::Texture::Texture()
 paz::Texture::Texture(const Image<std::uint8_t, 1>& image, MinMagFilter
     minFilter, MinMagFilter magFilter, bool normalized) : Texture()
 {
-    init(image.width(), image.height(), 1, 8, normalized ? DataType::UNorm :
-        DataType::UInt, minFilter, magFilter, image.data());
+    _width = image.width();
+    _height = image.height();
+    _data->_format = normalized ? Format::R8UNorm : Format::R8UInt;
+    _data->_minFilter = minFilter;
+    _data->_magFilter = magFilter;
+    init(image.data());
 }
 
-paz::Texture::Texture(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter) :
-    Texture()
-{
-    init(width, height, numChannels, numBits, type, minFilter, magFilter,
-        nullptr);
-}
-
-void paz::Texture::init(int width, int height, int numChannels, int numBits,
-    DataType type, MinMagFilter minFilter, MinMagFilter magFilter, const void*
-    data)
+paz::Texture::Texture(int width, int height, Format format, MinMagFilter
+    minFilter, MinMagFilter magFilter) : Texture()
 {
     _width = width;
     _height = height;
+    _data->_format = format;
+    _data->_minFilter = minFilter;
+    _data->_magFilter = magFilter;
+    init();
+}
 
-    _mipmap = false;//TEMP
-    const auto filters = min_mag_filter(minFilter, magFilter/*, mipmapFilter*/);
+void paz::Texture::init(const void* data)
+{
+    const auto filters = min_mag_filter(_data->_minFilter, _data->_magFilter);
     const auto min = filters.first;
     const auto mag = filters.second;
 
-    _data->_internalFormat = internal_format(numChannels, numBits, type);
-    const bool isInt = (type == DataType::UInt || type == DataType::SInt);
-    if(numChannels == 1)
-    {
-        _data->_format = isInt ? GL_RED_INTEGER : GL_RED;
-    }
-    else if(numChannels == 2)
-    {
-        _data->_format = isInt ? GL_RG_INTEGER : GL_RG;
-    }
-    else if(numChannels == 4)
-    {
-        _data->_format = isInt ? GL_RGBA_INTEGER : GL_RGBA;
-    }
-    else
-    {
-        throw std::runtime_error("Texture must have 1, 2, or 4 channels.");
-    }
-
-    _data->_type = gl_type(type, numBits);
-
     glGenTextures(1, &_data->_id);
     glBindTexture(GL_TEXTURE_2D, _data->_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, _data->_internalFormat, _width, _height, 0,
-        _data->_format, _data->_type, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(_data->_format), _width,
+        _height, 0, gl_format(_data->_format), gl_type(_data->_format), data);
     if(_mipmap)
     {
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -87,15 +67,18 @@ void paz::Texture::init(int width, int height, int numChannels, int numBits,
 
 void paz::Texture::resize(GLsizei width, GLsizei height)
 {
-    _width = width;
-    _height = height;
-
-    glBindTexture(GL_TEXTURE_2D, _data->_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, _data->_internalFormat, _width, _height, 0,
-        _data->_format, _data->_type, nullptr);
-    if(_mipmap)
+    if(_data->_scale)
     {
-        glGenerateMipmap(GL_TEXTURE_2D);
+        _width = _data->_scale*width;
+        _height = _data->_scale*height;
+        glBindTexture(GL_TEXTURE_2D, _data->_id);
+        glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(_data->_format),
+            _width, _height, 0, gl_format(_data->_format), gl_type(_data->
+            _format), nullptr);
+        if(_mipmap)
+        {
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
     }
 }
 

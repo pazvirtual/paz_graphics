@@ -6,6 +6,7 @@
 #include "util.hpp"
 
 #define CASE_STRING(x) case x: return #x;
+#define CASE(a, b) case Texture::Format::a: return GL_##b;
 
 std::pair<GLint, GLint> paz::min_mag_filter(Texture::MinMagFilter minFilter,
     Texture::MinMagFilter magFilter, Texture::MipmapFilter mipmapFilter)
@@ -78,247 +79,154 @@ std::pair<GLint, GLint> paz::min_mag_filter(Texture::MinMagFilter minFilter,
     return {min, mag};
 }
 
-GLint paz::internal_format(int c, int b, Texture::DataType t)
+GLint paz::gl_internal_format(Texture::Format format)
 {
-    if(c != 1 && c != 2 && c != 4)
+    switch(format)
     {
-        throw std::runtime_error("Texture must have 1, 2, or 4 channels.");
-    }
-    if(b != 8 && b != 16 && b != 32)
-    {
-        throw std::runtime_error("Texture must have 8, 16, or 32 bits per chann"
-            "el.");
-    }
+        CASE(R8UInt, R8UI)
+        CASE(R8SInt, R8I)
+        CASE(R8UNorm, R8)
+        CASE(R8SNorm, R8_SNORM)
+        CASE(R16UInt, R16UI)
+        CASE(R16SInt, R16I)
+        CASE(R16UNorm, R16)
+        CASE(R16SNorm, R16_SNORM)
+        CASE(R16Float, R16F)
+        CASE(R32UInt, R32UI)
+        CASE(R32SInt, R32I)
+        CASE(R32Float, R32F)
 
-    if(c == 1)
-    {
-        if(b == 8)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return GL_R8UI;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return GL_R8I;
-            }
-            else if(t == Texture::DataType::UNorm)
-            {
-                return GL_R8;
-            }
-            else if(t == Texture::DataType::SNorm)
-            {
-                return GL_R8_SNORM;
-            }
-        }
-        else if(b == 16)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return GL_R16UI;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return GL_R16I;
-            }
-            else if(t == Texture::DataType::UNorm)
-            {
-                return GL_R16;
-            }
-            else if(t == Texture::DataType::SNorm)
-            {
-                return GL_R16_SNORM;
-            }
-            else if(t == Texture::DataType::Float)
-            {
-                return GL_R16F;
-            }
-        }
-        else if(b == 32)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return GL_R32UI;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return GL_R32I;
-            }
-            else if(t == Texture::DataType::Float)
-            {
-                return GL_R32F;
-            }
-        }
-    }
-    else if(c == 2)
-    {
-        if(b == 8)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return GL_RG8UI;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return GL_RG8I;
-            }
-            else if(t == Texture::DataType::UNorm)
-            {
-                return GL_RG8;
-            }
-            else if(t == Texture::DataType::SNorm)
-            {
-                return GL_RG8_SNORM;
-            }
-        }
-        else if(b == 16)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return GL_RG16UI;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return GL_RG16I;
-            }
-            else if(t == Texture::DataType::UNorm)
-            {
-                return GL_RG16;
-            }
-            else if(t == Texture::DataType::SNorm)
-            {
-                return GL_RG16_SNORM;
-            }
-            else if(t == Texture::DataType::Float)
-            {
-                return GL_RG16F;
-            }
-        }
-        else if(b == 32)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return GL_RG32UI;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return GL_RG32I;
-            }
-            else if(t == Texture::DataType::Float)
-            {
-                return GL_RG32F;
-            }
-        }
-    }
-    else if(c == 4)
-    {
-        if(b == 8)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return GL_RGBA8UI;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return GL_RGBA8I;
-            }
-            else if(t == Texture::DataType::UNorm)
-            {
-                return GL_RGBA8;
-            }
-            else if(t == Texture::DataType::SNorm)
-            {
-                return GL_RGBA8_SNORM;
-            }
-        }
-        else if(b == 16)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return GL_RGBA16UI;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return GL_RGBA16I;
-            }
-            else if(t == Texture::DataType::UNorm)
-            {
-                return GL_RGBA16;
-            }
-            else if(t == Texture::DataType::SNorm)
-            {
-                return GL_RGBA16_SNORM;
-            }
-            else if(t == Texture::DataType::Float)
-            {
-                return GL_RGBA16F;
-            }
-        }
-        else if(b == 32)
-        {
-            if(t == Texture::DataType::UInt)
-            {
-                return GL_RGBA32UI;
-            }
-            else if(t == Texture::DataType::SInt)
-            {
-                return GL_RGBA32I;
-            }
-            else if(t == Texture::DataType::Float)
-            {
-                return GL_RGBA32F;
-            }
-        }
+        CASE(RG8UInt, RG8UI)
+        CASE(RG8SInt, RG8I)
+        CASE(RG8UNorm, RG8)
+        CASE(RG8SNorm, RG8_SNORM)
+        CASE(RG16UInt, RG16UI)
+        CASE(RG16SInt, RG16I)
+        CASE(RG16UNorm, RG16)
+        CASE(RG16SNorm, RG16_SNORM)
+        CASE(RG16Float, RG16F)
+        CASE(RG32UInt, RG32UI)
+        CASE(RG32SInt, RG32I)
+        CASE(RG32Float, RG32F)
+
+        CASE(RGBA8UInt, RGBA8UI)
+        CASE(RGBA8SInt, RGBA8I)
+        CASE(RGBA8UNorm, RGBA8)
+        CASE(RGBA8SNorm, RGBA8_SNORM)
+        CASE(RGBA16UInt, RGBA16UI)
+        CASE(RGBA16SInt, RGBA16I)
+        CASE(RGBA16UNorm, RGBA16)
+        CASE(RGBA16SNorm, RGBA16_SNORM)
+        CASE(RGBA16Float, RGBA16F)
+        CASE(RGBA32UInt, RGBA32UI)
+        CASE(RGBA32SInt, RGBA32I)
+        CASE(RGBA32Float, RGBA32F)
+
+        CASE(Depth16UNorm, DEPTH_COMPONENT16)
+        CASE(Depth32Float, DEPTH_COMPONENT32F)
     }
 
     throw std::runtime_error("Invalid texture format requested.");
 }
 
-GLenum paz::gl_type(Texture::DataType t, int numBits)
+GLenum paz::gl_format(Texture::Format format)
 {
-    if(t == Texture::DataType::UInt || t == Texture::DataType::UNorm)
+    switch(format)
     {
-        if(numBits == 8)
-        {
-            return GL_UNSIGNED_BYTE;
-        }
-        else if(numBits == 16)
-        {
-            return GL_UNSIGNED_SHORT;
-        }
-        else if(numBits == 32)
-        {
-            return GL_UNSIGNED_INT;
-        }
-    }
-    else if(t == Texture::DataType::SInt || t == Texture::DataType::SNorm)
-    {
-        if(numBits == 8)
-        {
-            return GL_BYTE;
-        }
-        else if(numBits == 16)
-        {
-            return GL_SHORT;
-        }
-        else if(numBits == 32)
-        {
-            return GL_INT;
-        }
-    }
-    else if(t == Texture::DataType::Float)
-    {
-        if(numBits == 16)
-        {
-            return GL_HALF_FLOAT;
-        }
-        else if(numBits == 32)
-        {
-            return GL_FLOAT;
-        }
+        CASE(R8UInt, RED)
+        CASE(R8SInt, RED)
+        CASE(R8UNorm, RED)
+        CASE(R8SNorm, RED)
+        CASE(R16UInt, RED)
+        CASE(R16SInt, RED)
+        CASE(R16UNorm, RED)
+        CASE(R16SNorm, RED)
+        CASE(R16Float, RED)
+        CASE(R32UInt, RED)
+        CASE(R32SInt, RED)
+        CASE(R32Float, RED)
+
+        CASE(RG8UInt, RG)
+        CASE(RG8SInt, RG)
+        CASE(RG8UNorm, RG)
+        CASE(RG8SNorm, RG)
+        CASE(RG16UInt, RG)
+        CASE(RG16SInt, RG)
+        CASE(RG16UNorm, RG)
+        CASE(RG16SNorm, RG)
+        CASE(RG16Float, RG)
+        CASE(RG32UInt, RG)
+        CASE(RG32SInt, RG)
+        CASE(RG32Float, RG)
+
+        CASE(RGBA8UInt, RGBA)
+        CASE(RGBA8SInt, RGBA)
+        CASE(RGBA8UNorm, RGBA)
+        CASE(RGBA8SNorm, RGBA)
+        CASE(RGBA16UInt, RGBA)
+        CASE(RGBA16SInt, RGBA)
+        CASE(RGBA16UNorm, RGBA)
+        CASE(RGBA16SNorm, RGBA)
+        CASE(RGBA16Float, RGBA)
+        CASE(RGBA32UInt, RGBA)
+        CASE(RGBA32SInt, RGBA)
+        CASE(RGBA32Float, RGBA)
+
+        CASE(Depth16UNorm, DEPTH_COMPONENT)
+        CASE(Depth32Float, DEPTH_COMPONENT)
     }
 
-    throw std::runtime_error("Invalid type requested.");
+    throw std::runtime_error("Invalid texture format requested.");
+}
+
+GLenum paz::gl_type(Texture::Format format)
+{
+    switch(format)
+    {
+        CASE(R8UInt, UNSIGNED_BYTE)
+        CASE(R8SInt, BYTE)
+        CASE(R8UNorm, UNSIGNED_BYTE)
+        CASE(R8SNorm, BYTE)
+        CASE(R16UInt, UNSIGNED_SHORT)
+        CASE(R16SInt, SHORT)
+        CASE(R16UNorm, UNSIGNED_SHORT)
+        CASE(R16SNorm, SHORT)
+        CASE(R16Float, HALF_FLOAT) // Note: C++ does not have a `half` type.
+        CASE(R32UInt, UNSIGNED_INT)
+        CASE(R32SInt, INT)
+        CASE(R32Float, FLOAT)
+
+        CASE(RG8UInt, UNSIGNED_BYTE)
+        CASE(RG8SInt, BYTE)
+        CASE(RG8UNorm, UNSIGNED_BYTE)
+        CASE(RG8SNorm, BYTE)
+        CASE(RG16UInt, UNSIGNED_SHORT)
+        CASE(RG16SInt, SHORT)
+        CASE(RG16UNorm, UNSIGNED_SHORT)
+        CASE(RG16SNorm, SHORT)
+        CASE(RG16Float, HALF_FLOAT) // Note: C++ does not have a `half` type.
+        CASE(RG32UInt, UNSIGNED_INT)
+        CASE(RG32SInt, INT)
+        CASE(RG32Float, FLOAT)
+
+        CASE(RGBA8UInt, UNSIGNED_BYTE)
+        CASE(RGBA8SInt, BYTE)
+        CASE(RGBA8UNorm, UNSIGNED_BYTE)
+        CASE(RGBA8SNorm, BYTE)
+        CASE(RGBA16UInt, UNSIGNED_SHORT)
+        CASE(RGBA16SInt, SHORT)
+        CASE(RGBA16UNorm, UNSIGNED_SHORT)
+        CASE(RGBA16SNorm, SHORT)
+        CASE(RGBA16Float, HALF_FLOAT) // Note: C++ does not have a `half` type.
+        CASE(RGBA32UInt, UNSIGNED_INT)
+        CASE(RGBA32SInt, INT)
+        CASE(RGBA32Float, FLOAT)
+
+        CASE(Depth16UNorm, UNSIGNED_SHORT)
+        CASE(Depth32Float, FLOAT)
+    }
+
+    throw std::runtime_error("Invalid texture format requested.");
 }
 
 std::string paz::get_log(unsigned int id, bool isProgram)
