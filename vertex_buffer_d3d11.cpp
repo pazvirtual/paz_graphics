@@ -32,7 +32,7 @@ void paz::VertexBuffer::Data::addAttribute(int dim, DataType type, const void*
         default: throw std::logic_error("Invalid data type.");
     }
     D3D11_BUFFER_DESC bufDescriptor = {};
-    bufDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
+    bufDescriptor.Usage = D3D11_USAGE_DEFAULT;
     bufDescriptor.ByteWidth = size;
     bufDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     D3D11_SUBRESOURCE_DATA srData = {};

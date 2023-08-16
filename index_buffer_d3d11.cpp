@@ -26,8 +26,17 @@ paz::IndexBuffer::IndexBuffer(std::size_t size)
     _data = std::make_shared<Data>();
 
     _data->_numIndices = size;
-// createbuffer dynamic(?)
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    D3D11_BUFFER_DESC bufDescriptor = {};
+    bufDescriptor.Usage = D3D11_USAGE_DYNAMIC;
+    bufDescriptor.ByteWidth = sizeof(unsigned int)*size;
+    bufDescriptor.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    const auto hr = d3d_device()->CreateBuffer(&bufDescriptor, nullptr, &_data->
+        _buffer);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create index buffer (HRESULT " +
+            std::to_string(hr) + ").");
+    }
 }
 
 paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
@@ -38,7 +47,7 @@ paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
 
     _data->_numIndices = size;
     D3D11_BUFFER_DESC bufDescriptor = {};
-    bufDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
+    bufDescriptor.Usage = D3D11_USAGE_DEFAULT;
     bufDescriptor.ByteWidth = sizeof(unsigned int)*size;
     bufDescriptor.BindFlags = D3D11_BIND_INDEX_BUFFER;
     D3D11_SUBRESOURCE_DATA srData = {};
@@ -54,17 +63,27 @@ paz::IndexBuffer::IndexBuffer(const unsigned int* data, std::size_t size)
 
 void paz::IndexBuffer::sub(const unsigned int* data, std::size_t size)
 {
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    D3D11_MAPPED_SUBRESOURCE mappedSr;
+    const auto hr = d3d_context()->Map(_data->_buffer, 0,
+        D3D11_MAP_WRITE_DISCARD, 0, &mappedSr);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to map index buffer (HRESULT " + std::
+            to_string(hr) + ").");
+    }
+    std::copy(data, data + size, reinterpret_cast<unsigned int*>(mappedSr.
+        pData));
+    d3d_context()->Unmap(_data->_buffer, 0);
 }
 
 bool paz::IndexBuffer::empty() const
 {
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    return !_data || !_data->_numIndices;
 }
 
 std::size_t paz::IndexBuffer::size() const
 {
-    throw std::logic_error(__FILE__ ":" + std::to_string(__LINE__) + ": NOT IMPLEMENTED");
+    return _data ? _data->_numIndices : 0;
 }
 
 #endif
