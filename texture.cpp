@@ -37,7 +37,10 @@ paz::Texture::Data::~Data()
     }
 }
 
-paz::Texture::Texture() {}
+paz::Texture::Texture()
+{
+    initialize();
+}
 
 #define TEX(t, n, f) paz::Texture::Texture(const Image<t, n>& image, \
     MinMagFilter minFilter, MinMagFilter magFilter, MipmapFilter mipFilter, \

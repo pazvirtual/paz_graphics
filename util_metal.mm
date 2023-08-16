@@ -139,28 +139,6 @@ int paz::bytes_per_pixel(TextureFormat format)
     throw std::runtime_error("Invalid texture format requested.");
 }
 
-id<MTLSamplerState> paz::create_sampler(MinMagFilter minFilter, MinMagFilter
-    magFilter, MipmapFilter mipFilter, WrapMode wrapS, WrapMode wrapT)
-{
-    MTLSamplerDescriptor* descriptor = [[MTLSamplerDescriptor alloc] init];
-    [descriptor setMinFilter:min_mag_filter(minFilter)];
-    [descriptor setMagFilter:min_mag_filter(magFilter)];
-    if(mipFilter == MipmapFilter::Linear)
-    {
-        [descriptor setMipFilter:MTLSamplerMipFilterLinear];
-    }
-    else if(mipFilter == MipmapFilter::Nearest)
-    {
-        [descriptor setMipFilter:MTLSamplerMipFilterNearest];
-    }
-    [descriptor setSAddressMode:address_mode(wrapS)];
-    [descriptor setTAddressMode:address_mode(wrapT)];
-    id<MTLSamplerState> sampler = [DEVICE newSamplerStateWithDescriptor:
-        descriptor];
-    [descriptor release];
-    return sampler;
-}
-
 id<MTLDepthStencilState> paz::depth_stencil_state(DepthTestMode mode)
 {
     struct DepthStencilState

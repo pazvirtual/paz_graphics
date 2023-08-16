@@ -5,7 +5,7 @@
 
 #define CASE(a, b) case 0x##a: return Key::b;
 
-paz::Key paz::convert_keycode(int key)
+paz::Key paz::convert_keycode(int key) noexcept
 {
     switch(key)
     {
@@ -129,7 +129,7 @@ paz::Key paz::convert_keycode(int key)
 
 #define CASE(a, b) case GLFW_KEY_##a: return Key::b;
 
-paz::Key paz::convert_keycode(int key)
+paz::Key paz::convert_keycode(int key) noexcept
 {
     switch(key)
     {

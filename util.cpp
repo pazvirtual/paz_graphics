@@ -262,7 +262,7 @@ std::string paz::get_log(unsigned int id, bool isProgram)
     return std::string(buf.begin(), buf.begin() + logLen);
 }
 
-std::string paz::gl_error(GLenum error)
+std::string paz::gl_error(GLenum error) noexcept
 {
     switch(error)
     {

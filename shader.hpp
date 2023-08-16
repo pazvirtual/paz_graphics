@@ -22,7 +22,7 @@ namespace paz
         std::unordered_map<unsigned int, unsigned int> _outputTypes;
         void init(unsigned int vertId, unsigned int fragId, const std::
             unordered_map<unsigned int, unsigned int>& outputTypes);
-        ShaderData();
+        ShaderData() = default;
         ~ShaderData();
     };
 }

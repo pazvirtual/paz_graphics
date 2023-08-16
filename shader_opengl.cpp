@@ -17,8 +17,6 @@ paz::ShaderData::~ShaderData()
     }
 }
 
-paz::ShaderData::ShaderData() {}
-
 void paz::ShaderData::init(unsigned int vertId, unsigned int fragId, const std::
     unordered_map<unsigned int, unsigned int>& outputTypes)
 {

@@ -5,7 +5,7 @@
 
 namespace paz
 {
-    paz::Key convert_keycode(int key);
+    paz::Key convert_keycode(int key) noexcept;
 }
 
 #endif
