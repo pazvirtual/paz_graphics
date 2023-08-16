@@ -741,14 +741,14 @@ int paz::Window::ViewportWidth()
 {
     initialize();
 
-    return HidpiEnabled ? FboWidth : WindowWidth;
+    return ::HidpiEnabled ? FboWidth : WindowWidth;
 }
 
 int paz::Window::ViewportHeight()
 {
     initialize();
 
-    return HidpiEnabled ? FboHeight : WindowHeight;
+    return ::HidpiEnabled ? FboHeight : WindowHeight;
 }
 
 int paz::Window::Width()
@@ -1240,7 +1240,7 @@ float paz::Window::DpiScale()
 {
     initialize();
 
-    return HidpiEnabled ? static_cast<float>(FboWidth)/WindowWidth : 1.f;
+    return ::HidpiEnabled ? static_cast<float>(FboWidth)/WindowWidth : 1.f;
 }
 
 float paz::Window::UiScale()
@@ -1249,7 +1249,7 @@ float paz::Window::UiScale()
 
     float xScale, yScale;
     glfwGetWindowContentScale(WindowPtr, &xScale, &yScale);
-    if(!HidpiEnabled)
+    if(!::HidpiEnabled)
     {
         xScale *= static_cast<float>(WindowWidth)/FboWidth;
     }
@@ -1260,7 +1260,7 @@ void paz::Window::DisableHidpi()
 {
     initialize();
 
-    HidpiEnabled = false;
+    ::HidpiEnabled = false;
     resize_targets();
 }
 
@@ -1268,8 +1268,18 @@ void paz::Window::EnableHidpi()
 {
     initialize();
 
-    HidpiEnabled = true;
+    ::HidpiEnabled = true;
     resize_targets();
+}
+
+bool paz::Window::HidpiEnabled()
+{
+    return ::HidpiEnabled;
+}
+
+bool paz::Window::HidpiSupported()
+{
+    return FboWidth > WindowWidth;
 }
 
 void paz::Window::SetGamma(float gamma)

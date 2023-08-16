@@ -492,6 +492,8 @@ namespace paz
         static float UiScale();
         static void DisableHidpi();
         static void EnableHidpi();
+        static bool HidpiEnabled();
+        static bool HidpiSupported();
         static void SetGamma(float gamma);
     };
 }

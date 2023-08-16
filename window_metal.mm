@@ -163,7 +163,7 @@ int paz::Window::ViewportWidth()
     initialize();
 
     const auto width = [RENDERER viewportSize].width;
-    return HidpiEnabled ? width : std::round(width/[[APP_DELEGATE window]
+    return ::HidpiEnabled ? width : std::round(width/[[APP_DELEGATE window]
         backingScaleFactor]);
 }
 
@@ -172,7 +172,7 @@ int paz::Window::ViewportHeight()
     initialize();
 
     const auto height = [RENDERER viewportSize].height;
-    return HidpiEnabled ? height : std::round(height/[[APP_DELEGATE window]
+    return ::HidpiEnabled ? height : std::round(height/[[APP_DELEGATE window]
         backingScaleFactor]);
 }
 
@@ -485,7 +485,7 @@ float paz::Window::DpiScale()
 {
     initialize();
 
-    return HidpiEnabled ? [[APP_DELEGATE window] backingScaleFactor] : 1.;
+    return ::HidpiEnabled ? [[APP_DELEGATE window] backingScaleFactor] : 1.;
 }
 
 float paz::Window::UiScale()
@@ -499,7 +499,7 @@ void paz::Window::DisableHidpi()
 {
     initialize();
 
-    HidpiEnabled = false;
+    ::HidpiEnabled = false;
     resize_targets();
 }
 
@@ -507,8 +507,18 @@ void paz::Window::EnableHidpi()
 {
     initialize();
 
-    HidpiEnabled = true;
+    ::HidpiEnabled = true;
     resize_targets();
+}
+
+bool paz::Window::HidpiEnabled()
+{
+    return ::HidpiEnabled;
+}
+
+bool paz::Window::HidpiSupported()
+{
+    return [[APP_DELEGATE window] backingScaleFactor] > 1.;
 }
 
 void paz::Window::SetGamma(float gamma)
