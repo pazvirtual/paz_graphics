@@ -504,6 +504,7 @@ float4 mod(in float4 x, in float4 y)
         line = std::regex_replace(line, std::regex("\\bivec([2-4])"), "int$1");
         line = std::regex_replace(line, std::regex("\\buvec([2-4])"), "uint$1");
         line = std::regex_replace(line, std::regex("\\bmix\\b"), "lerp");
+        line = std::regex_replace(line, std::regex("\\bfract\\b"), "frac");
 
         // Process global variables.
         if(mode == Mode::None && std::regex_match(line, std::regex("\\s*const\\"
