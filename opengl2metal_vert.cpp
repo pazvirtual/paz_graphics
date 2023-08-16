@@ -347,11 +347,14 @@ auto uintBitsToFloat(thread const uint4& v)
             {
                 if(std::get<2>(n.second))
                 {
-                    line = std::regex_replace(line, std::regex("\\b" + std::get<0>(n.second) + "\\b"), std::get<0>(n.second) + "[glInstanceId]");
+                    line = std::regex_replace(line, std::regex("\\b" + std::get<
+                        0>(n.second) + "\\b"), std::get<0>(n.second) +
+                        "[glInstanceId]");
                 }
                 else
                 {
-                    line = std::regex_replace(line, std::regex("\\b" + std::get<0>(n.second) + "\\b"), "in." + std::get<0>(n.second));
+                    line = std::regex_replace(line, std::regex("\\b" + std::get<
+                        0>(n.second) + "\\b"), "in." + std::get<0>(n.second));
                 }
             }
             for(const auto& n : outputs)

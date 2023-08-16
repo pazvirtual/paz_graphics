@@ -14,7 +14,8 @@
 #define CHECK_PASS if(!CurPass) throw std::logic_error("No current render pass"\
     "."); else if(this != CurPass) throw std::logic_error("Render pass operati"\
     "ons cannot be interleaved.");
-#define CASE1(a, b, n) case GL_##a: glVertexAttribPointer(idx, n, GL_##b, GL_FALSE, 0, nullptr); break;
+#define CASE1(a, b, n) case GL_##a: glVertexAttribPointer(idx, n, GL_##b, \
+    GL_FALSE, 0, nullptr); break;
 
 static constexpr float Clear[] = {0.f, 0.f, 0.f, 0.f};
 static constexpr float Black[] = {0.f, 0.f, 0.f, 1.f};
@@ -678,11 +679,11 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
 }
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
-    const VertexBuffer& instanceAttrs)
+    const InstanceBuffer& instances)
 {
     CHECK_PASS
-    check_attributes(vertices._data->_types, instanceAttrs._data->_types,
-        _data->_shader._attribTypes);
+    check_attributes(vertices._data->_types, instances._data->_types, _data->
+        _shader._attribTypes);
 
     // Ensure that depth test mode and face culling mode do not persist.
     if(!DepthCalledThisPass)
@@ -718,12 +719,12 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
                 to_string(i) + ".");
         }
     }
-    for(std::size_t i = 0; i < instanceAttrs._data->_ids.size(); ++i)
+    for(std::size_t i = 0; i < instances._data->_ids.size(); ++i)
     {
         const auto idx = vertices._data->_ids.size() + i;
         glEnableVertexAttribArray(idx);
-        glBindBuffer(GL_ARRAY_BUFFER, instanceAttrs._data->_ids[i]);
-        switch(instanceAttrs._data->_types[i])
+        glBindBuffer(GL_ARRAY_BUFFER, instances._data->_ids[i]);
+        switch(instances._data->_types[i])
         {
             CASE1(INT, INT, 1)
             CASE1(INT_VEC2, INT, 2)
@@ -741,16 +742,16 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
         glVertexAttribDivisor(idx, 1);
     }
     glDrawArraysInstanced(primitive_type(type), 0, vertices._data->_numVertices,
-        instanceAttrs._data->_numVertices);
+        instances._data->_numInstances);
     glDeleteVertexArrays(1, &vaoId);
 }
 
 void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
-    const VertexBuffer& instanceAttrs, const IndexBuffer& indices)
+    const InstanceBuffer& instances, const IndexBuffer& indices)
 {
     CHECK_PASS
-    check_attributes(vertices._data->_types, instanceAttrs._data->_types,
-        _data->_shader._attribTypes);
+    check_attributes(vertices._data->_types, instances._data->_types, _data->
+        _shader._attribTypes);
 
     // Ensure that depth test mode and face culling mode do not persist.
     if(!DepthCalledThisPass)
@@ -786,12 +787,12 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
                 to_string(i) + ".");
         }
     }
-    for(std::size_t i = 0; i < instanceAttrs._data->_ids.size(); ++i)
+    for(std::size_t i = 0; i < instances._data->_ids.size(); ++i)
     {
         const auto idx = vertices._data->_ids.size() + i;
         glEnableVertexAttribArray(idx);
-        glBindBuffer(GL_ARRAY_BUFFER, instanceAttrs._data->_ids[i]);
-        switch(instanceAttrs._data->_types[i])
+        glBindBuffer(GL_ARRAY_BUFFER, instances._data->_ids[i]);
+        switch(instances._data->_types[i])
         {
             CASE1(INT, INT, 1)
             CASE1(INT_VEC2, INT, 2)
@@ -810,7 +811,7 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     }
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices._data->_id);
     glDrawElementsInstanced(primitive_type(type), indices._data->_numIndices,
-        GL_UNSIGNED_INT, nullptr, instanceAttrs._data->_numVertices);
+        GL_UNSIGNED_INT, nullptr, instances._data->_numInstances);
     glDeleteVertexArrays(1, &vaoId);
 }
 
