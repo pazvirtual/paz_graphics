@@ -154,10 +154,10 @@ namespace paz
             attribute(dim, &*first, std::distance(first, last));
         }
 
-        template<class C>
-        void attribute(int dim, const C& data)
+        template<typename T>
+        void attribute(int dim, const T& data)
         {
-            attribute(dim, data.begin(), data.end());
+            attribute(dim, std::begin(data), std::end(data));
         }
     };
 
