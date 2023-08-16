@@ -5,8 +5,8 @@
 #define M_PI 3.14159265358979323846264338328
 #endif
 
-static constexpr float ZNear = 0.1;
-static constexpr float ZFar = 100.;
+static constexpr float ZNear = 1.;
+static constexpr float ZFar = 5.;
 static constexpr float YFov = 65.*M_PI/180.;
 static constexpr int Res = 2000;
 
@@ -119,15 +119,8 @@ void main()
     vec3 projCoords = 0.5*lightProjPos.xyz/lightProjPos.w + 0.5;
     float depth = projCoords.z;
     vec2 uv = projCoords.xy;
-    if(depth - 1e-6 > texture(shadowMap, uv).r)
-    {
-        color = vec4(0.);
-    }
-    else
-    {
-        color = vec4(ill);
-    }
-    color += 0.1;
+    color = vec4(max(sign(texture(shadowMap, uv).r + 1e-6 - depth), 0.)*ill +
+        0.1);
     color.rgb = pow(clamp(color.rgb, vec3(0.), vec3(1.)), vec3(0.4545));
 }
 )===";
