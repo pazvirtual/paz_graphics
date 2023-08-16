@@ -35,29 +35,37 @@ int main()
 {
     paz::Window::SetMinSize(640, 480);
 
+    paz::ColorTarget render(1., 4, 16, paz::Texture::DataType::Float, paz::
+        Texture::MinMagFilter::Linear, paz::Texture::MinMagFilter::Linear);
+    paz::Framebuffer renderFramebuffer;
+    renderFramebuffer.attach(render);
+
     paz::ShaderFunctionLibrary l;
     l.vertex("particle", read_file("particle.vert")),
     l.fragment("particle", read_file("particle.frag"));
+    l.vertex("quad", read_file("quad.vert")),
+    l.fragment("tonemap", read_file("tonemap.frag"));
 
     const paz::Shader s(l, "particle", l, "particle");
+    const paz::Shader t(l, "quad", l, "tonemap");
 
-    paz::RenderPass r(s);
+    paz::RenderPass r(renderFramebuffer, s);
+    paz::RenderPass u(t);
 
     paz::VertexBuffer q;
     q.attribute(2, std::vector<float>{1., -1., 1., 1., -1., -1., -1., 1.});
 
-    std::multimap<double, std::array<double, 4>> particles;
+    std::multimap<double, std::array<double, 3>> particles;
     for(std::size_t i = 0; i < NumParticles; ++i)
     {
         const double x = Side*2.*(uniform() - 0.5);
         const double y = Side*2.*(uniform() - 0.5);
         const double z = Side*2.*(uniform() - 0.5) - ZDist;
-        const double size = uniform();
         const double distSq = x*x + y*y + z*z;
-        particles.emplace(distSq, std::array<double, 4>{x, y, z, size});
+        particles.emplace(distSq, std::array<double, 3>{x, y, z});
     }
 
-    double t = 0.;
+    double time = 0.;
     paz::Window::Loop([&]()
     {
         // Handle events.
@@ -74,10 +82,10 @@ int main()
             AspectRatio(), 0.01f, 100.f);
         if(!paz::Window::KeyDown(paz::Window::Key::Space))
         {
-            t += paz::Window::FrameTime();
+            time += paz::Window::FrameTime();
         }
-        const float c = std::cos(0.1*t);
-        const float s = std::sin(0.1*t);
+        const float c = std::cos(0.1*time);
+        const float s = std::sin(0.1*time);
         const std::array<float, 16> v = {c, 0, -s, 0,
                                          0, 1,  0, 0,
                                          s, 0,  c, 0,
@@ -92,11 +100,16 @@ int main()
         {
             r.uniform("origin", (float)it->second[0], (float)it->second[1],
                 (float)it->second[2]);
-            r.uniform("size", (float)it->second[3]);
             r.uniform("distSq", (float)it->first);
             r.primitives(paz::RenderPass::PrimitiveType::TriangleStrip, q);
         }
         r.blend(paz::RenderPass::BlendMode::Disable);//TEMP ?
         r.end();
+
+        u.begin();
+        u.read("hdrRender", render);
+        u.uniform("whitePoint", 0.5f + 0.5f*(float)std::sin(time));
+        u.primitives(paz::RenderPass::PrimitiveType::TriangleStrip, q);
+        u.end();
     });
 }
