@@ -160,23 +160,7 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
 }
 
 paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
-    frag, BlendMode mode)
-{
-    initialize();
-
-    _data = std::make_shared<Data>();
-
-    _data->_shader.init(vert._data->_id, frag._data->_id, frag._data->
-        _outputTypes);
-    _data->_blendMode = mode;
-
-    if(!_data->_shader._outputTypes.count(0) || _data->_shader._outputTypes.at(
-        0) != GL_FLOAT_VEC4)
-    {
-        throw std::runtime_error("Shader cannot write to default framebuffer: N"
-            "o outputs or first output is not of type `vec4`.");
-    }
-}
+    frag, BlendMode mode) : RenderPass(final_framebuffer(), vert, frag, mode) {}
 
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
@@ -190,89 +174,40 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     DepthCalledThisPass = false;
     CullCalledThisPass = false;
     NextSlot = 0;
-    if(_data->_fbo)
+    glBindFramebuffer(GL_FRAMEBUFFER, _data->_fbo->_id);
+    if(_data->_fbo->_width)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, _data->_fbo->_id);
-        if(_data->_fbo->_width)
-        {
-            glViewport(0, 0, _data->_fbo->_width, _data->_fbo->_height);
-        }
-        else
-        {
-            glViewport(0, 0, _data->_fbo->_scale*Window::ViewportWidth(),
-                _data->_fbo->_scale*Window::ViewportHeight());
-        }
-        for(std::size_t i = 0; i < colorLoadActions.size(); ++i)
-        {
-            if(colorLoadActions[i] == LoadAction::Clear)
-            {
-                glClearBufferfv(GL_COLOR, i, Black);
-            }
-            else if(colorLoadActions[i] == LoadAction::FillZeros)
-            {
-                glClearBufferfv(GL_COLOR, i, Clear);
-            }
-            else if(colorLoadActions[i] == LoadAction::FillOnes)
-            {
-                glClearBufferfv(GL_COLOR, i, White);
-            }
-            else if(colorLoadActions[i] != LoadAction::DontCare &&
-                colorLoadActions[i] != LoadAction::Load)
-            {
-                throw std::runtime_error("Invalid color attachment load action"
-                    ".");
-            }
-        }
-        if(_data->_fbo->_depthStencilAttachment)
-        {
-            if(depthLoadAction == LoadAction::Clear || depthLoadAction ==
-                LoadAction::FillOnes)
-            {
-                if(!DepthMaskEnabled)
-                {
-                    DepthMaskEnabled = true;
-                    glDepthMask(GL_TRUE);
-                }
-                glClear(GL_DEPTH_BUFFER_BIT);
-            }
-            else if(depthLoadAction == LoadAction::FillZeros)
-            {
-                if(!DepthMaskEnabled)
-                {
-                    DepthMaskEnabled = true;
-                    glDepthMask(GL_TRUE);
-                }
-                glClearBufferfv(GL_DEPTH, 0, White);
-            }
-            else if(depthLoadAction != LoadAction::DontCare && depthLoadAction
-                != LoadAction::Load)
-            {
-                throw std::runtime_error("Invalid depth attachment load action."
-                    );
-            }
-        }
+        glViewport(0, 0, _data->_fbo->_width, _data->_fbo->_height);
     }
     else
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, Window::ViewportWidth(), Window::ViewportHeight());
-        if(!colorLoadActions.empty())
+        glViewport(0, 0, _data->_fbo->_scale*Window::ViewportWidth(), _data->
+            _fbo->_scale*Window::ViewportHeight());
+    }
+    for(std::size_t i = 0; i < colorLoadActions.size(); ++i)
+    {
+        if(colorLoadActions[i] == LoadAction::Clear)
         {
-            if(colorLoadActions[0] == LoadAction::Clear)
-            {
-                glClearBufferfv(GL_COLOR, 0, Black);
-            }
-            else if(colorLoadActions[0] == LoadAction::FillZeros)
-            {
-                glClearBufferfv(GL_COLOR, 0, Clear);
-            }
-            else if(colorLoadActions[0] == LoadAction::FillOnes)
-            {
-                glClearBufferfv(GL_COLOR, 0, White);
-            }
+            glClearBufferfv(GL_COLOR, i, Black);
         }
-        if(depthLoadAction == LoadAction::Clear || depthLoadAction ==
-            LoadAction::FillOnes)
+        else if(colorLoadActions[i] == LoadAction::FillZeros)
+        {
+            glClearBufferfv(GL_COLOR, i, Clear);
+        }
+        else if(colorLoadActions[i] == LoadAction::FillOnes)
+        {
+            glClearBufferfv(GL_COLOR, i, White);
+        }
+        else if(colorLoadActions[i] != LoadAction::DontCare &&
+            colorLoadActions[i] != LoadAction::Load)
+        {
+            throw std::runtime_error("Invalid color attachment load action.");
+        }
+    }
+    if(_data->_fbo->_depthStencilAttachment)
+    {
+        if(depthLoadAction == LoadAction::Clear || depthLoadAction == LoadAction
+            ::FillOnes)
         {
             if(!DepthMaskEnabled)
             {
@@ -410,16 +345,13 @@ void paz::RenderPass::depth(DepthTestMode mode)
 
 void paz::RenderPass::end()
 {
-    if(_data->_fbo)
+    for(auto n : _data->_fbo->_colorAttachments)
     {
-        for(auto n : _data->_fbo->_colorAttachments)
-        {
-            n->ensureMipmaps();
-        }
-        if(_data->_fbo->_depthStencilAttachment)
-        {
-            _data->_fbo->_depthStencilAttachment->ensureMipmaps();
-        }
+        n->ensureMipmaps();
+    }
+    if(_data->_fbo->_depthStencilAttachment)
+    {
+        _data->_fbo->_depthStencilAttachment->ensureMipmaps();
     }
     const GLenum error = glGetError();
     if(error != GL_NO_ERROR)

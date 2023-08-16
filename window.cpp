@@ -138,12 +138,10 @@ paz::Initializer::Initializer()
     }
 
     // Set context hints.
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, paz::GlMajorVersion);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, paz::GlMinorVersion);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, GlMajorVersion);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, GlMinorVersion);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-    glfwWindowHint(GLFW_DEPTH_BITS, 32);
-    glfwWindowHint(GLFW_STENCIL_BITS, 0);
 
     // Get display size.
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
@@ -413,6 +411,19 @@ void paz::Window::EndFrame()
 {
     initialize();
 
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, final_framebuffer()._data->_id);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0, final_framebuffer().colorAttachment(0)._data->
+        _width, final_framebuffer().colorAttachment(0)._data->_height, 0, 0,
+        Window::ViewportWidth(), Window::ViewportHeight(), GL_COLOR_BUFFER_BIT,
+        GL_LINEAR);
+    const GLenum error = glGetError();
+    if(error != GL_NO_ERROR)
+    {
+        throw std::runtime_error("Error blitting to screen: " + gl_error(error)
+            + ".");
+    }
+
     glfwSwapBuffers(WindowPtr);
     reset_events();
     const auto now = std::chrono::steady_clock::now();
@@ -538,17 +549,27 @@ void paz::unregister_target(void* t)
     initialize()._renderTargets.erase(t);
 }
 
-paz::Image<std::uint8_t, 3> paz::Window::PrintScreen()
+paz::Framebuffer paz::final_framebuffer()
+{
+    static const Framebuffer f = []()
+    {
+        Framebuffer f;
+        f.attach(RenderTarget(1., TextureFormat::RGBA8UNorm));
+        f.attach(RenderTarget(1., TextureFormat::Depth16UNorm));
+        return f;
+    }();
+    return f;
+}
+
+paz::Image<std::uint8_t, 3> paz::Window::GetPixels()
 {
     initialize();
 
     Image<std::uint8_t, 3> image(ViewportWidth(), ViewportHeight());
-    glReadBuffer(GL_FRONT);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, ViewportWidth(), ViewportHeight());
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glReadPixels(0, 0, ViewportWidth(), ViewportHeight(), GL_RGB,
-        GL_UNSIGNED_BYTE, image.data());
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, final_framebuffer().colorAttachment(0)._data->
+        _id);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data());
     const GLenum error = glGetError();
     if(error != GL_NO_ERROR)
     {
