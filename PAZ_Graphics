@@ -38,6 +38,11 @@ namespace paz
         Linear, Nearest, None
     };
 
+    enum class WrapMode
+    {
+        Repeat, MirrorRepeat, ClampToEdge, ClampToZero
+    };
+
     enum class DepthTestMode
     {
         NeverNoMask, LessNoMask, EqualNoMask, LessEqualNoMask, GreaterNoMask,
@@ -102,10 +107,14 @@ namespace paz
         Texture();
         Texture(int width, int height, TextureFormat format, MinMagFilter
             minFilter = MinMagFilter::Nearest, MinMagFilter magFilter =
-            MinMagFilter::Nearest);
+            MinMagFilter::Nearest, WrapMode wrapS = WrapMode::ClampToEdge,
+            WrapMode wrapT = WrapMode::ClampToEdge, MipmapFilter mipFilter =
+            MipmapFilter::None);
         Texture(const Image<std::uint8_t, 1>& image, MinMagFilter minFilter =
             MinMagFilter::Nearest, MinMagFilter magFilter = MinMagFilter::
-            Nearest, bool normalized = true);
+            Nearest, WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT =
+            WrapMode::ClampToEdge, MipmapFilter mipFilter = MipmapFilter::None,
+            bool normalized = true);
         // ...
         void resize(int width, int height);
         int width() const;
@@ -117,10 +126,13 @@ namespace paz
     public:
         RenderTarget(double scale, TextureFormat format, MinMagFilter minFilter
             = MinMagFilter::Nearest, MinMagFilter magFilter = MinMagFilter::
-            Nearest);
+            Nearest, WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT =
+            WrapMode::ClampToEdge, MipmapFilter mipFilter = MipmapFilter::None);
         RenderTarget(int width, int height, TextureFormat format, MinMagFilter
             minFilter = MinMagFilter::Nearest, MinMagFilter magFilter =
-            MinMagFilter::Nearest);
+            MinMagFilter::Nearest, WrapMode wrapS = WrapMode::ClampToEdge,
+            WrapMode wrapT = WrapMode::ClampToEdge, MipmapFilter mipFilter =
+            MipmapFilter::None);
     };
 
     class VertexBuffer

@@ -14,10 +14,12 @@ struct paz::Texture::Data
 #endif
     int _width = 0;
     int _height = 0;
-    bool _mipmap = false;
     TextureFormat _format;
     MinMagFilter _minFilter;
     MinMagFilter _magFilter;
+    MipmapFilter _mipFilter = MipmapFilter::None;
+    WrapMode _wrapS;
+    WrapMode _wrapT;
     bool _isRenderTarget = false;
     double _scale = 1.;
     ~Data();

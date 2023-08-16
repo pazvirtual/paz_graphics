@@ -11,6 +11,7 @@
 
 #define CASE0(a, b) case TextureFormat::a: return MTLPixelFormat##b;
 #define CASE1(f, n, b) case TextureFormat::f: return n*b/8;
+#define CASE2(a, b) case paz::WrapMode::a: return MTLSamplerAddressMode##b;
 
 static MTLSamplerMinMagFilter min_mag_filter(paz::MinMagFilter f)
 {
@@ -21,6 +22,19 @@ static MTLSamplerMinMagFilter min_mag_filter(paz::MinMagFilter f)
     }
 
     throw std::logic_error("Invalid texture filter requested.");
+}
+
+static MTLSamplerAddressMode address_mode(paz::WrapMode m)
+{
+    switch(m)
+    {
+        CASE2(Repeat, Repeat)
+        CASE2(MirrorRepeat, MirrorRepeat)
+        CASE2(ClampToEdge, ClampToEdge)
+        CASE2(ClampToZero, ClampToZero)
+    }
+
+    throw std::logic_error("Invalid texture wrapping mode requested.");
 }
 
 MTLPixelFormat paz::pixel_format(TextureFormat format)
@@ -124,13 +138,13 @@ int paz::bytes_per_pixel(TextureFormat format)
 }
 
 id<MTLSamplerState> paz::create_sampler(MinMagFilter minFilter, MinMagFilter
-    magFilter)
+    magFilter, WrapMode wrapS, WrapMode wrapT)
 {
     MTLSamplerDescriptor* descriptor = [[MTLSamplerDescriptor alloc] init];
     [descriptor setMinFilter:min_mag_filter(minFilter)];
     [descriptor setMagFilter:min_mag_filter(magFilter)];
-    [descriptor setSAddressMode:MTLSamplerAddressModeRepeat];
-    [descriptor setTAddressMode:MTLSamplerAddressModeRepeat];
+    [descriptor setSAddressMode:address_mode(wrapS)];
+    [descriptor setTAddressMode:address_mode(wrapT)];
     id<MTLSamplerState> sampler = [DEVICE newSamplerStateWithDescriptor:
         descriptor];
     [descriptor release];
