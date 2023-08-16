@@ -1,6 +1,3 @@
-#ifndef PAZ_GRAPHICS_VIEW_CONTROLLER_HH
-#define PAZ_GRAPHICS_VIEW_CONTROLLER_HH
-
 #include "detect_os.hpp"
 
 #ifdef PAZ_MACOS
@@ -35,7 +32,5 @@
 - (void)resetEvents;
 - (void)pollGamepadState;
 @end
-
-#endif
 
 #endif

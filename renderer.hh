@@ -1,6 +1,3 @@
-#ifndef PAZ_GRAPHICS_RENDERER_HH
-#define PAZ_GRAPHICS_RENDERER_HH
-
 #include "detect_os.hpp"
 
 #ifdef PAZ_MACOS
@@ -18,7 +15,5 @@
 - (void)ensureCommandBuffer;
 - (nonnull id<MTLTexture>)outputTex;
 @end
-
-#endif
 
 #endif

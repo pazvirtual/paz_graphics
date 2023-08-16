@@ -4,8 +4,9 @@
 
 #include "PAZ_Graphics"
 #import "view_controller.hh"
+#import "app_delegate.hh"
 #include "keycodes.hpp"
-#include "macos_controller_db.hpp"
+#import "gamepad_macos.hh"
 
 @implementation ViewController
 {
@@ -293,7 +294,32 @@
 
 - (void)pollGamepadState
 {
-    // ...
+    paz::GamepadState state;
+    if([static_cast<AppDelegate*>([NSApp delegate]) getGamepadState:&state])
+    {
+        for(int i = 0; i < paz::NumGamepadButtons; ++i)
+        {
+            if(state.buttonDown[i])
+            {
+                _gamepadActive = true;
+                if(!_gamepadDown[i])
+                {
+                    _gamepadPressed[i] = true;
+                }
+                _gamepadDown[i] = true;
+            }
+            else
+            {
+                if(_gamepadDown[i])
+                {
+                    _gamepadActive = true;
+                    _gamepadReleased[i] = true;
+                }
+                _gamepadDown[i] = false;
+            }
+        }
+        // ...
+    }
 }
 @end
 
