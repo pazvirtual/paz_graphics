@@ -4,49 +4,25 @@
 
 #include "PAZ_Graphics"
 #include "util_d3d11.hpp"
-//#include "opengl2d3d.hpp"
+#include "shading_lang.hpp"
 #include "internal_data.hpp"
 #include "window.hpp"
 #include <d3dcompiler.h>
 
-//TEMP
-static const std::string VSrc = 1 + R"===(
-struct InputData
-{
-    float4 pos : ATTR0;
-};
-struct OutputData
-{
-    float4 glPosition : SV_Position;
-};
-OutputData main(InputData input)
-{
-    OutputData output;
-    output.glPosition = input.pos;
-    return output;
-}
-)===";
-static const std::string FSrc = 1 + R"===(
-struct InputData{ float4 glPosition : SV_Position; }; //TEMP
-struct OutputData
-{
-    float4 color : SV_TARGET0;
-};
-OutputData main(InputData input)
-{
-    OutputData output;
-    output.color = float4(0.5, 0.5, 1, 1);
-    return output;
-}
-)===";
-//TEMP
-
 paz::VertexFunction::Data::~Data()
 {
+    if(_shader)
+    {
+        _shader->Release();
+    }
 }
 
 paz::FragmentFunction::Data::~Data()
 {
+    if(_shader)
+    {
+        _shader->Release();
+    }
 }
 
 paz::VertexFunction::VertexFunction()
@@ -68,8 +44,9 @@ paz::VertexFunction::VertexFunction(const std::string& src)
     initialize();
 
     _data = std::make_shared<Data>();
+    const std::string hlsl = vert2hlsl(src);
     ID3DBlob* error;
-    auto hr = D3DCompile(VSrc.c_str(), VSrc.size(), nullptr, nullptr, nullptr,
+    auto hr = D3DCompile(hlsl.c_str(), hlsl.size(), nullptr, nullptr, nullptr,
         "main", "vs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &_data->_bytecode,
         &error);
     if(hr)
@@ -92,9 +69,10 @@ paz::FragmentFunction::FragmentFunction(const std::string& src)
     initialize();
 
     _data = std::make_shared<Data>();
+    const std::string hlsl = vert2hlsl(src);
     ID3DBlob* bytecode;
     ID3DBlob* error;
-    auto hr = D3DCompile(FSrc.c_str(), FSrc.size(), nullptr, nullptr, nullptr,
+    auto hr = D3DCompile(hlsl.c_str(), hlsl.size(), nullptr, nullptr, nullptr,
         "main", "ps_5_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &bytecode, &error);
     if(hr)
     {

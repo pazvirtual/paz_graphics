@@ -54,27 +54,6 @@ void paz::VertexBuffer::Data::checkSize(int dim, std::size_t size)
     if(!_numVertices)
     {
         _numVertices = m;
-/*
-        {
-            std::vector<unsigned int> idx(_numVertices + 1);
-            std::iota(idx.begin(), idx.end(), 0);
-            idx.back() = 0;
-            _lineLoopIndices = [DEVICE newBufferWithBytes:idx.data() length:
-                sizeof(unsigned int)*idx.size() options:MTLStorageModeShared];
-        }
-        {
-            std::vector<unsigned int> idx(_numVertices < 3 ? 0 : 3*_numVertices
-                - 6);
-            for(std::size_t i = 0; i < idx.size()/3; ++i)
-            {
-                idx[3*i] = 0;
-                idx[3*i + 1] = i + 1;
-                idx[3*i + 2] = i + 2;
-            }
-            _triangleFanIndices = [DEVICE newBufferWithBytes:idx.data() length:
-                sizeof(unsigned int)*idx.size() options:MTLStorageModeShared];
-        }
-*/
     }
     else if(m != _numVertices)
     {
@@ -106,9 +85,15 @@ void paz::VertexBuffer::addAttribute(int dim, const float* data, std::size_t
             std::to_string(hr) + ").");
     }
     const unsigned int slot = _data->_inputElemDescriptors.size();
-    _data->_inputElemDescriptors.push_back({"ATTR", 0, dxgi_format(dim, paz::
-        DataType::Float), slot, D3D11_APPEND_ALIGNED_ELEMENT,
-        D3D11_INPUT_PER_VERTEX_DATA, 0});
+    D3D11_INPUT_ELEMENT_DESC inputDescriptor = {};
+    inputDescriptor.SemanticName = "ATTR";
+    inputDescriptor.SemanticIndex = slot;
+    inputDescriptor.Format = dxgi_format(dim, paz::
+        DataType::Float);
+    inputDescriptor.InputSlot = slot;
+    inputDescriptor.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
+    inputDescriptor.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+    _data->_inputElemDescriptors.push_back(inputDescriptor);
     _data->_strides.push_back(dim*sizeof(float));
 }
 

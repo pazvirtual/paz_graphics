@@ -4,7 +4,7 @@
 
 #include "PAZ_Graphics"
 #include "util_opengl.hpp"
-#include "opengl2metal.hpp"
+#include "shading_lang.hpp"
 #include "internal_data.hpp"
 #include "window.hpp"
 #include <sstream>
