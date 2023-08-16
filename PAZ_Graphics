@@ -7,6 +7,21 @@
 #include <array>
 #include <memory>
 
+#define PAZ_TEX_IMG_CTOR_T_N(t, n) Texture(const Image<t, n>& image,\
+    MinMagFilter minFilter = MinMagFilter::Nearest, MinMagFilter magFilter =\
+    MinMagFilter::Nearest, MipmapFilter mipFilter = MipmapFilter::None,\
+    WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::\
+    ClampToEdge);
+#define PAZ_TEX_IMG_CTOR_T_N_NORM(t, n) Texture(const Image<t, n>& image,\
+    MinMagFilter minFilter = MinMagFilter::Nearest, MinMagFilter magFilter =\
+    MinMagFilter::Nearest, MipmapFilter mipFilter = MipmapFilter::None,\
+    WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::\
+    ClampToEdge, bool normalized = true);
+#define PAZ_TEX_IMG_CTOR_T(t) PAZ_TEX_IMG_CTOR_T_N(t, 1) PAZ_TEX_IMG_CTOR_T_N(\
+    t, 2) PAZ_TEX_IMG_CTOR_T_N(t, 4)
+#define PAZ_TEX_IMG_CTOR_T_NORM(t) PAZ_TEX_IMG_CTOR_T_N_NORM(t, 1) \
+    PAZ_TEX_IMG_CTOR_T_N_NORM(t, 2) PAZ_TEX_IMG_CTOR_T_N_NORM(t, 4)
+
 namespace paz
 {
     template<typename T>
@@ -103,15 +118,16 @@ namespace paz
         Texture();
         Texture(int width, int height, TextureFormat format, MinMagFilter
             minFilter = MinMagFilter::Nearest, MinMagFilter magFilter =
-            MinMagFilter::Nearest, WrapMode wrapS = WrapMode::ClampToEdge,
-            WrapMode wrapT = WrapMode::ClampToEdge, MipmapFilter mipFilter =
-            MipmapFilter::None);
-        Texture(const Image<std::uint8_t, 1>& image, MinMagFilter minFilter =
-            MinMagFilter::Nearest, MinMagFilter magFilter = MinMagFilter::
-            Nearest, WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT =
-            WrapMode::ClampToEdge, MipmapFilter mipFilter = MipmapFilter::None,
-            bool normalized = true);
-        // ...
+            MinMagFilter::Nearest, MipmapFilter mipFilter = MipmapFilter::None,
+            WrapMode wrapS = WrapMode::ClampToEdge, WrapMode wrapT = WrapMode::
+            ClampToEdge);
+        PAZ_TEX_IMG_CTOR_T_NORM(std::int8_t)
+        PAZ_TEX_IMG_CTOR_T_NORM(std::int16_t)
+        PAZ_TEX_IMG_CTOR_T(std::int32_t)
+        PAZ_TEX_IMG_CTOR_T_NORM(std::uint8_t)
+        PAZ_TEX_IMG_CTOR_T_NORM(std::uint16_t)
+        PAZ_TEX_IMG_CTOR_T(std::uint32_t)
+        PAZ_TEX_IMG_CTOR_T(float)
         int width() const;
         int height() const;
     };
