@@ -10,6 +10,7 @@
 #include <d3d11.h>
 #endif
 #include <unordered_set>
+#include <cstdint>
 
 namespace paz
 {

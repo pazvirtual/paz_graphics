@@ -5,6 +5,7 @@
 #include "PAZ_Graphics"
 #include <bitset>
 #include <unordered_map>
+#include <cstdint>
 
 namespace paz
 {
