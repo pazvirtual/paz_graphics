@@ -1,6 +1,7 @@
 #include "PAZ_Graphics"
 #include <cmath>
 #include <iomanip>
+#include <cstdint>
 
 static constexpr double Pi = 3.14159265358979323846264338328; // M_PI
 
