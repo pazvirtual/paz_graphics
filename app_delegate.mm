@@ -72,7 +72,7 @@ static void match_callback(void* context, IOReturn /* result */, void*
     std::string guid = buf;
 
     // Check if we have a mapping for this type of gamepad.
-    if(!gamepad_mappings().count(guid))
+    if(!paz::gamepad_mappings().count(guid))
     {
         return;
     }
@@ -280,8 +280,6 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
         [_window setTitle:[NSString stringWithUTF8String:title.c_str()]];
         [_window setStyleMask:NSWindowStyleMaskTitled|
             NSWindowStyleMaskMiniaturizable|NSWindowStyleMaskResizable];
-        [_window setCollectionBehavior:
-            NSWindowCollectionBehaviorFullScreenAuxiliary];
         [_window setDelegate:self];
 
         // Set callbacks to detect when a gamepad is connected or removed.
@@ -387,6 +385,17 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
     _isFocus = false;
 }
 
+- (void)windowDidEnterFullScreen:(NSNotification*)__unused notification
+{
+    [NSApp setPresentationOptions:NSApplicationPresentationHideDock|
+        NSApplicationPresentationHideMenuBar];
+}
+
+- (void)windowDidExitFullScreen:(NSNotification*)__unused notification
+{
+    [NSApp setPresentationOptions:NSApplicationPresentationDefault];
+}
+
 // Other methods.
 - (void)centerCursor
 {
@@ -399,6 +408,11 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
 
 - (void)setCursorMode:(paz::CursorMode)mode
 {
+    if(_cursorMode == mode)
+    {
+        return;
+    }
+
     if(mode == paz::CursorMode::Normal)
     {
         if(_cursorMode == paz::CursorMode::Disable)
@@ -421,9 +435,11 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
     {
         CGAssociateMouseAndMouseCursorPosition(false);
         [NSCursor hide];
-        NSPoint mouseLocation = [NSEvent mouseLocation];
-        _priorCursorPos = CGPointMake(mouseLocation.x, _screenRect.size.height -
-            mouseLocation.y);
+        NSPoint pos = [_window mouseLocationOutsideOfEventStream];
+        NSRect rect = NSMakeRect(pos.x, pos.y, 0, 0);
+        rect = [_window convertRectToScreen:rect];
+        _priorCursorPos.x = rect.origin.x;
+        _priorCursorPos.y = _screenRect.size.height - rect.origin.y;
         [self centerCursor];
     }
     else
@@ -514,7 +530,7 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
     }
 
     // Use mapping to get state.
-    const auto& mapping = gamepad_mappings().at(_gamepads[0].guid);
+    const auto& mapping = paz::gamepad_mappings().at(_gamepads[0].guid);
     for(int i = 0; i < paz::NumGamepadButtons; ++i)
     {
         const auto e = mapping.buttons[i];
