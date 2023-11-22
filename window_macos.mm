@@ -95,15 +95,7 @@ void paz::Window::MakeFullscreen()
 
     if(!IsFullscreen())
     {
-        [[[APP_DELEGATE window] contentView] enterFullScreenMode:[NSScreen
-            mainScreen] withOptions:
-            @{NSFullScreenModeAllScreens:@NO,
-            NSFullScreenModeApplicationPresentationOptions:
-            @(NSApplicationPresentationHideDock|
-            NSApplicationPresentationHideMenuBar)}];
-        PrevOrigin = [[APP_DELEGATE window] frame].origin;
-        [[APP_DELEGATE window] setFrameOrigin:[[NSScreen mainScreen] frame].
-            origin];
+        [[APP_DELEGATE window] toggleFullScreen:nil];
     }
 }
 
@@ -113,14 +105,7 @@ void paz::Window::MakeWindowed()
 
     if(IsFullscreen())
     {
-        [[[APP_DELEGATE window] contentView] exitFullScreenModeWithOptions:nil];
-        [[APP_DELEGATE window] setFrameOrigin:PrevOrigin];
-
-        // Deallocate the temporary `_NSFullScreenWindow`.
-        [[[NSApp windows] objectAtIndex:1] dealloc];
-
-        // Shift focus back to the original window.
-        [[APP_DELEGATE window] makeKeyAndOrderFront:nil];
+        [[APP_DELEGATE window] toggleFullScreen:nil];
     }
 }
 
@@ -202,28 +187,28 @@ bool paz::Window::KeyReleased(Key key)
     return [VIEW_CONTROLLER keyReleased].at(static_cast<int>(key));
 }
 
-bool paz::Window::MouseDown(int button)
+bool paz::Window::MouseDown(MouseButton button)
 {
     initialize();
 
     // The following ensures that very brief mouse button presses are not missed
     // when checking `mouse_down()`.
-    return [VIEW_CONTROLLER mouseDown].at(button) || [VIEW_CONTROLLER
-        mousePressed].at(button);
+    return [VIEW_CONTROLLER mouseDown].at(static_cast<int>(button)) ||
+        [VIEW_CONTROLLER mousePressed].at(static_cast<int>(button));
 }
 
-bool paz::Window::MousePressed(int button)
+bool paz::Window::MousePressed(MouseButton button)
 {
     initialize();
 
-    return [VIEW_CONTROLLER mousePressed].at(button);
+    return [VIEW_CONTROLLER mousePressed].at(static_cast<int>(button));
 }
 
-bool paz::Window::MouseReleased(int button)
+bool paz::Window::MouseReleased(MouseButton button)
 {
     initialize();
 
-    return [VIEW_CONTROLLER mouseReleased].at(button);
+    return [VIEW_CONTROLLER mouseReleased].at(static_cast<int>(button));
 }
 
 std::pair<double, double> paz::Window::MousePos()
