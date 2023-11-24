@@ -15,6 +15,7 @@
 @property(retain) NSString* appName;
 @property(readonly) bool done;
 @property(readonly) bool isFocus;
+@property(readonly) bool isFullscreen;
 @property(readonly) CGPoint priorCursorPos;
 @property(readonly) paz::CursorMode cursorMode;
 - (id)initWithTitle:(std::string)title;

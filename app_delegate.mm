@@ -221,6 +221,7 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
         NSMenu* appMenu = [[NSMenu alloc] init];
         [appMenuItem setSubmenu:appMenu];
         [mainMenu addItem:appMenuItem];
+        [appMenuItem release];
 
         [appMenu addItem:[NSMenuItem separatorItem]];
 
@@ -245,19 +246,27 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
             keyEquivalent:@"q"]];
 
         [appMenu release];
-        [appMenuItem release];
+
+        NSMenuItem* viewMenuItem = [[NSMenuItem alloc] initWithTitle:@"View"
+            action:NULL keyEquivalent:@""];
+        NSMenu* viewMenu = [[NSMenu alloc] initWithTitle:@"View"];
+        [viewMenuItem setSubmenu:viewMenu];
+        [mainMenu addItem:viewMenuItem];
+        [viewMenuItem release];
+
+        [viewMenu release];
 
         NSMenuItem* windowMenuItem = [[NSMenuItem alloc] initWithTitle:@"Window"
             action:NULL keyEquivalent:@""];
         NSMenu* windowMenu = [[NSMenu alloc] initWithTitle:@"Window"];
         [windowMenuItem setSubmenu:windowMenu];
         [mainMenu addItem:windowMenuItem];
+        [windowMenuItem release];
 
         [windowMenu addItem:[[NSMenuItem alloc] initWithTitle:@"Minimize"
             action:@selector(performMiniaturize:) keyEquivalent:@"m"]];
 
         [windowMenu release];
-        [windowMenuItem release];
 
         [mainMenu release];
 
@@ -387,12 +396,14 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
 
 - (void)windowDidEnterFullScreen:(NSNotification*)__unused notification
 {
+    _isFullscreen = true;
     [NSApp setPresentationOptions:NSApplicationPresentationHideDock|
         NSApplicationPresentationHideMenuBar];
 }
 
 - (void)windowDidExitFullScreen:(NSNotification*)__unused notification
 {
+    _isFullscreen = false;
     [NSApp setPresentationOptions:NSApplicationPresentationDefault];
 }
 
