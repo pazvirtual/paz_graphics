@@ -31,8 +31,6 @@ static std::chrono::time_point<std::chrono::steady_clock> FrameStart = std::
     chrono::steady_clock::now();
 static double PrevFrameTime = 1./60.;
 
-static CGPoint PrevOrigin;
-
 paz::Initializer::~Initializer()
 {
     [NSApp release];
@@ -128,7 +126,7 @@ bool paz::Window::IsFullscreen()
 {
     initialize();
 
-    return [[[APP_DELEGATE window] contentView] isInFullScreenMode];
+    return [APP_DELEGATE isFullscreen];
 }
 
 int paz::Window::ViewportWidth()
