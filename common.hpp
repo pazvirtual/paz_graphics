@@ -38,8 +38,6 @@ namespace paz
     // does not inherit from another wrapper class that does so and 2. every
     // method of `paz::Window`.
     Initializer& initialize();
-    float half_to_float(std::uint16_t x);
-    std::uint16_t float_to_half(float x);
 }
 
 #endif
