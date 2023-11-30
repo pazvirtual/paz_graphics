@@ -233,7 +233,7 @@ static float Gamma = 2.2;
 static bool Dither = false;
 static ID3DBlob* QuadVertBytecode = []()
 {
-    paz::initialize();
+    paz::initialize(); //TEMP - can't be here
 
     ID3DBlob* res;
     ID3DBlob* error;
@@ -250,7 +250,7 @@ static ID3DBlob* QuadVertBytecode = []()
 }();
 static ID3D11VertexShader* QuadVertShader = []()
 {
-    paz::initialize();
+    paz::initialize(); //TEMP - can't be here
 
     ID3D11VertexShader* res;
     const auto hr = Device->CreateVertexShader(QuadVertBytecode->
@@ -264,7 +264,7 @@ static ID3D11VertexShader* QuadVertShader = []()
 }();
 static ID3D11PixelShader* QuadFragShader = []()
 {
-    paz::initialize();
+    paz::initialize(); //TEMP - can't be here
 
     ID3DBlob* fragBlob;
     ID3DBlob* error;
@@ -289,7 +289,7 @@ static ID3D11PixelShader* QuadFragShader = []()
 }();
 static ID3D11Buffer* QuadBuf = []()
 {
-    paz::initialize();
+    paz::initialize(); //TEMP - can't be here
 
     D3D11_BUFFER_DESC bufDescriptor = {};
     bufDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
@@ -308,7 +308,7 @@ static ID3D11Buffer* QuadBuf = []()
 }();
 static ID3D11InputLayout* QuadLayout = []()
 {
-    paz::initialize();
+    paz::initialize(); //TEMP - can't be here
 
     D3D11_INPUT_ELEMENT_DESC inputElemDescriptor = {"ATTR", 0,
         DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
@@ -326,7 +326,7 @@ static ID3D11InputLayout* QuadLayout = []()
 }();
 static ID3D11RasterizerState* BlitState = []()
 {
-    paz::initialize();
+    paz::initialize(); //TEMP - can't be here
 
     D3D11_RASTERIZER_DESC rasterDescriptor = {};
     rasterDescriptor.FillMode = D3D11_FILL_SOLID;
@@ -344,6 +344,8 @@ static ID3D11RasterizerState* BlitState = []()
 }();
 static ID3D11Buffer* BlitBuf = []()
 {
+    paz::initialize(); //TEMP - can't be here
+
     D3D11_BUFFER_DESC bufDescriptor = {};
     bufDescriptor.Usage = D3D11_USAGE_DYNAMIC;
     bufDescriptor.ByteWidth = 16;

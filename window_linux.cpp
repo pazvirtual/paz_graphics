@@ -110,7 +110,7 @@ static float Gamma = 2.2;
 static bool Dither = false;
 static const unsigned int QuadShaderId = []()
 {
-    paz::initialize();
+    paz::initialize(); //TEMP - can't be here
 
     static const std::string headerStr = "#version " + std::to_string(paz::
         GlMajorVersion) + std::to_string(paz::GlMinorVersion) + "0 core\n";
@@ -164,7 +164,7 @@ static const unsigned int QuadShaderId = []()
 }();
 static const unsigned int QuadBufId = []()
 {
-    paz::initialize();
+    paz::initialize(); //TEMP - can't be here
 
     unsigned int a, b;
     glGenVertexArrays(1, &a);
