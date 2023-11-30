@@ -108,75 +108,6 @@ static bool FrameInProgress;
 static bool HidpiEnabled = true;
 static float Gamma = 2.2;
 static bool Dither = false;
-static const unsigned int QuadShaderId = []()
-{
-    paz::initialize(); //TEMP - can't be here
-
-    static const std::string headerStr = "#version " + std::to_string(paz::
-        GlMajorVersion) + std::to_string(paz::GlMinorVersion) + "0 core\n";
-
-    auto v = glCreateShader(GL_VERTEX_SHADER);
-    {
-        std::array<const char*, 2> srcStrs = {headerStr.c_str(), QuadVertSrc};
-        glShaderSource(v, srcStrs.size(), srcStrs.data(), nullptr);
-        glCompileShader(v);
-        int success;
-        glGetShaderiv(v, GL_COMPILE_STATUS, &success);
-        if(!success)
-        {
-            std::string errorLog = paz::get_log(v, false);
-            throw std::runtime_error("Failed to compile final vertex function:"
-                "\n" + errorLog);
-        }
-    }
-
-    auto f = glCreateShader(GL_FRAGMENT_SHADER);
-    {
-        std::array<const char*, 2> srcStrs = {headerStr.c_str(), QuadFragSrc};
-        glShaderSource(f, srcStrs.size(), srcStrs.data(), nullptr);
-        glCompileShader(f);
-        int success;
-        glGetShaderiv(f, GL_COMPILE_STATUS, &success);
-        if(!success)
-        {
-            std::string errorLog = paz::get_log(f, false);
-            throw std::runtime_error("Failed to compile final fragment function"
-                ":\n" + errorLog);
-        }
-    }
-
-    auto s = glCreateProgram();
-    {
-        glAttachShader(s, v);
-        glAttachShader(s, f);
-        glLinkProgram(s);
-        GLint success;
-        glGetProgramiv(s, GL_LINK_STATUS, &success);
-        if(!success)
-        {
-            std::string errorLog = paz::get_log(s, true);
-            throw std::runtime_error("Failed to link final shader program:\n" +
-                errorLog);
-        }
-    }
-
-    return s;
-}();
-static const unsigned int QuadBufId = []()
-{
-    paz::initialize(); //TEMP - can't be here
-
-    unsigned int a, b;
-    glGenVertexArrays(1, &a);
-    glBindVertexArray(a);
-    glGenBuffers(1, &b);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, b);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*QuadPos.size(), QuadPos.
-        data(), GL_STATIC_DRAW);
-    return a;
-}();
 
 paz::Initializer& paz::initialize()
 {
@@ -727,21 +658,89 @@ void paz::Window::EndFrame()
 
     FrameInProgress = false;
 
-    static const auto texLoc = glGetUniformLocation(QuadShaderId, "tex");
-    static const auto gammaLoc = glGetUniformLocation(QuadShaderId, "gamma");
-    static const auto ditherLoc = glGetUniformLocation(QuadShaderId, "dither");
+    static const unsigned int quadShaderId = []()
+    {
+        static const std::string headerStr = "#version " + std::to_string(paz::
+            GlMajorVersion) + std::to_string(paz::GlMinorVersion) + "0 core\n";
+
+        auto v = glCreateShader(GL_VERTEX_SHADER);
+        {
+            std::array<const char*, 2> srcStrs = {headerStr.c_str(),
+                QuadVertSrc};
+            glShaderSource(v, srcStrs.size(), srcStrs.data(), nullptr);
+            glCompileShader(v);
+            int success;
+            glGetShaderiv(v, GL_COMPILE_STATUS, &success);
+            if(!success)
+            {
+                std::string errorLog = paz::get_log(v, false);
+                throw std::runtime_error("Failed to compile final vertex functi"
+                    "on:\n" + errorLog);
+            }
+        }
+
+        auto f = glCreateShader(GL_FRAGMENT_SHADER);
+        {
+            std::array<const char*, 2> srcStrs = {headerStr.c_str(),
+                QuadFragSrc};
+            glShaderSource(f, srcStrs.size(), srcStrs.data(), nullptr);
+            glCompileShader(f);
+            int success;
+            glGetShaderiv(f, GL_COMPILE_STATUS, &success);
+            if(!success)
+            {
+                std::string errorLog = paz::get_log(f, false);
+                throw std::runtime_error("Failed to compile final fragment func"
+                    "tion:\n" + errorLog);
+            }
+        }
+
+        auto s = glCreateProgram();
+        {
+            glAttachShader(s, v);
+            glAttachShader(s, f);
+            glLinkProgram(s);
+            GLint success;
+            glGetProgramiv(s, GL_LINK_STATUS, &success);
+            if(!success)
+            {
+                std::string errorLog = paz::get_log(s, true);
+                throw std::runtime_error("Failed to link final shader program:"
+                    "\n" + errorLog);
+            }
+        }
+
+        return s;
+    }();
+    static const unsigned int quadBufId = []()
+    {
+        unsigned int a, b;
+        glGenVertexArrays(1, &a);
+        glBindVertexArray(a);
+        glGenBuffers(1, &b);
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, b);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*QuadPos.size(), QuadPos.
+            data(), GL_STATIC_DRAW);
+        return a;
+    }();
+
+    static const auto texLoc = glGetUniformLocation(quadShaderId, "tex");
+    static const auto gammaLoc = glGetUniformLocation(quadShaderId, "gamma");
+    static const auto ditherLoc = glGetUniformLocation(quadShaderId, "dither");
 
     glGetError();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     disable_blend_depth_cull();
-    glUseProgram(QuadShaderId);
+    glUseProgram(quadShaderId);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, final_framebuffer().colorAttachment(0)._data->
         _id);
     glUniform1i(texLoc, 0);
     glUniform1f(gammaLoc, Gamma);
     glUniform1f(ditherLoc, Dither ? 1.f : 0.f);
-    glBindVertexArray(QuadBufId);
+    glBindVertexArray(quadBufId);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, QuadPos.size()/2);
     const GLenum error = glGetError();
     if(error != GL_NO_ERROR)
