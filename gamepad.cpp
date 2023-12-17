@@ -137,33 +137,33 @@ static bool parse_mapping(const std::string& str, paz::GamepadMapping& m)
     return true;
 }
 
-const std::unordered_map<std::string, paz::GamepadMapping>& paz::gamepad_mappings()
+const std::unordered_map<std::string, paz::GamepadMapping>& paz::
+    gamepad_mappings()
 {
-static const auto res
-= []()
-{
-    std::unordered_map<std::string, GamepadMapping> mappings;
-    std::stringstream iss(ControllerDb);
-    std::string line;
-    while(std::getline(iss, line))
+    static const auto res = []()
     {
-        if(line.empty() || line[0] == '#')
+        std::unordered_map<std::string, GamepadMapping> mappings;
+        std::stringstream iss(ControllerDb);
+        std::string line;
+        while(std::getline(iss, line))
         {
-            continue;
-        }
-        const std::string guid = line.substr(0, 32);
-        if(!mappings.count(guid))
-        {
-            GamepadMapping m;
-            if(parse_mapping(line.substr(33), m))
+            if(line.empty() || line[0] == '#')
             {
-                mappings[guid] = m;
+                continue;
+            }
+            const std::string guid = line.substr(0, 32);
+            if(!mappings.count(guid))
+            {
+                GamepadMapping m;
+                if(parse_mapping(line.substr(33), m))
+                {
+                    mappings[guid] = m;
+                }
             }
         }
-    }
-    return mappings;
-}();
-return res;
+        return mappings;
+    }();
+    return res;
 }
 
 #endif
