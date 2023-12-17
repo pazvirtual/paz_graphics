@@ -93,7 +93,7 @@ static bool parse_mapping(const std::string& str, paz::GamepadMapping& m)
                 const int idx = axisIndices.at(key);
                 m.axes[idx].type = paz::GamepadElementType::Axis;
                 m.axes[idx].idx = std::stoi(val.substr(startPos + 1, endPos));
-                if(max == min || max == -min)
+                if(max == min)
                 {
                     return false;
                 }
