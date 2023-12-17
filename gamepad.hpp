@@ -3,15 +3,23 @@
 #ifndef PAZ_LINUX
 
 #include "PAZ_Graphics"
+#ifdef PAZ_MACOS
+#include <IOKit/hid/IOHIDManager.h>
+#else
+??
+#endif
 #include <bitset>
 #include <unordered_map>
-#include <cstdint>
 
 namespace paz
 {
     struct GamepadElement
     {
-        void* native;
+#ifdef PAZ_MACOS
+        IOHIDElementRef native;
+#else
+        ?? native;
+#endif
         std::uint32_t usage;
         std::size_t idx;
         long min;
@@ -51,7 +59,11 @@ namespace paz
 
     struct Gamepad
     {
-        void* device;
+#ifdef PAZ_MACOS
+        IOHIDDeviceRef device;
+#else
+        ?? device;
+#endif
         std::string guid;
         std::string name;
         std::vector<GamepadElement> axes;

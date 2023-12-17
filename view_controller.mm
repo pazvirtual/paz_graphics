@@ -6,7 +6,6 @@
 #import "view_controller.hh"
 #import "app_delegate.hh"
 #include "keycodes.hpp"
-#import "gamepad_macos.hh"
 
 @implementation ViewController
 {
