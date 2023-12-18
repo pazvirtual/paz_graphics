@@ -6,6 +6,12 @@
 #include "controller_db.hpp"
 #include <sstream>
 
+#ifdef PAZ_MACOS
+static const std::string Platform = "Mac OS X";
+#elif defined(PAZ_WINDOWS)
+static const std::string Platform = "Windows";
+#endif
+
 #define CASE0(a, b) {#a, paz::GamepadButton::b},
 #define CASE1(a, b) {#a, b},
 
@@ -44,6 +50,12 @@ static bool parse_mapping(const std::string& str, paz::GamepadMapping& m)
         CASE0(dpdown, Down)
         CASE0(dpleft, Left)
     };
+
+    // Check platform.
+    if(str.substr(str.find("platform:") + 9, Platform.size()) != Platform)
+    {
+        return false;
+    }
 
     std::stringstream ss(str);
     std::string line;

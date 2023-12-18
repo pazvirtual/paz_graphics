@@ -6,10 +6,17 @@
 #ifdef PAZ_MACOS
 #include <IOKit/hid/IOHIDManager.h>
 #else
-??
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <dinput.h>
+#include <dinputd.h>
+#include <ntddkbd.h>
+#include <ntddmou.h>
 #endif
 #include <bitset>
 #include <unordered_map>
+#include <cstdint>
 
 namespace paz
 {
@@ -17,8 +24,6 @@ namespace paz
     {
 #ifdef PAZ_MACOS
         IOHIDElementRef native;
-#else
-        ?? native;
 #endif
         std::uint32_t usage;
         std::size_t idx;
@@ -62,7 +67,7 @@ namespace paz
 #ifdef PAZ_MACOS
         IOHIDDeviceRef device;
 #else
-        ?? device;
+        IDirectInputDevice8W* device;
 #endif
         std::string guid;
         std::string name;
