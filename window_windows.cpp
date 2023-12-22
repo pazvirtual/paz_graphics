@@ -411,26 +411,6 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 {
     if(!WindowHandle)
     {
-        if(uMsg == WM_NCCREATE)
-        {
-#if 0
-            if(paz::initialize().isWindows10Version1607OrGreater)
-            {
-                const CREATESTRUCT& cs = *reinterpret_cast<const CREATESTRUCT*>(lParam);
-                const auto wndconfig = cs.lpCreateParams;
-
-                // On per-monitor DPI aware V1 systems, only enable
-                // non-client scaling for windows that scale the client area
-                // We need WM_GETDPISCALEDSIZE from V2 to keep the client
-                // area static when the non-client area is scaled
-                if(wndconfig && wndconfig->scaleToMonitor)
-                {
-                    EnableNonClientDpiScaling(hWnd);
-                }
-            }
-#endif
-        }
-
         return DefWindowProc(hWnd, uMsg, wParam, lParam);
     }
 
@@ -954,9 +934,6 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         }
         case WM_GETDPISCALEDSIZE:
         {
-//            if (window->win32.scaleToMonitor)
-//                break;
-
             // Adjust the window size to keep the content area size constant
             if (paz::initialize().isWindows10Version1703OrGreater)
             {
@@ -985,22 +962,21 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
             // Resize windowed mode windows that either permit rescaling or that
             // need it to compensate for non-client area scaling
-//            if (!MonitorHandle && (window->win32.scaleToMonitor || paz::initialize().isWindows10Version1703OrGreater))
-//            {
-//                RECT* suggested = (RECT*) lParam;
-//                SetWindowPos(window->win32.handle, HWND_TOP,
-//                             suggested->left,
-//                             suggested->top,
-//                             suggested->right - suggested->left,
-//                             suggested->bottom - suggested->top,
-//                             SWP_NOACTIVATE | SWP_NOZORDER);
-//            }
+            if (!MonitorHandle && paz::initialize().isWindows10Version1703OrGreater)
+            {
+                RECT* suggested = reinterpret_cast<RECT*>(lParam);
+                SetWindowPos(WindowHandle, HWND_TOP,
+                             suggested->left,
+                             suggested->top,
+                             suggested->right - suggested->left,
+                             suggested->bottom - suggested->top,
+                             SWP_NOACTIVATE | SWP_NOZORDER);
+            }
 
-//            _glfwInputWindowContentScale(window, xscale, yscale);
-if(Device)
-{
-paz::resize_targets();
-}
+            if(Device)
+            {
+                paz::resize_targets();
+            }
             break;
         }
         case WM_SETCURSOR:
