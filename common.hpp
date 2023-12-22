@@ -40,6 +40,12 @@ namespace paz
         bool isWindows10Version1607OrGreater;
         bool isWindows8Point1OrGreater;
         bool isWindowsVistaOrGreater;
+        ID3D11VertexShader* quadVertShader;
+        ID3D11PixelShader* quadFragShader;
+        ID3D11Buffer* quadBuf;
+        ID3D11InputLayout* quadLayout;
+        ID3D11RasterizerState* blitState;
+        ID3D11Buffer* blitBuf;
 #endif
     };
     // `paz::initialize` should be called at the beginning of 1. every
