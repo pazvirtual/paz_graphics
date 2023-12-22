@@ -5,15 +5,8 @@
 
 #ifdef PAZ_WINDOWS
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#ifndef UNICODE
-#define UNICODE
-#endif
-
 #include "PAZ_Graphics"
-#include <d3d11.h>
+#include "windows.hpp"
 
 namespace paz
 {

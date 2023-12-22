@@ -2,18 +2,11 @@
 
 #ifdef PAZ_WINDOWS
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#ifndef UNICODE
-#define UNICODE
-#endif
-
 #include "PAZ_Graphics"
 #include "internal_data.hpp"
 #include "util_windows.hpp"
 #include "common.hpp"
-#include <d3dcompiler.h>
+#include "windows.hpp"
 
 #define CHECK_PASS if(!CurPass) throw std::logic_error("No current render pass"\
     "."); else if(this != CurPass) throw std::logic_error("Render pass operati"\

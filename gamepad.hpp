@@ -6,16 +6,7 @@
 #ifdef PAZ_MACOS
 #include <IOKit/hid/IOHIDManager.h>
 #else
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#ifndef UNICODE
-#define UNICODE
-#endif
-#include <dinput.h>
-#include <dinputd.h>
-#include <ntddkbd.h>
-#include <ntddmou.h>
+#include "windows.hpp"
 #endif
 #include <bitset>
 #include <unordered_map>

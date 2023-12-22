@@ -7,13 +7,7 @@
 #endif
 #include "PAZ_Graphics"
 #ifdef PAZ_WINDOWS
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#ifndef UNICODE
-#define UNICODE
-#endif
-#include <d3d11.h>
+#include "windows.hpp"
 #endif
 #include <unordered_map>
 #include <unordered_set>
