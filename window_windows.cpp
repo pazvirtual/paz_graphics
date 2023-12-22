@@ -2,88 +2,21 @@
 
 #ifdef PAZ_WINDOWS
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#ifndef UNICODE
-#define UNICODE
-#endif
-
-#define WINVER _WIN32_WINNT_WIN10 //TEMP
-
-#if 0 //MACROS
-
-// GLFW requires Windows XP or later
+// Require Windows XP or later.
 #if WINVER < 0x0501
- #undef WINVER
- #define WINVER 0x0501
+#undef WINVER
+#define WINVER 0x0501
 #endif
 #if _WIN32_WINNT < 0x0501
- #undef _WIN32_WINNT
- #define _WIN32_WINNT 0x0501
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0501
 #endif
 
-// GLFW uses DirectInput8 interfaces
+// Require DirectInput8.
 #define DIRECTINPUT_VERSION 0x0800
 
-// GLFW uses OEM cursor resources
+// Use OEM cursor resources.
 #define OEMRESOURCE
-
-#include <wctype.h>
-#include <windows.h>
-#include <dinput.h>
-#include <xinput.h>
-#include <dbt.h>
-
-// HACK: Define macros that some windows.h variants don't
-#ifndef WM_MOUSEHWHEEL
- #define WM_MOUSEHWHEEL 0x020E
-#endif
-#ifndef WM_DWMCOMPOSITIONCHANGED
- #define WM_DWMCOMPOSITIONCHANGED 0x031E
-#endif
-#ifndef WM_DWMCOLORIZATIONCOLORCHANGED
- #define WM_DWMCOLORIZATIONCOLORCHANGED 0x0320
-#endif
-#ifndef WM_COPYGLOBALDATA
- #define WM_COPYGLOBALDATA 0x0049
-#endif
-#ifndef WM_UNICHAR
- #define WM_UNICHAR 0x0109
-#endif
-#ifndef UNICODE_NOCHAR
- #define UNICODE_NOCHAR 0xFFFF
-#endif
-#ifndef WM_DPICHANGED
- #define WM_DPICHANGED 0x02E0
-#endif
-#ifndef GET_XBUTTON_WPARAM
- #define GET_XBUTTON_WPARAM(w) (HIWORD(w))
-#endif
-#ifndef EDS_ROTATEDMODE
- #define EDS_ROTATEDMODE 0x00000004
-#endif
-#ifndef DISPLAY_DEVICE_ACTIVE
- #define DISPLAY_DEVICE_ACTIVE 0x00000001
-#endif
-#ifndef _WIN32_WINNT_WINBLUE
- #define _WIN32_WINNT_WINBLUE 0x0603
-#endif
-#ifndef _WIN32_WINNT_WIN8
- #define _WIN32_WINNT_WIN8 0x0602
-#endif
-#ifndef WM_GETDPISCALEDSIZE
- #define WM_GETDPISCALEDSIZE 0x02e4
-#endif
-#ifndef USER_DEFAULT_SCREEN_DPI
- #define USER_DEFAULT_SCREEN_DPI 96
-#endif
-#ifndef OCR_HAND
- #define OCR_HAND 32649
-#endif
-////
-
-#endif //MACROS
 
 #include "PAZ_Graphics"
 #include "render_pass.hpp"
@@ -92,6 +25,12 @@
 #include "internal_data.hpp"
 #include "util_windows.hpp"
 #include "gamepad.hpp"
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef UNICODE
+#define UNICODE
+#endif
 #include <d3dcompiler.h>
 #include <windowsx.h>
 #include <shellscalingapi.h>
@@ -99,8 +38,98 @@
 #include <chrono>
 #include <algorithm>
 
-static const bool IsWindows10Version1703OrGreater = true; //TEMP
-static const bool IsWindows10Version1607OrGreater = true; //TEMP
+// Define missing macros.
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL 0x020E
+#endif
+#ifndef WM_DWMCOMPOSITIONCHANGED
+#define WM_DWMCOMPOSITIONCHANGED 0x031E
+#endif
+#ifndef WM_DWMCOLORIZATIONCOLORCHANGED
+#define WM_DWMCOLORIZATIONCOLORCHANGED 0x0320
+#endif
+#ifndef WM_COPYGLOBALDATA
+#define WM_COPYGLOBALDATA 0x0049
+#endif
+#ifndef WM_UNICHAR
+#define WM_UNICHAR 0x0109
+#endif
+#ifndef UNICODE_NOCHAR
+#define UNICODE_NOCHAR 0xFFFF
+#endif
+#ifndef WM_DPICHANGED
+#define WM_DPICHANGED 0x02E0
+#endif
+#ifndef GET_XBUTTON_WPARAM
+#define GET_XBUTTON_WPARAM(w) (HIWORD(w))
+#endif
+#ifndef EDS_ROTATEDMODE
+#define EDS_ROTATEDMODE 0x00000004
+#endif
+#ifndef DISPLAY_DEVICE_ACTIVE
+#define DISPLAY_DEVICE_ACTIVE 0x00000001
+#endif
+#ifndef _WIN32_WINNT_WINBLUE
+#define _WIN32_WINNT_WINBLUE 0x0603
+#endif
+#ifndef _WIN32_WINNT_WIN8
+#define _WIN32_WINNT_WIN8 0x0602
+#endif
+#ifndef WM_GETDPISCALEDSIZE
+#define WM_GETDPISCALEDSIZE 0x02e4
+#endif
+#ifndef USER_DEFAULT_SCREEN_DPI
+#define USER_DEFAULT_SCREEN_DPI 96
+#endif
+#ifndef OCR_HAND
+#define OCR_HAND 32649
+#endif
+
+//TEMP - move stuff into `paz::Initializer` ?
+#define LOAD_FUN(lib, fun, out, ...) static out (*fun)(__VA_ARGS__) = \
+    reinterpret_cast<out(*)(__VA_ARGS__)>(GetProcAddress(lib, #fun));
+
+static const HMODULE User32 = LoadLibrary(L"user32.dll");
+LOAD_FUN(User32, GetDpiForWindow, UINT, HWND)
+LOAD_FUN(User32, AdjustWindowRectExForDpi, BOOL, LPRECT, DWORD, BOOL, DWORD, \
+    UINT)
+LOAD_FUN(User32, SetProcessDPIAware, BOOL, void)
+LOAD_FUN(User32, SetProcessDpiAwarenessContext, BOOL, DPI_AWARENESS_CONTEXT)
+
+static const HMODULE Shcore = LoadLibrary(L"shcore.dll");
+LOAD_FUN(Shcore, SetProcessDpiAwareness, HRESULT, PROCESS_DPI_AWARENESS)
+
+static const HMODULE Ntdll = LoadLibrary(L"ntdll.dll");
+LOAD_FUN(Ntdll, RtlVerifyVersionInfo, LONG, OSVERSIONINFOEX*, ULONG, ULONGLONG)
+
+static const bool IsWindows10Version1703OrGreater = []()
+{
+    OSVERSIONINFOEX osvi = {};
+    osvi.dwOSVersionInfoSize = sizeof(osvi);
+    osvi.dwMajorVersion = 10;
+    osvi.dwMinorVersion = 0;
+    osvi.dwBuildNumber = 1703;
+    ULONGLONG cond = VerSetConditionMask(0, VER_MAJORVERSION,
+        VER_GREATER_EQUAL);
+    cond = VerSetConditionMask(cond, VER_MINORVERSION, VER_GREATER_EQUAL);
+    cond = VerSetConditionMask(cond, VER_BUILDNUMBER, VER_GREATER_EQUAL);
+    return RtlVerifyVersionInfo(&osvi, VER_MAJORVERSION|VER_MINORVERSION|
+        VER_BUILDNUMBER, cond) == 0;
+}();
+static const bool IsWindows10Version1607OrGreater = []()
+{
+    OSVERSIONINFOEX osvi = {};
+    osvi.dwOSVersionInfoSize = sizeof(osvi);
+    osvi.dwMajorVersion = 10;
+    osvi.dwMinorVersion = 0;
+    osvi.dwBuildNumber = 1607;
+    ULONGLONG cond = VerSetConditionMask(0, VER_MAJORVERSION,
+        VER_GREATER_EQUAL);
+    cond = VerSetConditionMask(cond, VER_MINORVERSION, VER_GREATER_EQUAL);
+    cond = VerSetConditionMask(cond, VER_BUILDNUMBER, VER_GREATER_EQUAL);
+    return RtlVerifyVersionInfo(&osvi, VER_MAJORVERSION|VER_MINORVERSION|
+        VER_BUILDNUMBER, cond) == 0;
+}();
 static const bool IsWindows8Point1OrGreater = true; //TEMP
 static const bool IsWindowsVistaOrGreater = true; //TEMP
 
@@ -1143,10 +1172,10 @@ paz::Initializer::Initializer()
         SetProcessDpiAwarenessContext(
             DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     }
-//    else if(IsWindows8Point1OrGreater)
-//    {
-//        SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
-//    }
+    else if(IsWindows8Point1OrGreater)
+    {
+        SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+    }
     else if(IsWindowsVistaOrGreater)
     {
         SetProcessDPIAware();
