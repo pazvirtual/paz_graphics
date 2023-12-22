@@ -140,135 +140,6 @@ static bool FrameInProgress;
 static bool HidpiEnabled = true;
 static float Gamma = 2.2;
 static bool Dither = false;
-static ID3DBlob* QuadVertBytecode = []()
-{
-    paz::initialize(); //TEMP - can't be here
-
-    ID3DBlob* res;
-    ID3DBlob* error;
-    const auto hr = D3DCompile(QuadVertSrc.c_str(), QuadVertSrc.size(), nullptr,
-        nullptr, nullptr, "main", "vs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, 0,
-        &res, &error);
-    if(hr)
-    {
-        throw std::runtime_error("Failed to compile final vertex shader: " +
-            std::string(error ? static_cast<char*>(error->GetBufferPointer()) :
-            "No error given."));
-    }
-    return res;
-}();
-static ID3D11VertexShader* QuadVertShader = []()
-{
-    paz::initialize(); //TEMP - can't be here
-
-    ID3D11VertexShader* res;
-    const auto hr = Device->CreateVertexShader(QuadVertBytecode->
-        GetBufferPointer(), QuadVertBytecode->GetBufferSize(), nullptr, &res);
-    if(hr)
-    {
-        throw std::runtime_error("Failed to create final vertex shader (" +
-            paz::format_hresult(hr) + ").");
-    }
-    return res;
-}();
-static ID3D11PixelShader* QuadFragShader = []()
-{
-    paz::initialize(); //TEMP - can't be here
-
-    ID3DBlob* fragBlob;
-    ID3DBlob* error;
-    auto hr = D3DCompile(QuadFragSrc.c_str(), QuadFragSrc.size(), nullptr,
-        nullptr, nullptr, "main", "ps_5_0", D3DCOMPILE_ENABLE_STRICTNESS, 0,
-        &fragBlob, &error);
-    if(hr)
-    {
-        throw std::runtime_error("Failed to compile final fragment shader: " +
-            std::string(error ? static_cast<char*>(error->GetBufferPointer()) :
-            "No error given."));
-    }
-    ID3D11PixelShader* res;
-    hr = Device->CreatePixelShader(fragBlob->GetBufferPointer(), fragBlob->
-        GetBufferSize(), nullptr, &res);
-    if(hr)
-    {
-        throw std::runtime_error("Failed to create final fragment shader (" +
-            paz::format_hresult(hr) + ").");
-    }
-    return res;
-}();
-static ID3D11Buffer* QuadBuf = []()
-{
-    paz::initialize(); //TEMP - can't be here
-
-    D3D11_BUFFER_DESC bufDescriptor = {};
-    bufDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
-    bufDescriptor.ByteWidth = sizeof(float)*QuadPos.size();
-    bufDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    D3D11_SUBRESOURCE_DATA data = {};
-    data.pSysMem = QuadPos.data();
-    ID3D11Buffer* res;
-    const auto hr = Device->CreateBuffer(&bufDescriptor, &data, &res);
-    if(hr)
-    {
-        throw std::runtime_error("Failed to create final vertex buffer (" +
-            paz::format_hresult(hr) + ").");
-    }
-    return res;
-}();
-static ID3D11InputLayout* QuadLayout = []()
-{
-    paz::initialize(); //TEMP - can't be here
-
-    D3D11_INPUT_ELEMENT_DESC inputElemDescriptor = {"ATTR", 0,
-        DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
-        D3D11_INPUT_PER_VERTEX_DATA, 0};
-    ID3D11InputLayout* res;
-    const auto hr = Device->CreateInputLayout(&inputElemDescriptor, 1,
-        QuadVertBytecode->GetBufferPointer(), QuadVertBytecode->GetBufferSize(),
-        &res);
-    if(hr)
-    {
-        throw std::runtime_error("Failed to create final input layout (" + paz::
-            format_hresult(hr) + ").");
-    }
-    return res;
-}();
-static ID3D11RasterizerState* BlitState = []()
-{
-    paz::initialize(); //TEMP - can't be here
-
-    D3D11_RASTERIZER_DESC rasterDescriptor = {};
-    rasterDescriptor.FillMode = D3D11_FILL_SOLID;
-    rasterDescriptor.CullMode = D3D11_CULL_NONE;
-    rasterDescriptor.FrontCounterClockwise = true;
-    rasterDescriptor.DepthClipEnable = true;
-    ID3D11RasterizerState* res;
-    const auto hr = Device->CreateRasterizerState(&rasterDescriptor, &res);
-    if(hr)
-    {
-        throw std::runtime_error("Failed to create final rasterizer state (" +
-            paz::format_hresult(hr) + ").");
-    }
-    return res;
-}();
-static ID3D11Buffer* BlitBuf = []()
-{
-    paz::initialize(); //TEMP - can't be here
-
-    D3D11_BUFFER_DESC bufDescriptor = {};
-    bufDescriptor.Usage = D3D11_USAGE_DYNAMIC;
-    bufDescriptor.ByteWidth = 16;
-    bufDescriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    bufDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    ID3D11Buffer* res;
-    const auto hr = Device->CreateBuffer(&bufDescriptor, nullptr, &res);
-    if(hr)
-    {
-        throw std::runtime_error("Failed to create final constant buffer (" +
-            paz::format_hresult(hr) + ").");
-    }
-    return res;
-}();
 
 static DWORD window_style()
 {
@@ -1131,7 +1002,7 @@ paz::Initializer::Initializer()
         &featureLvl, &DeviceContext);
     if(hr)
     {
-        throw std::runtime_error("Failed to intialize Direct3D (" +
+        throw std::runtime_error("Failed to initialize Direct3D (" +
             format_hresult(hr) + ").");
     }
     if(featureLvl != featureLvlReq)
@@ -1160,6 +1031,87 @@ paz::Initializer::Initializer()
     if(!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
     {
         throw std::runtime_error("Failed to register raw input device.");
+    }
+
+    // Set up final blitting pass.
+    ID3DBlob* vertBlob;
+    ID3DBlob* fragBlob;
+    ID3DBlob* error;
+    hr = D3DCompile(QuadVertSrc.c_str(), QuadVertSrc.size(), nullptr, nullptr,
+        nullptr, "main", "vs_5_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &vertBlob,
+        &error);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to compile final vertex shader: " +
+            std::string(error ? static_cast<char*>(error->GetBufferPointer()) :
+            "No error given."));
+    }
+    hr = Device->CreateVertexShader(vertBlob->GetBufferPointer(), vertBlob->
+        GetBufferSize(), nullptr, &quadVertShader);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create final vertex shader (" +
+            paz::format_hresult(hr) + ").");
+    }
+    hr = D3DCompile(QuadFragSrc.c_str(), QuadFragSrc.size(), nullptr, nullptr,
+        nullptr, "main", "ps_5_0", D3DCOMPILE_ENABLE_STRICTNESS, 0, &fragBlob,
+        &error);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to compile final fragment shader: " +
+            std::string(error ? static_cast<char*>(error->GetBufferPointer()) :
+            "No error given."));
+    }
+    hr = Device->CreatePixelShader(fragBlob->GetBufferPointer(), fragBlob->
+        GetBufferSize(), nullptr, &quadFragShader);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create final fragment shader (" +
+            paz::format_hresult(hr) + ").");
+    }
+    D3D11_BUFFER_DESC quadBufDescriptor = {};
+    quadBufDescriptor.Usage = D3D11_USAGE_IMMUTABLE;
+    quadBufDescriptor.ByteWidth = sizeof(float)*QuadPos.size();
+    quadBufDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    D3D11_SUBRESOURCE_DATA data = {};
+    data.pSysMem = QuadPos.data();
+    hr = Device->CreateBuffer(&quadBufDescriptor, &data, &quadBuf);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create final vertex buffer (" +
+            paz::format_hresult(hr) + ").");
+    }
+    D3D11_INPUT_ELEMENT_DESC inputElemDescriptor = {"ATTR", 0,
+        DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
+        D3D11_INPUT_PER_VERTEX_DATA, 0};
+    hr = Device->CreateInputLayout(&inputElemDescriptor, 1, vertBlob->
+        GetBufferPointer(), vertBlob->GetBufferSize(), &quadLayout);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create final input layout (" + paz::
+            format_hresult(hr) + ").");
+    }
+    D3D11_RASTERIZER_DESC rasterDescriptor = {};
+    rasterDescriptor.FillMode = D3D11_FILL_SOLID;
+    rasterDescriptor.CullMode = D3D11_CULL_NONE;
+    rasterDescriptor.FrontCounterClockwise = true;
+    rasterDescriptor.DepthClipEnable = true;
+    hr = Device->CreateRasterizerState(&rasterDescriptor, &blitState);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create final rasterizer state (" +
+            paz::format_hresult(hr) + ").");
+    }
+    D3D11_BUFFER_DESC blitBufDescriptor = {};
+    blitBufDescriptor.Usage = D3D11_USAGE_DYNAMIC;
+    blitBufDescriptor.ByteWidth = 16;
+    blitBufDescriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    blitBufDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    hr = Device->CreateBuffer(&blitBufDescriptor, nullptr, &blitBuf);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create final constant buffer (" +
+            paz::format_hresult(hr) + ").");
     }
 }
 
@@ -1629,7 +1581,7 @@ void paz::Window::EndFrame()
 
     FrameInProgress = false;
 
-    DeviceContext->RSSetState(BlitState);
+    DeviceContext->RSSetState(initialize().blitState);
     D3D11_VIEWPORT viewport = {};
     viewport.Width = ViewportWidth();
     viewport.Height = ViewportHeight();
@@ -1637,19 +1589,20 @@ void paz::Window::EndFrame()
     DeviceContext->OMSetRenderTargets(1, &RenderTargetView, nullptr);
     DeviceContext->IASetPrimitiveTopology(
         D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    DeviceContext->IASetInputLayout(QuadLayout);
+    DeviceContext->IASetInputLayout(initialize().quadLayout);
     const unsigned int stride = 2*sizeof(float);
     const unsigned int offset = 0;
-    DeviceContext->IASetVertexBuffers(0, 1, &QuadBuf, &stride, &offset);
-    DeviceContext->VSSetShader(QuadVertShader, nullptr, 0);
-    DeviceContext->PSSetShader(QuadFragShader, nullptr, 0);
+    DeviceContext->IASetVertexBuffers(0, 1, &initialize().quadBuf, &stride,
+        &offset);
+    DeviceContext->VSSetShader(initialize().quadVertShader, nullptr, 0);
+    DeviceContext->PSSetShader(initialize().quadFragShader, nullptr, 0);
     DeviceContext->PSSetShaderResources(0, 1, &final_framebuffer().
         colorAttachment(0)._data->_resourceView);
     DeviceContext->PSSetSamplers(0, 1, &final_framebuffer().colorAttachment(0).
         _data->_sampler);
     D3D11_MAPPED_SUBRESOURCE mappedSr;
-    const auto hr = DeviceContext->Map(BlitBuf, 0, D3D11_MAP_WRITE_DISCARD, 0,
-        &mappedSr);
+    const auto hr = DeviceContext->Map(initialize().blitBuf, 0,
+        D3D11_MAP_WRITE_DISCARD, 0, &mappedSr);
     if(hr)
     {
         throw std::runtime_error("Failed to map final fragment function constan"
@@ -1658,8 +1611,8 @@ void paz::Window::EndFrame()
     std::copy(&Gamma, &Gamma + 1, reinterpret_cast<float*>(mappedSr.pData));
     const float f = Dither ? 1.f : 0.f;
     std::copy(&f, &f + 1, reinterpret_cast<float*>(mappedSr.pData) + 1);
-    DeviceContext->Unmap(BlitBuf, 0);
-    DeviceContext->PSSetConstantBuffers(0, 1, &BlitBuf);
+    DeviceContext->Unmap(initialize().blitBuf, 0);
+    DeviceContext->PSSetConstantBuffers(0, 1, &initialize().blitBuf);
     DeviceContext->Draw(QuadPos.size()/2, 0);
 
     SwapChain->Present(1, 0);
