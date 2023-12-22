@@ -14,57 +14,6 @@
 #include <chrono>
 #include <algorithm>
 
-//TEMP - move stuff into `paz::Initializer`
-#define LOAD_FUN(lib, _fun, fun, out, ...) static out (*_fun)(__VA_ARGS__) = \
-    reinterpret_cast<out(*)(__VA_ARGS__)>(GetProcAddress(lib, #fun));
-
-static const HMODULE _user32 = LoadLibrary(L"user32.dll");
-LOAD_FUN(_user32, _getDpiForWindow, GetDpiForWindow, UINT, HWND)
-LOAD_FUN(_user32, _adjustWindowRectExForDpi, AdjustWindowRectExForDpi, BOOL, \
-    LPRECT, DWORD, BOOL, DWORD, UINT)
-LOAD_FUN(_user32, _setProcessDPIAware, SetProcessDPIAware, BOOL, void)
-LOAD_FUN(_user32, _setProcessDpiAwarenessContext, \
-    SetProcessDpiAwarenessContext, BOOL, DPI_AWARENESS_CONTEXT)
-
-static const HMODULE _shcore = LoadLibrary(L"shcore.dll");
-LOAD_FUN(_shcore, _setProcessDpiAwareness, SetProcessDpiAwareness, HRESULT, \
-    PROCESS_DPI_AWARENESS)
-
-static const HMODULE _ntdll = LoadLibrary(L"ntdll.dll");
-LOAD_FUN(_ntdll, _rtlVerifyVersionInfo, RtlVerifyVersionInfo, LONG, \
-    OSVERSIONINFOEX*, ULONG, ULONGLONG)
-
-static const bool IsWindows10Version1703OrGreater = []()
-{
-    OSVERSIONINFOEX osvi = {};
-    osvi.dwOSVersionInfoSize = sizeof(osvi);
-    osvi.dwMajorVersion = 10;
-    osvi.dwMinorVersion = 0;
-    osvi.dwBuildNumber = 1703;
-    ULONGLONG cond = VerSetConditionMask(0, VER_MAJORVERSION,
-        VER_GREATER_EQUAL);
-    cond = VerSetConditionMask(cond, VER_MINORVERSION, VER_GREATER_EQUAL);
-    cond = VerSetConditionMask(cond, VER_BUILDNUMBER, VER_GREATER_EQUAL);
-    return _rtlVerifyVersionInfo(&osvi, VER_MAJORVERSION|VER_MINORVERSION|
-        VER_BUILDNUMBER, cond) == 0;
-}();
-static const bool IsWindows10Version1607OrGreater = []()
-{
-    OSVERSIONINFOEX osvi = {};
-    osvi.dwOSVersionInfoSize = sizeof(osvi);
-    osvi.dwMajorVersion = 10;
-    osvi.dwMinorVersion = 0;
-    osvi.dwBuildNumber = 1607;
-    ULONGLONG cond = VerSetConditionMask(0, VER_MAJORVERSION,
-        VER_GREATER_EQUAL);
-    cond = VerSetConditionMask(cond, VER_MINORVERSION, VER_GREATER_EQUAL);
-    cond = VerSetConditionMask(cond, VER_BUILDNUMBER, VER_GREATER_EQUAL);
-    return _rtlVerifyVersionInfo(&osvi, VER_MAJORVERSION|VER_MINORVERSION|
-        VER_BUILDNUMBER, cond) == 0;
-}();
-static const bool IsWindows8Point1OrGreater = true; //TEMP
-static const bool IsWindowsVistaOrGreater = true; //TEMP
-
 static const std::string QuadVertSrc = 1 + R"===(
 struct InputData
 {
@@ -465,7 +414,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         if(uMsg == WM_NCCREATE)
         {
 #if 0
-            if(IsWindows10Version1607OrGreater)
+            if(paz::initialize().isWindows10Version1607OrGreater)
             {
                 const CREATESTRUCT& cs = *reinterpret_cast<const CREATESTRUCT*>(lParam);
                 const auto wndconfig = cs.lpCreateParams;
@@ -968,10 +917,11 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 break;
             }
 
-            if(IsWindows10Version1607OrGreater)
+            if(paz::initialize().isWindows10Version1607OrGreater)
             {
-                _adjustWindowRectExForDpi(&frame, window_style(), FALSE,
-                    window_ex_style(), _getDpiForWindow(WindowHandle));
+                paz::initialize().adjustWindowRectExForDpi(&frame,
+                    window_style(), FALSE, window_ex_style(), paz::initialize().
+                    getDpiForWindow(WindowHandle));
             }
             else
             {
@@ -1008,22 +958,21 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 //                break;
 
             // Adjust the window size to keep the content area size constant
-            if (IsWindows10Version1703OrGreater)
+            if (paz::initialize().isWindows10Version1703OrGreater)
             {
                 RECT source = {}, target = {};
                 SIZE& size = *reinterpret_cast<SIZE*>(lParam);
 
-                _adjustWindowRectExForDpi(&source, window_style(),
-                                         FALSE, window_ex_style(),
-                                         _getDpiForWindow(WindowHandle));
-                _adjustWindowRectExForDpi(&target, window_style(),
-                                         FALSE, window_ex_style(),
-                                         LOWORD(wParam));
+                paz::initialize().adjustWindowRectExForDpi(&source,
+                    window_style(), FALSE, window_ex_style(), paz::initialize().
+                    getDpiForWindow(WindowHandle));
+                paz::initialize().adjustWindowRectExForDpi(&target,
+                    window_style(), FALSE, window_ex_style(), LOWORD(wParam));
 
-                size.cx += (target.right - target.left) -
-                           (source.right - source.left);
-                size.cy += (target.bottom - target.top) -
-                           (source.bottom - source.top);
+                size.cx += (target.right - target.left) - (source.right -
+                    source.left);
+                size.cy += (target.bottom - target.top) - (source.bottom -
+                    source.top);
                 return TRUE;
             }
 
@@ -1036,7 +985,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
             // Resize windowed mode windows that either permit rescaling or that
             // need it to compensate for non-client area scaling
-//            if (!MonitorHandle && (window->win32.scaleToMonitor || IsWindows10Version1703OrGreater))
+//            if (!MonitorHandle && (window->win32.scaleToMonitor || paz::initialize().isWindows10Version1703OrGreater))
 //            {
 //                RECT* suggested = (RECT*) lParam;
 //                SetWindowPos(window->win32.handle, HWND_TOP,
@@ -1098,19 +1047,56 @@ paz::Initializer::~Initializer() {}
 
 paz::Initializer::Initializer()
 {
+    // Load functions from DLLs.
+    const HMODULE user32 = LoadLibrary(L"user32.dll");
+    getDpiForWindow = reinterpret_cast<UINT(*)(HWND)>(GetProcAddress(user32,
+        "GetDpiForWindow"));
+    adjustWindowRectExForDpi = reinterpret_cast<BOOL(*)(LPRECT, DWORD, BOOL,
+        DWORD, UINT)>(GetProcAddress(user32, "AdjustWindowRectExForDpi"));
+    setProcessDPIAware = reinterpret_cast<BOOL(*)(void)>(GetProcAddress(user32,
+        "SetProcessDPIAware"));
+    setProcessDpiAwarenessContext = reinterpret_cast<BOOL(*)(
+        DPI_AWARENESS_CONTEXT)>(GetProcAddress(user32,
+        "SetProcessDpiAwarenessContext"));
+    const HMODULE shcore = LoadLibrary(L"shcore.dll");
+    setProcessDpiAwareness = reinterpret_cast<HRESULT(*)(
+        PROCESS_DPI_AWARENESS)>(GetProcAddress(shcore,
+        "SetProcessDpiAwareness"));
+    const HMODULE ntdll = LoadLibrary(L"ntdll.dll");
+    rtlVerifyVersionInfo = reinterpret_cast<LONG(*)(OSVERSIONINFOEX*, ULONG,
+        ULONGLONG)>(GetProcAddress(ntdll, "RtlVerifyVersionInfo"));
+
+    // Check Windows version.
+    OSVERSIONINFOEX osvi = {};
+    osvi.dwOSVersionInfoSize = sizeof(osvi);
+    osvi.dwMajorVersion = 10;
+    osvi.dwMinorVersion = 0;
+    osvi.dwBuildNumber = 1703;
+    ULONGLONG cond = VerSetConditionMask(0, VER_MAJORVERSION,
+        VER_GREATER_EQUAL);
+    cond = VerSetConditionMask(cond, VER_MINORVERSION, VER_GREATER_EQUAL);
+    cond = VerSetConditionMask(cond, VER_BUILDNUMBER, VER_GREATER_EQUAL);
+    isWindows10Version1703OrGreater = !rtlVerifyVersionInfo(&osvi,
+        VER_MAJORVERSION|VER_MINORVERSION|VER_BUILDNUMBER, cond);
+    osvi.dwBuildNumber = 1607;
+    isWindows10Version1607OrGreater = !rtlVerifyVersionInfo(&osvi,
+        VER_MAJORVERSION|VER_MINORVERSION|VER_BUILDNUMBER, cond);
+    isWindows8Point1OrGreater = true; //TEMP
+    isWindowsVistaOrGreater = true; //TEMP
+
     // Set up DPI awareness.
-    if(IsWindows10Version1703OrGreater)
+    if(isWindows10Version1703OrGreater)
     {
-        _setProcessDpiAwarenessContext(
+        setProcessDpiAwarenessContext(
             DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     }
-    else if(IsWindows8Point1OrGreater)
+    else if(isWindows8Point1OrGreater)
     {
-        _setProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+        setProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
     }
-    else if(IsWindowsVistaOrGreater)
+    else if(isWindowsVistaOrGreater)
     {
-        _setProcessDPIAware();
+        setProcessDPIAware();
     }
 
     // Get display size. (Primary monitor starts at `(0, 0)`.)
@@ -1242,9 +1228,10 @@ void paz::Window::MakeWindowed()
         SetWindowLong(WindowHandle, GWL_STYLE, style);
 
         RECT rect = {PrevX, PrevY, PrevX + PrevWidth, PrevY + PrevHeight};
-        if(IsWindows10Version1607OrGreater)
+        if(initialize().isWindows10Version1607OrGreater)
         {
-            _adjustWindowRectExForDpi(&rect, window_style(), FALSE, window_ex_style(), _getDpiForWindow(WindowHandle));
+            initialize().adjustWindowRectExForDpi(&rect, window_style(), FALSE,
+                window_ex_style(), initialize().getDpiForWindow(WindowHandle));
         }
         else
         {
@@ -1521,7 +1508,7 @@ void paz::resize_targets()
     }
     framebuffer->Release();
 
-    for(auto n : initialize()._renderTargets)
+    for(auto n : initialize().renderTargets)
     {
         reinterpret_cast<Texture::Data*>(n)->resize(Window::ViewportWidth(),
             Window::ViewportHeight());
@@ -1804,20 +1791,20 @@ void paz::Window::Resize(int width, int height, bool viewportCoords)
 
 void paz::register_target(void* t)
 {
-    if(initialize()._renderTargets.count(t))
+    if(initialize().renderTargets.count(t))
     {
         throw std::logic_error("Render target has already been registered.");
     }
-    initialize()._renderTargets.insert(t);
+    initialize().renderTargets.insert(t);
 }
 
 void paz::unregister_target(void* t)
 {
-    if(!initialize()._renderTargets.count(t))
+    if(!initialize().renderTargets.count(t))
     {
         throw std::logic_error("Render target was not registered.");
     }
-    initialize()._renderTargets.erase(t);
+    initialize().renderTargets.erase(t);
 }
 
 paz::Image paz::Window::ReadPixels()
