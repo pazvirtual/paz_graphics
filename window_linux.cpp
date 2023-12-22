@@ -115,8 +115,6 @@ paz::Initializer& paz::initialize()
     return initializer;
 }
 
-static std::chrono::time_point<std::chrono::steady_clock> FrameStart = std::
-    chrono::steady_clock::now();
 static double PrevFrameTime = 1./60.;
 
 static void key_callback(int key, int action)
@@ -315,6 +313,9 @@ paz::Initializer::Initializer()
         focus_callback(focused); });
     glfwSetWindowSizeCallback(WindowPtr, [](GLFWwindow*, int width, int height){
         resize_callback(width, height); });
+
+    // Start recording frame time.
+    frameStart = std::chrono::steady_clock::now();
 }
 
 void paz::Window::MakeFullscreen()
@@ -753,8 +754,8 @@ void paz::Window::EndFrame()
     reset_events();
     const auto now = std::chrono::steady_clock::now();
     PrevFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
-        FrameStart).count()*1e-6;
-    FrameStart = now;
+        initialize().frameStart).count()*1e-6;
+    initialize().frameStart = now;
 }
 
 void paz::Window::Quit()

@@ -27,8 +27,6 @@ paz::Initializer& paz::initialize()
     return initializer;
 }
 
-static std::chrono::time_point<std::chrono::steady_clock> FrameStart = std::
-    chrono::steady_clock::now();
 static double PrevFrameTime = 1./60.;
 
 paz::Initializer::~Initializer()
@@ -53,6 +51,9 @@ paz::Initializer::Initializer()
         throw std::runtime_error("Failed to initialize NSApp: " + std::string(
             [[NSString stringWithFormat:@"%@", e] UTF8String]));
     }
+
+    // Start recording frame time.
+    frameStart = std::chrono::steady_clock::now();
 }
 
 void paz::resize_targets()
@@ -351,8 +352,8 @@ void paz::Window::EndFrame()
     [VIEW_CONTROLLER resetEvents];
     const auto now = std::chrono::steady_clock::now();
     PrevFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
-        FrameStart).count()*1e-6;
-    FrameStart = now;
+        initialize().frameStart).count()*1e-6;
+    initialize().frameStart = now;
     resize_targets();
 }
 

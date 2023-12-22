@@ -8,6 +8,7 @@
 #endif
 #include <unordered_set>
 #include <cstdint>
+#include <chrono>
 
 namespace paz
 {
@@ -27,8 +28,7 @@ namespace paz
     struct Initializer
     {
         std::unordered_set<void*> renderTargets;
-        Initializer();
-        ~Initializer();
+        std::chrono::time_point<std::chrono::steady_clock> frameStart;
 #ifdef PAZ_WINDOWS
         UINT(*getDpiForWindow)(HWND);
         BOOL(*adjustWindowRectExForDpi)(LPRECT, DWORD, BOOL, DWORD, UINT);
@@ -47,6 +47,8 @@ namespace paz
         ID3D11RasterizerState* blitState;
         ID3D11Buffer* blitBuf;
 #endif
+        Initializer();
+        ~Initializer();
     };
     // `paz::initialize` should be called at the beginning of 1. every
     // constructor of every graphics wrapper class declared in PAZ_Graphics that
