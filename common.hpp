@@ -7,6 +7,9 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#ifndef UNICODE
+#define UNICODE
+#endif
 #include <d3d11.h>
 #endif
 #include <unordered_set>

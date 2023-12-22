@@ -5,7 +5,6 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-
 #ifndef UNICODE
 #define UNICODE
 #endif
@@ -15,14 +14,14 @@
 #if 0 //MACROS
 
 // GLFW requires Windows XP or later
-//#if WINVER < 0x0501
-// #undef WINVER
-// #define WINVER 0x0501
-//#endif
-//#if _WIN32_WINNT < 0x0501
-// #undef _WIN32_WINNT
-// #define _WIN32_WINNT 0x0501
-//#endif
+#if WINVER < 0x0501
+ #undef WINVER
+ #define WINVER 0x0501
+#endif
+#if _WIN32_WINNT < 0x0501
+ #undef _WIN32_WINNT
+ #define _WIN32_WINNT 0x0501
+#endif
 
 // GLFW uses DirectInput8 interfaces
 #define DIRECTINPUT_VERSION 0x0800
@@ -387,7 +386,7 @@ static DWORD window_ex_style()
 
 static void update_styles()
 {
-    DWORD style = GetWindowLongW(WindowHandle, GWL_STYLE);
+    DWORD style = GetWindowLong(WindowHandle, GWL_STYLE);
     style &= ~(WS_OVERLAPPEDWINDOW|WS_POPUP);
     style |= window_style();
 
@@ -398,7 +397,7 @@ static void update_styles()
 
     ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(&rect.left));
     ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(&rect.right));
-    SetWindowLongW(WindowHandle, GWL_STYLE, style);
+    SetWindowLong(WindowHandle, GWL_STYLE, style);
     SetWindowPos(WindowHandle, HWND_TOP, rect.left, rect.top, rect.right - rect.
         left, rect.bottom - rect.top, SWP_FRAMECHANGED|SWP_NOACTIVATE|
         SWP_NOZORDER);
@@ -476,7 +475,7 @@ static void enable_cursor()
     PrevMousePos.second = WindowHeight - PriorCursorPos.y;
     ClientToScreen(WindowHandle, &PriorCursorPos);
     SetCursorPos(PriorCursorPos.x, PriorCursorPos.y);
-    SetCursor(LoadCursorW(nullptr, IDC_ARROW));
+    SetCursor(LoadCursor(nullptr, IDC_ARROW));
 }
 
 static void acquire_monitor()
@@ -507,7 +506,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 #if 0
             if(IsWindows10Version1607OrGreater)
             {
-                const CREATESTRUCTW& cs = *reinterpret_cast<const CREATESTRUCTW*>(lParam);
+                const CREATESTRUCT& cs = *reinterpret_cast<const CREATESTRUCT*>(lParam);
                 const auto wndconfig = cs.lpCreateParams;
 
                 // On per-monitor DPI aware V1 systems, only enable
@@ -522,7 +521,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 #endif
         }
 
-        return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+        return DefWindowProc(hWnd, uMsg, wParam, lParam);
     }
 
     switch(uMsg)
@@ -618,8 +617,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             {
                 // NOTE: Some synthetic key messages have a key of zero
                 // HACK: Map the virtual key back to a usable key
-                key = MapVirtualKeyW(static_cast<UINT>(wParam),
-                    MAPVK_VK_TO_VSC);
+                key = MapVirtualKey(static_cast<UINT>(wParam), MAPVK_VK_TO_VSC);
             }
 
             // HACK: Alt+PrtSc has a different key than just PrtSc
@@ -657,7 +655,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                     MSG next;
                     const DWORD time = GetMessageTime();
 
-                    if(PeekMessageW(&next, nullptr, 0, 0, PM_NOREMOVE))
+                    if(PeekMessage(&next, nullptr, 0, 0, PM_NOREMOVE))
                     {
                         if(next.message == WM_KEYDOWN || next.message ==
                             WM_SYSKEYDOWN || next.message == WM_KEYUP || next.
@@ -1101,7 +1099,7 @@ paz::resize_targets();
             {
                 if(CurCursorMode == paz::CursorMode::Normal)
                 {
-                    SetCursor(LoadCursorW(nullptr, IDC_ARROW));
+                    SetCursor(LoadCursor(nullptr, IDC_ARROW));
                 }
                 else
                 {
@@ -1113,7 +1111,7 @@ paz::resize_targets();
         }
     }
 
-    return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 static void reset_events()
@@ -1172,20 +1170,20 @@ paz::Initializer::Initializer()
     WindowHeight = 0.5*displayHeight;
 
     // Create window and initialize Direct3D.
-    WNDCLASSEXW PazWindow = {};
+    WNDCLASSEX PazWindow = {};
     PazWindow.cbSize = sizeof(PazWindow);
     PazWindow.style = CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
     PazWindow.lpfnWndProc = window_proc;
     PazWindow.hCursor = LoadCursor(nullptr, IDC_ARROW);
     PazWindow.lpszClassName = L"PazWindow";
-    auto atom = RegisterClassExW(&PazWindow);
-    WindowHandle = CreateWindowExW(window_ex_style(), MAKEINTATOM(atom),
+    auto atom = RegisterClassEx(&PazWindow);
+    WindowHandle = CreateWindowEx(window_ex_style(), MAKEINTATOM(atom),
         L"PAZ_Graphics Window", window_style(), CW_USEDEFAULT, CW_USEDEFAULT,
         WindowWidth, WindowHeight, nullptr, nullptr, nullptr, nullptr);
     if(!WindowHandle)
     {
         std::array<wchar_t, 256> buf;
-        FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
+        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
             nullptr, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
             buf.data(), buf.size(), nullptr);
         const std::string errMsg(buf.begin(), buf.end());
@@ -1255,12 +1253,12 @@ void paz::Window::MakeFullscreen()
 
         MONITORINFO mi = {};
         mi.cbSize = sizeof(mi);
-        GetMonitorInfoW(MonitorHandle, &mi);
+        GetMonitorInfo(MonitorHandle, &mi);
 
-        DWORD style = GetWindowLongW(WindowHandle, GWL_STYLE);
+        DWORD style = GetWindowLong(WindowHandle, GWL_STYLE);
         style &= ~WS_OVERLAPPEDWINDOW;
         style |= window_style();
-        SetWindowLongW(WindowHandle, GWL_STYLE, style);
+        SetWindowLong(WindowHandle, GWL_STYLE, style);
 
         const UINT flags = SWP_SHOWWINDOW|SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_FRAMECHANGED;
         SetWindowPos(WindowHandle, HWND_NOTOPMOST, mi.rcMonitor.left, mi.
@@ -1277,10 +1275,10 @@ void paz::Window::MakeWindowed()
     {
         release_monitor();
 
-        DWORD style = GetWindowLongW(WindowHandle, GWL_STYLE);
+        DWORD style = GetWindowLong(WindowHandle, GWL_STYLE);
         style &= ~WS_POPUP;
         style |= window_style();
-        SetWindowLongW(WindowHandle, GWL_STYLE, style);
+        SetWindowLong(WindowHandle, GWL_STYLE, style);
 
         RECT rect = {PrevX, PrevY, PrevX + PrevWidth, PrevY + PrevHeight};
         if(IsWindows10Version1607OrGreater)
@@ -1312,7 +1310,7 @@ void paz::Window::SetTitle(const std::string& title)
     initialize();
 
     std::wstring wstr(title.begin(), title.end()); //TEMP - ASCII only
-    SetWindowTextW(WindowHandle, wstr.c_str());
+    SetWindowText(WindowHandle, wstr.c_str());
 }
 
 bool paz::Window::IsKeyWindow()
@@ -1511,7 +1509,7 @@ void paz::Window::SetCursorMode(CursorMode mode)
 
     if(mode == CursorMode::Normal)
     {
-        SetCursor(LoadCursorW(nullptr, IDC_ARROW));
+        SetCursor(LoadCursor(nullptr, IDC_ARROW));
     }
     else if(mode == CursorMode::Hidden || mode == CursorMode::Disable)
     {
@@ -1581,7 +1579,7 @@ void paz::Window::PollEvents()
     initialize();
 
     MSG msg;
-    while(PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
+    while(PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
     {
         if(msg.message == WM_QUIT)
         {
@@ -1590,7 +1588,7 @@ void paz::Window::PollEvents()
         else
         {
             TranslateMessage(&msg);
-            DispatchMessageW(&msg);
+            DispatchMessage(&msg);
         }
     }
 
