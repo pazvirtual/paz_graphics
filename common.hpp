@@ -26,9 +26,21 @@ namespace paz
 #endif
     struct Initializer
     {
-        std::unordered_set<void*> _renderTargets;
+        std::unordered_set<void*> renderTargets;
         Initializer();
         ~Initializer();
+#ifdef PAZ_WINDOWS
+        UINT(*getDpiForWindow)(HWND);
+        BOOL(*adjustWindowRectExForDpi)(LPRECT, DWORD, BOOL, DWORD, UINT);
+        BOOL(*setProcessDPIAware)(void);
+        BOOL(*setProcessDpiAwarenessContext)(DPI_AWARENESS_CONTEXT);
+        HRESULT(*setProcessDpiAwareness)(PROCESS_DPI_AWARENESS);
+        LONG(*rtlVerifyVersionInfo)(OSVERSIONINFOEX*, ULONG, ULONGLONG);
+        bool isWindows10Version1703OrGreater;
+        bool isWindows10Version1607OrGreater;
+        bool isWindows8Point1OrGreater;
+        bool isWindowsVistaOrGreater;
+#endif
     };
     // `paz::initialize` should be called at the beginning of 1. every
     // constructor of every graphics wrapper class declared in PAZ_Graphics that
