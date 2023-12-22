@@ -5,6 +5,9 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#ifndef UNICODE
+#define UNICODE
+#endif
 
 #include "PAZ_Graphics"
 #include "util_windows.hpp"
