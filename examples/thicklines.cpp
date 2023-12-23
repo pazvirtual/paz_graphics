@@ -85,6 +85,8 @@ int main(int, char** argv)
 {
     const std::string appDir = paz::split_path(argv[0])[0];
 
+    paz::Window::SetTitle("PAZ_Graphics: thicklines");
+
     set_mode(0);
 
     paz::VertexBuffer quadVerts;

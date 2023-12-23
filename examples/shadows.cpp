@@ -191,6 +191,8 @@ int main(int, char** argv)
 {
     const std::string appDir = paz::split_path(argv[0])[0];
 
+    paz::Window::SetTitle("PAZ_Graphics: shadows");
+
     paz::VertexBuffer groundVerts;
     groundVerts.addAttribute(4, GroundPos);
     groundVerts.addAttribute(4, GroundNor);
