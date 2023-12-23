@@ -1,5 +1,5 @@
-#ifndef PAZ_GRAPHICS_UTIL_OPENGL_HPP
-#define PAZ_GRAPHICS_UTIL_OPENGL_HPP
+#ifndef PAZ_GRAPHICS_UTIL_LINUX_HPP
+#define PAZ_GRAPHICS_UTIL_LINUX_HPP
 
 #include "detect_os.hpp"
 

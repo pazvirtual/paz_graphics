@@ -14,6 +14,9 @@
 #include <chrono>
 #include <algorithm>
 #include <thread>
+#include <sstream>
+
+static constexpr GUID HidClassGuid = {0x4d1e55b2, 0xf16f, 0x11cf, 0x88, 0xcb, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30};
 
 static const std::string QuadVertSrc = 1 + R"===(
 struct InputData
@@ -134,14 +137,17 @@ static std::pair<double, double> GamepadLeftStick;
 static std::pair<double, double> GamepadRightStick;
 static double GamepadLeftTrigger = -1.;
 static double GamepadRightTrigger = -1.;
+static std::vector<paz::Gamepad> Gamepads;
 static bool GamepadActive;
 static bool MouseActive;
 static bool CursorDisabled;
-POINT PriorCursorPos;
+static POINT PriorCursorPos;
 static bool FrameInProgress;
 static bool HidpiEnabled = true;
 static float Gamma = 2.2;
-static bool Dither = false;
+static bool Dither;
+static LPDIRECTINPUT8 Dinput8Interface;
+static HDEVNOTIFY DeviceNotificationHandle;
 
 static DWORD window_style()
 {
@@ -186,9 +192,72 @@ static void update_styles()
         SWP_NOZORDER);
 }
 
+static void detect_gamepad_connection()
+{
+#if 0
+    for(DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
+    {
+        int jid;
+        char guid[33];
+        XINPUT_CAPABILITIES xic;
+        _GLFWjoystick* js;
+        for(jid = 0; jid <= Gamepads.size(); ++jid)
+        {
+            if(Gamepads[jid].connected && !Gamepads[jid].device && Gamepads[jid].index == i)
+            {
+                break;
+            }
+        }
+        if (jid <= GLFW_JOYSTICK_LAST)
+            continue;
+        if (paz::initialize().xInputGetCapabilities(index, XINPUT_FLAG_GAMEPAD, &xic) != ERROR_SUCCESS)
+            continue;
+        // Generate a joystick GUID that matches the SDL 2.0.5+ one
+        sprintf(guid, "78696e707574%02x000000000000000000", xic.SubType & 0xff);
+        Gamepads.emplace_back(getDeviceDescription(&xic), guid, 6, 10, 1);
+        if (!Gamepads.back())
+            continue;
+        Gamepads.back().index = index;
+    }
+    const auto hr = IDirectInput8_EnumDevices(Dinput8Interface, DI8DEVCLASS_GAMECTRL, deviceCallback, NULL, DIEDFL_ALLDEVICES)
+    if(hr)
+    {
+        throw std::runtime_error("Failed to enumerate DirectInput8 devices (" +  paz::format_hresult(hr) + ").");
+    }
+#else
+std::cout << "CON ";
+for(DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
+{
+XINPUT_CAPABILITIES xic;
+std::cout << (paz::initialize().xInputGetCapabilities(i, XINPUT_FLAG_GAMEPAD, &xic) == ERROR_SUCCESS) << ' ';
+}
+std::cout << std::endl;
+#endif
+}
+
+static void detect_gamepad_disconnection()
+{
+#if 0
+    ??
+#else
+std::cout << "DIS ";
+for(DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
+{
+XINPUT_CAPABILITIES xic;
+std::cout << (paz::initialize().xInputGetCapabilities(i, XINPUT_FLAG_GAMEPAD, &xic) == ERROR_SUCCESS) << ' ';
+}
+std::cout << std::endl;
+#endif
+}
+
 static bool poll_gamepad_state(paz::GamepadState& state)
 {
-    return false; //TEMP
+    if(Gamepads.empty())
+    {
+        return false;
+    }
+
+    throw std::logic_error("NOT IMPLEMENTED");
 }
 
 paz::Initializer& paz::initialize()
@@ -424,7 +493,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             {
                 GamepadActive = false;
                 MouseActive = false;
-                static constexpr int l = static_cast<int>(paz::Key::LeftShift); //TEMP - see comment in GLFW about both shift keys being pressed
+                static constexpr int l = static_cast<int>(paz::Key::LeftShift);
                 static constexpr int r = static_cast<int>(paz::Key::RightShift);
                 KeyDown[l] = false;
                 KeyReleased[l] = true;
@@ -798,6 +867,28 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             }
             break;
         }
+        case WM_DEVICECHANGE:
+        {
+            if(wParam == DBT_DEVICEARRIVAL)
+            {
+                DEV_BROADCAST_HDR* dbh = reinterpret_cast<DEV_BROADCAST_HDR*>(
+                    lParam);
+                if(dbh && dbh->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE)
+                {
+                    detect_gamepad_connection();
+                }
+            }
+            else if(wParam == DBT_DEVICEREMOVECOMPLETE)
+            {
+                DEV_BROADCAST_HDR* dbh = reinterpret_cast<DEV_BROADCAST_HDR*>(
+                    lParam);
+                if(dbh && dbh->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE)
+                {
+                    detect_gamepad_disconnection();
+                }
+            }
+            break;
+        }
     }
 
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -828,6 +919,10 @@ paz::Initializer::Initializer()
 {
     // Load functions from DLLs.
     const HMODULE user32 = LoadLibrary(L"user32.dll");
+    if(!user32)
+    {
+        throw std::runtime_error("Failed to load \"user32.dll\".");
+    }
     getDpiForWindow = reinterpret_cast<UINT(*)(HWND)>(GetProcAddress(user32,
         "GetDpiForWindow"));
     adjustWindowRectExForDpi = reinterpret_cast<BOOL(*)(LPRECT, DWORD, BOOL,
@@ -838,12 +933,71 @@ paz::Initializer::Initializer()
         DPI_AWARENESS_CONTEXT)>(GetProcAddress(user32,
         "SetProcessDpiAwarenessContext"));
     const HMODULE shcore = LoadLibrary(L"shcore.dll");
+    if(!shcore)
+    {
+        throw std::runtime_error("Failed to load \"shcore.dll\".");
+    }
     setProcessDpiAwareness = reinterpret_cast<HRESULT(*)(
         PROCESS_DPI_AWARENESS)>(GetProcAddress(shcore,
         "SetProcessDpiAwareness"));
     const HMODULE ntdll = LoadLibrary(L"ntdll.dll");
+    if(!ntdll)
+    {
+        throw std::runtime_error("Failed to load \"ntdll.dll\".");
+    }
     rtlVerifyVersionInfo = reinterpret_cast<LONG(*)(OSVERSIONINFOEX*, ULONG,
         ULONGLONG)>(GetProcAddress(ntdll, "RtlVerifyVersionInfo"));
+    const HMODULE dinput8 = LoadLibrary(L"dinput8.dll");
+    if(!dinput8)
+    {
+        throw std::runtime_error("Failed to load \"dinput8.dll\".");
+    }
+    directInput8Create = reinterpret_cast<HRESULT(*)(HINSTANCE, DWORD, REFIID,
+        LPVOID*, LPUNKNOWN)>(GetProcAddress(dinput8, "DirectInput8Create"));
+    HMODULE xinput = nullptr;
+    static const std::array<std::string, 5> xinputVersions =
+    {
+        "xinput1_4.dll",
+        "xinput1_3.dll",
+        "xinput9_1_0.dll",
+        "xinput1_2.dll",
+        "xinput1_1.dll"
+    };
+    for(const auto& n : xinputVersions)
+    {
+        xinput = LoadLibrary(std::wstring(n.begin(), n.end()).c_str());
+        if(xinput)
+        {
+            break;
+        }
+    }
+    if(!xinput)
+    {
+        std::ostringstream oss;
+        oss << "Failed to load ";
+        for(std::size_t i = 0; i < xinputVersions.size(); ++i)
+        {
+            oss << '"' << xinputVersions[i] << '"';
+            if(i + 1 < xinputVersions.size())
+            {
+                if(xinputVersions.size() > 2)
+                {
+                    oss << ',';
+                }
+                oss << ' ';
+            }
+            if(i + 2 == xinputVersions.size())
+            {
+                oss << "or ";
+            }
+        }
+        oss << '.';
+        throw std::runtime_error(oss.str());
+    }
+    xInputGetCapabilities = reinterpret_cast<DWORD(*)(DWORD, DWORD,
+        XINPUT_CAPABILITIES*)>(GetProcAddress(xinput, "XInputGetCapabilities"));
+    xInputGetState = reinterpret_cast<DWORD(*)(DWORD, XINPUT_STATE)>(
+        GetProcAddress(xinput, "XInputGetState"));
 
     // Check Windows version.
     OSVERSIONINFOEX osvi = {};
@@ -971,6 +1125,28 @@ paz::Initializer::Initializer()
         throw std::runtime_error("Failed to register raw input device.");
     }
 
+    // Register for HID device notifications.
+    DEV_BROADCAST_DEVICEINTERFACE dbi = {};
+    dbi.dbcc_size = sizeof(dbi);
+    dbi.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+    dbi.dbcc_classguid = HidClassGuid;
+    DeviceNotificationHandle = RegisterDeviceNotification(WindowHandle,
+        reinterpret_cast<DEV_BROADCAST_HDR*>(&dbi),
+        DEVICE_NOTIFY_WINDOW_HANDLE);
+
+    // Create DirectInput8 interface to handle controllers.
+    hr = directInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION,
+        IID_IDirectInput8, reinterpret_cast<void**>(&Dinput8Interface),
+        nullptr);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to create DirectInput8 interface (" +
+            format_hresult(hr) + ").");
+    }
+
+    // Get any initially-attached gamepads.
+//    detect_gamepad_connection();
+
     // Set up final blitting pass.
     ID3DBlob* vertBlob;
     ID3DBlob* fragBlob;
@@ -1076,10 +1252,10 @@ void paz::Window::MakeFullscreen()
         style |= window_style();
         SetWindowLong(WindowHandle, GWL_STYLE, style);
 
-        const UINT flags = SWP_SHOWWINDOW|SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_FRAMECHANGED;
         SetWindowPos(WindowHandle, HWND_NOTOPMOST, mi.rcMonitor.left, mi.
             rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.
-            bottom - mi.rcMonitor.top, flags);
+            bottom - mi.rcMonitor.top, SWP_SHOWWINDOW|SWP_NOACTIVATE|
+            SWP_NOCOPYBITS|SWP_FRAMECHANGED);
     }
 }
 
@@ -1107,8 +1283,9 @@ void paz::Window::MakeWindowed()
             AdjustWindowRectEx(&rect, window_style(), FALSE, window_ex_style());
         }
 
-        const UINT flags = SWP_NOACTIVATE|SWP_NOCOPYBITS|SWP_FRAMECHANGED;
-        SetWindowPos(WindowHandle, HWND_NOTOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, flags);
+        SetWindowPos(WindowHandle, HWND_NOTOPMOST, rect.left, rect.top, rect.
+            right - rect.left, rect.bottom - rect.top, SWP_NOACTIVATE|
+            SWP_NOCOPYBITS|SWP_FRAMECHANGED);
     }
 }
 
@@ -1126,8 +1303,7 @@ void paz::Window::SetTitle(const std::string& title)
 {
     initialize();
 
-    std::wstring wstr(title.begin(), title.end()); //TEMP - ASCII only
-    SetWindowText(WindowHandle, wstr.c_str());
+    SetWindowText(WindowHandle, utf8_to_wstring(title).c_str());
 }
 
 bool paz::Window::IsKeyWindow()
@@ -1409,13 +1585,6 @@ void paz::Window::PollEvents()
         }
     }
 
-    // HACK: Release modifier keys that the system did not emit KEYUP for
-    // NOTE: Shift keys on Windows tend to "stick" when both are pressed as
-    //       no key up message is generated by the first key release
-    // NOTE: Windows key is not reported as released by the Win+V hotkey
-    //       Other Win hotkeys are handled implicitly by _glfwInputWindowFocus
-    //       because they change the input focus
-    // NOTE: The other half of this is in the WM_*KEY* handler in windowProc
     HWND handle = GetActiveWindow();
     if(handle)
     {

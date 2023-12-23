@@ -107,7 +107,7 @@ static bool CursorDisabled;
 static bool FrameInProgress;
 static bool HidpiEnabled = true;
 static float Gamma = 2.2;
-static bool Dither = false;
+static bool Dither;
 
 paz::Initializer& paz::initialize()
 {

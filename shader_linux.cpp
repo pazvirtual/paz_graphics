@@ -46,15 +46,15 @@ void paz::ShaderData::init(unsigned int vertId, unsigned int fragId, const std::
     // Get vertex attributes.
     {
         GLint n;
-        GLsizei bufSiz;
+        GLsizei bufSize;
         glGetProgramiv(_id, GL_ACTIVE_ATTRIBUTES, &n);
-        glGetProgramiv(_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &bufSiz);
+        glGetProgramiv(_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &bufSize);
         for(GLint i = 0; i < n; ++i)
         {
             GLint size;
             GLenum type;
-            std::vector<GLchar> buf(bufSiz);
-            glGetActiveAttrib(_id, i, bufSiz, nullptr, &size, &type, buf.
+            std::vector<GLchar> buf(bufSize);
+            glGetActiveAttrib(_id, i, bufSize, nullptr, &size, &type, buf.
                 data());
             std::string name(buf.data());
             name = name.substr(0, name.find("[", 0));
@@ -79,15 +79,15 @@ void paz::ShaderData::init(unsigned int vertId, unsigned int fragId, const std::
     // Get uniforms.
     {
         GLint n;
-        GLsizei bufSiz;
+        GLsizei bufSize;
         glGetProgramiv(_id, GL_ACTIVE_UNIFORMS, &n);
-        glGetProgramiv(_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, &bufSiz);
+        glGetProgramiv(_id, GL_ACTIVE_UNIFORM_MAX_LENGTH, &bufSize);
         for(GLint i = 0; i < n; ++i)
         {
             GLint size;
             GLenum type;
-            std::vector<GLchar> buf(bufSiz);
-            glGetActiveUniform(_id, i, bufSiz, nullptr, &size, &type, buf.
+            std::vector<GLchar> buf(bufSize);
+            glGetActiveUniform(_id, i, bufSize, nullptr, &size, &type, buf.
                 data());
             const std::string name(buf.data());
             std::size_t end = name.find("[", 0);

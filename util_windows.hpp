@@ -1,5 +1,5 @@
-#ifndef PAZ_GRAPHICS_UTIL_D3D11_HPP
-#define PAZ_GRAPHICS_UTIL_D3D11_HPP
+#ifndef PAZ_GRAPHICS_UTIL_WINDOWS_HPP
+#define PAZ_GRAPHICS_UTIL_WINDOWS_HPP
 
 #include "detect_os.hpp"
 
@@ -11,7 +11,8 @@
 namespace paz
 {
     DXGI_FORMAT dxgi_format(int dim, paz::DataType type);
-    std::string format_hresult(HRESULT hr);
+    std::string format_hresult(HRESULT hr) noexcept;
+    std::wstring utf8_to_wstring(const std::string& str) noexcept;
 }
 
 #endif
