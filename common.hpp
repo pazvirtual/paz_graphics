@@ -36,6 +36,10 @@ namespace paz
         BOOL(*setProcessDpiAwarenessContext)(DPI_AWARENESS_CONTEXT);
         HRESULT(*setProcessDpiAwareness)(PROCESS_DPI_AWARENESS);
         LONG(*rtlVerifyVersionInfo)(OSVERSIONINFOEX*, ULONG, ULONGLONG);
+        HRESULT(*directInput8Create)(HINSTANCE, DWORD, REFIID, LPVOID*,
+            LPUNKNOWN);
+        DWORD(*xInputGetCapabilities)(DWORD, DWORD, XINPUT_CAPABILITIES*);
+        DWORD(*xInputGetState)(DWORD, XINPUT_STATE);
         bool isWindows10Version1703OrGreater;
         bool isWindows10Version1607OrGreater;
         bool isWindows8Point1OrGreater;

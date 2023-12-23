@@ -1,3 +1,6 @@
+#ifndef PAZ_GRAPHICS_GAMEPAD_HPP
+#define PAZ_GRAPHICS_GAMEPAD_HPP
+
 #include "detect_os.hpp"
 
 #ifndef PAZ_LINUX
@@ -61,7 +64,7 @@ namespace paz
 #ifdef PAZ_MACOS
         IOHIDDeviceRef device;
 #else
-        IDirectInputDevice8W* device;
+        DWORD idx;
 #endif
         std::string guid;
         std::string name;
@@ -72,5 +75,7 @@ namespace paz
 
     const std::unordered_map<std::string, GamepadMapping>& gamepad_mappings();
 }
+
+#endif
 
 #endif

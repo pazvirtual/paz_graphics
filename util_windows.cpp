@@ -2,7 +2,6 @@
 
 #ifdef PAZ_WINDOWS
 
-#include "PAZ_Graphics"
 #include "util_windows.hpp"
 #include <sstream>
 #include <iomanip>
@@ -44,11 +43,25 @@ DXGI_FORMAT paz::dxgi_format(int dim, DataType type)
     throw std::runtime_error("Attribute dimensions must be 1, 2, or 4.");
 }
 
-std::string paz::format_hresult(HRESULT hr)
+std::string paz::format_hresult(HRESULT hr) noexcept
 {
     std::ostringstream oss;
     oss << "HRESULT 0x" << std::hex << std::setfill('0') << std::setw(8) << hr;
     return oss.str();
+}
+
+std::wstring paz::utf8_to_wstring(const std::string& str) noexcept
+{
+    const int bufSize = MultiByteToWideChar(CP_UTF8, 0, str.c_str(),
+        static_cast<int>(str.size()), nullptr, 0);
+    std::wstring buf;
+    buf.resize(bufSize);
+    if(!MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.
+        size()), const_cast<LPWSTR>(buf.data()), bufSize))
+    {
+        return L"UTF-8 TO WSTRING CONVERSION FAILED";
+    }
+    return buf;
 }
 
 #endif
