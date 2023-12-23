@@ -60,6 +60,8 @@ int main(int, char** argv)
 {
     const std::string appDir = paz::split_path(argv[0])[0];
 
+    paz::Window::SetTitle("PAZ_Graphics: transparency");
+
     paz::VertexBuffer quadVertices;
     quadVertices.addAttribute(2, std::array<float, 8>{1, -1, 1, 1, -1, -1, -1,
         1});

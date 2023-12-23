@@ -13,6 +13,7 @@
 #include <cmath>
 #include <chrono>
 #include <algorithm>
+#include <thread>
 
 static const std::string QuadVertSrc = 1 + R"===(
 struct InputData
@@ -99,6 +100,7 @@ static ID3D11RenderTargetView* RenderTargetView;
 static int WindowWidth;
 static int WindowHeight;
 static bool WindowIsKey;
+static bool WindowIsMinimized;
 static bool FrameAction;
 static bool CursorTracked;
 static int PrevX;
@@ -361,7 +363,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         }
         case WM_CLOSE:
         {
-            ::Done = true;
+            Done = true;
             return 0;
         }
         case WM_KEYDOWN:
@@ -369,51 +371,35 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         case WM_KEYUP:
         case WM_SYSKEYUP:
         {
-            const bool released = HIWORD(lParam)&KF_UP; // Otherwise, pressed
-
+            const bool released = HIWORD(lParam)&KF_UP;
             int key = HIWORD(lParam)&(KF_EXTENDED|0xff);
             if(!key)
             {
-                // NOTE: Some synthetic key messages have a key of zero
-                // HACK: Map the virtual key back to a usable key
                 key = MapVirtualKey(static_cast<UINT>(wParam), MAPVK_VK_TO_VSC);
             }
-
-            // HACK: Alt+PrtSc has a different key than just PrtSc
             if(key == 0x54)
             {
                 key = 0x137;
             }
-            // HACK: Ctrl+Pause has a different key than just Pause
             else if(key == 0x146)
             {
                 key = 0x45;
             }
-            // HACK: CJK IME sets the extended bit for right Shift
             else if(key == 0x136)
             {
                 key = 0x36;
             }
-
             paz::Key k = paz::convert_keycode(key);
-
-            // The Ctrl keys require special handling
             if(wParam == VK_CONTROL)
             {
                 if(HIWORD(lParam)&KF_EXTENDED)
                 {
-                    // Right side keys have the extended key bit set
                     k = paz::Key::RightControl;
                 }
                 else
                 {
-                    // NOTE: Alt Gr sends Left Ctrl followed by Right Alt
-                    // HACK: We only want one event for Alt Gr, so if we detect
-                    //       this sequence we discard this Left Ctrl message now
-                    //       and later report Right Alt normally
                     MSG next;
                     const DWORD time = GetMessageTime();
-
                     if(PeekMessage(&next, nullptr, 0, 0, PM_NOREMOVE))
                     {
                         if(next.message == WM_KEYDOWN || next.message ==
@@ -423,31 +409,22 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                             if(next.wParam == VK_MENU && (HIWORD(next.lParam)&
                                 KF_EXTENDED) && next.time == time)
                             {
-                                // Next message is Right Alt down so discard this
                                 break;
                             }
                         }
                     }
-
-                    // This is a regular Left Ctrl message
                     k = paz::Key::LeftControl;
                 }
             }
             else if(wParam == VK_PROCESSKEY)
             {
-                // IME notifies that keys have been filtered by setting the
-                // virtual key-code to VK_PROCESSKEY
                 break;
             }
-
             if(released && wParam == VK_SHIFT)
             {
                 GamepadActive = false;
                 MouseActive = false;
-                // HACK: Release both Shift keys on Shift up event, as when both
-                //       are pressed the first release does not emit any event
-                // NOTE: The other half of this is in _glfwPollEventsWin32
-                static constexpr int l = static_cast<int>(paz::Key::LeftShift);
+                static constexpr int l = static_cast<int>(paz::Key::LeftShift); //TEMP - see comment in GLFW about both shift keys being pressed
                 static constexpr int r = static_cast<int>(paz::Key::RightShift);
                 KeyDown[l] = false;
                 KeyReleased[l] = true;
@@ -458,7 +435,6 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             {
                 GamepadActive = false;
                 MouseActive = false;
-                // HACK: Key down is not reported for the Print Screen key
                 const int i = static_cast<int>(k);
                 KeyDown[i] = false;
                 KeyPressed[i] = true;
@@ -484,7 +460,6 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                     KeyPressed[i] = true;
                 }
             }
-
             break;
         }
         case WM_LBUTTONDOWN:
@@ -498,7 +473,6 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         {
             GamepadActive = false;
             MouseActive = true;
-
             int button;
             if(uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONUP)
             {
@@ -520,13 +494,11 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             {
                 button = static_cast<int>(paz::MouseButton::Forward);
             }
-
             if(std::none_of(MouseDown.begin(), MouseDown.end(), [](bool x){
                 return x; }))
             {
                 SetCapture(hWnd);
             }
-
             if(uMsg == WM_LBUTTONDOWN || uMsg == WM_RBUTTONDOWN || uMsg ==
                 WM_MBUTTONDOWN || uMsg == WM_XBUTTONDOWN)
             {
@@ -538,18 +510,15 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 MouseDown[button] = false;
                 MouseReleased[button] = true;
             }
-
             if(std::none_of(MouseDown.begin(), MouseDown.end(), [](bool x){
                 return x; }))
             {
                 ReleaseCapture();
             }
-
             if(uMsg == WM_XBUTTONDOWN || uMsg == WM_XBUTTONUP)
             {
                 return TRUE;
             }
-
             return 0;
         }
         case WM_MOUSEMOVE:
@@ -563,12 +532,10 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 TrackMouseEvent(&tme);
                 CursorTracked = true;
             }
-
             if(CursorDisabled)
             {
                 break;
             }
-
             const int x = GET_X_LPARAM(lParam);
             const int y = GET_Y_LPARAM(lParam);
             if(VirtMousePos.first != x || VirtMousePos.second != y)
@@ -580,10 +547,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 MousePos.first = VirtMousePos.first;
                 MousePos.second = WindowHeight - VirtMousePos.second;
             }
-
             PrevMousePos.first = x;
             PrevMousePos.second = y;
-
             return 0;
         }
         case WM_INPUT:
@@ -592,19 +557,16 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             {
                 break;
             }
-
             UINT size = 0;
             HRAWINPUT ri = reinterpret_cast<HRAWINPUT>(lParam);
             GetRawInputData(ri, RID_INPUT, nullptr, &size, sizeof(
                 RAWINPUTHEADER));
-
             std::vector<unsigned char> buf(size);
             if(GetRawInputData(ri, RID_INPUT, buf.data(), &size, sizeof(
                 RAWINPUTHEADER)) == std::numeric_limits<UINT>::max())
             {
                 throw std::runtime_error("Failed to retrieve raw input data.");
             }
-
             const auto& data = reinterpret_cast<const RAWINPUT&>(*buf.data());
             int deltaX, deltaY;
             if(data.data.mouse.usFlags&MOUSE_MOVE_ABSOLUTE)
@@ -617,7 +579,6 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 deltaX = data.data.mouse.lLastX;
                 deltaY = data.data.mouse.lLastY;
             }
-
             const double x = VirtMousePos.first + deltaX;
             const double y = VirtMousePos.second + deltaY;
             if(VirtMousePos.first != x || VirtMousePos.second != y)
@@ -629,10 +590,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 MousePos.first = VirtMousePos.first - WindowWidth/2;
                 MousePos.second = WindowHeight/2 - VirtMousePos.second;
             }
-
             PrevMousePos.first += deltaX;
             PrevMousePos.second += deltaY;
-
             break;
         }
         case WM_MOUSELEAVE:
@@ -690,69 +649,58 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         }
         case WM_SIZE:
         {
-            WindowWidth = LOWORD(lParam);
-            WindowHeight = HIWORD(lParam);
-            FboWidth = WindowWidth;
-            FboHeight = WindowHeight;
-            FboAspectRatio = static_cast<float>(FboWidth)/FboHeight;
-            if(Device)
+            int newWidth = LOWORD(lParam);
+            int newHeight = HIWORD(lParam);
+            const bool minimized = wParam == SIZE_MINIMIZED;
+            if(CursorDisabled)
             {
-                paz::resize_targets();
+                capture_cursor();
             }
-
-//            const bool iconified = wParam == SIZE_MINIMIZED;
-//            const bool maximized = wParam == SIZE_MAXIMIZED || (WindowIsMaximized && wParam != SIZE_RESTORED);
-//
-//            if (_glfw.win32.capturedCursorWindow == window)
-//                captureCursor(window);
-//
-//            if (window->win32.iconified != iconified)
-//                _glfwInputWindowIconify(window, iconified);
-//
-//            if (window->win32.maximized != maximized)
-//                _glfwInputWindowMaximize(window, maximized);
-//
-//            if (width != window->win32.width || height != window->win32.height)
-//            {
-//                window->win32.width = width;
-//                window->win32.height = height;
-//
-//                _glfwInputFramebufferSize(window, width, height);
-//                _glfwInputWindowSize(window, width, height);
-//            }
-//
-//            if(MonitorHandle && window->win32.iconified != iconified)
-//            {
-//                if(iconified)
-//                {
-//                    releaseMonitor(window);
-//                }
-//                else
-//                {
-//                    acquireMonitor(window);
-//                    fitToMonitor(window);
-//                }
-//            }
-//
-//            window->win32.iconified = iconified;
-//            window->win32.maximized = maximized;
+            if(newWidth != WindowWidth || newHeight != WindowHeight)
+            {
+                WindowWidth = newWidth;
+                WindowHeight = newHeight;
+                if(!minimized)
+                {
+                    FboWidth = newWidth; //TEMP - verify DPI scaling
+                    FboHeight = newHeight; //TEMP - verify DPI scaling
+                    FboAspectRatio = static_cast<float>(FboWidth)/FboHeight;
+                    if(Device)
+                    {
+                        paz::resize_targets();
+                    }
+                }
+            }
+            if(MonitorHandle && WindowIsMinimized != minimized)
+            {
+                if(minimized)
+                {
+                    release_monitor();
+                }
+                else
+                {
+                    acquire_monitor();
+                    MONITORINFO mi;
+                    mi.cbSize = sizeof(mi);
+                    GetMonitorInfo(MonitorHandle, &mi);
+                    SetWindowPos(WindowHandle, HWND_TOPMOST, mi.rcMonitor.left,
+                        mi.rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.
+                        left, mi.rcMonitor.bottom - mi.rcMonitor.top,
+                        SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOCOPYBITS);
+                }
+            }
+            WindowIsMinimized = minimized;
             return 0;
         }
         case WM_MOVE:
         {
             if(!MonitorHandle)
             {
-                PrevX = static_cast<int>(static_cast<short>(LOWORD(lParam)));
-                PrevY = static_cast<int>(static_cast<short>(HIWORD(lParam)));
+                PrevX = static_cast<int>(GET_X_LPARAM(lParam));
+                PrevY = static_cast<int>(GET_Y_LPARAM(lParam));
                 if(CursorDisabled)
                 {
-                    RECT clipRect;
-                    GetClientRect(WindowHandle, &clipRect);
-                    ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(
-                        &clipRect.left));
-                    ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(
-                        &clipRect.right));
-                    ClipCursor(&clipRect);
+                    capture_cursor();
                 }
             }
             return 0;
@@ -765,7 +713,6 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             {
                 break;
             }
-
             if(paz::initialize().isWindows10Version1607OrGreater)
             {
                 paz::initialize().adjustWindowRectExForDpi(&frame,
@@ -777,71 +724,58 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 AdjustWindowRectEx(&frame, window_style(), FALSE,
                     window_ex_style());
             }
-
             if(MinWidth && MinHeight)
             {
                 mmi.ptMinTrackSize.x = MinWidth + frame.right - frame.left;
                 mmi.ptMinTrackSize.y = MinHeight + frame.bottom - frame.top;
             }
-
             if(MaxWidth && MaxHeight)
             {
                 mmi.ptMaxTrackSize.x = MaxWidth + frame.right - frame.left;
                 mmi.ptMaxTrackSize.y = MaxHeight + frame.bottom - frame.top;
             }
-
             return 0;
         }
         case WM_ERASEBKGND:
         {
-            return TRUE; //TEMP - verify
+            return TRUE;
         }
         case WM_DWMCOMPOSITIONCHANGED:
         case WM_DWMCOLORIZATIONCOLORCHANGED:
         {
-            return 0; //TEMP - verify
+            return 0;
         }
         case WM_GETDPISCALEDSIZE:
         {
-            // Adjust the window size to keep the content area size constant
-            if (paz::initialize().isWindows10Version1703OrGreater)
+            // Adjust the window size to keep the content area size constant.
+            if(paz::initialize().isWindows10Version1703OrGreater)
             {
                 RECT source = {}, target = {};
                 SIZE& size = *reinterpret_cast<SIZE*>(lParam);
-
                 paz::initialize().adjustWindowRectExForDpi(&source,
                     window_style(), FALSE, window_ex_style(), paz::initialize().
                     getDpiForWindow(WindowHandle));
                 paz::initialize().adjustWindowRectExForDpi(&target,
                     window_style(), FALSE, window_ex_style(), LOWORD(wParam));
-
                 size.cx += (target.right - target.left) - (source.right -
                     source.left);
                 size.cy += (target.bottom - target.top) - (source.bottom -
                     source.top);
                 return TRUE;
             }
-
             break;
         }
         case WM_DPICHANGED:
         {
-            const float xscale = HIWORD(wParam)/static_cast<float>(USER_DEFAULT_SCREEN_DPI);
-            const float yscale = LOWORD(wParam)/static_cast<float>(USER_DEFAULT_SCREEN_DPI);
-
-            // Resize windowed mode windows that either permit rescaling or that
-            // need it to compensate for non-client area scaling
-            if (!MonitorHandle && paz::initialize().isWindows10Version1703OrGreater)
+            if(!MonitorHandle && paz::initialize().
+                isWindows10Version1703OrGreater)
             {
                 RECT* suggested = reinterpret_cast<RECT*>(lParam);
-                SetWindowPos(WindowHandle, HWND_TOP,
-                             suggested->left,
-                             suggested->top,
-                             suggested->right - suggested->left,
-                             suggested->bottom - suggested->top,
-                             SWP_NOACTIVATE | SWP_NOZORDER);
+                SetWindowPos(WindowHandle, HWND_TOP, suggested->left,
+                    suggested->top, suggested->right - suggested->left,
+                    suggested->bottom - suggested->top, SWP_NOACTIVATE|
+                    SWP_NOZORDER);
             }
-
             if(Device)
             {
                 paz::resize_targets();
@@ -873,19 +807,19 @@ static void reset_events()
 {
     if(CursorDisabled)
     {
-        ::MousePos = {};
+        MousePos = {};
     }
-    ::ScrollOffset = {};
-    ::KeyPressed = {};
-    ::KeyReleased = {};
-    ::MousePressed = {};
-    ::MouseReleased = {};
-    ::GamepadPressed = {};
-    ::GamepadReleased = {};
-    ::GamepadLeftStick = {};
-    ::GamepadRightStick = {};
-    ::GamepadLeftTrigger = -1.;
-    ::GamepadRightTrigger = -1.;
+    ScrollOffset = {};
+    KeyPressed = {};
+    KeyReleased = {};
+    MousePressed = {};
+    MouseReleased = {};
+    GamepadPressed = {};
+    GamepadReleased = {};
+    GamepadLeftStick = {};
+    GamepadRightStick = {};
+    GamepadLeftTrigger = -1.;
+    GamepadRightTrigger = -1.;
 }
 
 paz::Initializer::~Initializer() {}
@@ -914,20 +848,26 @@ paz::Initializer::Initializer()
     // Check Windows version.
     OSVERSIONINFOEX osvi = {};
     osvi.dwOSVersionInfoSize = sizeof(osvi);
-    osvi.dwMajorVersion = 10;
-    osvi.dwMinorVersion = 0;
-    osvi.dwBuildNumber = 1703;
+    osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
+    osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
     ULONGLONG cond = VerSetConditionMask(0, VER_MAJORVERSION,
         VER_GREATER_EQUAL);
     cond = VerSetConditionMask(cond, VER_MINORVERSION, VER_GREATER_EQUAL);
+    isWindowsVistaOrGreater = !rtlVerifyVersionInfo(&osvi, VER_MAJORVERSION|
+        VER_MINORVERSION, cond);
+    osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_WINBLUE);
+    osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_WINBLUE);
+    isWindows8Point1OrGreater = !rtlVerifyVersionInfo(&osvi, VER_MAJORVERSION|
+        VER_MINORVERSION, cond);
+    osvi.dwMajorVersion = 10;
+    osvi.dwMinorVersion = 0;
+    osvi.dwBuildNumber = 14393;
     cond = VerSetConditionMask(cond, VER_BUILDNUMBER, VER_GREATER_EQUAL);
-    isWindows10Version1703OrGreater = !rtlVerifyVersionInfo(&osvi,
-        VER_MAJORVERSION|VER_MINORVERSION|VER_BUILDNUMBER, cond);
-    osvi.dwBuildNumber = 1607;
     isWindows10Version1607OrGreater = !rtlVerifyVersionInfo(&osvi,
         VER_MAJORVERSION|VER_MINORVERSION|VER_BUILDNUMBER, cond);
-    isWindows8Point1OrGreater = true; //TEMP
-    isWindowsVistaOrGreater = true; //TEMP
+    osvi.dwBuildNumber = 15063;
+    isWindows10Version1703OrGreater = !rtlVerifyVersionInfo(&osvi,
+        VER_MAJORVERSION|VER_MINORVERSION|VER_BUILDNUMBER, cond);
 
     // Set up DPI awareness.
     if(isWindows10Version1703OrGreater)
@@ -1622,6 +1562,12 @@ void paz::Window::EndFrame()
     PrevFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
         initialize().frameStart).count()*1e-6;
     initialize().frameStart = now;
+
+    // Keep framerate down while minimized (not capped otherwise).
+    if(WindowIsMinimized)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 }
 
 void paz::Window::Quit()
