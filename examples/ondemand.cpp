@@ -1,5 +1,6 @@
 #include "PAZ_Graphics"
 #include "PAZ_IO"
+#include <iostream>
 #include <sstream>
 #include <iomanip>
 
