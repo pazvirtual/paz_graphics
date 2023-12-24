@@ -1,5 +1,6 @@
 #include "PAZ_Graphics"
 #include <cmath>
+#include <iostream>
 #include <iomanip>
 #include <cstdint>
 

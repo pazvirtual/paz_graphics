@@ -1,10 +1,11 @@
 #ifndef PAZ_GRAPHICS
 #define PAZ_GRAPHICS
 
-#include <iostream>
+#include <string>
 #include <vector>
 #include <array>
 #include <memory>
+#include <stdexcept>
 
 namespace paz
 {
