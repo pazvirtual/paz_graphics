@@ -1410,7 +1410,7 @@ paz::Initializer::Initializer()
     _windowWidth = 0.5*displayWidth;
     _windowHeight = 0.5*displayHeight;
 
-    // Create window and initialize Direct3D.
+    // Create window.
     WNDCLASSEX PazWindow = {};
     PazWindow.cbSize = sizeof(PazWindow);
     PazWindow.style = CS_HREDRAW|CS_VREDRAW|CS_OWNDC;
@@ -1430,7 +1430,14 @@ paz::Initializer::Initializer()
         const std::string errMsg(buf.begin(), buf.end());
         throw std::runtime_error("Failed to create window: " + errMsg);
     }
+
+    // Show and focus window.
     ShowWindow(_windowHandle, SW_SHOWNA);
+    BringWindowToTop(_windowHandle);
+    SetForegroundWindow(_windowHandle);
+    SetFocus(_windowHandle);
+
+    // Initialize Direct3D.
     DXGI_SWAP_CHAIN_DESC swapChainDescriptor = {};
     swapChainDescriptor.BufferDesc.RefreshRate.Numerator = 0;
     swapChainDescriptor.BufferDesc.RefreshRate.Denominator = 0;
