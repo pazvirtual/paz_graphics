@@ -32,7 +32,6 @@
 #include <dinputd.h>
 #include <ntddkbd.h>
 #include <ntddmou.h>
-#include <xinput.h>
 #include <d3dcompiler.h>
 #include <d3d11.h>
 #include <windowsx.h>

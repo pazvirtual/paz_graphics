@@ -15,8 +15,12 @@
 #include <algorithm>
 #include <thread>
 #include <sstream>
+#include <cstring>
+#include <iostream>
+#include <iomanip>
 
-static constexpr GUID HidClassGuid = {0x4d1e55b2, 0xf16f, 0x11cf, 0x88, 0xcb, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30};
+static constexpr GUID HidClassGuid = {0x4d1e55b2, 0xf16f, 0x11cf, 0x88, 0xcb,
+    0x00, 0x11, 0x11, 0x00, 0x00, 0x30};
 
 static const std::string QuadVertSrc = 1 + R"===(
 struct InputData
@@ -149,6 +153,115 @@ static bool Dither;
 static LPDIRECTINPUT8 Dinput8Interface;
 static HDEVNOTIFY DeviceNotificationHandle;
 
+static DIOBJECTDATAFORMAT ObjectDataFormats[] =
+{
+    {&GUID_XAxis, DIJOFS_X, DIDFT_AXIS|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        DIDOI_ASPECTPOSITION},
+    {&GUID_YAxis, DIJOFS_Y, DIDFT_AXIS|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        DIDOI_ASPECTPOSITION},
+    {&GUID_ZAxis, DIJOFS_Z, DIDFT_AXIS|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        DIDOI_ASPECTPOSITION},
+    {&GUID_RxAxis, DIJOFS_RX, DIDFT_AXIS|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        DIDOI_ASPECTPOSITION},
+    {&GUID_RyAxis, DIJOFS_RY, DIDFT_AXIS|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        DIDOI_ASPECTPOSITION},
+    {&GUID_RzAxis, DIJOFS_RZ, DIDFT_AXIS|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        DIDOI_ASPECTPOSITION},
+    {&GUID_Slider, DIJOFS_SLIDER(0), DIDFT_AXIS|DIDFT_OPTIONAL|
+        DIDFT_ANYINSTANCE, DIDOI_ASPECTPOSITION},
+    {&GUID_Slider, DIJOFS_SLIDER(1), DIDFT_AXIS|DIDFT_OPTIONAL|
+        DIDFT_ANYINSTANCE, DIDOI_ASPECTPOSITION},
+    {&GUID_POV, DIJOFS_POV(0), DIDFT_POV|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE, 0},
+    {&GUID_POV, DIJOFS_POV(1), DIDFT_POV|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE, 0},
+    {&GUID_POV, DIJOFS_POV(2), DIDFT_POV|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE, 0},
+    {&GUID_POV, DIJOFS_POV(3), DIDFT_POV|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE, 0},
+    {nullptr, DIJOFS_BUTTON(0), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(1), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(2), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(3), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(4), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(5), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(6), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(7), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(8), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(9), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(10), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(11), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(12), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(13), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(14), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(15), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(16), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(17), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(18), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(19), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(20), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(21), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(22), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(23), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(24), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(25), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(26), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(27), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(28), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(29), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(30), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0},
+    {nullptr, DIJOFS_BUTTON(31), DIDFT_BUTTON|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
+        0}
+};
+
+static const DIDATAFORMAT DataFormat =
+{
+    sizeof(DIDATAFORMAT),
+    sizeof(DIOBJECTDATAFORMAT),
+    DIDFT_ABSAXIS,
+    sizeof(DIJOYSTATE),
+    sizeof(ObjectDataFormats)/sizeof(DIOBJECTDATAFORMAT),
+    ObjectDataFormats
+};
+
+namespace
+{
+    struct ObjectData
+    {
+        std::vector<paz::GamepadElement> axes;
+        std::vector<paz::GamepadElement> buttons;
+        std::vector<paz::GamepadElement> hats;
+        IDirectInputDevice8* device;
+    };
+}
+
 static DWORD window_style()
 {
     DWORD style = WS_CLIPSIBLINGS|WS_CLIPCHILDREN;
@@ -192,72 +305,341 @@ static void update_styles()
         SWP_NOZORDER);
 }
 
-static void detect_gamepad_connection()
+static BOOL CALLBACK object_callback(const DIDEVICEOBJECTINSTANCE* doi, void*
+    user)
 {
-#if 0
-    for(DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
+    auto& data = *reinterpret_cast<ObjectData*>(user);
+
+    paz::GamepadElement elem;
+
+    if(DIDFT_GETTYPE(doi->dwType)&DIDFT_AXIS)
     {
-        int jid;
-        char guid[33];
-        XINPUT_CAPABILITIES xic;
-        _GLFWjoystick* js;
-        for(jid = 0; jid <= Gamepads.size(); ++jid)
+        if(!std::memcmp(&doi->guidType, &GUID_Slider, sizeof(GUID)))
         {
-            if(Gamepads[jid].connected && !Gamepads[jid].device && Gamepads[jid].index == i)
-            {
-                break;
-            }
+            throw std::logic_error("SLIDER NOT IMPLEMENTED");
         }
-        if (jid <= GLFW_JOYSTICK_LAST)
-            continue;
-        if (paz::initialize().xInputGetCapabilities(index, XINPUT_FLAG_GAMEPAD, &xic) != ERROR_SUCCESS)
-            continue;
-        // Generate a joystick GUID that matches the SDL 2.0.5+ one
-        sprintf(guid, "78696e707574%02x000000000000000000", xic.SubType & 0xff);
-        Gamepads.emplace_back(getDeviceDescription(&xic), guid, 6, 10, 1);
-        if (!Gamepads.back())
-            continue;
-        Gamepads.back().index = index;
+        else if(!std::memcmp(&doi->guidType, &GUID_XAxis, sizeof(GUID)))
+        {
+            elem.idx = DIJOFS_X;
+        }
+        else if(!std::memcmp(&doi->guidType, &GUID_YAxis, sizeof(GUID)))
+        {
+            elem.idx = DIJOFS_Y;
+        }
+        else if(!std::memcmp(&doi->guidType, &GUID_ZAxis, sizeof(GUID)))
+        {
+            elem.idx = DIJOFS_Z;
+        }
+        else if(!std::memcmp(&doi->guidType, &GUID_RxAxis, sizeof(GUID)))
+        {
+            elem.idx = DIJOFS_RX;
+        }
+        else if(!std::memcmp(&doi->guidType, &GUID_RyAxis, sizeof(GUID)))
+        {
+            elem.idx = DIJOFS_RY;
+        }
+        else if(!std::memcmp(&doi->guidType, &GUID_RzAxis, sizeof(GUID)))
+        {
+            elem.idx = DIJOFS_RZ;
+        }
+        else
+        {
+            return DIENUM_CONTINUE;
+        }
+
+        DIPROPRANGE dipr = {};
+        dipr.diph.dwSize = sizeof(dipr);
+        dipr.diph.dwHeaderSize = sizeof(dipr.diph);
+        dipr.diph.dwObj = doi->dwType;
+        dipr.diph.dwHow = DIPH_BYID;
+        dipr.lMin = -32768;
+        dipr.lMax = 32767;
+
+        const auto hr = IDirectInputDevice8_SetProperty(data.device,
+            DIPROP_RANGE, &dipr.diph);
+        if(hr)
+        {
+            return DIENUM_CONTINUE;
+        }
+
+        data.axes.push_back(elem);
     }
-    const auto hr = IDirectInput8_EnumDevices(Dinput8Interface, DI8DEVCLASS_GAMECTRL, deviceCallback, NULL, DIEDFL_ALLDEVICES)
+    else if(DIDFT_GETTYPE(doi->dwType)&DIDFT_BUTTON)
+    {
+        elem.idx = DIJOFS_BUTTON(data.buttons.size());
+        data.buttons.push_back(elem);
+    }
+    else if(DIDFT_GETTYPE(doi->dwType)&DIDFT_POV)
+    {
+        elem.idx = DIJOFS_POV(data.hats.size());
+        data.hats.push_back(elem);
+    }
+
+    return DIENUM_CONTINUE;
+}
+
+static BOOL CALLBACK device_callback(const DIDEVICEINSTANCE* di, void*)
+{
+    // Check if this device was already connected.
+    for(const auto& n : Gamepads)
+    {
+        if(!std::memcmp(&n.deviceGuid, &di->guidInstance, sizeof(GUID)))
+        {
+            return DIENUM_CONTINUE;
+        }
+    }
+
+    // Get GUID to look up mapping.
+    char name[256] = {'U', 'n', 'k', 'n', 'o', 'w', 'n', '\0'};
+    char buf[33];
+    if(!std::memcmp(di->guidProduct.Data4 + 2, "PIDVID", 6))
+    {
+        std::snprintf(buf, sizeof(buf), "03000000%02x%02x0000%02x%02x0000000000"
+            "00", static_cast<std::uint8_t>(di->guidProduct.Data1), static_cast<
+            std::uint8_t>(di->guidProduct.Data1 >> 8), static_cast<std::
+            uint8_t>(di->guidProduct.Data1 >> 16), static_cast<std::uint8_t>(
+            di->guidProduct.Data1 >> 24));
+    }
+    else
+    {
+        std::snprintf(buf, sizeof(buf), "05000000%02x%02x%02x%02x%02x%02x%02x%0"
+            "2x%02x%02x%02x00", name[0], name[1], name[2], name[3], name[4],
+            name[5], name[6], name[7], name[8], name[9], name[10]);
+    }
+    std::string guid = buf;
+
+    // Check if we have a mapping for this type of gamepad.
+    if(!paz::gamepad_mappings().count(guid))
+    {
+        return DIENUM_CONTINUE;
+    }
+
+    IDirectInputDevice8* device;
+    auto hr = IDirectInput8_CreateDevice(Dinput8Interface, di->guidInstance,
+        &device, nullptr);
     if(hr)
     {
-        throw std::runtime_error("Failed to enumerate DirectInput8 devices (" +  paz::format_hresult(hr) + ").");
+        throw std::runtime_error("Failed to create DirectInput8 device (" +
+            paz::format_hresult(hr) + ").");
     }
-#else
-std::cout << "CON ";
-for(DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
-{
-XINPUT_CAPABILITIES xic;
-std::cout << (paz::initialize().xInputGetCapabilities(i, XINPUT_FLAG_GAMEPAD, &xic) == ERROR_SUCCESS) << ' ';
+    hr = IDirectInputDevice8_SetDataFormat(device, &DataFormat);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to set DirectInput8 data format (" +
+            paz::format_hresult(hr) + ").");
+    }
+
+    DIDEVCAPS dc = {};
+    dc.dwSize = sizeof(dc);
+    hr = IDirectInputDevice8_GetCapabilities(device, &dc);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to get DirectInput8 device capabilitie"
+            "s (" + paz::format_hresult(hr) + ").");
+    }
+
+    DIPROPDWORD dipd = {};
+    dipd.diph.dwSize = sizeof(dipd);
+    dipd.diph.dwHeaderSize = sizeof(dipd.diph);
+    dipd.diph.dwHow = DIPH_DEVICE;
+    dipd.dwData = DIPROPAXISMODE_ABS;
+    hr = IDirectInputDevice8_SetProperty(device, DIPROP_AXISMODE, &dipd.diph);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to set DirectInput8 device axis mode ("
+            + paz::format_hresult(hr) + ").");
+        IDirectInputDevice8_Release(device);
+    }
+
+    // [axes, buttons, hats]
+    ObjectData data = {};
+    data.device = device;
+    hr = IDirectInputDevice8_EnumObjects(device, object_callback, &data,
+        DIDFT_AXIS|DIDFT_BUTTON|DIDFT_POV);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to enumerate DirectInput8 device objec"
+            "ts (" + paz::format_hresult(hr) + ").");
+        IDirectInputDevice8_Release(device);
+    }
+
+    std::sort(data.axes.begin(), data.axes.end());
+    std::sort(data.buttons.begin(), data.buttons.end());
+    std::sort(data.hats.begin(), data.hats.end());
+
+    Gamepads.push_back({di->guidInstance, device, guid, name, data.axes, data.
+        buttons, data.hats});
+
+    return DIENUM_CONTINUE;
 }
-std::cout << std::endl;
-#endif
+
+static void detect_gamepad_connection()
+{
+    const auto hr = IDirectInput8_EnumDevices(Dinput8Interface,
+        DI8DEVCLASS_GAMECTRL, device_callback, nullptr, DIEDFL_ALLDEVICES);
+    if(hr)
+    {
+        throw std::runtime_error("Failed to enumerate DirectInput8 devices (" +
+            paz::format_hresult(hr) + ").");
+    }
 }
 
 static void detect_gamepad_disconnection()
 {
-#if 0
-    ??
-#else
-std::cout << "DIS ";
-for(DWORD i = 0; i < XUSER_MAX_COUNT; ++i)
-{
-XINPUT_CAPABILITIES xic;
-std::cout << (paz::initialize().xInputGetCapabilities(i, XINPUT_FLAG_GAMEPAD, &xic) == ERROR_SUCCESS) << ' ';
-}
-std::cout << std::endl;
-#endif
+    for(const auto& n : Gamepads)
+    {
+        // Poll DirectInput8 device.
+        DIJOYSTATE joyState = {};
+        IDirectInputDevice8_Poll(n.device);
+        auto hr = IDirectInputDevice8_GetDeviceState(n.device, sizeof(joyState),
+            &joyState);
+        if(hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST)
+        {
+            IDirectInputDevice8_Acquire(n.device);
+            IDirectInputDevice8_Poll(n.device);
+            hr = IDirectInputDevice8_GetDeviceState(n.device, sizeof(joyState),
+                &joyState);
+        }
+        if(hr)
+        {
+            IDirectInputDevice8_Unacquire(n.device);
+            IDirectInputDevice8_Release(n.device);
+        }
+    }
 }
 
-static bool poll_gamepad_state(paz::GamepadState& state)
+static bool get_gamepad_state(paz::GamepadState& state)
 {
     if(Gamepads.empty())
     {
         return false;
     }
 
-    throw std::logic_error("NOT IMPLEMENTED");
+    // Poll DirectInput8 device.
+    DIJOYSTATE joyState = {};
+    IDirectInputDevice8_Poll(Gamepads[0].device);
+    auto hr = IDirectInputDevice8_GetDeviceState(Gamepads[0].device, sizeof(
+        joyState), &joyState);
+    if(hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST)
+    {
+        IDirectInputDevice8_Acquire(Gamepads[0].device);
+        IDirectInputDevice8_Poll(Gamepads[0].device);
+        hr = IDirectInputDevice8_GetDeviceState(Gamepads[0].device, sizeof(
+            joyState), &joyState);
+    }
+    if(hr)
+    {
+        IDirectInputDevice8_Unacquire(Gamepads[0].device);
+        IDirectInputDevice8_Release(Gamepads[0].device);
+        return false;
+    }
+
+    // Process axes.
+    std::vector<double> axes(Gamepads[0].axes.size(), 0.);
+    for(std::size_t i = 0; i < Gamepads[0].axes.size(); ++i)
+    {
+        const void* data = reinterpret_cast<const char*>(&joyState) + Gamepads[
+            0].axes[i].idx;
+        axes[i] = (*reinterpret_cast<const LONG*>(data) + 0.5)/32767.5;
+    }
+
+    // Process buttons.
+    std::vector<bool> buttons(Gamepads[0].buttons.size());
+    for(std::size_t i = 0; i < Gamepads[0].buttons.size(); ++i)
+    {
+        const void* data = reinterpret_cast<const char*>(&joyState) + Gamepads[
+            0].buttons[i].idx;
+        buttons[i] = *reinterpret_cast<const BYTE*>(data)&0x80;
+    }
+
+    // Process hats.
+    std::vector<int> hats(Gamepads[0].hats.size());
+    for(std::size_t i = 0; i < Gamepads[0].hats.size(); ++i)
+    {
+        const void* data = reinterpret_cast<const char*>(&joyState) + Gamepads[
+            0].hats[i].idx;
+        static constexpr std::array<int, 9> hatStates =
+        {
+            1,   // up
+            1|2, // right-up
+            2,   // right
+            2|4, // right-down
+            4,   // down
+            4|8, // left-down
+            8,   // left
+            1|8, // left-up
+            0    // centered
+        };
+        int stateIdx = LOWORD(*reinterpret_cast<const DWORD*>(data))/(45*
+            DI_DEGREES);
+        if(stateIdx < 0 || stateIdx > 8)
+        {
+            stateIdx = 8;
+        }
+        hats[i] = hatStates[stateIdx];
+    }
+
+    // Use mapping to get state.
+    const auto& mapping = paz::gamepad_mappings().at(Gamepads[0].guid);
+    for(int i = 0; i < paz::NumGamepadButtons; ++i)
+    {
+        const auto e = mapping.buttons[i];
+        switch(e.type)
+        {
+            case paz::GamepadElementType::Axis:
+            {
+                const float val = axes[e.idx]*e.axisScale + e.axisOffset;
+                if(e.axisOffset < 0. || (!e.axisOffset && e.axisScale > 0.))
+                {
+                    state.buttons[i] = val >= 0.;
+                }
+                else
+                {
+                    state.buttons[i] = val <= 0.;
+                }
+                break;
+            }
+            case paz::GamepadElementType::HatBit:
+            {
+                const unsigned int hat = e.idx >> 4;
+                const unsigned int bit = e.idx&0xf;
+                state.buttons[i] = hats[hat]&bit;
+                break;
+            }
+            case paz::GamepadElementType::Button:
+            {
+                state.buttons[i] = buttons[e.idx];
+                break;
+            }
+        }
+    }
+    for(int i = 0; i < 6; ++i)
+    {
+        const auto e = mapping.axes[i];
+        switch(e.type)
+        {
+            case paz::GamepadElementType::Axis:
+            {
+                const double val = axes[e.idx]*e.axisScale + e.axisOffset;
+                state.axes[i] = std::max(-1., std::min(1., val));
+                break;
+            }
+            case paz::GamepadElementType::HatBit:
+            {
+                const unsigned int hat = e.idx >> 4;
+                const unsigned int bit = e.idx&0xf;
+                state.axes[i] = hats[hat]&bit ? 1. : 1.;
+                break;
+            }
+            case paz::GamepadElementType::Button:
+            {
+                state.axes[i] = 2.*buttons[e.idx] - 1.;
+                break;
+            }
+        }
+    }
+
+    return true;
 }
 
 paz::Initializer& paz::initialize()
@@ -954,50 +1336,6 @@ paz::Initializer::Initializer()
     }
     directInput8Create = reinterpret_cast<HRESULT(*)(HINSTANCE, DWORD, REFIID,
         LPVOID*, LPUNKNOWN)>(GetProcAddress(dinput8, "DirectInput8Create"));
-    HMODULE xinput = nullptr;
-    static const std::array<std::string, 5> xinputVersions =
-    {
-        "xinput1_4.dll",
-        "xinput1_3.dll",
-        "xinput9_1_0.dll",
-        "xinput1_2.dll",
-        "xinput1_1.dll"
-    };
-    for(const auto& n : xinputVersions)
-    {
-        xinput = LoadLibrary(std::wstring(n.begin(), n.end()).c_str());
-        if(xinput)
-        {
-            break;
-        }
-    }
-    if(!xinput)
-    {
-        std::ostringstream oss;
-        oss << "Failed to load ";
-        for(std::size_t i = 0; i < xinputVersions.size(); ++i)
-        {
-            oss << '"' << xinputVersions[i] << '"';
-            if(i + 1 < xinputVersions.size())
-            {
-                if(xinputVersions.size() > 2)
-                {
-                    oss << ',';
-                }
-                oss << ' ';
-            }
-            if(i + 2 == xinputVersions.size())
-            {
-                oss << "or ";
-            }
-        }
-        oss << '.';
-        throw std::runtime_error(oss.str());
-    }
-    xInputGetCapabilities = reinterpret_cast<DWORD(*)(DWORD, DWORD,
-        XINPUT_CAPABILITIES*)>(GetProcAddress(xinput, "XInputGetCapabilities"));
-    xInputGetState = reinterpret_cast<DWORD(*)(DWORD, XINPUT_STATE)>(
-        GetProcAddress(xinput, "XInputGetState"));
 
     // Check Windows version.
     OSVERSIONINFOEX osvi = {};
@@ -1145,7 +1483,7 @@ paz::Initializer::Initializer()
     }
 
     // Get any initially-attached gamepads.
-//    detect_gamepad_connection();
+    detect_gamepad_connection();
 
     // Set up final blitting pass.
     ID3DBlob* vertBlob;
@@ -1621,7 +1959,7 @@ void paz::Window::PollEvents()
     }
 
     GamepadState state;
-    if(poll_gamepad_state(state))
+    if(get_gamepad_state(state))
     {
         for(int i = 0; i < NumGamepadButtons; ++i)
         {
@@ -1670,6 +2008,7 @@ void paz::Window::PollEvents()
             ::MouseActive = false;
             ::GamepadRightStick.second = state.axes[3];
         }
+#if 0 //TEMP - need to use XInput to handle XBox controller triggers independently
         if(state.axes[4] > -0.9)
         {
             ::GamepadActive = true;
@@ -1682,6 +2021,20 @@ void paz::Window::PollEvents()
             ::MouseActive = false;
             ::GamepadRightTrigger = state.axes[5];
         }
+#else
+        if(state.axes[4] > 0.1)
+        {
+            ::GamepadActive = true;
+            ::MouseActive = false;
+            ::GamepadLeftTrigger = 2.*state.axes[4] - 1.;
+        }
+        else if(state.axes[4] < -0.1)
+        {
+            ::GamepadActive = true;
+            ::MouseActive = false;
+            ::GamepadRightTrigger = -2.*state.axes[4] - 1.;
+        }
+#endif
     }
 }
 
