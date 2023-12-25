@@ -151,7 +151,7 @@ static void match_callback(void* context, IOReturn /* result */, void*
 
         if(target)
         {
-            target->push_back({native, usage, target->size(),
+            target->push_back({target->size(), native, usage,
                 IOHIDElementGetLogicalMin(native), IOHIDElementGetLogicalMax(
                 native)});
         }
