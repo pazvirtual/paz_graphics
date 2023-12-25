@@ -11,9 +11,9 @@
 
 #define CASE(a, b) case paz::PrimitiveType::a: return GL_##b;
 #define CHECK_UNIFORM if(!_data->_shader._uniformIds.count(name)) return;
-#define CHECK_PASS if(!CurPass) throw std::logic_error("No current render pass"\
-    "."); else if(this != CurPass) throw std::logic_error("Render pass operati"\
-    "ons cannot be interleaved.");
+#define CHECK_PASS if(!_pass){ throw std::logic_error("No current render pass."\
+    ); }else if(this != _pass){ throw std::logic_error("Render pass operations"\
+    " cannot be interleaved."); }
 #define CASE1(a, b, n) case GL_##a: glVertexAttribIPointer(idx, n, GL_##b, 0, \
     nullptr); break;
 #define CASE2(a, n) case GL_##a: glVertexAttribPointer(idx, n, GL_FLOAT, \
@@ -22,14 +22,14 @@
 static constexpr float Clear[] = {0.f, 0.f, 0.f, 0.f};
 static constexpr float Black[] = {0.f, 0.f, 0.f, 1.f};
 static constexpr float White[] = {1.f, 1.f, 1.f, 1.f};
-static int NextSlot;
 
-static bool DepthTestEnabled;
-static bool DepthMaskEnabled = true;
-static bool BlendEnabled;
-static bool DepthCalledThisPass;
-static bool CullCalledThisPass;
-static const paz::RenderPass* CurPass;
+static int _nextSlot;
+static bool _depthTestEnabled;
+static bool _depthMaskEnabled = true;
+static bool _blendenabled;
+static bool _depthCalledThisPass;
+static bool _cullCalledThisPass;
+static const paz::RenderPass* _pass;
 
 static GLenum primitive_type(paz::PrimitiveType t)
 {
@@ -204,11 +204,11 @@ paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
 {
-    if(CurPass)
+    if(_pass)
     {
         throw std::logic_error("Previous render pass was not ended.");
     }
-    CurPass = this;
+    _pass = this;
 
     if(!_data)
     {
@@ -217,9 +217,9 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
 
     begin_frame();
     glGetError();
-    DepthCalledThisPass = false;
-    CullCalledThisPass = false;
-    NextSlot = 0;
+    _depthCalledThisPass = false;
+    _cullCalledThisPass = false;
+    _nextSlot = 0;
     glBindFramebuffer(GL_FRAMEBUFFER, _data->_fbo->_id);
     if(_data->_fbo->_width)
     {
@@ -255,18 +255,18 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         if(depthLoadAction == LoadAction::Clear || depthLoadAction == LoadAction
             ::FillOnes)
         {
-            if(!DepthMaskEnabled)
+            if(!_depthMaskEnabled)
             {
-                DepthMaskEnabled = true;
+                _depthMaskEnabled = true;
                 glDepthMask(GL_TRUE);
             }
             glClear(GL_DEPTH_BUFFER_BIT);
         }
         else if(depthLoadAction == LoadAction::FillZeros)
         {
-            if(!DepthMaskEnabled)
+            if(!_depthMaskEnabled)
             {
-                DepthMaskEnabled = true;
+                _depthMaskEnabled = true;
                 glDepthMask(GL_TRUE);
             }
             glClearBufferfv(GL_DEPTH, 0, Clear);
@@ -289,17 +289,17 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     }
     if(!needBlending)
     {
-        if(BlendEnabled)
+        if(_blendenabled)
         {
-            BlendEnabled = false;
+            _blendenabled = false;
             glDisable(GL_BLEND);
         }
     }
     else
     {
-        if(!BlendEnabled)
+        if(!_blendenabled)
         {
-            BlendEnabled = true;
+            _blendenabled = true;
             glEnable(GL_BLEND);
         }
         for(std::size_t i = 0; i < _data->_blendModes.size(); ++i)
@@ -341,30 +341,30 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
 void paz::RenderPass::depth(DepthTestMode mode)
 {
     CHECK_PASS
-    DepthCalledThisPass = true;
+    _depthCalledThisPass = true;
     if(mode == DepthTestMode::Disable)
     {
-        if(DepthTestEnabled)
+        if(_depthTestEnabled)
         {
-            DepthTestEnabled = false;
+            _depthTestEnabled = false;
             glDisable(GL_DEPTH_TEST);
         }
     }
     else
     {
-        if(!DepthTestEnabled)
+        if(!_depthTestEnabled)
         {
-            DepthTestEnabled = true;
+            _depthTestEnabled = true;
             glEnable(GL_DEPTH_TEST);
         }
-        if(mode < DepthTestMode::Never && DepthMaskEnabled)
+        if(mode < DepthTestMode::Never && _depthMaskEnabled)
         {
-            DepthMaskEnabled = false;
+            _depthMaskEnabled = false;
             glDepthMask(GL_FALSE);
         }
-        else if(!DepthMaskEnabled)
+        else if(!_depthMaskEnabled)
         {
-            DepthMaskEnabled = true;
+            _depthMaskEnabled = true;
             glDepthMask(GL_TRUE);
         }
         if(mode == DepthTestMode::Never || mode == DepthTestMode::NeverNoMask)
@@ -430,13 +430,13 @@ void paz::RenderPass::end()
         throw std::runtime_error("Error in render pass: " + gl_error(error) +
             ".");
     }
-    CurPass = nullptr;
+    _pass = nullptr;
 }
 
 void paz::RenderPass::cull(CullMode mode)
 {
     CHECK_PASS
-    CullCalledThisPass = true;
+    _cullCalledThisPass = true;
     if(mode == CullMode::Disable)
     {
         glDisable(GL_CULL_FACE);
@@ -460,10 +460,10 @@ void paz::RenderPass::cull(CullMode mode)
 void paz::RenderPass::read(const std::string& name, const Texture& tex)
 {
     CHECK_PASS
-    glActiveTexture(GL_TEXTURE0 + NextSlot);
+    glActiveTexture(GL_TEXTURE0 + _nextSlot);
     glBindTexture(GL_TEXTURE_2D, tex._data->_id);
-    uniform(name, NextSlot);
-    ++NextSlot;
+    uniform(name, _nextSlot);
+    ++_nextSlot;
 }
 
 void paz::RenderPass::uniform(const std::string& name, int x)
@@ -683,11 +683,11 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices)
     }
 
     // Ensure that depth test mode and face culling mode do not persist.
-    if(!DepthCalledThisPass)
+    if(!_depthCalledThisPass)
     {
         depth(DepthTestMode::Disable);
     }
-    if(!CullCalledThisPass)
+    if(!_cullCalledThisPass)
     {
         cull(CullMode::Disable);
     }
@@ -707,11 +707,11 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     }
 
     // Ensure that depth test mode and face culling mode do not persist.
-    if(!DepthCalledThisPass)
+    if(!_depthCalledThisPass)
     {
         depth(DepthTestMode::Disable);
     }
-    if(!CullCalledThisPass)
+    if(!_cullCalledThisPass)
     {
         cull(CullMode::Disable);
     }
@@ -734,11 +734,11 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     }
 
     // Ensure that depth test mode and face culling mode do not persist.
-    if(!DepthCalledThisPass)
+    if(!_depthCalledThisPass)
     {
         depth(DepthTestMode::Disable);
     }
-    if(!CullCalledThisPass)
+    if(!_cullCalledThisPass)
     {
         cull(CullMode::Disable);
     }
@@ -807,11 +807,11 @@ void paz::RenderPass::draw(PrimitiveType type, const VertexBuffer& vertices,
     }
 
     // Ensure that depth test mode and face culling mode do not persist.
-    if(!DepthCalledThisPass)
+    if(!_depthCalledThisPass)
     {
         depth(DepthTestMode::Disable);
     }
-    if(!CullCalledThisPass)
+    if(!_cullCalledThisPass)
     {
         cull(CullMode::Disable);
     }
@@ -877,14 +877,14 @@ paz::Framebuffer paz::RenderPass::framebuffer() const
 
 void paz::disable_blend_depth_cull()
 {
-    if(BlendEnabled)
+    if(_blendenabled)
     {
-        BlendEnabled = false;
+        _blendenabled = false;
         glDisable(GL_BLEND);
     }
-    if(DepthTestEnabled)
+    if(_depthTestEnabled)
     {
-        DepthTestEnabled = false;
+        _depthTestEnabled = false;
         glDisable(GL_DEPTH_TEST);
     }
     glDisable(GL_CULL_FACE);

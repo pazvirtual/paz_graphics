@@ -98,62 +98,81 @@ static constexpr std::array<float, 8> QuadPos =
     -1,  1
 };
 
-static HWND WindowHandle;
-static HMONITOR MonitorHandle;
-static ID3D11Device* Device;
-static ID3D11DeviceContext* DeviceContext;
-static IDXGISwapChain* SwapChain;
-static ID3D11RenderTargetView* RenderTargetView;
-static int WindowWidth;
-static int WindowHeight;
-static bool WindowIsKey;
-static bool WindowIsMinimized;
-static bool FrameAction;
-static bool CursorTracked;
-static int PrevX;
-static int PrevY;
-static int PrevHeight;
-static int PrevWidth;
-static int FboWidth;
-static int FboHeight;
-static float FboAspectRatio;
-static int MinWidth = 0;
-static int MinHeight = 0;
-static int MaxWidth = 0;
-static int MaxHeight = 0;
-static bool Resizable = true;
-static bool Done;
-static paz::CursorMode CurCursorMode = paz::CursorMode::Normal;
-static std::array<bool, paz::NumKeys> KeyDown;
-static std::array<bool, paz::NumKeys> KeyPressed;
-static std::array<bool, paz::NumKeys> KeyReleased;
-static std::array<bool, paz::NumMouseButtons> MouseDown;
-static std::array<bool, paz::NumMouseButtons> MousePressed;
-static std::array<bool, paz::NumMouseButtons> MouseReleased;
-static std::pair<double, double> MousePos;
-static std::pair<double, double> PrevMousePos;
-static std::pair<double, double> VirtMousePos;
-static std::pair<double, double> ScrollOffset;
-static std::array<bool, paz::NumGamepadButtons> GamepadDown;
-static std::array<bool, paz::NumGamepadButtons> GamepadPressed;
-static std::array<bool, paz::NumGamepadButtons> GamepadReleased;
-static std::pair<double, double> GamepadLeftStick;
-static std::pair<double, double> GamepadRightStick;
-static double GamepadLeftTrigger = -1.;
-static double GamepadRightTrigger = -1.;
-static std::vector<paz::Gamepad> Gamepads;
-static bool GamepadActive;
-static bool MouseActive;
-static bool CursorDisabled;
-static POINT PriorCursorPos;
-static bool FrameInProgress;
-static bool HidpiEnabled = true;
-static float Gamma = 2.2;
-static bool Dither;
-static LPDIRECTINPUT8 Dinput8Interface;
-static HDEVNOTIFY DeviceNotificationHandle;
+static HWND _windowHandle;
+static HMONITOR _monitorHandle;
+static ID3D11Device* _device;
+static ID3D11DeviceContext* _deviceContext;
+static IDXGISwapChain* _swapChain;
+static ID3D11RenderTargetView* _renderTargetView;
+static int _windowWidth;
+static int _windowHeight;
+static bool _windowIsKey;
+static bool _windowIsMinimized;
+static bool _frameAction;
+static bool _cursorTracked;
+static int _prevX;
+static int _prevY;
+static int _prevHeight;
+static int _prevWidth;
+static int _fboWidth;
+static int _fboHeight;
+static float _fboAspectRatio;
+static int _minWidth = 0;
+static int _minHeight = 0;
+static int _maxWidth = 0;
+static int _maxHeight = 0;
+static bool _resizable = true;
+static bool _done;
+static paz::CursorMode _cursorMode = paz::CursorMode::Normal;
+static std::array<bool, paz::NumKeys> _keyDown;
+static std::array<bool, paz::NumKeys> _keyPressed;
+static std::array<bool, paz::NumKeys> _keyReleased;
+static std::array<bool, paz::NumMouseButtons> _mouseDown;
+static std::array<bool, paz::NumMouseButtons> _mousePressed;
+static std::array<bool, paz::NumMouseButtons> _mouseReleased;
+static std::pair<double, double> _mousePos;
+static std::pair<double, double> _prevMousePos;
+static std::pair<double, double> _virtMousePos;
+static std::pair<double, double> _scrollOffset;
+static std::array<bool, paz::NumGamepadButtons> _gamepadDown;
+static std::array<bool, paz::NumGamepadButtons> _gamepadPressed;
+static std::array<bool, paz::NumGamepadButtons> _gamepadReleased;
+static std::pair<double, double> _gamepadLeftStick;
+static std::pair<double, double> _gamepadRightStick;
+static double _gamepadLeftTrigger = -1.;
+static double _gamepadRightTrigger = -1.;
+static std::vector<paz::Gamepad> _gamepads;
+static bool _gamepadActive;
+static bool _mouseActive;
+static bool _cursorDisabled;
+static POINT _priorCursorPos;
+static bool _frameInProgress;
+static bool _hidpiEnabled = true;
+static float _gamma = 2.2;
+static bool _dither;
+static LPDIRECTINPUT8 _dinput8Interface;
+static HDEVNOTIFY _deviceNotificationHandle;
+static std::chrono::time_point<std::chrono::steady_clock> _frameStart;
+static UINT(*_getDpiForWindow)(HWND);
+static BOOL(*_adjustWindowRectExForDpi)(LPRECT, DWORD, BOOL, DWORD, UINT);
+static BOOL(*_setProcessDPIAware)();
+static BOOL(*_setProcessDpiAwarenessContext)(DPI_AWARENESS_CONTEXT);
+static HRESULT(*_setProcessDpiAwareness)(PROCESS_DPI_AWARENESS);
+static LONG(*_rtlVerifyVersionInfo)(OSVERSIONINFOEX*, ULONG, ULONGLONG);
+static HRESULT(*_directInput8Create)(HINSTANCE, DWORD, REFIID, LPVOID*,
+    LPUNKNOWN);
+static bool _isWindows10Version1703OrGreater;
+static bool _isWindows10Version1607OrGreater;
+static bool _isWindows8Point1OrGreater;
+static bool _isWindowsVistaOrGreater;
+static ID3D11VertexShader* _quadVertShader;
+static ID3D11PixelShader* _quadFragShader;
+static ID3D11Buffer* _quadBuf;
+static ID3D11InputLayout* _quadLayout;
+static ID3D11RasterizerState* _blitState;
+static ID3D11Buffer* _blitBuf;
 
-static DIOBJECTDATAFORMAT ObjectDataFormats[] =
+static const DIOBJECTDATAFORMAT ObjectDataFormats[] =
 {
     {&GUID_XAxis, DIJOFS_X, DIDFT_AXIS|DIDFT_OPTIONAL|DIDFT_ANYINSTANCE,
         DIDOI_ASPECTPOSITION},
@@ -248,7 +267,7 @@ static const DIDATAFORMAT DataFormat =
     DIDFT_ABSAXIS,
     sizeof(DIJOYSTATE),
     sizeof(ObjectDataFormats)/sizeof(DIOBJECTDATAFORMAT),
-    ObjectDataFormats
+    const_cast<LPDIOBJECTDATAFORMAT>(ObjectDataFormats)
 };
 
 namespace
@@ -265,14 +284,14 @@ namespace
 static DWORD window_style()
 {
     DWORD style = WS_CLIPSIBLINGS|WS_CLIPCHILDREN;
-    if(MonitorHandle)
+    if(_monitorHandle)
     {
         style |= WS_POPUP;
     }
     else
     {
         style |= WS_SYSMENU|WS_MINIMIZEBOX|WS_CAPTION;
-        if(Resizable)
+        if(_resizable)
         {
             style |= WS_MAXIMIZEBOX|WS_THICKFRAME;
         }
@@ -288,20 +307,20 @@ static DWORD window_ex_style()
 
 static void update_styles()
 {
-    DWORD style = GetWindowLong(WindowHandle, GWL_STYLE);
+    DWORD style = GetWindowLong(_windowHandle, GWL_STYLE);
     style &= ~(WS_OVERLAPPEDWINDOW|WS_POPUP);
     style |= window_style();
 
     RECT rect;
-    GetClientRect(WindowHandle, &rect);
+    GetClientRect(_windowHandle, &rect);
 
     AdjustWindowRectEx(&rect, style, FALSE, window_ex_style());
 
-    ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(&rect.left));
-    ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(&rect.right));
-    SetWindowLong(WindowHandle, GWL_STYLE, style);
-    SetWindowPos(WindowHandle, HWND_TOP, rect.left, rect.top, rect.right - rect.
-        left, rect.bottom - rect.top, SWP_FRAMECHANGED|SWP_NOACTIVATE|
+    ClientToScreen(_windowHandle, reinterpret_cast<POINT*>(&rect.left));
+    ClientToScreen(_windowHandle, reinterpret_cast<POINT*>(&rect.right));
+    SetWindowLong(_windowHandle, GWL_STYLE, style);
+    SetWindowPos(_windowHandle, HWND_TOP, rect.left, rect.top, rect.right -
+        rect.left, rect.bottom - rect.top, SWP_FRAMECHANGED|SWP_NOACTIVATE|
         SWP_NOZORDER);
 }
 
@@ -381,7 +400,7 @@ static BOOL CALLBACK object_callback(const DIDEVICEOBJECTINSTANCE* doi, void*
 static BOOL CALLBACK device_callback(const DIDEVICEINSTANCE* di, void*)
 {
     // Check if this device was already connected.
-    for(const auto& n : Gamepads)
+    for(const auto& n : _gamepads)
     {
         if(!std::memcmp(&n.deviceGuid, &di->guidInstance, sizeof(GUID)))
         {
@@ -415,7 +434,7 @@ static BOOL CALLBACK device_callback(const DIDEVICEINSTANCE* di, void*)
     }
 
     IDirectInputDevice8* device;
-    auto hr = IDirectInput8_CreateDevice(Dinput8Interface, di->guidInstance,
+    auto hr = IDirectInput8_CreateDevice(_dinput8Interface, di->guidInstance,
         &device, nullptr);
     if(hr)
     {
@@ -467,7 +486,7 @@ static BOOL CALLBACK device_callback(const DIDEVICEINSTANCE* di, void*)
     std::sort(data.buttons.begin(), data.buttons.end());
     std::sort(data.hats.begin(), data.hats.end());
 
-    Gamepads.push_back({di->guidInstance, device, guid, name, data.axes, data.
+    _gamepads.push_back({di->guidInstance, device, guid, name, data.axes, data.
         buttons, data.hats});
 
     return DIENUM_CONTINUE;
@@ -475,7 +494,7 @@ static BOOL CALLBACK device_callback(const DIDEVICEINSTANCE* di, void*)
 
 static void detect_gamepad_connection()
 {
-    const auto hr = IDirectInput8_EnumDevices(Dinput8Interface,
+    const auto hr = IDirectInput8_EnumDevices(_dinput8Interface,
         DI8DEVCLASS_GAMECTRL, device_callback, nullptr, DIEDFL_ALLDEVICES);
     if(hr)
     {
@@ -486,7 +505,7 @@ static void detect_gamepad_connection()
 
 static void detect_gamepad_disconnection()
 {
-    for(const auto& n : Gamepads)
+    for(const auto& n : _gamepads)
     {
         // Poll DirectInput8 device.
         DIJOYSTATE joyState = {};
@@ -510,53 +529,53 @@ static void detect_gamepad_disconnection()
 
 static bool get_gamepad_state(paz::GamepadState& state)
 {
-    if(Gamepads.empty())
+    if(_gamepads.empty())
     {
         return false;
     }
 
     // Poll DirectInput8 device.
     DIJOYSTATE joyState = {};
-    IDirectInputDevice8_Poll(Gamepads[0].device);
-    auto hr = IDirectInputDevice8_GetDeviceState(Gamepads[0].device, sizeof(
+    IDirectInputDevice8_Poll(_gamepads[0].device);
+    auto hr = IDirectInputDevice8_GetDeviceState(_gamepads[0].device, sizeof(
         joyState), &joyState);
     if(hr == DIERR_NOTACQUIRED || hr == DIERR_INPUTLOST)
     {
-        IDirectInputDevice8_Acquire(Gamepads[0].device);
-        IDirectInputDevice8_Poll(Gamepads[0].device);
-        hr = IDirectInputDevice8_GetDeviceState(Gamepads[0].device, sizeof(
+        IDirectInputDevice8_Acquire(_gamepads[0].device);
+        IDirectInputDevice8_Poll(_gamepads[0].device);
+        hr = IDirectInputDevice8_GetDeviceState(_gamepads[0].device, sizeof(
             joyState), &joyState);
     }
     if(hr)
     {
-        IDirectInputDevice8_Unacquire(Gamepads[0].device);
-        IDirectInputDevice8_Release(Gamepads[0].device);
+        IDirectInputDevice8_Unacquire(_gamepads[0].device);
+        IDirectInputDevice8_Release(_gamepads[0].device);
         return false;
     }
 
     // Process axes.
-    std::vector<double> axes(Gamepads[0].axes.size(), 0.);
-    for(std::size_t i = 0; i < Gamepads[0].axes.size(); ++i)
+    std::vector<double> axes(_gamepads[0].axes.size(), 0.);
+    for(std::size_t i = 0; i < _gamepads[0].axes.size(); ++i)
     {
-        const void* data = reinterpret_cast<const char*>(&joyState) + Gamepads[
+        const void* data = reinterpret_cast<const char*>(&joyState) + _gamepads[
             0].axes[i].idx;
         axes[i] = (*reinterpret_cast<const LONG*>(data) + 0.5)/32767.5;
     }
 
     // Process buttons.
-    std::vector<bool> buttons(Gamepads[0].buttons.size());
-    for(std::size_t i = 0; i < Gamepads[0].buttons.size(); ++i)
+    std::vector<bool> buttons(_gamepads[0].buttons.size());
+    for(std::size_t i = 0; i < _gamepads[0].buttons.size(); ++i)
     {
-        const void* data = reinterpret_cast<const char*>(&joyState) + Gamepads[
+        const void* data = reinterpret_cast<const char*>(&joyState) + _gamepads[
             0].buttons[i].idx;
         buttons[i] = *reinterpret_cast<const BYTE*>(data)&0x80;
     }
 
     // Process hats.
-    std::vector<int> hats(Gamepads[0].hats.size());
-    for(std::size_t i = 0; i < Gamepads[0].hats.size(); ++i)
+    std::vector<int> hats(_gamepads[0].hats.size());
+    for(std::size_t i = 0; i < _gamepads[0].hats.size(); ++i)
     {
-        const void* data = reinterpret_cast<const char*>(&joyState) + Gamepads[
+        const void* data = reinterpret_cast<const char*>(&joyState) + _gamepads[
             0].hats[i].idx;
         static constexpr std::array<int, 9> hatStates =
         {
@@ -580,7 +599,7 @@ static bool get_gamepad_state(paz::GamepadState& state)
     }
 
     // Use mapping to get state.
-    const auto& mapping = paz::gamepad_mappings().at(Gamepads[0].guid);
+    const auto& mapping = paz::gamepad_mappings().at(_gamepads[0].guid);
     for(int i = 0; i < paz::NumGamepadButtons; ++i)
     {
         const auto e = mapping.buttons[i];
@@ -652,17 +671,17 @@ static double PrevFrameTime = 1./60.;
 
 static void center_cursor()
 {
-    POINT pos = {WindowWidth/2, WindowHeight/2};
-    ClientToScreen(WindowHandle, &pos);
+    POINT pos = {_windowWidth/2, _windowHeight/2};
+    ClientToScreen(_windowHandle, &pos);
     SetCursorPos(pos.x, pos.y);
 }
 
 static void capture_cursor()
 {
     RECT clipRect;
-    GetClientRect(WindowHandle, &clipRect);
-    ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(&clipRect.left));
-    ClientToScreen(WindowHandle, reinterpret_cast<POINT*>(&clipRect.right));
+    GetClientRect(_windowHandle, &clipRect);
+    ClientToScreen(_windowHandle, reinterpret_cast<POINT*>(&clipRect.left));
+    ClientToScreen(_windowHandle, reinterpret_cast<POINT*>(&clipRect.right));
     ClipCursor(&clipRect);
 }
 
@@ -673,7 +692,7 @@ static void release_cursor()
 
 static void enable_raw_mouse_motion()
 {
-    const RAWINPUTDEVICE rid = {0x01, 0x02, 0, WindowHandle};
+    const RAWINPUTDEVICE rid = {0x01, 0x02, 0, _windowHandle};
     if(!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
     {
         throw std::runtime_error("Failed to register raw input device");
@@ -691,8 +710,8 @@ static void disable_raw_mouse_motion()
 
 static void disable_cursor()
 {
-    GetCursorPos(&PriorCursorPos);
-    ScreenToClient(WindowHandle, &PriorCursorPos);
+    GetCursorPos(&_priorCursorPos);
+    ScreenToClient(_windowHandle, &_priorCursorPos);
     center_cursor();
     SetCursor(nullptr);
     capture_cursor();
@@ -703,35 +722,35 @@ static void enable_cursor()
 {
     disable_raw_mouse_motion();
     release_cursor();
-    PrevMousePos.first = PriorCursorPos.x;
-    PrevMousePos.second = WindowHeight - PriorCursorPos.y;
-    ClientToScreen(WindowHandle, &PriorCursorPos);
-    SetCursorPos(PriorCursorPos.x, PriorCursorPos.y);
+    _prevMousePos.first = _priorCursorPos.x;
+    _prevMousePos.second = _windowHeight - _priorCursorPos.y;
+    ClientToScreen(_windowHandle, &_priorCursorPos);
+    SetCursorPos(_priorCursorPos.x, _priorCursorPos.y);
     SetCursor(LoadCursor(nullptr, IDC_ARROW));
 }
 
 static void acquire_monitor()
 {
-    if(!MonitorHandle)
+    if(!_monitorHandle)
     {
         SetThreadExecutionState(ES_CONTINUOUS|ES_DISPLAY_REQUIRED);
-        MonitorHandle = MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY);
+        _monitorHandle = MonitorFromPoint({}, MONITOR_DEFAULTTOPRIMARY);
     }
 }
 
 static void release_monitor()
 {
-    if(MonitorHandle)
+    if(_monitorHandle)
     {
         SetThreadExecutionState(ES_CONTINUOUS);
-        MonitorHandle = nullptr;
+        _monitorHandle = nullptr;
     }
 }
 
 static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
     lParam)
 {
-    if(!WindowHandle)
+    if(!_windowHandle)
     {
         return DefWindowProc(hWnd, uMsg, wParam, lParam);
     }
@@ -746,7 +765,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             {
                 if(LOWORD(lParam) != HTCLIENT)
                 {
-                    FrameAction = true;
+                    _frameAction = true;
                 }
             }
             break;
@@ -755,26 +774,26 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         {
             // Disable the cursor once the caption button action has been
             // completed or canceled.
-            if(!lParam && FrameAction)
+            if(!lParam && _frameAction)
             {
-                if(CursorDisabled)
+                if(_cursorDisabled)
                 {
                     disable_cursor();
                 }
-                FrameAction = false;
+                _frameAction = false;
             }
             break;
         }
         case WM_SETFOCUS:
         {
-            WindowIsKey = true;
+            _windowIsKey = true;
             // Do not disable cursor while the user is interacting with a
             // caption button.
-            if(FrameAction)
+            if(_frameAction)
             {
                 break;
             }
-            if(CursorDisabled)
+            if(_cursorDisabled)
             {
                 disable_cursor();
             }
@@ -782,8 +801,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         }
         case WM_KILLFOCUS:
         {
-            WindowIsKey = false;
-            if(CursorDisabled)
+            _windowIsKey = false;
+            if(_cursorDisabled)
             {
                 enable_cursor();
             }
@@ -796,7 +815,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                 case SC_SCREENSAVE:
                 case SC_MONITORPOWER:
                 {
-                    if(MonitorHandle)
+                    if(_monitorHandle)
                     {
                         return 0;
                     }
@@ -814,7 +833,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         }
         case WM_CLOSE:
         {
-            Done = true;
+            _done = true;
             return 0;
         }
         case WM_KEYDOWN:
@@ -873,23 +892,23 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             }
             if(released && wParam == VK_SHIFT)
             {
-                GamepadActive = false;
-                MouseActive = false;
+                _gamepadActive = false;
+                _mouseActive = false;
                 static constexpr int l = static_cast<int>(paz::Key::LeftShift);
                 static constexpr int r = static_cast<int>(paz::Key::RightShift);
-                KeyDown[l] = false;
-                KeyReleased[l] = true;
-                KeyDown[r] = false;
-                KeyReleased[r] = true;
+                _keyDown[l] = false;
+                _keyReleased[l] = true;
+                _keyDown[r] = false;
+                _keyReleased[r] = true;
             }
             else if(wParam == VK_SNAPSHOT)
             {
-                GamepadActive = false;
-                MouseActive = false;
+                _gamepadActive = false;
+                _mouseActive = false;
                 const int i = static_cast<int>(k);
-                KeyDown[i] = false;
-                KeyPressed[i] = true;
-                KeyReleased[i] = true;
+                _keyDown[i] = false;
+                _keyPressed[i] = true;
+                _keyReleased[i] = true;
             }
             else if(k == paz::Key::Unknown)
             {
@@ -897,18 +916,18 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             }
             else
             {
-                GamepadActive = false;
-                MouseActive = false;
+                _gamepadActive = false;
+                _mouseActive = false;
                 const int i = static_cast<int>(k);
                 if(released)
                 {
-                    KeyDown[i] = false;
-                    KeyReleased[i] = true;
+                    _keyDown[i] = false;
+                    _keyReleased[i] = true;
                 }
                 else
                 {
-                    KeyDown[i] = true;
-                    KeyPressed[i] = true;
+                    _keyDown[i] = true;
+                    _keyPressed[i] = true;
                 }
             }
             break;
@@ -922,8 +941,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         case WM_MBUTTONUP:
         case WM_XBUTTONUP:
         {
-            GamepadActive = false;
-            MouseActive = true;
+            _gamepadActive = false;
+            _mouseActive = true;
             int button;
             if(uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONUP)
             {
@@ -945,7 +964,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             {
                 button = static_cast<int>(paz::MouseButton::Forward);
             }
-            if(std::none_of(MouseDown.begin(), MouseDown.end(), [](bool x){
+            if(std::none_of(_mouseDown.begin(), _mouseDown.end(), [](bool x){
                 return x; }))
             {
                 SetCapture(hWnd);
@@ -953,15 +972,15 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             if(uMsg == WM_LBUTTONDOWN || uMsg == WM_RBUTTONDOWN || uMsg ==
                 WM_MBUTTONDOWN || uMsg == WM_XBUTTONDOWN)
             {
-                MouseDown[button] = true;
-                MousePressed[button] = true;
+                _mouseDown[button] = true;
+                _mousePressed[button] = true;
             }
             else
             {
-                MouseDown[button] = false;
-                MouseReleased[button] = true;
+                _mouseDown[button] = false;
+                _mouseReleased[button] = true;
             }
-            if(std::none_of(MouseDown.begin(), MouseDown.end(), [](bool x){
+            if(std::none_of(_mouseDown.begin(), _mouseDown.end(), [](bool x){
                 return x; }))
             {
                 ReleaseCapture();
@@ -974,37 +993,37 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         }
         case WM_MOUSEMOVE:
         {
-            if(!CursorTracked)
+            if(!_cursorTracked)
             {
                 TRACKMOUSEEVENT tme = {};
                 tme.cbSize = sizeof(tme);
                 tme.dwFlags = TME_LEAVE;
-                tme.hwndTrack = WindowHandle;
+                tme.hwndTrack = _windowHandle;
                 TrackMouseEvent(&tme);
-                CursorTracked = true;
+                _cursorTracked = true;
             }
-            if(CursorDisabled)
+            if(_cursorDisabled)
             {
                 break;
             }
             const int x = GET_X_LPARAM(lParam);
             const int y = GET_Y_LPARAM(lParam);
-            if(VirtMousePos.first != x || VirtMousePos.second != y)
+            if(_virtMousePos.first != x || _virtMousePos.second != y)
             {
-                GamepadActive = false;
-                MouseActive = true;
-                VirtMousePos.first = x;
-                VirtMousePos.second = y;
-                MousePos.first = VirtMousePos.first;
-                MousePos.second = WindowHeight - VirtMousePos.second;
+                _gamepadActive = false;
+                _mouseActive = true;
+                _virtMousePos.first = x;
+                _virtMousePos.second = y;
+                _mousePos.first = _virtMousePos.first;
+                _mousePos.second = _windowHeight - _virtMousePos.second;
             }
-            PrevMousePos.first = x;
-            PrevMousePos.second = y;
+            _prevMousePos.first = x;
+            _prevMousePos.second = y;
             return 0;
         }
         case WM_INPUT:
         {
-            if(!CursorDisabled)
+            if(!_cursorDisabled)
             {
                 break;
             }
@@ -1022,62 +1041,62 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             int deltaX, deltaY;
             if(data.data.mouse.usFlags&MOUSE_MOVE_ABSOLUTE)
             {
-                deltaX = data.data.mouse.lLastX - PrevMousePos.first;
-                deltaY = data.data.mouse.lLastY - PrevMousePos.second;
+                deltaX = data.data.mouse.lLastX - _prevMousePos.first;
+                deltaY = data.data.mouse.lLastY - _prevMousePos.second;
             }
             else
             {
                 deltaX = data.data.mouse.lLastX;
                 deltaY = data.data.mouse.lLastY;
             }
-            const double x = VirtMousePos.first + deltaX;
-            const double y = VirtMousePos.second + deltaY;
-            if(VirtMousePos.first != x || VirtMousePos.second != y)
+            const double x = _virtMousePos.first + deltaX;
+            const double y = _virtMousePos.second + deltaY;
+            if(_virtMousePos.first != x || _virtMousePos.second != y)
             {
-                GamepadActive = false;
-                MouseActive = true;
-                VirtMousePos.first = x;
-                VirtMousePos.second = y;
-                MousePos.first = VirtMousePos.first - WindowWidth/2;
-                MousePos.second = WindowHeight/2 - VirtMousePos.second;
+                _gamepadActive = false;
+                _mouseActive = true;
+                _virtMousePos.first = x;
+                _virtMousePos.second = y;
+                _mousePos.first = _virtMousePos.first - _windowWidth/2;
+                _mousePos.second = _windowHeight/2 - _virtMousePos.second;
             }
-            PrevMousePos.first += deltaX;
-            PrevMousePos.second += deltaY;
+            _prevMousePos.first += deltaX;
+            _prevMousePos.second += deltaY;
             break;
         }
         case WM_MOUSELEAVE:
         {
-            GamepadActive = false;
-            MouseActive = true;
-            CursorTracked = false;
+            _gamepadActive = false;
+            _mouseActive = true;
+            _cursorTracked = false;
             return 0;
         }
         case WM_MOUSEWHEEL:
         {
-            GamepadActive = false;
-            MouseActive = true;
-            ScrollOffset.second = static_cast<double>(GET_WHEEL_DELTA_WPARAM(
+            _gamepadActive = false;
+            _mouseActive = true;
+            _scrollOffset.second = static_cast<double>(GET_WHEEL_DELTA_WPARAM(
                 wParam))/WHEEL_DELTA;
             return 0;
         }
         case WM_MOUSEHWHEEL:
         {
-            GamepadActive = false;
-            MouseActive = true;
-            ScrollOffset.first = -static_cast<double>(GET_WHEEL_DELTA_WPARAM(
+            _gamepadActive = false;
+            _mouseActive = true;
+            _scrollOffset.first = -static_cast<double>(GET_WHEEL_DELTA_WPARAM(
                 wParam))/WHEEL_DELTA;
             return 0;
         }
         case WM_ENTERSIZEMOVE:
         case WM_ENTERMENULOOP:
         {
-            if(FrameAction)
+            if(_frameAction)
             {
                 break;
             }
             // Enable the cursor while the user is moving or resizing the window
             // or using the window menu.
-            if(CursorDisabled)
+            if(_cursorDisabled)
             {
                 enable_cursor();
             }
@@ -1086,13 +1105,13 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         case WM_EXITSIZEMOVE:
         case WM_EXITMENULOOP:
         {
-            if(FrameAction)
+            if(_frameAction)
             {
                 break;
             }
             // Disable the cursor once the user is done moving or resizing the
             // window or using the menu.
-            if(CursorDisabled)
+            if(_cursorDisabled)
             {
                 disable_cursor();
             }
@@ -1103,26 +1122,26 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             int newWidth = LOWORD(lParam);
             int newHeight = HIWORD(lParam);
             const bool minimized = wParam == SIZE_MINIMIZED;
-            if(CursorDisabled)
+            if(_cursorDisabled)
             {
                 capture_cursor();
             }
-            if(newWidth != WindowWidth || newHeight != WindowHeight)
+            if(newWidth != _windowWidth || newHeight != _windowHeight)
             {
-                WindowWidth = newWidth;
-                WindowHeight = newHeight;
+                _windowWidth = newWidth;
+                _windowHeight = newHeight;
                 if(!minimized)
                 {
-                    FboWidth = newWidth; //TEMP - verify DPI scaling
-                    FboHeight = newHeight; //TEMP - verify DPI scaling
-                    FboAspectRatio = static_cast<float>(FboWidth)/FboHeight;
-                    if(Device)
+                    _fboWidth = newWidth; //TEMP - verify DPI scaling
+                    _fboHeight = newHeight; //TEMP - verify DPI scaling
+                    _fboAspectRatio = static_cast<float>(_fboWidth)/_fboHeight;
+                    if(_device)
                     {
                         paz::resize_targets();
                     }
                 }
             }
-            if(MonitorHandle && WindowIsMinimized != minimized)
+            if(_monitorHandle && _windowIsMinimized != minimized)
             {
                 if(minimized)
                 {
@@ -1133,23 +1152,23 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
                     acquire_monitor();
                     MONITORINFO mi;
                     mi.cbSize = sizeof(mi);
-                    GetMonitorInfo(MonitorHandle, &mi);
-                    SetWindowPos(WindowHandle, HWND_TOPMOST, mi.rcMonitor.left,
+                    GetMonitorInfo(_monitorHandle, &mi);
+                    SetWindowPos(_windowHandle, HWND_TOPMOST, mi.rcMonitor.left,
                         mi.rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.
                         left, mi.rcMonitor.bottom - mi.rcMonitor.top,
                         SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOCOPYBITS);
                 }
             }
-            WindowIsMinimized = minimized;
+            _windowIsMinimized = minimized;
             return 0;
         }
         case WM_MOVE:
         {
-            if(!MonitorHandle)
+            if(!_monitorHandle)
             {
-                PrevX = static_cast<int>(GET_X_LPARAM(lParam));
-                PrevY = static_cast<int>(GET_Y_LPARAM(lParam));
-                if(CursorDisabled)
+                _prevX = static_cast<int>(GET_X_LPARAM(lParam));
+                _prevY = static_cast<int>(GET_Y_LPARAM(lParam));
+                if(_cursorDisabled)
                 {
                     capture_cursor();
                 }
@@ -1160,30 +1179,29 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         {
             RECT frame = {};
             MINMAXINFO& mmi = *reinterpret_cast<MINMAXINFO*>(lParam);
-            if(MonitorHandle)
+            if(_monitorHandle)
             {
                 break;
             }
-            if(paz::initialize().isWindows10Version1607OrGreater)
+            if(_isWindows10Version1607OrGreater)
             {
-                paz::initialize().adjustWindowRectExForDpi(&frame,
-                    window_style(), FALSE, window_ex_style(), paz::initialize().
-                    getDpiForWindow(WindowHandle));
+                _adjustWindowRectExForDpi(&frame, window_style(), FALSE,
+                    window_ex_style(), _getDpiForWindow(_windowHandle));
             }
             else
             {
                 AdjustWindowRectEx(&frame, window_style(), FALSE,
                     window_ex_style());
             }
-            if(MinWidth && MinHeight)
+            if(_minWidth && _minHeight)
             {
-                mmi.ptMinTrackSize.x = MinWidth + frame.right - frame.left;
-                mmi.ptMinTrackSize.y = MinHeight + frame.bottom - frame.top;
+                mmi.ptMinTrackSize.x = _minWidth + frame.right - frame.left;
+                mmi.ptMinTrackSize.y = _minHeight + frame.bottom - frame.top;
             }
-            if(MaxWidth && MaxHeight)
+            if(_maxWidth && _maxHeight)
             {
-                mmi.ptMaxTrackSize.x = MaxWidth + frame.right - frame.left;
-                mmi.ptMaxTrackSize.y = MaxHeight + frame.bottom - frame.top;
+                mmi.ptMaxTrackSize.x = _maxWidth + frame.right - frame.left;
+                mmi.ptMaxTrackSize.y = _maxHeight + frame.bottom - frame.top;
             }
             return 0;
         }
@@ -1199,15 +1217,14 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         case WM_GETDPISCALEDSIZE:
         {
             // Adjust the window size to keep the content area size constant.
-            if(paz::initialize().isWindows10Version1703OrGreater)
+            if(_isWindows10Version1703OrGreater)
             {
                 RECT source = {}, target = {};
                 SIZE& size = *reinterpret_cast<SIZE*>(lParam);
-                paz::initialize().adjustWindowRectExForDpi(&source,
-                    window_style(), FALSE, window_ex_style(), paz::initialize().
-                    getDpiForWindow(WindowHandle));
-                paz::initialize().adjustWindowRectExForDpi(&target,
-                    window_style(), FALSE, window_ex_style(), LOWORD(wParam));
+                _adjustWindowRectExForDpi(&source, window_style(), FALSE,
+                    window_ex_style(), _getDpiForWindow(_windowHandle));
+                _adjustWindowRectExForDpi(&target, window_style(), FALSE,
+                    window_ex_style(), LOWORD(wParam));
                 size.cx += (target.right - target.left) - (source.right -
                     source.left);
                 size.cy += (target.bottom - target.top) - (source.bottom -
@@ -1218,16 +1235,15 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         }
         case WM_DPICHANGED:
         {
-            if(!MonitorHandle && paz::initialize().
-                isWindows10Version1703OrGreater)
+            if(!_monitorHandle && _isWindows10Version1703OrGreater)
             {
                 RECT* suggested = reinterpret_cast<RECT*>(lParam);
-                SetWindowPos(WindowHandle, HWND_TOP, suggested->left,
+                SetWindowPos(_windowHandle, HWND_TOP, suggested->left,
                     suggested->top, suggested->right - suggested->left,
                     suggested->bottom - suggested->top, SWP_NOACTIVATE|
                     SWP_NOZORDER);
             }
-            if(Device)
+            if(_device)
             {
                 paz::resize_targets();
             }
@@ -1237,7 +1253,7 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         {
             if(LOWORD(lParam) == HTCLIENT)
             {
-                if(CurCursorMode == paz::CursorMode::Normal)
+                if(_cursorMode == paz::CursorMode::Normal)
                 {
                     SetCursor(LoadCursor(nullptr, IDC_ARROW));
                 }
@@ -1278,21 +1294,21 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 
 static void reset_events()
 {
-    if(CursorDisabled)
+    if(_cursorDisabled)
     {
-        MousePos = {};
+        _mousePos = {};
     }
-    ScrollOffset = {};
-    KeyPressed = {};
-    KeyReleased = {};
-    MousePressed = {};
-    MouseReleased = {};
-    GamepadPressed = {};
-    GamepadReleased = {};
-    GamepadLeftStick = {};
-    GamepadRightStick = {};
-    GamepadLeftTrigger = -1.;
-    GamepadRightTrigger = -1.;
+    _scrollOffset = {};
+    _keyPressed = {};
+    _keyReleased = {};
+    _mousePressed = {};
+    _mouseReleased = {};
+    _gamepadPressed = {};
+    _gamepadReleased = {};
+    _gamepadLeftStick = {};
+    _gamepadRightStick = {};
+    _gamepadLeftTrigger = -1.;
+    _gamepadRightTrigger = -1.;
 }
 
 paz::Initializer::~Initializer() {}
@@ -1305,37 +1321,38 @@ paz::Initializer::Initializer()
     {
         throw std::runtime_error("Failed to load \"user32.dll\".");
     }
-    getDpiForWindow = reinterpret_cast<UINT(*)(HWND)>(GetProcAddress(user32,
-        "GetDpiForWindow"));
-    adjustWindowRectExForDpi = reinterpret_cast<BOOL(*)(LPRECT, DWORD, BOOL,
-        DWORD, UINT)>(GetProcAddress(user32, "AdjustWindowRectExForDpi"));
-    setProcessDPIAware = reinterpret_cast<BOOL(*)(void)>(GetProcAddress(user32,
-        "SetProcessDPIAware"));
-    setProcessDpiAwarenessContext = reinterpret_cast<BOOL(*)(
-        DPI_AWARENESS_CONTEXT)>(GetProcAddress(user32,
+    _getDpiForWindow = reinterpret_cast<decltype(_getDpiForWindow)>(
+        GetProcAddress(user32, "GetDpiForWindow"));
+    _adjustWindowRectExForDpi = reinterpret_cast<decltype(
+        _adjustWindowRectExForDpi)>(GetProcAddress(user32,
+        "AdjustWindowRectExForDpi"));
+    _setProcessDPIAware = reinterpret_cast<decltype(_setProcessDPIAware)>(
+        GetProcAddress(user32, "SetProcessDPIAware"));
+    _setProcessDpiAwarenessContext = reinterpret_cast<decltype(
+        _setProcessDpiAwarenessContext)>(GetProcAddress(user32,
         "SetProcessDpiAwarenessContext"));
     const HMODULE shcore = LoadLibrary(L"shcore.dll");
     if(!shcore)
     {
         throw std::runtime_error("Failed to load \"shcore.dll\".");
     }
-    setProcessDpiAwareness = reinterpret_cast<HRESULT(*)(
-        PROCESS_DPI_AWARENESS)>(GetProcAddress(shcore,
+    _setProcessDpiAwareness = reinterpret_cast<decltype(
+        _setProcessDpiAwareness)>(GetProcAddress(shcore,
         "SetProcessDpiAwareness"));
     const HMODULE ntdll = LoadLibrary(L"ntdll.dll");
     if(!ntdll)
     {
         throw std::runtime_error("Failed to load \"ntdll.dll\".");
     }
-    rtlVerifyVersionInfo = reinterpret_cast<LONG(*)(OSVERSIONINFOEX*, ULONG,
-        ULONGLONG)>(GetProcAddress(ntdll, "RtlVerifyVersionInfo"));
+    _rtlVerifyVersionInfo = reinterpret_cast<decltype(_rtlVerifyVersionInfo)>(
+        GetProcAddress(ntdll, "RtlVerifyVersionInfo"));
     const HMODULE dinput8 = LoadLibrary(L"dinput8.dll");
     if(!dinput8)
     {
         throw std::runtime_error("Failed to load \"dinput8.dll\".");
     }
-    directInput8Create = reinterpret_cast<HRESULT(*)(HINSTANCE, DWORD, REFIID,
-        LPVOID*, LPUNKNOWN)>(GetProcAddress(dinput8, "DirectInput8Create"));
+    _directInput8Create = reinterpret_cast<decltype(_directInput8Create)>(
+        GetProcAddress(dinput8, "DirectInput8Create"));
 
     // Check Windows version.
     OSVERSIONINFOEX osvi = {};
@@ -1345,35 +1362,35 @@ paz::Initializer::Initializer()
     ULONGLONG cond = VerSetConditionMask(0, VER_MAJORVERSION,
         VER_GREATER_EQUAL);
     cond = VerSetConditionMask(cond, VER_MINORVERSION, VER_GREATER_EQUAL);
-    isWindowsVistaOrGreater = !rtlVerifyVersionInfo(&osvi, VER_MAJORVERSION|
+    _isWindowsVistaOrGreater = !_rtlVerifyVersionInfo(&osvi, VER_MAJORVERSION|
         VER_MINORVERSION, cond);
     osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_WINBLUE);
     osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_WINBLUE);
-    isWindows8Point1OrGreater = !rtlVerifyVersionInfo(&osvi, VER_MAJORVERSION|
+    _isWindows8Point1OrGreater = !_rtlVerifyVersionInfo(&osvi, VER_MAJORVERSION|
         VER_MINORVERSION, cond);
     osvi.dwMajorVersion = 10;
     osvi.dwMinorVersion = 0;
     osvi.dwBuildNumber = 14393;
     cond = VerSetConditionMask(cond, VER_BUILDNUMBER, VER_GREATER_EQUAL);
-    isWindows10Version1607OrGreater = !rtlVerifyVersionInfo(&osvi,
+    _isWindows10Version1607OrGreater = !_rtlVerifyVersionInfo(&osvi,
         VER_MAJORVERSION|VER_MINORVERSION|VER_BUILDNUMBER, cond);
     osvi.dwBuildNumber = 15063;
-    isWindows10Version1703OrGreater = !rtlVerifyVersionInfo(&osvi,
+    _isWindows10Version1703OrGreater = !_rtlVerifyVersionInfo(&osvi,
         VER_MAJORVERSION|VER_MINORVERSION|VER_BUILDNUMBER, cond);
 
     // Set up DPI awareness.
-    if(isWindows10Version1703OrGreater)
+    if(_isWindows10Version1703OrGreater)
     {
-        setProcessDpiAwarenessContext(
+        _setProcessDpiAwarenessContext(
             DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     }
-    else if(isWindows8Point1OrGreater)
+    else if(_isWindows8Point1OrGreater)
     {
-        setProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+        _setProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
     }
-    else if(isWindowsVistaOrGreater)
+    else if(_isWindowsVistaOrGreater)
     {
-        setProcessDPIAware();
+        _setProcessDPIAware();
     }
 
     // Get display size. (Primary monitor starts at `(0, 0)`.)
@@ -1390,8 +1407,8 @@ paz::Initializer::Initializer()
     const int displayHeight = mi.rcMonitor.bottom - mi.rcMonitor.top;
 
     // Set window size in screen coordinates (not pixels).
-    WindowWidth = 0.5*displayWidth;
-    WindowHeight = 0.5*displayHeight;
+    _windowWidth = 0.5*displayWidth;
+    _windowHeight = 0.5*displayHeight;
 
     // Create window and initialize Direct3D.
     WNDCLASSEX PazWindow = {};
@@ -1401,10 +1418,10 @@ paz::Initializer::Initializer()
     PazWindow.hCursor = LoadCursor(nullptr, IDC_ARROW);
     PazWindow.lpszClassName = L"PazWindow";
     auto atom = RegisterClassEx(&PazWindow);
-    WindowHandle = CreateWindowEx(window_ex_style(), MAKEINTATOM(atom),
+    _windowHandle = CreateWindowEx(window_ex_style(), MAKEINTATOM(atom),
         L"PAZ_Graphics Window", window_style(), CW_USEDEFAULT, CW_USEDEFAULT,
-        WindowWidth, WindowHeight, nullptr, nullptr, nullptr, nullptr);
-    if(!WindowHandle)
+        _windowWidth, _windowHeight, nullptr, nullptr, nullptr, nullptr);
+    if(!_windowHandle)
     {
         std::array<wchar_t, 256> buf;
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -1413,7 +1430,7 @@ paz::Initializer::Initializer()
         const std::string errMsg(buf.begin(), buf.end());
         throw std::runtime_error("Failed to create window: " + errMsg);
     }
-    ShowWindow(WindowHandle, SW_SHOWNA);
+    ShowWindow(_windowHandle, SW_SHOWNA);
     DXGI_SWAP_CHAIN_DESC swapChainDescriptor = {};
     swapChainDescriptor.BufferDesc.RefreshRate.Numerator = 0;
     swapChainDescriptor.BufferDesc.RefreshRate.Denominator = 0;
@@ -1422,14 +1439,14 @@ paz::Initializer::Initializer()
     swapChainDescriptor.SampleDesc.Quality = 0;
     swapChainDescriptor.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     swapChainDescriptor.BufferCount = 1; //TEMP ?
-    swapChainDescriptor.OutputWindow = WindowHandle;
+    swapChainDescriptor.OutputWindow = _windowHandle;
     swapChainDescriptor.Windowed = true;
     static const D3D_FEATURE_LEVEL featureLvlReq = D3D_FEATURE_LEVEL_11_0;
     D3D_FEATURE_LEVEL featureLvl;
     auto hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE,
         nullptr, D3D11_CREATE_DEVICE_SINGLETHREADED, &featureLvlReq, 1,
-        D3D11_SDK_VERSION, &swapChainDescriptor, &SwapChain, &Device,
-        &featureLvl, &DeviceContext);
+        D3D11_SDK_VERSION, &swapChainDescriptor, &_swapChain, &_device,
+        &featureLvl, &_deviceContext);
     if(hr)
     {
         throw std::runtime_error("Failed to initialize Direct3D (" +
@@ -1442,14 +1459,14 @@ paz::Initializer::Initializer()
             to_string(featureLvl) + ").");
     }
     ID3D11Texture2D* framebuffer;
-    hr = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<
+    hr = _swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<
         void**>(&framebuffer));
     if(hr)
     {
         throw std::runtime_error("Failed to get default framebuffer.");
     }
-    hr = Device->CreateRenderTargetView(framebuffer, nullptr,
-        &RenderTargetView);
+    hr = _device->CreateRenderTargetView(framebuffer, nullptr,
+        &_renderTargetView);
     if(hr)
     {
         throw std::runtime_error("Failed to create default framebuffer view.");
@@ -1457,7 +1474,7 @@ paz::Initializer::Initializer()
     framebuffer->Release();
 
     // Use raw mouse input when cursor is disabled.
-    const RAWINPUTDEVICE rid = {0x01, 0x02, 0, WindowHandle};
+    const RAWINPUTDEVICE rid = {0x01, 0x02, 0, _windowHandle};
     if(!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
     {
         throw std::runtime_error("Failed to register raw input device.");
@@ -1468,13 +1485,13 @@ paz::Initializer::Initializer()
     dbi.dbcc_size = sizeof(dbi);
     dbi.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
     dbi.dbcc_classguid = HidClassGuid;
-    DeviceNotificationHandle = RegisterDeviceNotification(WindowHandle,
+    _deviceNotificationHandle = RegisterDeviceNotification(_windowHandle,
         reinterpret_cast<DEV_BROADCAST_HDR*>(&dbi),
         DEVICE_NOTIFY_WINDOW_HANDLE);
 
     // Create DirectInput8 interface to handle controllers.
-    hr = directInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION,
-        IID_IDirectInput8, reinterpret_cast<void**>(&Dinput8Interface),
+    hr = _directInput8Create(GetModuleHandle(nullptr), DIRECTINPUT_VERSION,
+        IID_IDirectInput8, reinterpret_cast<void**>(&_dinput8Interface),
         nullptr);
     if(hr)
     {
@@ -1498,8 +1515,8 @@ paz::Initializer::Initializer()
             std::string(error ? static_cast<char*>(error->GetBufferPointer()) :
             "No error given."));
     }
-    hr = Device->CreateVertexShader(vertBlob->GetBufferPointer(), vertBlob->
-        GetBufferSize(), nullptr, &quadVertShader);
+    hr = _device->CreateVertexShader(vertBlob->GetBufferPointer(), vertBlob->
+        GetBufferSize(), nullptr, &_quadVertShader);
     if(hr)
     {
         throw std::runtime_error("Failed to create final vertex shader (" +
@@ -1514,8 +1531,8 @@ paz::Initializer::Initializer()
             std::string(error ? static_cast<char*>(error->GetBufferPointer()) :
             "No error given."));
     }
-    hr = Device->CreatePixelShader(fragBlob->GetBufferPointer(), fragBlob->
-        GetBufferSize(), nullptr, &quadFragShader);
+    hr = _device->CreatePixelShader(fragBlob->GetBufferPointer(), fragBlob->
+        GetBufferSize(), nullptr, &_quadFragShader);
     if(hr)
     {
         throw std::runtime_error("Failed to create final fragment shader (" +
@@ -1527,7 +1544,7 @@ paz::Initializer::Initializer()
     quadBufDescriptor.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     D3D11_SUBRESOURCE_DATA data = {};
     data.pSysMem = QuadPos.data();
-    hr = Device->CreateBuffer(&quadBufDescriptor, &data, &quadBuf);
+    hr = _device->CreateBuffer(&quadBufDescriptor, &data, &_quadBuf);
     if(hr)
     {
         throw std::runtime_error("Failed to create final vertex buffer (" +
@@ -1536,8 +1553,8 @@ paz::Initializer::Initializer()
     D3D11_INPUT_ELEMENT_DESC inputElemDescriptor = {"ATTR", 0,
         DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT,
         D3D11_INPUT_PER_VERTEX_DATA, 0};
-    hr = Device->CreateInputLayout(&inputElemDescriptor, 1, vertBlob->
-        GetBufferPointer(), vertBlob->GetBufferSize(), &quadLayout);
+    hr = _device->CreateInputLayout(&inputElemDescriptor, 1, vertBlob->
+        GetBufferPointer(), vertBlob->GetBufferSize(), &_quadLayout);
     if(hr)
     {
         throw std::runtime_error("Failed to create final input layout (" + paz::
@@ -1548,7 +1565,7 @@ paz::Initializer::Initializer()
     rasterDescriptor.CullMode = D3D11_CULL_NONE;
     rasterDescriptor.FrontCounterClockwise = true;
     rasterDescriptor.DepthClipEnable = true;
-    hr = Device->CreateRasterizerState(&rasterDescriptor, &blitState);
+    hr = _device->CreateRasterizerState(&rasterDescriptor, &_blitState);
     if(hr)
     {
         throw std::runtime_error("Failed to create final rasterizer state (" +
@@ -1559,7 +1576,7 @@ paz::Initializer::Initializer()
     blitBufDescriptor.ByteWidth = 16;
     blitBufDescriptor.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     blitBufDescriptor.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    hr = Device->CreateBuffer(&blitBufDescriptor, nullptr, &blitBuf);
+    hr = _device->CreateBuffer(&blitBufDescriptor, nullptr, &_blitBuf);
     if(hr)
     {
         throw std::runtime_error("Failed to create final constant buffer (" +
@@ -1567,30 +1584,30 @@ paz::Initializer::Initializer()
     }
 
     // Start recording frame time.
-    frameStart = std::chrono::steady_clock::now();
+    _frameStart = std::chrono::steady_clock::now();
 }
 
 void paz::Window::MakeFullscreen()
 {
     initialize();
 
-    if(!MonitorHandle)
+    if(!_monitorHandle)
     {
         acquire_monitor();
 
-        PrevWidth = WindowWidth;
-        PrevHeight = WindowHeight;
+        _prevWidth = _windowWidth;
+        _prevHeight = _windowHeight;
 
         MONITORINFO mi = {};
         mi.cbSize = sizeof(mi);
-        GetMonitorInfo(MonitorHandle, &mi);
+        GetMonitorInfo(_monitorHandle, &mi);
 
-        DWORD style = GetWindowLong(WindowHandle, GWL_STYLE);
+        DWORD style = GetWindowLong(_windowHandle, GWL_STYLE);
         style &= ~WS_OVERLAPPEDWINDOW;
         style |= window_style();
-        SetWindowLong(WindowHandle, GWL_STYLE, style);
+        SetWindowLong(_windowHandle, GWL_STYLE, style);
 
-        SetWindowPos(WindowHandle, HWND_NOTOPMOST, mi.rcMonitor.left, mi.
+        SetWindowPos(_windowHandle, HWND_NOTOPMOST, mi.rcMonitor.left, mi.
             rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.
             bottom - mi.rcMonitor.top, SWP_SHOWWINDOW|SWP_NOACTIVATE|
             SWP_NOCOPYBITS|SWP_FRAMECHANGED);
@@ -1601,27 +1618,27 @@ void paz::Window::MakeWindowed()
 {
     initialize();
 
-    if(MonitorHandle)
+    if(_monitorHandle)
     {
         release_monitor();
 
-        DWORD style = GetWindowLong(WindowHandle, GWL_STYLE);
+        DWORD style = GetWindowLong(_windowHandle, GWL_STYLE);
         style &= ~WS_POPUP;
         style |= window_style();
-        SetWindowLong(WindowHandle, GWL_STYLE, style);
+        SetWindowLong(_windowHandle, GWL_STYLE, style);
 
-        RECT rect = {PrevX, PrevY, PrevX + PrevWidth, PrevY + PrevHeight};
-        if(initialize().isWindows10Version1607OrGreater)
+        RECT rect = {_prevX, _prevY, _prevX + _prevWidth, _prevY + _prevHeight};
+        if(_isWindows10Version1607OrGreater)
         {
-            initialize().adjustWindowRectExForDpi(&rect, window_style(), FALSE,
-                window_ex_style(), initialize().getDpiForWindow(WindowHandle));
+            _adjustWindowRectExForDpi(&rect, window_style(), FALSE,
+                window_ex_style(), _getDpiForWindow(_windowHandle));
         }
         else
         {
             AdjustWindowRectEx(&rect, window_style(), FALSE, window_ex_style());
         }
 
-        SetWindowPos(WindowHandle, HWND_NOTOPMOST, rect.left, rect.top, rect.
+        SetWindowPos(_windowHandle, HWND_NOTOPMOST, rect.left, rect.top, rect.
             right - rect.left, rect.bottom - rect.top, SWP_NOACTIVATE|
             SWP_NOCOPYBITS|SWP_FRAMECHANGED);
     }
@@ -1629,119 +1646,119 @@ void paz::Window::MakeWindowed()
 
 ID3D11Device* paz::d3d_device()
 {
-    return Device;
+    return _device;
 }
 
 ID3D11DeviceContext* paz::d3d_context()
 {
-    return DeviceContext;
+    return _deviceContext;
 }
 
 void paz::Window::SetTitle(const std::string& title)
 {
     initialize();
 
-    SetWindowText(WindowHandle, utf8_to_wstring(title).c_str());
+    SetWindowText(_windowHandle, utf8_to_wstring(title).c_str());
 }
 
 bool paz::Window::IsKeyWindow()
 {
     initialize();
 
-    return WindowIsKey;
+    return _windowIsKey;
 }
 
 bool paz::Window::IsFullscreen()
 {
     initialize();
 
-    return MonitorHandle;
+    return _monitorHandle;
 }
 
 int paz::Window::ViewportWidth()
 {
     initialize();
 
-    return ::HidpiEnabled ? FboWidth : WindowWidth;
+    return _hidpiEnabled ? _fboWidth : _windowWidth;
 }
 
 int paz::Window::ViewportHeight()
 {
     initialize();
 
-    return ::HidpiEnabled ? FboHeight : WindowHeight;
+    return _hidpiEnabled ? _fboHeight : _windowHeight;
 }
 
 int paz::Window::Width()
 {
     initialize();
 
-    return WindowWidth;
+    return _windowWidth;
 }
 
 int paz::Window::Height()
 {
     initialize();
 
-    return WindowHeight;
+    return _windowHeight;
 }
 
 bool paz::Window::KeyDown(Key key)
 {
     initialize();
 
-    return ::KeyDown.at(static_cast<int>(key));
+    return _keyDown.at(static_cast<int>(key));
 }
 
 bool paz::Window::KeyPressed(Key key)
 {
     initialize();
 
-    return ::KeyPressed.at(static_cast<int>(key));
+    return _keyPressed.at(static_cast<int>(key));
 }
 
 bool paz::Window::KeyReleased(Key key)
 {
     initialize();
 
-    return ::KeyReleased.at(static_cast<int>(key));
+    return _keyReleased.at(static_cast<int>(key));
 }
 
 bool paz::Window::MouseDown(MouseButton button)
 {
     initialize();
 
-    return ::MouseDown.at(static_cast<int>(button));
+    return _mouseDown.at(static_cast<int>(button));
 }
 
 bool paz::Window::MousePressed(MouseButton button)
 {
     initialize();
 
-    return ::MousePressed.at(static_cast<int>(button));
+    return _mousePressed.at(static_cast<int>(button));
 }
 
 bool paz::Window::MouseReleased(MouseButton button)
 {
     initialize();
 
-    return ::MouseReleased.at(static_cast<int>(button));
+    return _mouseReleased.at(static_cast<int>(button));
 }
 
 std::pair<double, double> paz::Window::MousePos()
 {
     initialize();
 
-    if(CursorDisabled)
+    if(_cursorDisabled)
     {
-        return ::MousePos;
+        return _mousePos;
     }
     else
     {
         POINT pos;
         GetCursorPos(&pos);
-        ScreenToClient(WindowHandle, &pos);
-        return {pos.x, WindowHeight - pos.y};
+        ScreenToClient(_windowHandle, &pos);
+        return {pos.x, _windowHeight - pos.y};
     }
 }
 
@@ -1749,92 +1766,92 @@ std::pair<double, double> paz::Window::ScrollOffset()
 {
     initialize();
 
-    return ::ScrollOffset;
+    return _scrollOffset;
 }
 
 bool paz::Window::GamepadDown(GamepadButton button)
 {
     initialize();
 
-    return ::GamepadDown.at(static_cast<int>(button));
+    return _gamepadDown.at(static_cast<int>(button));
 }
 
 bool paz::Window::GamepadPressed(GamepadButton button)
 {
     initialize();
 
-    return ::GamepadPressed.at(static_cast<int>(button));
+    return _gamepadPressed.at(static_cast<int>(button));
 }
 
 bool paz::Window::GamepadReleased(GamepadButton button)
 {
     initialize();
 
-    return ::GamepadReleased.at(static_cast<int>(button));
+    return _gamepadReleased.at(static_cast<int>(button));
 }
 
 std::pair<double, double> paz::Window::GamepadLeftStick()
 {
     initialize();
 
-    return ::GamepadLeftStick;
+    return _gamepadLeftStick;
 }
 
 std::pair<double, double> paz::Window::GamepadRightStick()
 {
     initialize();
 
-    return ::GamepadRightStick;
+    return _gamepadRightStick;
 }
 
 double paz::Window::GamepadLeftTrigger()
 {
     initialize();
 
-    return ::GamepadLeftTrigger;
+    return _gamepadLeftTrigger;
 }
 
 double paz::Window::GamepadRightTrigger()
 {
     initialize();
 
-    return ::GamepadRightTrigger;
+    return _gamepadRightTrigger;
 }
 
 bool paz::Window::GamepadActive()
 {
     initialize();
 
-    return ::GamepadActive;
+    return _gamepadActive;
 }
 
 bool paz::Window::MouseActive()
 {
     initialize();
 
-    return ::MouseActive;
+    return _mouseActive;
 }
 
 void paz::Window::SetCursorMode(CursorMode mode)
 {
     initialize();
 
-    if(WindowIsKey)
+    if(_windowIsKey)
     {
-        if(!CursorDisabled && mode == CursorMode::Disable)
+        if(!_cursorDisabled && mode == CursorMode::Disable)
         {
-            GetCursorPos(&PriorCursorPos);
-            ScreenToClient(WindowHandle, &PriorCursorPos);
+            GetCursorPos(&_priorCursorPos);
+            ScreenToClient(_windowHandle, &_priorCursorPos);
             center_cursor();
             enable_raw_mouse_motion();
             capture_cursor();
         }
-        else if(CursorDisabled && mode != CursorMode::Disable)
+        else if(_cursorDisabled && mode != CursorMode::Disable)
         {
             disable_raw_mouse_motion();
             release_cursor();
-            ClientToScreen(WindowHandle, &PriorCursorPos);
-            SetCursorPos(PriorCursorPos.x, PriorCursorPos.y);
+            ClientToScreen(_windowHandle, &_priorCursorPos);
+            SetCursorPos(_priorCursorPos.x, _priorCursorPos.y);
         }
     }
 
@@ -1851,24 +1868,24 @@ void paz::Window::SetCursorMode(CursorMode mode)
         throw std::runtime_error("Unknown cursor mode.");
     }
 
-    CurCursorMode = mode;
-    CursorDisabled = (mode == CursorMode::Disable);
+    _cursorMode = mode;
+    _cursorDisabled = (mode == CursorMode::Disable);
 }
 
 float paz::Window::AspectRatio()
 {
     initialize();
 
-    return FboAspectRatio;
+    return _fboAspectRatio;
 }
 
 void paz::resize_targets()
 {
     // Release resources.
-    RenderTargetView->Release();
+    _renderTargetView->Release();
 
     // Resize back buffer.
-    auto hr = SwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
+    auto hr = _swapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0);
     if(hr)
     {
         throw std::runtime_error("Failed to resize back buffer (" +
@@ -1877,14 +1894,14 @@ void paz::resize_targets()
 
     // Regenerate render target view.
     ID3D11Texture2D* framebuffer;
-    hr = SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<
+    hr = _swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<
         void**>(&framebuffer));
     if(hr)
     {
         throw std::runtime_error("Failed to get default framebuffer.");
     }
-    hr = Device->CreateRenderTargetView(framebuffer, nullptr,
-        &RenderTargetView);
+    hr = _device->CreateRenderTargetView(framebuffer, nullptr,
+        &_renderTargetView);
     if(hr)
     {
         throw std::runtime_error("Failed to create default framebuffer view.");
@@ -1902,7 +1919,7 @@ bool paz::Window::Done()
 {
     initialize();
 
-    return ::Done;
+    return _done;
 }
 
 void paz::Window::PollEvents()
@@ -1914,7 +1931,7 @@ void paz::Window::PollEvents()
     {
         if(msg.message == WM_QUIT)
         {
-            ::Done = true;
+            _done = true;
         }
         else
         {
@@ -1942,19 +1959,19 @@ void paz::Window::PollEvents()
             {
                 continue;
             }
-            if(!::KeyDown[idx])
+            if(!_keyDown[idx])
             {
                 continue;
             }
-            ::KeyDown[idx] = false;
-            ::KeyReleased[idx] = true;
+            _keyDown[idx] = false;
+            _keyReleased[idx] = true;
         }
     }
 
-    if(CursorDisabled)
+    if(_cursorDisabled)
     {
-        VirtMousePos.first = WindowWidth/2;
-        VirtMousePos.second = WindowHeight/2;
+        _virtMousePos.first = _windowWidth/2;
+        _virtMousePos.second = _windowHeight/2;
         center_cursor();
     }
 
@@ -1965,74 +1982,74 @@ void paz::Window::PollEvents()
         {
             if(state.buttons[i])
             {
-                ::GamepadActive = true;
-                ::MouseActive = false;
-                if(!::GamepadDown[i])
+                _gamepadActive = true;
+                _mouseActive = false;
+                if(!_gamepadDown[i])
                 {
-                    ::GamepadPressed[i] = true;
+                    _gamepadPressed[i] = true;
                 }
-                ::GamepadDown[i] = true;
+                _gamepadDown[i] = true;
             }
             else
             {
-                if(::GamepadDown[i])
+                if(_gamepadDown[i])
                 {
-                    ::GamepadActive = true;
-                    ::MouseActive = false;
-                    ::GamepadReleased[i] = true;
+                    _gamepadActive = true;
+                    _mouseActive = false;
+                    _gamepadReleased[i] = true;
                 }
-                ::GamepadDown[i] = false;
+                _gamepadDown[i] = false;
             }
         }
         if(std::abs(state.axes[0]) > 0.1)
         {
-            ::GamepadActive = true;
-            ::MouseActive = false;
-            ::GamepadLeftStick.first = state.axes[0];
+            _gamepadActive = true;
+            _mouseActive = false;
+            _gamepadLeftStick.first = state.axes[0];
         }
         if(std::abs(state.axes[1]) > 0.1)
         {
-            ::GamepadActive = true;
-            ::MouseActive = false;
-            ::GamepadLeftStick.second = state.axes[1];
+            _gamepadActive = true;
+            _mouseActive = false;
+            _gamepadLeftStick.second = state.axes[1];
         }
         if(std::abs(state.axes[2]) > 0.1)
         {
-            ::GamepadActive = true;
-            ::MouseActive = false;
-            ::GamepadRightStick.first = state.axes[2];
+            _gamepadActive = true;
+            _mouseActive = false;
+            _gamepadRightStick.first = state.axes[2];
         }
         if(std::abs(state.axes[3]) > 0.1)
         {
-            ::GamepadActive = true;
-            ::MouseActive = false;
-            ::GamepadRightStick.second = state.axes[3];
+            _gamepadActive = true;
+            _mouseActive = false;
+            _gamepadRightStick.second = state.axes[3];
         }
 #if 0 //TEMP - need to use XInput to handle XBox controller triggers independently
         if(state.axes[4] > -0.9)
         {
-            ::GamepadActive = true;
-            ::MouseActive = false;
-            ::GamepadLeftTrigger = state.axes[4];
+            _gamepadActive = true;
+            _mouseActive = false;
+            _gamepadLeftTrigger = state.axes[4];
         }
         if(state.axes[5] > -0.9)
         {
-            ::GamepadActive = true;
-            ::MouseActive = false;
-            ::GamepadRightTrigger = state.axes[5];
+            _gamepadActive = true;
+            _mouseActive = false;
+            _gamepadRightTrigger = state.axes[5];
         }
 #else
         if(state.axes[4] > 0.1)
         {
-            ::GamepadActive = true;
-            ::MouseActive = false;
-            ::GamepadLeftTrigger = 2.*state.axes[4] - 1.;
+            _gamepadActive = true;
+            _mouseActive = false;
+            _gamepadLeftTrigger = 2.*state.axes[4] - 1.;
         }
         else if(state.axes[4] < -0.1)
         {
-            ::GamepadActive = true;
-            ::MouseActive = false;
-            ::GamepadRightTrigger = -2.*state.axes[4] - 1.;
+            _gamepadActive = true;
+            _mouseActive = false;
+            _gamepadRightTrigger = -2.*state.axes[4] - 1.;
         }
 #endif
     }
@@ -2042,51 +2059,50 @@ void paz::Window::EndFrame()
 {
     initialize();
 
-    FrameInProgress = false;
+    _frameInProgress = false;
 
-    DeviceContext->RSSetState(initialize().blitState);
+    _deviceContext->RSSetState(_blitState);
     D3D11_VIEWPORT viewport = {};
     viewport.Width = ViewportWidth();
     viewport.Height = ViewportHeight();
-    DeviceContext->RSSetViewports(1, &viewport);
-    DeviceContext->OMSetRenderTargets(1, &RenderTargetView, nullptr);
-    DeviceContext->IASetPrimitiveTopology(
+    _deviceContext->RSSetViewports(1, &viewport);
+    _deviceContext->OMSetRenderTargets(1, &_renderTargetView, nullptr);
+    _deviceContext->IASetPrimitiveTopology(
         D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-    DeviceContext->IASetInputLayout(initialize().quadLayout);
+    _deviceContext->IASetInputLayout(_quadLayout);
     const unsigned int stride = 2*sizeof(float);
     const unsigned int offset = 0;
-    DeviceContext->IASetVertexBuffers(0, 1, &initialize().quadBuf, &stride,
-        &offset);
-    DeviceContext->VSSetShader(initialize().quadVertShader, nullptr, 0);
-    DeviceContext->PSSetShader(initialize().quadFragShader, nullptr, 0);
-    DeviceContext->PSSetShaderResources(0, 1, &final_framebuffer().
+    _deviceContext->IASetVertexBuffers(0, 1, &_quadBuf, &stride, &offset);
+    _deviceContext->VSSetShader(_quadVertShader, nullptr, 0);
+    _deviceContext->PSSetShader(_quadFragShader, nullptr, 0);
+    _deviceContext->PSSetShaderResources(0, 1, &final_framebuffer().
         colorAttachment(0)._data->_resourceView);
-    DeviceContext->PSSetSamplers(0, 1, &final_framebuffer().colorAttachment(0).
+    _deviceContext->PSSetSamplers(0, 1, &final_framebuffer().colorAttachment(0).
         _data->_sampler);
     D3D11_MAPPED_SUBRESOURCE mappedSr;
-    const auto hr = DeviceContext->Map(initialize().blitBuf, 0,
-        D3D11_MAP_WRITE_DISCARD, 0, &mappedSr);
+    const auto hr = _deviceContext->Map(_blitBuf, 0, D3D11_MAP_WRITE_DISCARD, 0,
+        &mappedSr);
     if(hr)
     {
         throw std::runtime_error("Failed to map final fragment function constan"
             "t buffer (" + format_hresult(hr) + ").");
     }
-    std::copy(&Gamma, &Gamma + 1, reinterpret_cast<float*>(mappedSr.pData));
-    const float f = Dither ? 1.f : 0.f;
+    std::copy(&_gamma, &_gamma + 1, reinterpret_cast<float*>(mappedSr.pData));
+    const float f = _dither ? 1.f : 0.f;
     std::copy(&f, &f + 1, reinterpret_cast<float*>(mappedSr.pData) + 1);
-    DeviceContext->Unmap(initialize().blitBuf, 0);
-    DeviceContext->PSSetConstantBuffers(0, 1, &initialize().blitBuf);
-    DeviceContext->Draw(QuadPos.size()/2, 0);
+    _deviceContext->Unmap(_blitBuf, 0);
+    _deviceContext->PSSetConstantBuffers(0, 1, &_blitBuf);
+    _deviceContext->Draw(QuadPos.size()/2, 0);
 
-    SwapChain->Present(1, 0);
+    _swapChain->Present(1, 0);
     reset_events();
     const auto now = std::chrono::steady_clock::now();
     PrevFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
-        initialize().frameStart).count()*1e-6;
-    initialize().frameStart = now;
+        _frameStart).count()*1e-6;
+    _frameStart = now;
 
     // Keep framerate down while minimized (not capped otherwise).
-    if(WindowIsMinimized)
+    if(_windowIsMinimized)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
@@ -2096,7 +2112,7 @@ void paz::Window::Quit()
 {
     initialize();
 
-    ::Done = true;
+    _done = true;
 }
 
 double paz::Window::FrameTime()
@@ -2110,11 +2126,11 @@ void paz::Window::SetMinSize(int width, int height)
 {
     initialize();
 
-    MinWidth = width;
-    MinHeight = height;
+    _minWidth = width;
+    _minHeight = height;
     RECT area;
-    GetWindowRect(WindowHandle, &area);
-    MoveWindow(WindowHandle, area.left, area.top, area.right - area.left, area.
+    GetWindowRect(_windowHandle, &area);
+    MoveWindow(_windowHandle, area.left, area.top, area.right - area.left, area.
         bottom - area.top, TRUE);
 }
 
@@ -2122,11 +2138,11 @@ void paz::Window::SetMaxSize(int width, int height)
 {
     initialize();
 
-    MaxWidth = width;
-    MaxHeight = height;
+    _maxWidth = width;
+    _maxHeight = height;
     RECT area;
-    GetWindowRect(WindowHandle, &area);
-    MoveWindow(WindowHandle, area.left, area.top, area.right - area.left, area.
+    GetWindowRect(_windowHandle, &area);
+    MoveWindow(_windowHandle, area.left, area.top, area.right - area.left, area.
         bottom - area.top, TRUE);
 }
 
@@ -2134,7 +2150,7 @@ void paz::Window::MakeResizable()
 {
     initialize();
 
-    Resizable = true;
+    _resizable = true;
     update_styles();
 }
 
@@ -2142,7 +2158,7 @@ void paz::Window::MakeNotResizable()
 {
     initialize();
 
-    Resizable = false;
+    _resizable = false;
     update_styles();
 }
 
@@ -2157,30 +2173,30 @@ void paz::Window::Resize(int width, int height, bool viewportCoords)
     }
     else
     {
-        if(MinWidth)
+        if(_minWidth)
         {
-            width = std::max(width, MinWidth);
+            width = std::max(width, _minWidth);
         }
-        if(MaxWidth)
+        if(_maxWidth)
         {
-            width = std::min(width, MaxWidth);
+            width = std::min(width, _maxWidth);
         }
-        if(MinHeight)
+        if(_minHeight)
         {
-            height = std::max(height, MinHeight);
+            height = std::max(height, _minHeight);
         }
-        if(MaxHeight)
+        if(_maxHeight)
         {
-            height = std::min(height, MaxHeight);
+            height = std::min(height, _maxHeight);
         }
     }
 
-    if(!MonitorHandle)
+    if(!_monitorHandle)
     {
         RECT rect = {0, 0, width, height};
         AdjustWindowRectEx(&rect, window_style(), FALSE, window_ex_style());
-        SetWindowPos(WindowHandle, HWND_TOP, 0, 0, rect.right - rect.left, rect.
-            bottom - rect.top, SWP_NOACTIVATE|SWP_NOOWNERZORDER|SWP_NOMOVE|
+        SetWindowPos(_windowHandle, HWND_TOP, 0, 0, rect.right - rect.left,
+            rect.bottom - rect.top, SWP_NOACTIVATE|SWP_NOOWNERZORDER|SWP_NOMOVE|
             SWP_NOZORDER);
 
         resize_targets();
@@ -2209,7 +2225,7 @@ paz::Image paz::Window::ReadPixels()
 {
     initialize();
 
-    if(FrameInProgress)
+    if(_frameInProgress)
     {
         throw std::logic_error("Cannot read pixels before ending frame.");
     }
@@ -2234,11 +2250,11 @@ paz::Image paz::Window::ReadPixels()
             format_hresult(hr) + ").");
     }
 
-    DeviceContext->CopySubresourceRegion(staging, 0, 0, 0, 0,
+    _deviceContext->CopySubresourceRegion(staging, 0, 0, 0, 0,
         final_framebuffer().colorAttachment(0)._data->_texture, 0, nullptr);
 
     D3D11_MAPPED_SUBRESOURCE mappedSr;
-    hr = DeviceContext->Map(staging, 0, D3D11_MAP_READ, 0, &mappedSr);
+    hr = _deviceContext->Map(staging, 0, D3D11_MAP_READ, 0, &mappedSr);
     if(hr)
     {
         throw std::runtime_error("Failed to map staging texture (" +
@@ -2264,21 +2280,21 @@ paz::Image paz::Window::ReadPixels()
         }
     }
 
-    DeviceContext->Unmap(staging, 0);
+    _deviceContext->Unmap(staging, 0);
 
     return srgb;
 }
 
 void paz::begin_frame()
 {
-    FrameInProgress = true;
+    _frameInProgress = true;
 }
 
 float paz::Window::DpiScale()
 {
     initialize();
 
-    return ::HidpiEnabled ? static_cast<float>(FboWidth)/WindowWidth : 1.f;
+    return _hidpiEnabled ? static_cast<float>(_fboWidth)/_windowWidth : 1.f;
 }
 
 float paz::Window::UiScale()
@@ -2289,9 +2305,9 @@ float paz::Window::UiScale()
     const UINT xDpi = GetDeviceCaps(dc, LOGPIXELSX);
     ReleaseDC(nullptr, dc);
     float xScale = static_cast<float>(xDpi)/USER_DEFAULT_SCREEN_DPI;
-    if(!::HidpiEnabled)
+    if(!_hidpiEnabled)
     {
-        xScale *= static_cast<float>(WindowWidth)/FboWidth;
+        xScale *= static_cast<float>(_windowWidth)/_fboWidth;
     }
     return xScale;
 }
@@ -2300,7 +2316,7 @@ void paz::Window::DisableHidpi()
 {
     initialize();
 
-    ::HidpiEnabled = false;
+    _hidpiEnabled = false;
     resize_targets();
 }
 
@@ -2308,33 +2324,33 @@ void paz::Window::EnableHidpi()
 {
     initialize();
 
-    ::HidpiEnabled = true;
+    _hidpiEnabled = true;
     resize_targets();
 }
 
 bool paz::Window::HidpiEnabled()
 {
-    return ::HidpiEnabled;
+    return _hidpiEnabled;
 }
 
 bool paz::Window::HidpiSupported()
 {
-    return FboWidth > WindowWidth;
+    return _fboWidth > _windowWidth;
 }
 
 void paz::Window::SetGamma(float gamma)
 {
-    Gamma = gamma;
+    _gamma = gamma;
 }
 
 void paz::Window::DisableDithering()
 {
-    Dither = false;
+    _dither = false;
 }
 
 void paz::Window::EnableDithering()
 {
-    Dither = true;
+    _dither = true;
 }
 
 #endif
