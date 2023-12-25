@@ -531,13 +531,13 @@ static long get_element_val(const paz::Gamepad& g, const paz::GamepadElement& e)
             1|8, // left-up
             0    // centered
         };
-        long state = get_element_val(_gamepads[0], _gamepads[0].hats[i]) -
+        long stateIdx = get_element_val(_gamepads[0], _gamepads[0].hats[i]) -
             _gamepads[0].hats[i].min;
-        if(state < 0 || state > 8)
+        if(stateIdx < 0 || stateIdx > 8)
         {
-            state = 8;
+            stateIdx = 8;
         }
-        hats[i] = hatStates[state];
+        hats[i] = hatStates[stateIdx];
     }
 
     // Use mapping to get state.

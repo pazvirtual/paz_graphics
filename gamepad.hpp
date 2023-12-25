@@ -19,11 +19,10 @@ namespace paz
 {
     struct GamepadElement
     {
+        std::size_t idx;
 #ifdef PAZ_MACOS
         IOHIDElementRef native;
-#endif
         std::uint32_t usage;
-        std::size_t idx;
         long min;
         long max;
 
@@ -32,6 +31,12 @@ namespace paz
             return usage < elem.usage || (usage == elem.usage && idx < elem.
                 idx);
         }
+#else
+        bool operator<(const GamepadElement& elem) const
+        {
+            return idx < elem.idx;
+        }
+#endif
     };
 
     struct GamepadState
@@ -64,7 +69,8 @@ namespace paz
 #ifdef PAZ_MACOS
         IOHIDDeviceRef device;
 #else
-        DWORD idx;
+        GUID deviceGuid;
+        IDirectInputDevice8* device;
 #endif
         std::string guid;
         std::string name;
