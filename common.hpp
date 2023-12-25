@@ -28,27 +28,6 @@ namespace paz
     struct Initializer
     {
         std::unordered_set<void*> renderTargets;
-        std::chrono::time_point<std::chrono::steady_clock> frameStart;
-#ifdef PAZ_WINDOWS
-        UINT(*getDpiForWindow)(HWND);
-        BOOL(*adjustWindowRectExForDpi)(LPRECT, DWORD, BOOL, DWORD, UINT);
-        BOOL(*setProcessDPIAware)(void);
-        BOOL(*setProcessDpiAwarenessContext)(DPI_AWARENESS_CONTEXT);
-        HRESULT(*setProcessDpiAwareness)(PROCESS_DPI_AWARENESS);
-        LONG(*rtlVerifyVersionInfo)(OSVERSIONINFOEX*, ULONG, ULONGLONG);
-        HRESULT(*directInput8Create)(HINSTANCE, DWORD, REFIID, LPVOID*,
-            LPUNKNOWN);
-        bool isWindows10Version1703OrGreater;
-        bool isWindows10Version1607OrGreater;
-        bool isWindows8Point1OrGreater;
-        bool isWindowsVistaOrGreater;
-        ID3D11VertexShader* quadVertShader;
-        ID3D11PixelShader* quadFragShader;
-        ID3D11Buffer* quadBuf;
-        ID3D11InputLayout* quadLayout;
-        ID3D11RasterizerState* blitState;
-        ID3D11Buffer* blitBuf;
-#endif
         Initializer();
         ~Initializer();
     };

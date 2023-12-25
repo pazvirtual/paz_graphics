@@ -8,10 +8,9 @@
 #include "common.hpp"
 #include "windows.hpp"
 
-#define CHECK_PASS if(!CurPass) throw std::logic_error("No current render pass"\
-    "."); else if(this != CurPass) throw std::logic_error("Render pass operati"\
-    "ons cannot be interleaved.");
-
+#define CHECK_PASS if(!_pass){ throw std::logic_error("No current render pass."\
+    ); }else if(this != _pass){ throw std::logic_error("Render pass operations"\
+    " cannot be interleaved."); }
 #define CASE(a, b) case paz::PrimitiveType::a: return \
     D3D11_PRIMITIVE_TOPOLOGY_##b;
 
@@ -32,7 +31,7 @@ static constexpr float Clear[] = {0.f, 0.f, 0.f, 0.f};
 static constexpr float Black[] = {0.f, 0.f, 0.f, 1.f};
 static constexpr float White[] = {1.f, 1.f, 1.f, 1.f};
 
-static const paz::RenderPass* CurPass;
+static const paz::RenderPass* _pass;
 
 paz::RenderPass::Data::~Data()
 {
@@ -223,11 +222,11 @@ paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
 {
-    if(CurPass)
+    if(_pass)
     {
         throw std::logic_error("Previous render pass was not ended.");
     }
-    CurPass = this;
+    _pass = this;
 
     if(!_data)
     {
@@ -393,7 +392,7 @@ void paz::RenderPass::end()
 {
     CHECK_PASS
     d3d_context()->OMSetBlendState(nullptr, nullptr, 0xffffffff);
-    CurPass = nullptr;
+    _pass = nullptr;
 }
 
 void paz::RenderPass::cull(CullMode mode)

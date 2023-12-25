@@ -19,19 +19,19 @@
 #define DEVICE [[static_cast<ViewController*>([[static_cast<AppDelegate*>( \
     [NSApp delegate]) window] contentViewController]) mtkView] device]
 
+#define CHECK_PASS if(!_pass){ throw std::logic_error("No current render pass."\
+    ); }else if(this != _pass){ throw std::logic_error("Render pass operations"\
+    " cannot be interleaved."); }
 #define CASE0(a, b) case paz::PrimitiveType::a: return MTLPrimitiveType##b;
 #define CASE1(a, b, n) case MTLDataType##a: return {MTLVertexFormat##a, n* \
     sizeof(b)};
-#define CHECK_PASS if(!CurPass) throw std::logic_error("No current render pass"\
-    "."); else if(this != CurPass) throw std::logic_error("Render pass operati"\
-    "ons cannot be interleaved.");
 
 static_assert(sizeof(unsigned int) == 2 || sizeof(unsigned int) == 4, "Indices "
     "must be 16 or 32 bits.");
 static constexpr MTLIndexType IndexType = (sizeof(unsigned int) == 2 ?
     MTLIndexTypeUInt16 : MTLIndexTypeUInt32);
 
-static const paz::RenderPass* CurPass;
+static const paz::RenderPass* _pass;
 
 static MTLPrimitiveType primitive_type(paz::PrimitiveType t)
 {
@@ -260,11 +260,11 @@ paz::RenderPass::RenderPass(const VertexFunction& vert, const FragmentFunction&
 void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     LoadAction depthLoadAction)
 {
-    if(CurPass)
+    if(_pass)
     {
         throw std::logic_error("Previous render pass was not ended.");
     }
-    CurPass = this;
+    _pass = this;
 
     if(!_data)
     {
@@ -394,7 +394,7 @@ void paz::RenderPass::end()
     {
         _data->_fbo->_depthStencilAttachment->ensureMipmaps();
     }
-    CurPass = nullptr;
+    _pass = nullptr;
 }
 
 void paz::RenderPass::cull(CullMode mode)

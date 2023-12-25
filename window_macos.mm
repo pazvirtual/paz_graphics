@@ -18,8 +18,9 @@
     [[static_cast<AppDelegate*>([NSApp delegate]) window] \
     contentViewController]) renderer])
 
-static bool CursorDisabled = false;
-static bool HidpiEnabled = true;
+static bool _cursorDisabled = false;
+static bool _hidpiEnabled = true;
+static std::chrono::time_point<std::chrono::steady_clock> _frameStart;
 
 paz::Initializer& paz::initialize()
 {
@@ -53,7 +54,7 @@ paz::Initializer::Initializer()
     }
 
     // Start recording frame time.
-    frameStart = std::chrono::steady_clock::now();
+    _frameStart = std::chrono::steady_clock::now();
 }
 
 void paz::resize_targets()
@@ -135,7 +136,7 @@ int paz::Window::ViewportWidth()
     initialize();
 
     const auto width = [RENDERER viewportSize].width;
-    return ::HidpiEnabled ? width : std::round(width/[[APP_DELEGATE window]
+    return _hidpiEnabled ? width : std::round(width/[[APP_DELEGATE window]
         backingScaleFactor]);
 }
 
@@ -144,7 +145,7 @@ int paz::Window::ViewportHeight()
     initialize();
 
     const auto height = [RENDERER viewportSize].height;
-    return ::HidpiEnabled ? height : std::round(height/[[APP_DELEGATE window]
+    return _hidpiEnabled ? height : std::round(height/[[APP_DELEGATE window]
         backingScaleFactor]);
 }
 
@@ -214,7 +215,7 @@ std::pair<double, double> paz::Window::MousePos()
 {
     initialize();
 
-    if(CursorDisabled)
+    if(_cursorDisabled)
     {
         return [VIEW_CONTROLLER cursorOffset];
     }
@@ -301,7 +302,7 @@ void paz::Window::SetCursorMode(CursorMode mode)
     initialize();
 
     [APP_DELEGATE setCursorMode:mode];
-    CursorDisabled = (mode == CursorMode::Disable);
+    _cursorDisabled = (mode == CursorMode::Disable);
 }
 
 float paz::Window::AspectRatio()
@@ -352,8 +353,8 @@ void paz::Window::EndFrame()
     [VIEW_CONTROLLER resetEvents];
     const auto now = std::chrono::steady_clock::now();
     PrevFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
-        initialize().frameStart).count()*1e-6;
-    initialize().frameStart = now;
+        _frameStart).count()*1e-6;
+    _frameStart = now;
     resize_targets();
 }
 
@@ -472,7 +473,7 @@ float paz::Window::DpiScale()
 {
     initialize();
 
-    return ::HidpiEnabled ? [[APP_DELEGATE window] backingScaleFactor] : 1.;
+    return _hidpiEnabled ? [[APP_DELEGATE window] backingScaleFactor] : 1.;
 }
 
 float paz::Window::UiScale()
@@ -486,7 +487,7 @@ void paz::Window::DisableHidpi()
 {
     initialize();
 
-    ::HidpiEnabled = false;
+    _hidpiEnabled = false;
     resize_targets();
 }
 
@@ -494,13 +495,13 @@ void paz::Window::EnableHidpi()
 {
     initialize();
 
-    ::HidpiEnabled = true;
+    _hidpiEnabled = true;
     resize_targets();
 }
 
 bool paz::Window::HidpiEnabled()
 {
-    return ::HidpiEnabled;
+    return _hidpiEnabled;
 }
 
 bool paz::Window::HidpiSupported()
