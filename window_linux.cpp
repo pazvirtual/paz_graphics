@@ -567,8 +567,8 @@ void paz::resize_targets()
 {
     for(auto n : initialize().renderTargets)
     {
-        reinterpret_cast<Texture::Data*>(n)->resize(_window::ViewportWidth(),
-            _window::ViewportHeight());
+        reinterpret_cast<Texture::Data*>(n)->resize(Window::ViewportWidth(),
+            Window::ViewportHeight());
     }
 }
 
@@ -927,7 +927,7 @@ float paz::Window::UiScale()
 
     float xScale, yScale;
     glfwGetWindowContentScale(_windowPtr, &xScale, &yScale);
-    if(!__hidpiEnabled)
+    if(!_hidpiEnabled)
     {
         xScale *= static_cast<float>(_windowWidth)/_fboWidth;
     }

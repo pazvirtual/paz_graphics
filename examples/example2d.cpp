@@ -148,6 +148,8 @@ int main(int, char** argv)
                 EnableHidpi();
             hidpiEnabled = !hidpiEnabled;
         }
+        const bool screenshot = paz::Window::KeyPressed(paz::Key::S) || paz::
+            Window::GamepadPressed(paz::GamepadButton::A);
         if(paz::Window::GamepadActive())
         {
             cursorPos.first = std::max(0., std::min(static_cast<double>(paz::
@@ -273,8 +275,7 @@ int main(int, char** argv)
 
         paz::Window::EndFrame();
 
-        if(paz::Window::KeyPressed(paz::Key::S) || paz::Window::GamepadPressed(
-            paz::GamepadButton::A))
+        if(screenshot)
         {
             paz::write_bytes(appDir + "/screenshot.bmp", paz::to_bmp(paz::
                 Window::ReadPixels()));
