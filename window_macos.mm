@@ -330,7 +330,7 @@ void paz::Window::PollEvents()
 {
     while(true)
     {
-        NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:
+        NSEvent* event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:
             [NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES];
         if(!event)
         {
