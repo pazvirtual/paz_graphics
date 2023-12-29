@@ -9,7 +9,7 @@
 @property(readonly) float aspectRatio;
 @property(readonly) CGSize viewportSize;
 @property(readonly) CGSize size;
-@property(readonly, nonnull) id<MTLCommandBuffer> commandBuffer;
+@property(readonly) id<MTLCommandBuffer> commandBuffer;
 @property float gamma;
 @property bool dither;
 - (nonnull instancetype)initWithMetalKitView:(nonnull MTKView*)view;
