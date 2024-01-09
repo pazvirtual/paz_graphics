@@ -2,11 +2,10 @@
 #define PAZ_GRAPHICS_INTERNAL_DATA_HPP
 
 #include "detect_os.hpp"
+#include "PAZ_Graphics"
 #ifdef PAZ_LINUX
 #include "shader_linux.hpp"
-#endif
-#include "PAZ_Graphics"
-#ifdef PAZ_WINDOWS
+#elif defined(PAZ_WINDOWS)
 #include "windows.hpp"
 #endif
 #include <unordered_map>
