@@ -370,6 +370,8 @@ namespace paz
         void attach(const RenderTarget& target);
         Texture colorAttachment(std::size_t i) const;
         Texture depthStencilAttachment() const;
+        int width() const;
+        int height() const;
     };
 
     class VertexFunction
