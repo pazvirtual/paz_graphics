@@ -186,16 +186,16 @@ int main(int, char** argv)
 
         xPass.begin();
         xPass.read("base", buff0.colorAttachment(0));
-        xPass.uniform("texOffset", std::array<float, 2>{1.f/buff0.
-            colorAttachment(0).width(), 1.f/buff0.colorAttachment(0).height()});
+        xPass.uniform("texOffset", std::array<float, 2>{1.f/buff0.width(), 1.f/
+            buff0.height()});
         xPass.uniform("width", static_cast<float>(width));
         xPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
         xPass.end();
 
         yPass.begin();
         yPass.read("base", buff1.colorAttachment(0));
-        yPass.uniform("texOffset", std::array<float, 2>{1.f/buff1.
-            colorAttachment(0).width(), 1.f/buff1.colorAttachment(0).height()});
+        yPass.uniform("texOffset", std::array<float, 2>{1.f/buff1.width(), 1.f/
+            buff1.height()});
         yPass.uniform("width", static_cast<float>(width));
         yPass.draw(paz::PrimitiveType::TriangleStrip, quadVerts);
         yPass.end();

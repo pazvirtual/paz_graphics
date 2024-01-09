@@ -107,15 +107,14 @@ struct paz::Framebuffer::Data
 {
     std::vector<std::shared_ptr<Texture::Data>> _colorAttachments; //TEMP
     std::shared_ptr<Texture::Data> _depthStencilAttachment; //TEMP
-    int _width = 0;
-    int _height = 0;
-    double _scale = 1.;
 #ifdef PAZ_LINUX
     unsigned int _id = 0;
     int _numTextures = 0;
     ~Data();
     Data();
 #endif
+    int width();
+    int height();
 };
 
 struct paz::VertexFunction::Data

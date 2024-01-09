@@ -317,16 +317,8 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     }
 
     D3D11_VIEWPORT viewport = {};
-    if(_data->_fbo->_width)
-    {
-        viewport.Width = _data->_fbo->_width;
-        viewport.Height = _data->_fbo->_height;
-    }
-    else
-    {
-        viewport.Width = _data->_fbo->_scale*Window::ViewportWidth();
-        viewport.Height = _data->_fbo->_scale*Window::ViewportHeight();
-    }
+    viewport.Width = _data->_fbo->width();
+    viewport.Height = _data->_fbo->height();
     viewport.MinDepth = 0.f;
     viewport.MaxDepth = 1.f;
     d3d_context()->RSSetViewports(1, &viewport);
