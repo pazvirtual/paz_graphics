@@ -130,7 +130,7 @@ int main(int, char** argv)
             pass0.draw(paz::PrimitiveType::TriangleStrip, quadVertices);
             pass0.end();
 
-            pass1.begin({paz::LoadAction::Load});
+            pass1.begin();
             pass1.read("accumTex", accumTex);
             pass1.read("revealageTex", revealageTex);
             pass1.draw(paz::PrimitiveType::TriangleStrip, quadVertices);
@@ -138,7 +138,7 @@ int main(int, char** argv)
         }
         else // Ordered
         {
-            pass.begin({paz::LoadAction::Load});
+            pass.begin();
             pass.uniform("proj", proj);
             pass.uniform("z", -5.f);
             pass.uniform("col", 1.f, 1.f, 0.f, 0.5f);

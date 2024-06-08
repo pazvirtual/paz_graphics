@@ -162,7 +162,7 @@ namespace paz
 
     enum class LoadAction
     {
-        Clear, FillOnes, FillZeros, Load, DontCare
+        Clear, FillOnes, FillZeros, Load
     };
 
     enum class CullMode
@@ -410,7 +410,7 @@ namespace paz
         RenderPass(const VertexFunction& vert, const FragmentFunction& frag,
             const std::vector<BlendMode>& modes = {});
         void begin(const std::vector<LoadAction>& colorLoadActions = {},
-            LoadAction depthLoadAction = LoadAction::DontCare);
+            LoadAction depthLoadAction = LoadAction::Load);
         void end();
         void depth(DepthTestMode depthMode);
         void cull(CullMode mode);

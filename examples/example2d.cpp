@@ -208,7 +208,7 @@ int main(int, char** argv)
         }
         scenePass.end();
 
-        textPass.begin({paz::LoadAction::Load}, paz::LoadAction::DontCare);
+        textPass.begin();
         textPass.read("font", font);
         textPass.uniform("baseSize", font.height());
         textPass.uniform("aspectRatio", paz::Window::AspectRatio());

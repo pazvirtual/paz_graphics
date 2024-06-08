@@ -284,11 +284,10 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     {
         [[renderPassDescriptor colorAttachments][i] setTexture:static_cast<id<
             MTLTexture>>(_data->_fbo->_colorAttachments[i]->_texture)];
-        if(colorLoadActions.empty() || colorLoadActions[i] == LoadAction::
-            DontCare)
+        if(colorLoadActions.empty() || colorLoadActions[i] == LoadAction::Load)
         {
             [[renderPassDescriptor colorAttachments][i] setLoadAction:
-                MTLLoadActionDontCare];
+                MTLLoadActionLoad];
         }
         else if(colorLoadActions[i] == LoadAction::Clear || colorLoadActions[i]
             == LoadAction::FillOnes || colorLoadActions[i] == LoadAction::
@@ -307,11 +306,6 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             [[renderPassDescriptor colorAttachments][i] setLoadAction:
                 MTLLoadActionClear];
         }
-        else if(colorLoadActions[i] == LoadAction::Load)
-        {
-            [[renderPassDescriptor colorAttachments][i] setLoadAction:
-                MTLLoadActionLoad];
-        }
         else
         {
             throw std::runtime_error("Invalid color attachment load action.");
@@ -324,10 +318,10 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     {
         [[renderPassDescriptor depthAttachment] setTexture:static_cast<id<
             MTLTexture>>(_data->_fbo->_depthStencilAttachment->_texture)];
-        if(depthLoadAction == LoadAction::DontCare)
+        if(depthLoadAction == LoadAction::Load)
         {
             [[renderPassDescriptor depthAttachment] setLoadAction:
-                MTLLoadActionDontCare];
+                MTLLoadActionLoad];
         }
         else if(depthLoadAction == LoadAction::Clear || depthLoadAction ==
             LoadAction::FillOnes || depthLoadAction == LoadAction::FillZeros)
@@ -338,11 +332,6 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             }
             [[renderPassDescriptor depthAttachment] setLoadAction:
                 MTLLoadActionClear];
-        }
-        else if(depthLoadAction == LoadAction::Load)
-        {
-            [[renderPassDescriptor depthAttachment] setLoadAction:
-                MTLLoadActionLoad];
         }
         else
         {
