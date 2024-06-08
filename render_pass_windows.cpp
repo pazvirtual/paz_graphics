@@ -290,8 +290,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         {
             d3d_context()->ClearRenderTargetView(colorTargets[i], White);
         }
-        else if(colorLoadActions[i] != LoadAction::DontCare && colorLoadActions[
-            i] != LoadAction::Load)
+        else if(colorLoadActions[i] != LoadAction::Load)
         {
             throw std::runtime_error("Invalid color attachment load action.");
         }
@@ -309,8 +308,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             d3d_context()->ClearDepthStencilView(_data->_fbo->
                 _depthStencilAttachment->_dsView, D3D11_CLEAR_DEPTH, 0.f, 0);
         }
-        else if(depthLoadAction != LoadAction::DontCare && depthLoadAction !=
-            LoadAction::Load)
+        else if(depthLoadAction != LoadAction::Load)
         {
             throw std::runtime_error("Invalid depth attachment load action.");
         }

@@ -26,7 +26,7 @@ static constexpr float White[] = {1.f, 1.f, 1.f, 1.f};
 static int _nextSlot;
 static bool _depthTestEnabled;
 static bool _depthMaskEnabled = true;
-static bool _blendenabled;
+static bool _blendEnabled;
 static bool _depthCalledThisPass;
 static bool _cullCalledThisPass;
 static const paz::RenderPass* _pass;
@@ -236,8 +236,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
         {
             glClearBufferfv(GL_COLOR, i, White);
         }
-        else if(colorLoadActions[i] != LoadAction::DontCare && colorLoadActions[
-            i] != LoadAction::Load)
+        else if(colorLoadActions[i] != LoadAction::Load)
         {
             throw std::runtime_error("Invalid color attachment load action.");
         }
@@ -263,8 +262,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             }
             glClearBufferfv(GL_DEPTH, 0, Clear);
         }
-        else if(depthLoadAction != LoadAction::DontCare && depthLoadAction !=
-            LoadAction::Load)
+        else if(depthLoadAction != LoadAction::Load)
         {
             throw std::runtime_error("Invalid depth attachment load action.");
         }
@@ -281,17 +279,17 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
     }
     if(!needBlending)
     {
-        if(_blendenabled)
+        if(_blendEnabled)
         {
-            _blendenabled = false;
+            _blendEnabled = false;
             glDisable(GL_BLEND);
         }
     }
     else
     {
-        if(!_blendenabled)
+        if(!_blendEnabled)
         {
-            _blendenabled = true;
+            _blendEnabled = true;
             glEnable(GL_BLEND);
         }
         for(std::size_t i = 0; i < _data->_blendModes.size(); ++i)
@@ -869,9 +867,9 @@ paz::Framebuffer paz::RenderPass::framebuffer() const
 
 void paz::disable_blend_depth_cull()
 {
-    if(_blendenabled)
+    if(_blendEnabled)
     {
-        _blendenabled = false;
+        _blendEnabled = false;
         glDisable(GL_BLEND);
     }
     if(_depthTestEnabled)
