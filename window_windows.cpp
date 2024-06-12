@@ -1423,12 +1423,8 @@ paz::Initializer::Initializer()
         _windowWidth, _windowHeight, nullptr, nullptr, nullptr, nullptr);
     if(!_windowHandle)
     {
-        std::array<wchar_t, 256> buf;
-        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
-            nullptr, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            buf.data(), buf.size(), nullptr);
-        const std::string errMsg(buf.begin(), buf.end());
-        throw std::runtime_error("Failed to create window: " + errMsg);
+        throw std::runtime_error("Failed to create window: " +
+            get_last_error());
     }
 
     // Show and focus window.

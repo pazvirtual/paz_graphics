@@ -50,7 +50,7 @@ std::string paz::format_hresult(HRESULT hr) noexcept
     return oss.str();
 }
 
-std::wstring paz::utf8_to_wstring(const std::string& str) noexcept
+std::wstring paz::utf8_to_wstring(const std::string& str)
 {
     const int bufSize = MultiByteToWideChar(CP_UTF8, 0, str.c_str(),
         static_cast<int>(str.size()), nullptr, 0);
@@ -59,9 +59,23 @@ std::wstring paz::utf8_to_wstring(const std::string& str) noexcept
     if(!MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.
         size()), const_cast<LPWSTR>(buf.data()), bufSize))
     {
-        return L"UTF-8 TO WSTRING CONVERSION FAILED";
+        throw std::runtime_error("UTF-8 to wstring conversion failed: " +
+            get_last_error());
     }
     return buf;
+}
+
+std::string paz::get_last_error() noexcept
+{
+    LPVOID buf;
+    const DWORD err = GetLastError();
+    const DWORD len = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|
+        FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, err,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPWSTR>(
+        &buf), 0, nullptr);
+    const std::string str(buf, buf + len);
+    LocalFree(buf);
+    return str;
 }
 
 #endif

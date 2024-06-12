@@ -12,7 +12,8 @@ namespace paz
 {
     DXGI_FORMAT dxgi_format(int dim, paz::DataType type);
     std::string format_hresult(HRESULT hr) noexcept;
-    std::wstring utf8_to_wstring(const std::string& str) noexcept;
+    std::wstring utf8_to_wstring(const std::string& str);
+    std::string get_last_error() noexcept;
 }
 
 #endif
