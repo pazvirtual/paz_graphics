@@ -73,7 +73,12 @@ std::string paz::get_last_error() noexcept
         FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, err,
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPWSTR>(
         &buf), 0, nullptr);
-    const std::string str(buf, buf + len);
+    if(!len)
+    {
+        return "System error " + std::to_string(err) + ".";
+    }
+    const std::string str(reinterpret_cast<LPWSTR>(buf), reinterpret_cast<
+        LPWSTR>(buf) + len);
     LocalFree(buf);
     return str;
 }
