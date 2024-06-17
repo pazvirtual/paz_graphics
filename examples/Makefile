@@ -27,7 +27,19 @@ ifeq ($(OSPRETTY), macOS)
     LDLIBS += -framework MetalKit -framework Metal -framework Cocoa -framework IOKit
 else
     ifeq ($(OSPRETTY), Linux)
-        LDLIBS += $(LIBPATH)/libglfw3.a -lGL -lX11 -ldl
+        # Try a few locations for GLFW.
+        ifneq (, $(wildcard $(LIBPATH)/libglfw3.a))
+            LDLIBS += $(LIBPATH)/libglfw3.a
+        else ifneq (, $(wildcard /usr/lib/libglfw3.a))
+            LDLIBS += /usr/lib/libglfw3.a
+        else ifneq (, $(wildcard /usr/lib64/libglfw3.a))
+            LDLIBS += /usr/lib64/libglfw3.a
+        else ifneq (, $(wildcard /usr/lib/x86_64-linux-gnu/libglfw3.a))
+            LDLIBS += /usr/lib/x86_64-linux-gnu/libglfw3.a
+        else
+            $(error Could not find "libglfw3.a".)
+        endif
+        LDLIBS += -lGL -lX11 -ldl
     else
         LDLIBS += $(LIBPATH)/libpthread.a -ld3d11 -ldxgi -ld3dcompiler -ldxguid
         LDFLAGS += -static-libgcc -static-libstdc++

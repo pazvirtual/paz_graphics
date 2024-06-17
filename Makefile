@@ -60,7 +60,6 @@ print-% : ; @echo $* = $($*)
 
 .PHONY: test
 default: test
-	$(MAKE) -C examples
 
 ifeq ($(OSPRETTY), macOS)
 lib$(LIBNAME).a: lib$(LIBNAME)_arm64.a lib$(LIBNAME)_x86_64.a
@@ -86,6 +85,9 @@ install: $(PROJNAME) lib$(LIBNAME).a
 test: lib$(LIBNAME).a
 	$(MAKE) -C test
 	test/test
+
+examples: lib$(LIBNAME).a
+	$(MAKE) -C examples
 
 analyze: $(OBJCSRC)
 	$(foreach n, $(OBJCSRC), clang++ --analyze $(n) $(CXXFLAGS) && $(RM) $(n:%.mm=%.plist);)
