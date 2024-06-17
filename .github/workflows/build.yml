@@ -18,7 +18,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: windows-build
-          path: pazgraphics.a
+          path: libpazgraphics.a
   macos:
     runs-on: macos-latest
     steps:
@@ -28,7 +28,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: macos-build
-          path: pazgraphics.a
+          path: libpazgraphics.a
   linux:
     runs-on: ubuntu-latest
     steps:
@@ -52,4 +52,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          path: pazgraphics.a
+          path: libpazgraphics.a
