@@ -22,12 +22,6 @@ static bool _cursorDisabled = false;
 static bool _hidpiEnabled = true;
 static std::chrono::time_point<std::chrono::steady_clock> _frameStart;
 
-paz::Initializer& paz::initialize()
-{
-    static paz::Initializer initializer;
-    return initializer;
-}
-
 static double PrevFrameTime = 1./60.;
 
 paz::Initializer::~Initializer()

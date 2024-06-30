@@ -661,12 +661,6 @@ static bool get_gamepad_state(paz::GamepadState& state)
     return true;
 }
 
-paz::Initializer& paz::initialize()
-{
-    static paz::Initializer initializer;
-    return initializer;
-}
-
 static double PrevFrameTime = 1./60.;
 
 static void center_cursor()

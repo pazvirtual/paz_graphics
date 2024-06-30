@@ -38,3 +38,17 @@ paz::Image paz::flip_image(const paz::Image& image)
     }
     return flipped;
 }
+
+paz::Initializer& paz::initialize()
+{
+    try
+    {
+        static paz::Initializer initializer;
+        return initializer;
+    }
+    catch(const std::exception& e)
+    {
+        throw std::runtime_error("Failed to initialize PAZ_Graphics: " + std::
+            string(e.what()));
+    }
+}
