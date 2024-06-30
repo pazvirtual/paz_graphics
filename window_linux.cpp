@@ -110,12 +110,6 @@ static float _gamma = 2.2;
 static bool _dither;
 static std::chrono::time_point<std::chrono::steady_clock> _frameStart;
 
-paz::Initializer& paz::initialize()
-{
-    static paz::Initializer initializer;
-    return initializer;
-}
-
 static double PrevFrameTime = 1./60.;
 
 static void key_callback(int key, int action)
