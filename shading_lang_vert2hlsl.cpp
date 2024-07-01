@@ -37,22 +37,22 @@ std::string paz::vert2hlsl(const std::string& src, std::vector<std::tuple<std::
 
     // Define reinterpretation functions.
     out << 1 + R"===(
-int floatBitsToInt(in float v)
-{
-    return asint(v);
-}
-int2 floatBitsToInt(in float2 v)
-{
-    return asint(v);
-}
-int3 floatBitsToInt(in float3 v)
-{
-    return asint(v);
-}
-int4 floatBitsToInt(in float4 v)
-{
-    return asint(v);
-}
+//int floatBitsToInt(in float v)
+//{
+//    return asint(v);
+//}
+//int2 floatBitsToInt(in float2 v)
+//{
+//    return asint(v);
+//}
+//int3 floatBitsToInt(in float3 v)
+//{
+//    return asint(v);
+//}
+//int4 floatBitsToInt(in float4 v)
+//{
+//    return asint(v);
+//}
 uint floatBitsToUint(in float v)
 {
     return asuint(v);
