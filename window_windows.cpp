@@ -44,18 +44,18 @@ static const std::string QuadFragSrc = 1 + R"===(
 uniform Texture2D tex;
 uniform SamplerState texSampler;
 uniform float2 gammaDither;
-uint hash(in uint x)
+uint hash1(in uint x)
 {
-    x += (x << 10u);
-    x ^= (x >>  6u);
-    x += (x <<  3u);
-    x ^= (x >> 11u);
-    x += (x << 15u);
+    x +=  (x << 10u);
+    x = x^(x >>  6u);
+    x +=  (x <<  3u);
+    x = x^(x >> 11u);
+    x +=  (x << 15u);
     return x;
 }
-uint hash(in uint2 v)
+uint hash2(in uint2 v)
 {
-    return hash(v.x^hash(v.y));
+    return hash1(v.x^hash1(v.y));
 }
 float construct_float(in uint m)
 {
@@ -68,7 +68,7 @@ float construct_float(in uint m)
 }
 float unif_rand(in float2 v)
 {
-    return construct_float(hash(asuint(v)));
+    return construct_float(hash2(asuint(v)));
 }
 struct InputData
 {

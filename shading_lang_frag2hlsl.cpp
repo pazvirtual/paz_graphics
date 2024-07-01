@@ -126,38 +126,38 @@ uint4 textureLod(in wrap_usampler2D tex, in float2 uv, in float lod)
 )===";
 
     // Define `textureQueryLod()`. Should check that these are correct.
-    out << 1 + R"===(
-float2 textureQueryLod(in wrap_sampler1D tex, in float u)
-{
-    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
-        CalculateLevelOfDetailUnclamped(tex.s, u));
-}
-int2 textureQueryLod(in wrap_isampler1D tex, in float u)
-{
-    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
-        CalculateLevelOfDetailUnclamped(tex.s, u));
-}
-uint2 textureQueryLod(in wrap_usampler1D tex, in float u)
-{
-    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
-        CalculateLevelOfDetailUnclamped(tex.s, u));
-}
-float2 textureQueryLod(in wrap_sampler2D tex, in float u)
-{
-    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
-        CalculateLevelOfDetailUnclamped(tex.s, u));
-}
-int2 textureQueryLod(in wrap_isampler2D tex, in float u)
-{
-    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
-        CalculateLevelOfDetailUnclamped(tex.s, u));
-}
-uint2 textureQueryLod(in wrap_usampler2D tex, in float u)
-{
-    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
-        CalculateLevelOfDetailUnclamped(tex.s, u));
-}
-)===";
+//    out << 1 + R"===(
+//float2 textureQueryLod(in wrap_sampler1D tex, in float u)
+//{
+//    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
+//        CalculateLevelOfDetailUnclamped(tex.s, u));
+//}
+//int2 textureQueryLod(in wrap_isampler1D tex, in float u)
+//{
+//    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
+//        CalculateLevelOfDetailUnclamped(tex.s, u));
+//}
+//uint2 textureQueryLod(in wrap_usampler1D tex, in float u)
+//{
+//    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
+//        CalculateLevelOfDetailUnclamped(tex.s, u));
+//}
+//float2 textureQueryLod(in wrap_sampler2D tex, in float u)
+//{
+//    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
+//        CalculateLevelOfDetailUnclamped(tex.s, u));
+//}
+//int2 textureQueryLod(in wrap_isampler2D tex, in float u)
+//{
+//    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
+//        CalculateLevelOfDetailUnclamped(tex.s, u));
+//}
+//uint2 textureQueryLod(in wrap_usampler2D tex, in float u)
+//{
+//    return float2(tex.t.CalculateLevelOfDetail(tex.s, u), tex.t.
+//        CalculateLevelOfDetailUnclamped(tex.s, u));
+//}
+//)===";
 
     // Define `textureSize()`. Note that LOD parameter is currently ignored.
     out << 1 + R"===(
@@ -201,22 +201,22 @@ int2 textureSize(wrap_usampler2D tex, int lod)
 
     // Define reinterpretation functions.
     out << 1 + R"===(
-int floatBitsToInt(in float v)
-{
-    return asint(v);
-}
-int2 floatBitsToInt(in float2 v)
-{
-    return asint(v);
-}
-int3 floatBitsToInt(in float3 v)
-{
-    return asint(v);
-}
-int4 floatBitsToInt(in float4 v)
-{
-    return asint(v);
-}
+//int floatBitsToInt(in float v)
+//{
+//    return asint(v);
+//}
+//int2 floatBitsToInt(in float2 v)
+//{
+//    return asint(v);
+//}
+//int3 floatBitsToInt(in float3 v)
+//{
+//    return asint(v);
+//}
+//int4 floatBitsToInt(in float4 v)
+//{
+//    return asint(v);
+//}
 uint floatBitsToUint(in float v)
 {
     return asuint(v);
@@ -821,8 +821,8 @@ float4 mod(in float4 x, in float4 y)
     out << "OutputData main(InputData input)" << std::endl << "{" << std::endl;
     for(const auto& n : textures)
     {
-        out << "    const wrap_" << n.second.second << " " << n.first << " = {"
-            << n.first << "Texture, " << n.first << "Sampler};" << std::endl;
+        out << "    wrap_" << n.second.second << " " << n.first << " = {" << n.
+            first << "Texture, " << n.first << "Sampler};" << std::endl;
     }
     out << "    OutputData output;" << std::endl << mainBuffer.str() << "    re"
         "turn output;" << std::endl << "}" << std::endl;
