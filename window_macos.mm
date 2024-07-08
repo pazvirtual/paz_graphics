@@ -322,6 +322,8 @@ bool paz::Window::Done()
 
 void paz::Window::PollEvents()
 {
+    initialize();
+
     while(true)
     {
         NSEvent* event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:
@@ -495,27 +497,44 @@ void paz::Window::EnableHidpi()
 
 bool paz::Window::HidpiEnabled()
 {
+    initialize();
+
     return _hidpiEnabled;
 }
 
 bool paz::Window::HidpiSupported()
 {
+    initialize();
+
     return [[APP_DELEGATE window] backingScaleFactor] > 1.;
 }
 
 void paz::Window::SetGamma(float gamma)
 {
+    initialize();
+
     [RENDERER setGamma:gamma];
 }
 
 void paz::Window::DisableDithering()
 {
+    initialize();
+
     [RENDERER setDither:false];
 }
 
 void paz::Window::EnableDithering()
 {
+    initialize();
+
     [RENDERER setDither:true];
+}
+
+int paz::Window::MaxAnisotropy()
+{
+    initialize();
+
+    return 16;
 }
 
 #endif

@@ -109,6 +109,7 @@ static bool _hidpiEnabled = true;
 static float _gamma = 2.2;
 static bool _dither;
 static std::chrono::time_point<std::chrono::steady_clock> _frameStart;
+static int _maxAnisotropy;
 
 static double PrevFrameTime = 1./60.;
 
@@ -308,6 +309,13 @@ paz::Initializer::Initializer()
         focus_callback(focused); });
     glfwSetWindowSizeCallback(_windowPtr, [](GLFWwindow*, int width, int
         height){ resize_callback(width, height); });
+
+    // Get maximum supported anisotropy.
+    {
+        float temp;
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &temp);
+        _maxAnisotropy = std::max(1, static_cast<int>(std::round(temp)));
+    }
 
     // Start recording frame time.
     _frameStart = std::chrono::steady_clock::now();
@@ -946,27 +954,44 @@ void paz::Window::EnableHidpi()
 
 bool paz::Window::HidpiEnabled()
 {
+    initialize();
+
     return _hidpiEnabled;
 }
 
 bool paz::Window::HidpiSupported()
 {
+    initialize();
+
     return _fboWidth > _windowWidth;
 }
 
 void paz::Window::SetGamma(float gamma)
 {
+    initialize();
+
     _gamma = gamma;
 }
 
 void paz::Window::DisableDithering()
 {
+    initialize();
+
     _dither = false;
 }
 
 void paz::Window::EnableDithering()
 {
+    initialize();
+
     _dither = true;
+}
+
+int paz::Window::MaxAnisotropy()
+{
+    initialize();
+
+    return _maxAnisotropy;
 }
 
 #endif

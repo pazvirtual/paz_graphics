@@ -219,11 +219,19 @@ static ID3D11SamplerState* create_sampler(paz::MinMagFilter minFilter, paz::
     paz::WrapMode wrapT)
 {
     D3D11_SAMPLER_DESC descriptor = {};
-    descriptor.Filter = tex_filter(minFilter, magFilter, mipFilter);
+    if(mipFilter == paz::MipmapFilter::Anisotropic)
+    {
+        descriptor.Filter = D3D11_FILTER_ANISOTROPIC;
+        descriptor.MaxAnisotropy = paz::Window::MaxAnisotropy();
+    }
+    else
+    {
+        descriptor.Filter = tex_filter(minFilter, magFilter, mipFilter);
+        descriptor.MaxAnisotropy = 1;
+    }
     descriptor.AddressU = address_mode(wrapS);
     descriptor.AddressV = address_mode(wrapT);
     descriptor.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-    descriptor.MaxAnisotropy = 1;
     descriptor.MaxLOD = D3D11_FLOAT32_MAX;
     ID3D11SamplerState* sampler;
     const auto hr = paz::d3d_device()->CreateSamplerState(&descriptor,

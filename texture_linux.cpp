@@ -113,14 +113,25 @@ void paz::Texture::Data::init(const void* data)
             "ing.");
     }
 
-    const auto filters = min_mag_filter(_minFilter, _magFilter, _mipFilter);
     glGenTextures(1, &_id);
     glBindTexture(GL_TEXTURE_2D, _id);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(_format), _width, _height,
         0, gl_format(_format), gl_type(_format), data);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filters.first);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filters.second);
+    if(_mipFilter == MipmapFilter::Anisotropic)
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+            GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, Window::
+            MaxAnisotropy());
+    }
+    else
+    {
+        const auto filters = min_mag_filter(_minFilter, _magFilter, _mipFilter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filters.first);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filters.second);
+    }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_mode(_wrapS));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_mode(_wrapT));
 

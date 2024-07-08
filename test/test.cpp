@@ -323,8 +323,8 @@ int main()
             }
         }
         surface = paz::Texture(img, paz::MinMagFilter::Linear, paz::
-            MinMagFilter::Nearest, paz::MipmapFilter::Linear, paz::WrapMode::
-            Repeat, paz::WrapMode::Repeat);
+            MinMagFilter::Linear, paz::MipmapFilter::Anisotropic, paz::
+            WrapMode::Repeat, paz::WrapMode::Repeat);
     }
     CATCH
 

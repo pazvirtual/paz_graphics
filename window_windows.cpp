@@ -2327,27 +2327,44 @@ void paz::Window::EnableHidpi()
 
 bool paz::Window::HidpiEnabled()
 {
+    initialize();
+
     return _hidpiEnabled;
 }
 
 bool paz::Window::HidpiSupported()
 {
+    initialize();
+
     return _fboWidth > _windowWidth;
 }
 
 void paz::Window::SetGamma(float gamma)
 {
+    initialize();
+
     _gamma = gamma;
 }
 
 void paz::Window::DisableDithering()
 {
+    initialize();
+
     _dither = false;
 }
 
 void paz::Window::EnableDithering()
 {
+    initialize();
+
     _dither = true;
+}
+
+int paz::Window::MaxAnisotropy()
+{
+    initialize();
+
+    return D3D11_DEFAULT_MAX_ANISOTROPY; //TEMP - should check if hardware supports higher
 }
 
 #endif
