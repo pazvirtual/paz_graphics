@@ -242,9 +242,12 @@ int main(int, char** argv)
             }
         }
     }
-    const paz::Texture surface(img, paz::MinMagFilter::Linear, paz::
+    const paz::Texture trilinear(img, paz::MinMagFilter::Linear, paz::
         MinMagFilter::Linear, paz::MipmapFilter::Linear, paz::WrapMode::Repeat,
         paz::WrapMode::Repeat);
+    const paz::Texture anisotropic(img, paz::MinMagFilter::Linear, paz::
+        MinMagFilter::Linear, paz::MipmapFilter::Anisotropic, paz::WrapMode::
+        Repeat, paz::WrapMode::Repeat);
 
     double time = 0.;
     while(!paz::Window::Done())
@@ -278,7 +281,15 @@ int main(int, char** argv)
         scenePass.begin({paz::LoadAction::Clear}, paz::LoadAction::Clear);
         scenePass.depth(paz::DepthTestMode::Less);
         scenePass.read("shadowMap", shadowMap);
-        scenePass.read("surface", surface);
+        if(paz::Window::KeyDown(paz::Key::A) || paz::Window::GamepadDown(paz::
+            GamepadButton::B))
+        {
+            scenePass.read("surface", trilinear);
+        }
+        else
+        {
+            scenePass.read("surface", anisotropic);
+        }
         scenePass.uniform("view", view);
         scenePass.uniform("projection", projection);
         scenePass.uniform("lightView", lightView);

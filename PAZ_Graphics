@@ -137,9 +137,10 @@ namespace paz
         Linear, Nearest
     };
 
+    // Note: Setting mipmap filter to `Anisotropic` overrides min/mag filters.
     enum class MipmapFilter
     {
-        Linear, Nearest, None
+        Linear, Nearest, Anisotropic, None
     };
 
     enum class WrapMode
@@ -509,6 +510,7 @@ namespace paz
         static void SetGamma(float gamma);
         static void DisableDithering();
         static void EnableDithering();
+        static int MaxAnisotropy();
     };
 }
 

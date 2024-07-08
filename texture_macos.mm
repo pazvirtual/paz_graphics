@@ -47,15 +47,25 @@ static id<MTLSamplerState> create_sampler(paz::MinMagFilter minFilter, paz::
     paz::WrapMode wrapT)
 {
     MTLSamplerDescriptor* descriptor = [[MTLSamplerDescriptor alloc] init];
-    [descriptor setMinFilter:min_mag_filter(minFilter)];
-    [descriptor setMagFilter:min_mag_filter(magFilter)];
-    if(mipFilter == paz::MipmapFilter::Linear)
+    if(mipFilter == paz::MipmapFilter::Anisotropic)
     {
+        [descriptor setMinFilter:MTLSamplerMinMagFilterLinear];
+        [descriptor setMagFilter:MTLSamplerMinMagFilterLinear];
         [descriptor setMipFilter:MTLSamplerMipFilterLinear];
+        [descriptor setMaxAnisotropy:paz::Window::MaxAnisotropy()];
     }
-    else if(mipFilter == paz::MipmapFilter::Nearest)
+    else
     {
-        [descriptor setMipFilter:MTLSamplerMipFilterNearest];
+        [descriptor setMinFilter:min_mag_filter(minFilter)];
+        [descriptor setMagFilter:min_mag_filter(magFilter)];
+        if(mipFilter == paz::MipmapFilter::Linear)
+        {
+            [descriptor setMipFilter:MTLSamplerMipFilterLinear];
+        }
+        else if(mipFilter == paz::MipmapFilter::Nearest)
+        {
+            [descriptor setMipFilter:MTLSamplerMipFilterNearest];
+        }
     }
     [descriptor setSAddressMode:address_mode(wrapS)];
     [descriptor setTAddressMode:address_mode(wrapT)];
