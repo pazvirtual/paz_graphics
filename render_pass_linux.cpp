@@ -300,7 +300,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             }
             else if(_data->_blendModes[i] == BlendMode::One_Zero)
             {
-                glBlendFunci(i, GL_ONE, GL_Zero);
+                glBlendFunci(i, GL_ONE, GL_ZERO);
             }
             else if(_data->_blendModes[i] == BlendMode::One_SrcAlpha)
             {
@@ -316,7 +316,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             }
             else if(_data->_blendModes[i] == BlendMode::Zero_Zero)
             {
-                glBlendFunci(i, GL_ZERO, GL_Zero);
+                glBlendFunci(i, GL_ZERO, GL_ZERO);
             }
             else if(_data->_blendModes[i] == BlendMode::Zero_SrcAlpha)
             {
@@ -332,7 +332,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             }
             else if(_data->_blendModes[i] == BlendMode::SrcAlpha_Zero)
             {
-                glBlendFunci(i, GL_SRC_ALPHA, GL_Zero);
+                glBlendFunci(i, GL_SRC_ALPHA, GL_ZERO);
             }
             else if(_data->_blendModes[i] == BlendMode::SrcAlpha_SrcAlpha)
             {
@@ -348,7 +348,7 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             }
             else if(_data->_blendModes[i] == BlendMode::InvSrcAlpha_Zero)
             {
-                glBlendFunci(i, GL_ONE_MINUS_SRC_ALPHA, GL_Zero);
+                glBlendFunci(i, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO);
             }
             else if(_data->_blendModes[i] == BlendMode::InvSrcAlpha_SrcAlpha)
             {
