@@ -157,8 +157,10 @@ namespace paz
 
     enum class BlendMode
     {
-        One_One, One_InvSrcAlpha, SrcAlpha_InvSrcAlpha, InvSrcAlpha_SrcAlpha,
-        Zero_InvSrcAlpha, Disable
+        One_One, One_Zero, One_SrcAlpha, One_InvSrcAlpha, Zero_One, Zero_Zero,
+        Zero_SrcAlpha, Zero_InvSrcAlpha, SrcAlpha_One, SrcAlpha_Zero,
+        SrcAlpha_SrcAlpha, SrcAlpha_InvSrcAlpha, InvSrcAlpha_One,
+        InvSrcAlpha_Zero, InvSrcAlpha_SrcAlpha, InvSrcAlpha_InvSrcAlpha, Disable
     };
 
     enum class LoadAction
