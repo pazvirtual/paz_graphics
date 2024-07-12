@@ -298,23 +298,67 @@ void paz::RenderPass::begin(const std::vector<LoadAction>& colorLoadActions,
             {
                 glBlendFunci(i, GL_ONE, GL_ONE);
             }
+            else if(_data->_blendModes[i] == BlendMode::One_Zero)
+            {
+                glBlendFunci(i, GL_ONE, GL_Zero);
+            }
+            else if(_data->_blendModes[i] == BlendMode::One_SrcAlpha)
+            {
+                glBlendFunci(i, GL_ONE, GL_SRC_ALPHA);
+            }
             else if(_data->_blendModes[i] == BlendMode::One_InvSrcAlpha)
             {
                 glBlendFunci(i, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
             }
-            else if(_data->_blendModes[i] == BlendMode::SrcAlpha_InvSrcAlpha)
+            else if(_data->_blendModes[i] == BlendMode::Zero_One)
             {
-                glBlendFunci(i, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glBlendFunci(i, GL_ZERO, GL_ONE);
             }
-            else if(_data->_blendModes[i] == BlendMode::InvSrcAlpha_SrcAlpha)
+            else if(_data->_blendModes[i] == BlendMode::Zero_Zero)
             {
-                glBlendFunci(i, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
+                glBlendFunci(i, GL_ZERO, GL_Zero);
+            }
+            else if(_data->_blendModes[i] == BlendMode::Zero_SrcAlpha)
+            {
+                glBlendFunci(i, GL_ZERO, GL_SRC_ALPHA);
             }
             else if(_data->_blendModes[i] == BlendMode::Zero_InvSrcAlpha)
             {
                 glBlendFunci(i, GL_ZERO, GL_ONE_MINUS_SRC_ALPHA);
             }
-            else
+            else if(_data->_blendModes[i] == BlendMode::SrcAlpha_One)
+            {
+                glBlendFunci(i, GL_SRC_ALPHA, GL_ONE);
+            }
+            else if(_data->_blendModes[i] == BlendMode::SrcAlpha_Zero)
+            {
+                glBlendFunci(i, GL_SRC_ALPHA, GL_Zero);
+            }
+            else if(_data->_blendModes[i] == BlendMode::SrcAlpha_SrcAlpha)
+            {
+                glBlendFunci(i, GL_SRC_ALPHA, GL_SRC_ALPHA);
+            }
+            else if(_data->_blendModes[i] == BlendMode::SrcAlpha_InvSrcAlpha)
+            {
+                glBlendFunci(i, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            else if(_data->_blendModes[i] == BlendMode::InvSrcAlpha_One)
+            {
+                glBlendFunci(i, GL_ONE_MINUS_SRC_ALPHA, GL_ONE);
+            }
+            else if(_data->_blendModes[i] == BlendMode::InvSrcAlpha_Zero)
+            {
+                glBlendFunci(i, GL_ONE_MINUS_SRC_ALPHA, GL_Zero);
+            }
+            else if(_data->_blendModes[i] == BlendMode::InvSrcAlpha_SrcAlpha)
+            {
+                glBlendFunci(i, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);
+            }
+            else if(_data->_blendModes[i] == BlendMode::InvSrcAlpha_InvSrcAlpha)
+            {
+                glBlendFunci(i, GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            else if(_data->_blendModes[i] != BlendMode::Disable)
             {
                 throw std::runtime_error("Invalid blending function.");
             }

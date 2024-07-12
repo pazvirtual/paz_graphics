@@ -115,23 +115,73 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
             Disable;
         auto srcBlend = D3D11_BLEND_ONE;
         auto destBlend = D3D11_BLEND_ONE;
-        if(modes[i] == BlendMode::One_InvSrcAlpha)
+        if(modes[i] == BlendMode::One_Zero)
+        {
+            destBlend = D3D11_BLEND_ZERO;
+        }
+        else if(modes[i] == BlendMode::One_SrcAlpha)
+        {
+            destBlend = D3D11_BLEND_SRC_ALPHA;
+        }
+        else if(modes[i] == BlendMode::One_InvSrcAlpha)
         {
             destBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        }
+        else if(modes[i] == BlendMode::Zero_One)
+        {
+            srcBlend = D3D11_BLEND_ZERO;
+        }
+        else if(modes[i] == BlendMode::Zero_Zero)
+        {
+            srcBlend = D3D11_BLEND_ZERO;
+            destBlend = D3D11_BLEND_ZERO;
+        }
+        else if(modes[i] == BlendMode::Zero_SrcAlpha)
+        {
+            srcBlend = D3D11_BLEND_ZERO;
+            destBlend = D3D11_BLEND_SRC_ALPHA;
+        }
+        else if(modes[i] == BlendMode::Zero_InvSrcAlpha)
+        {
+            srcBlend = D3D11_BLEND_ZERO;
+            destBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        }
+        else if(modes[i] == BlendMode::SrcAlpha_One)
+        {
+            srcBlend = D3D11_BLEND_SRC_ALPHA;
+        }
+        else if(modes[i] == BlendMode::SrcAlpha_Zero)
+        {
+            srcBlend = D3D11_BLEND_SRC_ALPHA;
+            destBlend = D3D11_BLEND_ZERO;
+        }
+        else if(modes[i] == BlendMode::SrcAlpha_SrcAlpha)
+        {
+            srcBlend = D3D11_BLEND_SRC_ALPHA;
+            destBlend = D3D11_BLEND_SRC_ALPHA;
         }
         else if(modes[i] == BlendMode::SrcAlpha_InvSrcAlpha)
         {
             srcBlend = D3D11_BLEND_SRC_ALPHA;
             destBlend = D3D11_BLEND_INV_SRC_ALPHA;
         }
+        else if(modes[i] == BlendMode::InvSrcAlpha_One)
+        {
+            srcBlend = D3D11_BLEND_INV_SRC_ALPHA;
+        }
+        else if(modes[i] == BlendMode::InvSrcAlpha_Zero)
+        {
+            srcBlend = D3D11_BLEND_INV_SRC_ALPHA;
+            destBlend = D3D11_BLEND_ZERO;
+        }
         else if(modes[i] == BlendMode::InvSrcAlpha_SrcAlpha)
         {
             srcBlend = D3D11_BLEND_INV_SRC_ALPHA;
             destBlend = D3D11_BLEND_SRC_ALPHA;
         }
-        else if(modes[i] == BlendMode::Zero_InvSrcAlpha)
+        else if(modes[i] == BlendMode::InvSrcAlpha_InvSrcAlpha)
         {
-            srcBlend = D3D11_BLEND_ZERO;
+            srcBlend = D3D11_BLEND_INV_SRC_ALPHA;
             destBlend = D3D11_BLEND_INV_SRC_ALPHA;
         }
         else if(modes[i] != paz::BlendMode::One_One && modes[i] != BlendMode::

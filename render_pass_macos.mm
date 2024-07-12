@@ -25,6 +25,15 @@
 #define CASE0(a, b) case paz::PrimitiveType::a: return MTLPrimitiveType##b;
 #define CASE1(a, b, n) case MTLDataType##a: return {MTLVertexFormat##a, n* \
     sizeof(b)};
+#define SET_BLEND(a, b) \
+    [[pipelineDescriptor colorAttachments][i] setSourceRGBBlendFactor:\
+        MTLBlendFactor##a];\
+    [[pipelineDescriptor colorAttachments][i] setSourceAlphaBlendFactor:\
+        MTLBlendFactor##a];\
+    [[pipelineDescriptor colorAttachments][i] setDestinationRGBBlendFactor:\
+        MTLBlendFactor##b];\
+    [[pipelineDescriptor colorAttachments][i] setDestinationAlphaBlendFactor:\
+        MTLBlendFactor##b];
 
 static_assert(sizeof(unsigned int) == 2 || sizeof(unsigned int) == 4, "Indices "
     "must be 16 or 32 bits.");
@@ -176,65 +185,67 @@ paz::RenderPass::RenderPass(const Framebuffer& fbo, const VertexFunction& vert,
                 MTLBlendOperationAdd];
             if(modes[i] == paz::BlendMode::One_One)
             {
-                [[pipelineDescriptor colorAttachments][i]
-                    setSourceRGBBlendFactor:MTLBlendFactorOne];
-                [[pipelineDescriptor colorAttachments][i]
-                    setSourceAlphaBlendFactor:MTLBlendFactorOne];
-                [[pipelineDescriptor colorAttachments][i]
-                    setDestinationRGBBlendFactor:MTLBlendFactorOne];
-                [[pipelineDescriptor colorAttachments][i]
-                    setDestinationAlphaBlendFactor:MTLBlendFactorOne];
+                SET_BLEND(One, One)
+            }
+            else if(modes[i] == paz::BlendMode::One_Zero)
+            {
+                SET_BLEND(One, Zero)
+            }
+            else if(modes[i] == paz::BlendMode::One_SrcAlpha)
+            {
+                SET_BLEND(One, SourceAlpha)
             }
             else if(modes[i] == paz::BlendMode::One_InvSrcAlpha)
             {
-                [[pipelineDescriptor colorAttachments][i]
-                    setSourceRGBBlendFactor:MTLBlendFactorOne];
-                [[pipelineDescriptor colorAttachments][i]
-                    setSourceAlphaBlendFactor:MTLBlendFactorOne];
-                [[pipelineDescriptor colorAttachments][i]
-                    setDestinationRGBBlendFactor:
-                    MTLBlendFactorOneMinusSourceAlpha];
-                [[pipelineDescriptor colorAttachments][i]
-                    setDestinationAlphaBlendFactor:
-                    MTLBlendFactorOneMinusSourceAlpha];
+                SET_BLEND(One, OneMinusSourceAlpha)
             }
-            else if(modes[i] == paz::BlendMode::SrcAlpha_InvSrcAlpha)
+            else if(modes[i] == paz::BlendMode::Zero_One)
             {
-                [[pipelineDescriptor colorAttachments][i]
-                    setSourceRGBBlendFactor:MTLBlendFactorSourceAlpha];
-                [[pipelineDescriptor colorAttachments][i]
-                    setSourceAlphaBlendFactor:MTLBlendFactorSourceAlpha];
-                [[pipelineDescriptor colorAttachments][i]
-                    setDestinationRGBBlendFactor:
-                    MTLBlendFactorOneMinusSourceAlpha];
-                [[pipelineDescriptor colorAttachments][i]
-                    setDestinationAlphaBlendFactor:
-                    MTLBlendFactorOneMinusSourceAlpha];
+                SET_BLEND(Zero, One)
             }
-            else if(modes[i] == paz::BlendMode::InvSrcAlpha_SrcAlpha)
+            else if(modes[i] == paz::BlendMode::Zero_Zero)
             {
-                [[pipelineDescriptor colorAttachments][i]
-                    setSourceRGBBlendFactor:MTLBlendFactorOneMinusSourceAlpha];
-                [[pipelineDescriptor colorAttachments][i]
-                    setSourceAlphaBlendFactor:
-                    MTLBlendFactorOneMinusSourceAlpha];
-                [[pipelineDescriptor colorAttachments][i]
-                    setDestinationRGBBlendFactor:MTLBlendFactorSourceAlpha];
-                [[pipelineDescriptor colorAttachments][i]
-                    setDestinationAlphaBlendFactor:MTLBlendFactorSourceAlpha];
+                SET_BLEND(Zero, Zero)
+            }
+            else if(modes[i] == paz::BlendMode::Zero_SrcAlpha)
+            {
+                SET_BLEND(Zero, SourceAlpha)
             }
             else if(modes[i] == paz::BlendMode::Zero_InvSrcAlpha)
             {
-                [[pipelineDescriptor colorAttachments][i]
-                    setSourceRGBBlendFactor:MTLBlendFactorZero];
-                [[pipelineDescriptor colorAttachments][i]
-                    setSourceAlphaBlendFactor:MTLBlendFactorZero];
-                [[pipelineDescriptor colorAttachments][i]
-                    setDestinationRGBBlendFactor:
-                    MTLBlendFactorOneMinusSourceAlpha];
-                [[pipelineDescriptor colorAttachments][i]
-                    setDestinationAlphaBlendFactor:
-                    MTLBlendFactorOneMinusSourceAlpha];
+                SET_BLEND(Zero, OneMinusSourceAlpha)
+            }
+            else if(modes[i] == paz::BlendMode::SrcAlpha_One)
+            {
+                SET_BLEND(SourceAlpha, One)
+            }
+            else if(modes[i] == paz::BlendMode::SrcAlpha_Zero)
+            {
+                SET_BLEND(SourceAlpha, Zero)
+            }
+            else if(modes[i] == paz::BlendMode::SrcAlpha_SrcAlpha)
+            {
+                SET_BLEND(SourceAlpha, SourceAlpha)
+            }
+            else if(modes[i] == paz::BlendMode::SrcAlpha_InvSrcAlpha)
+            {
+                SET_BLEND(SourceAlpha, OneMinusSourceAlpha)
+            }
+            else if(modes[i] == paz::BlendMode::InvSrcAlpha_One)
+            {
+                SET_BLEND(OneMinusSourceAlpha, One)
+            }
+            else if(modes[i] == paz::BlendMode::InvSrcAlpha_Zero)
+            {
+                SET_BLEND(OneMinusSourceAlpha, Zero)
+            }
+            else if(modes[i] == paz::BlendMode::InvSrcAlpha_SrcAlpha)
+            {
+                SET_BLEND(OneMinusSourceAlpha, SourceAlpha)
+            }
+            else if(modes[i] == paz::BlendMode::InvSrcAlpha_InvSrcAlpha)
+            {
+                SET_BLEND(OneMinusSourceAlpha, OneMinusSourceAlpha)
             }
             else
             {
