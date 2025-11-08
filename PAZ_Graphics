@@ -513,6 +513,10 @@ namespace paz
         static void DisableDithering();
         static void EnableDithering();
         static int MaxAnisotropy();
+        static void DisableSync();
+        static void EnableSync();
+        static bool SyncEnabled();
+        static bool SyncToggleSupported();
     };
 }
 
