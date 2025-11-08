@@ -106,6 +106,7 @@ static bool _mouseActive;
 static bool _cursorDisabled;
 static bool _frameInProgress;
 static bool _hidpiEnabled = true;
+static bool _syncEnabled = true;
 static float _gamma = 2.2;
 static bool _dither;
 static std::chrono::time_point<std::chrono::steady_clock> _frameStart;
@@ -282,7 +283,7 @@ paz::Initializer::Initializer()
     }
 
     // Activate vsync.
-    glfwSwapInterval(1);
+    glfwSwapInterval(_syncEnabled);
 
     // Activate depth clamping (for logarithmic depth).
     glEnable(GL_DEPTH_CLAMP);
@@ -339,7 +340,7 @@ void paz::Window::MakeFullscreen()
         _windowIsFullscreen = true;
 
         // Keep vsync.
-        glfwSwapInterval(1);
+        glfwSwapInterval(_syncEnabled);
     }
 }
 
@@ -354,7 +355,7 @@ void paz::Window::MakeWindowed()
         _windowIsFullscreen = false;
 
         // Keep vsync.
-        glfwSwapInterval(1);
+        glfwSwapInterval(_syncEnabled);
     }
 }
 
@@ -992,6 +993,34 @@ int paz::Window::MaxAnisotropy()
     initialize();
 
     return _maxAnisotropy;
+}
+
+void paz::Window::DisableSync()
+{
+    initialize();
+
+    _syncEnabled = false;
+}
+
+void paz::Window::EnableSync()
+{
+    initialize();
+
+    _syncEnabled = true;
+}
+
+bool paz::Window::SyncEnabled()
+{
+    initialize();
+
+    return _syncEnabled;
+}
+
+bool paz::Window::SyncToggleSupported()
+{
+    initialize();
+
+    return true;
 }
 
 #endif

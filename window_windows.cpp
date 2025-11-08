@@ -148,6 +148,7 @@ static bool _cursorDisabled;
 static POINT _priorCursorPos;
 static bool _frameInProgress;
 static bool _hidpiEnabled = true;
+static bool _syncEnabled = true;
 static float _gamma = 2.2;
 static bool _dither;
 static LPDIRECTINPUT8 _dinput8Interface;
@@ -2091,7 +2092,7 @@ void paz::Window::EndFrame()
     _deviceContext->PSSetConstantBuffers(0, 1, &_blitBuf);
     _deviceContext->Draw(QuadPos.size()/2, 0);
 
-    _swapChain->Present(1, 0);
+    _swapChain->Present(_syncEnabled, 0);
     reset_events();
     const auto now = std::chrono::steady_clock::now();
     PrevFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(now -
@@ -2365,6 +2366,34 @@ int paz::Window::MaxAnisotropy()
     initialize();
 
     return D3D11_DEFAULT_MAX_ANISOTROPY; //TEMP - should check if hardware supports higher
+}
+
+void paz::Window::DisableSync()
+{
+    initialize();
+
+    _syncEnabled = false;
+}
+
+void paz::Window::EnableSync()
+{
+    initialize();
+
+    _syncEnabled = true;
+}
+
+bool paz::Window::SyncEnabled()
+{
+    initialize();
+
+    return _syncEnabled;
+}
+
+bool paz::Window::SyncToggleSupported()
+{
+    initialize();
+
+    return true;
 }
 
 #endif

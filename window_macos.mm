@@ -537,4 +537,28 @@ int paz::Window::MaxAnisotropy()
     return 16;
 }
 
+void paz::Window::DisableSync()
+{
+    initialize();
+}
+
+void paz::Window::EnableSync()
+{
+    initialize();
+}
+
+bool paz::Window::SyncEnabled()
+{
+    initialize();
+
+    return true;
+}
+
+bool paz::Window::SyncToggleSupported()
+{
+    initialize();
+
+    return false;
+}
+
 #endif
