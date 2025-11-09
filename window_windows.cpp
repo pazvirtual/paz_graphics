@@ -836,6 +836,11 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         case WM_KEYUP:
         case WM_SYSKEYUP:
         {
+            // Ignore repeated press events from held keys.
+            if(HIWORD(lParam)&KF_REPEAT)
+            {
+                break;
+            }
             const bool released = HIWORD(lParam)&KF_UP;
             int key = HIWORD(lParam)&(KF_EXTENDED|0xff);
             if(!key)
