@@ -837,7 +837,8 @@ static LRESULT CALLBACK window_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
         case WM_SYSKEYUP:
         {
             // Ignore repeated press events from held keys.
-            if(HIWORD(lParam)&KF_REPEAT)
+            if((uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN) && HIWORD(lParam)&
+                KF_REPEAT)
             {
                 break;
             }
