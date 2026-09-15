@@ -1,6 +1,6 @@
 PROJNAME := PAZ_Graphics
 CXXVER := 17
-MINMACOSVER := 10.12
+MINMACOSVER := 11.0
 
 LIBNAME := $(shell echo $(PROJNAME) | sed 's/_//g' | tr '[:upper:]' '[:lower:]')
 ifeq ($(OS), Windows_NT)
