@@ -2029,7 +2029,8 @@ void paz::Window::PollEvents()
             _mouseActive = false;
             _gamepadRightStick.second = state.axes[3];
         }
-#if 0 //TEMP - need to use XInput to handle XBox controller triggers independently
+//TEMP - need to use XInput to handle XBox controller triggers independently
+#if 0
         if(state.axes[4] > -0.9)
         {
             _gamepadActive = true;
@@ -2371,7 +2372,8 @@ int paz::Window::MaxAnisotropy()
 {
     initialize();
 
-    return D3D11_DEFAULT_MAX_ANISOTROPY; //TEMP - should check if hardware supports higher
+    //TEMP - should check if hardware supports higher
+    return D3D11_DEFAULT_MAX_ANISOTROPY;
 }
 
 void paz::Window::DisableSync()

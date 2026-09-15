@@ -39,7 +39,8 @@ ARFLAGS := -rcs
 
 CSRC := $(wildcard *.c) $(wildcard *.cpp)
 ifeq ($(OSPRETTY), macOS)
-    EXCL := gl_core_4_1.c $(patsubst %_macos.mm, %.cpp, $(wildcard *_macos.mm)) $(wildcard *_linux.cpp) $(wildcard *_windows.cpp)
+    EXCL := gl_core_4_1.c $(patsubst %_macos.mm, %.cpp, $(wildcard *_macos.mm))\
+        $(wildcard *_linux.cpp) $(wildcard *_windows.cpp)
 else
     ifeq ($(OSPRETTY), Windows)
         EXCL := gl_core_4_1.c $(wildcard *_linux.cpp)
@@ -50,8 +51,10 @@ endif
 CSRC := $(filter-out $(EXCL), $(CSRC))
 OBJCSRC := $(wildcard *.mm)
 ifeq ($(OSPRETTY), macOS)
-    ARMOBJ := $(patsubst %.c, %_arm64.o, $(patsubst %.cpp, %.c, $(CSRC))) $(OBJCSRC:%.mm=%_arm64.o)
-    INTOBJ := $(patsubst %.c, %_x86_64.o, $(patsubst %.cpp, %.c, $(CSRC))) $(OBJCSRC:%.mm=%_x86_64.o)
+    ARMOBJ := $(patsubst %.c, %_arm64.o, $(patsubst %.cpp, %.c, $(CSRC))) \
+        $(OBJCSRC:%.mm=%_arm64.o)
+    INTOBJ := $(patsubst %.c, %_x86_64.o, $(patsubst %.cpp, %.c, $(CSRC))) \
+        $(OBJCSRC:%.mm=%_x86_64.o)
 else
     OBJ := $(patsubst %.c, %.o, $(patsubst %.cpp, %.c, $(CSRC)))
 endif
@@ -79,8 +82,18 @@ lib$(LIBNAME).a: $(OBJ)
 endif
 
 install: $(PROJNAME) lib$(LIBNAME).a
-	cmp -s $(PROJNAME) $(INCLPATH)/$(PROJNAME) || cp $(PROJNAME) $(INCLPATH)/
-	cmp -s lib$(LIBNAME).a $(LIBPATH)/lib$(LIBNAME).a || cp lib$(LIBNAME).a $(LIBPATH)/
+	@[[ -d $(INCLPATH) ]] || \
+	    { echo "mkdir -p $(INCLPATH)"; mkdir -p $(INCLPATH); }
+	@cmp -s $(PROJNAME) $(INCLPATH)/$(PROJNAME) && \
+	    echo "Nothing to do for $(INCLPATH)/$(PROJNAME)" || \
+	    { echo "cp $(PROJNAME) $(INCLPATH)/"; \
+	    cp $(PROJNAME) $(INCLPATH)/; }
+	@[[ -d $(LIBPATH) ]] || \
+	    { echo "mkdir -p $(LIBPATH)"; mkdir -p $(LIBPATH); }
+	@cmp -s lib$(LIBNAME).a $(LIBPATH)/lib$(LIBNAME).a && \
+	    echo "Nothing to do for $(LIBPATH)/lib$(LIBNAME).a" || \
+	    { echo "cp lib$(LIBNAME).a $(LIBPATH)/"; \
+	    cp lib$(LIBNAME).a $(LIBPATH)/; }
 
 test: lib$(LIBNAME).a
 	$(MAKE) -C test
@@ -90,7 +103,8 @@ examples: lib$(LIBNAME).a
 	$(MAKE) -C examples
 
 analyze: $(OBJCSRC)
-	$(foreach n, $(OBJCSRC), clang++ --analyze $(n) $(CXXFLAGS) && $(RM) $(n:%.mm=%.plist);)
+	$(foreach n, $(OBJCSRC), clang++ --analyze $(n) $(CXXFLAGS) && $(RM) \
+	    $(n:%.mm=%.plist);)
 
 %_arm64.o: %.cpp
 	$(CXX) -arch arm64 -c -o $@ $< $(CXXFLAGS)

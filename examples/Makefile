@@ -12,9 +12,11 @@ else
     endif
     LIBPATH := /usr/local/lib
 endif
-CXXFLAGS := -std=c++$(CXXVER) -O3 -Wall -Wextra -Wno-missing-braces -Wold-style-cast
+CXXFLAGS := -std=c++$(CXXVER) -O3 -Wall -Wextra -Wno-missing-braces \
+    -Wold-style-cast
 ifeq ($(OSPRETTY), macOS)
-    CXXFLAGS += -mmacosx-version-min=$(MINMACOSVER) -Wunguarded-availability -Wno-string-plus-int
+    CXXFLAGS += -mmacosx-version-min=$(MINMACOSVER) -Wunguarded-availability \
+        -Wno-string-plus-int
 else
     ifeq ($(OSPRETTY), Windows)
         CXXFLAGS += -Wno-deprecated-copy -static -mwindows
@@ -25,7 +27,8 @@ endif
 CXXFLAGS += -I..
 LDLIBS := ../libpazgraphics.a $(LIBPATH)/libpazio.a
 ifeq ($(OSPRETTY), macOS)
-    LDLIBS += -framework MetalKit -framework Metal -framework Cocoa -framework IOKit
+    LDLIBS += -framework MetalKit -framework Metal -framework Cocoa -framework \
+        IOKit
 else
     ifeq ($(OSPRETTY), Linux)
         # Try a few locations for GLFW.
@@ -42,7 +45,8 @@ else
         endif
         LDLIBS += -lGL -lX11 -ldl
     else
-        LDLIBS += -ld3d11 -ldxgi -ld3dcompiler -ldxguid -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
+        LDLIBS += -ld3d11 -ldxgi -ld3dcompiler -ldxguid -Wl,-Bstatic -lstdc++ \
+            -lpthread -Wl,-Bdynamic
         LDFLAGS += -static-libgcc -static-libstdc++
     endif
 endif
