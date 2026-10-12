@@ -37,6 +37,10 @@ ZIPCONTENTS := $(PROJNAME) lib$(LIBNAME).a
 CFLAGS := -O$(OPTIM) -Wall -Wextra -Wno-missing-braces
 ifeq ($(OSPRETTY), macOS)
     CFLAGS += -mmacosx-version-min=$(MINMACOSVER) -Wunguarded-availability
+else ifeq ($(OSPRETTY), Windows)
+    ifeq ($(CC), gcc)
+        CFLAGS += -Wno-cast-function-type
+    endif
 endif
 CXXFLAGS := -std=c++$(CXXVER) $(CFLAGS) -Wold-style-cast
 ifeq ($(CC), clang)
