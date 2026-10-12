@@ -1,7 +1,7 @@
 name: build
 on: [push, pull_request]
 jobs:
-  windows:
+  windows-ucrt64:
     runs-on: windows-latest
     defaults:
       run:
@@ -10,17 +10,33 @@ jobs:
       - uses: actions/checkout@v4
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: UCRT64
           update: true
-          install: make mingw-w64-x86_64-gcc
+          install: make mingw-w64-ucrt-x86_64-gcc
       - name: Build and Test
         run: make -j
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-build
-          path: |
-            libpazgraphics.a
-            test/test.exe
+          name: windows-ucrt64-build
+          path: libpazgraphics.a
+  windows-clang64:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: CLANG64
+          update: true
+          install: make mingw-w64-clang-x86_64-clang
+      - name: Build and Test
+        run: make -j
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-clang64-build
+          path: libpazgraphics.a
   macos:
     runs-on: macos-latest
     steps:
@@ -30,9 +46,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: macos-build
-          path: |
-            libpazgraphics.a
-            test/test
+          path: libpazgraphics.a
   linux:
     runs-on: ubuntu-latest
     steps:
@@ -57,6 +71,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          path: |
-            libpazgraphics.a
-            test/test
+          path: libpazgraphics.a
