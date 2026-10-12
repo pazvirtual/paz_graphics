@@ -4,14 +4,29 @@ MINMACOSVER := 11.0
 
 LIBNAME := $(shell echo $(PROJNAME) | sed 's/_//g' | tr '[:upper:]' '[:lower:]')
 ifeq ($(OS), Windows_NT)
-    LIBPATH := /mingw64/lib
-    INCLPATH := /mingw64/include
     OSPRETTY := Windows
+    ifeq ($(MSYSTEM), UCRT64)
+        CC := gcc
+        CXX := g++
+        LIBPATH := /ucrt64/lib
+        INCLPATH := /ucrt64/include
+    else ifeq ($(MSYSTEM), CLANG64)
+        CC := clang
+        CXX := clang++
+        LIBPATH := /clang64/lib
+        INCLPATH := /clang64/include
+    else
+        $(error Unsupported Windows environment)
+    endif
 else
     ifeq ($(shell uname -s), Darwin)
         OSPRETTY := macOS
+        CC := clang
+        CXX := clang++
     else
         OSPRETTY := Linux
+        CC := gcc
+        CXX := g++
     endif
     LIBPATH := /usr/local/lib
     INCLPATH := /usr/local/include
@@ -22,18 +37,10 @@ ZIPCONTENTS := $(PROJNAME) lib$(LIBNAME).a
 CFLAGS := -O$(OPTIM) -Wall -Wextra -Wno-missing-braces
 ifeq ($(OSPRETTY), macOS)
     CFLAGS += -mmacosx-version-min=$(MINMACOSVER) -Wunguarded-availability
-else
-    ifeq ($(OSPRETTY), Windows)
-        CFLAGS += -Wno-cast-function-type
-    endif
 endif
 CXXFLAGS := -std=c++$(CXXVER) $(CFLAGS) -Wold-style-cast
-ifeq ($(OSPRETTY), macOS)
+ifeq ($(CC), clang)
     CXXFLAGS += -Wno-string-plus-int
-else
-    ifeq ($(OSPRETTY), Windows)
-        CXXFLAGS += -Wno-deprecated-copy
-    endif
 endif
 ARFLAGS := -rcs
 
@@ -41,12 +48,10 @@ CSRC := $(wildcard *.c) $(wildcard *.cpp)
 ifeq ($(OSPRETTY), macOS)
     EXCL := gl_core_4_1.c $(patsubst %_macos.mm, %.cpp, $(wildcard *_macos.mm))\
         $(wildcard *_linux.cpp) $(wildcard *_windows.cpp)
+else ifeq ($(OSPRETTY), Windows)
+    EXCL := gl_core_4_1.c $(wildcard *_linux.cpp)
 else
-    ifeq ($(OSPRETTY), Windows)
-        EXCL := gl_core_4_1.c $(wildcard *_linux.cpp)
-    else
-        EXCL := gamepad.cpp $(wildcard *_windows.cpp)
-    endif
+    EXCL := gamepad.cpp $(wildcard *_windows.cpp)
 endif
 CSRC := $(filter-out $(EXCL), $(CSRC))
 OBJCSRC := $(wildcard *.mm)
@@ -59,7 +64,7 @@ else
     OBJ := $(patsubst %.c, %.o, $(patsubst %.cpp, %.c, $(CSRC)))
 endif
 
-print-% : ; @echo $* = $($*)
+print-% : ; @echo "$* = $($*)"
 
 .PHONY: test
 default: test
@@ -112,26 +117,17 @@ analyze: $(OBJCSRC)
 %_x86_64.o: %.cpp
 	$(CXX) -arch x86_64 -c -o $@ $< $(CXXFLAGS)
 
-%.o: %.cpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
-
 %_arm64.o: %.c
 	$(CC) -arch arm64 -c -o $@ $< $(CFLAGS)
 
 %_x86_64.o: %.c
 	$(CC) -arch x86_64 -c -o $@ $< $(CFLAGS)
 
-%.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS)
-
 %_arm64.o: %.mm
 	$(CC) -arch arm64 -c -o $@ $< $(CXXFLAGS)
 
 %_x86_64.o: %.mm
 	$(CC) -arch x86_64 -c -o $@ $< $(CXXFLAGS)
-
-%.o: %.mm
-	$(CC) -c -o $@ $< $(CXXFLAGS)
 
 clean:
 	$(RM) *.o *.a

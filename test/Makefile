@@ -2,59 +2,74 @@ CXXVER := 17
 MINMACOSVER := 11.0
 
 ifeq ($(OS), Windows_NT)
-    LIBPATH := /mingw64/lib
     OSPRETTY := Windows
+    ifeq ($(MSYSTEM), UCRT64)
+        CC := gcc
+        CXX := g++
+        LIBPATH := /ucrt64/lib
+    else ifeq ($(MSYSTEM), CLANG64)
+        CC := clang
+        CXX := clang++
+        LIBPATH := /clang64/lib
+    else
+        $(error Unsupported Windows environment)
+    endif
 else
     ifeq ($(shell uname -s), Darwin)
         OSPRETTY := macOS
+        CC := clang
+        CXX := clang++
     else
         OSPRETTY := Linux
+        CC := gcc
+        CXX := g++
     endif
     LIBPATH := /usr/local/lib
 endif
 CXXFLAGS := -std=c++$(CXXVER) -O3 -Wall -Wextra -Wno-missing-braces \
     -Wold-style-cast
 ifeq ($(OSPRETTY), macOS)
-    CXXFLAGS += -mmacosx-version-min=$(MINMACOSVER) -Wunguarded-availability \
-        -Wno-string-plus-int
+    CXXFLAGS += -mmacosx-version-min=$(MINMACOSVER) -Wunguarded-availability
+else ifeq ($(OSPRETTY), Windows)
+    CXXFLAGS += -mwindows
 else
-    ifeq ($(OSPRETTY), Windows)
-        CXXFLAGS += -Wno-deprecated-copy -static -mwindows
-    else
-        CXXFLAGS += -pthread
-    endif
+    CXXFLAGS += -pthread
+endif
+ifeq ($(CC), clang)
+    CXXFLAGS += -Wno-string-plus-int
 endif
 CXXFLAGS += -I..
 LDLIBS := ../libpazgraphics.a
 ifeq ($(OSPRETTY), macOS)
     LDLIBS += -framework MetalKit -framework Metal -framework Cocoa -framework \
         IOKit
-else
-    ifeq ($(OSPRETTY), Linux)
-        # Try a few locations for GLFW.
-        ifneq (, $(wildcard $(LIBPATH)/libglfw3.a))
-            LDLIBS += $(LIBPATH)/libglfw3.a
-        else ifneq (, $(wildcard /usr/lib/libglfw3.a))
-            LDLIBS += /usr/lib/libglfw3.a
-        else ifneq (, $(wildcard /usr/lib64/libglfw3.a))
-            LDLIBS += /usr/lib64/libglfw3.a
-        else ifneq (, $(wildcard /usr/lib/x86_64-linux-gnu/libglfw3.a))
-            LDLIBS += /usr/lib/x86_64-linux-gnu/libglfw3.a
-        else
-            $(error Could not find "libglfw3.a".)
-        endif
-        LDLIBS += -lGL -lX11 -ldl
+else ifeq ($(OSPRETTY), Windows)
+    LDLIBS += -ld3d11 -ldxgi -ld3dcompiler -ldxguid
+    ifeq ($(CC), gcc)
+        LDLIBS += -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
     else
-        LDLIBS += -ld3d11 -ldxgi -ld3dcompiler -ldxguid -Wl,-Bstatic -lstdc++ \
-            -lpthread -Wl,-Bdynamic
-        LDFLAGS += -static-libgcc -static-libstdc++
+        LDLIBS += -Wl,-Bstatic -lc++ -Wl,-Bdynamic
     endif
+else
+    # Try a few locations for GLFW.
+    ifneq (, $(wildcard $(LIBPATH)/libglfw3.a))
+        LDLIBS += $(LIBPATH)/libglfw3.a
+    else ifneq (, $(wildcard /usr/lib/libglfw3.a))
+        LDLIBS += /usr/lib/libglfw3.a
+    else ifneq (, $(wildcard /usr/lib64/libglfw3.a))
+        LDLIBS += /usr/lib64/libglfw3.a
+    else ifneq (, $(wildcard /usr/lib/x86_64-linux-gnu/libglfw3.a))
+        LDLIBS += /usr/lib/x86_64-linux-gnu/libglfw3.a
+    else
+        $(error Could not find "libglfw3.a".)
+    endif
+    LDLIBS += -lGL -lX11 -ldl
 endif
 
 SRC := $(wildcard *.cpp)
 EXE := $(SRC:.cpp=)
 
-print-% : ; @echo $* = $($*)
+print-% : ; @echo "$* = $($*)"
 
 .PHONY: $(SRC)
 
