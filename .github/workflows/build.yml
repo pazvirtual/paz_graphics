@@ -12,7 +12,7 @@ jobs:
         with:
           msystem: UCRT64
           update: true
-          install: make mingw-w64-ucrt-x86_64-gcc
+          install: diffutils make mingw-w64-ucrt-x86_64-gcc
       - name: Build and Test
         run: make -j
       - uses: actions/upload-artifact@v4
@@ -30,7 +30,7 @@ jobs:
         with:
           msystem: CLANG64
           update: true
-          install: make mingw-w64-clang-x86_64-clang
+          install: diffutils make mingw-w64-clang-x86_64-clang
       - name: Build and Test
         run: make -j
       - uses: actions/upload-artifact@v4
